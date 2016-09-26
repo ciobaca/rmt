@@ -1,0 +1,83 @@
+#include <cstdlib>
+#include <sstream>
+#include <cassert>
+#include <cstdio>
+#include <iostream>
+#include "z3driver.h"
+#include "variable.h"
+#include "term.h"
+#include "sort.h"
+#include "factories.h"
+
+using namespace std;
+
+string callz3(string s)
+{
+  FILE *fout = fopen("z3_temp.input", "w");
+  fprintf(fout, "%s", s.c_str());
+  fclose(fout);
+  system("z3 -in < z3_temp.input > z3_temp.output");
+  FILE *fin = fopen("z3_temp.output", "r");
+  char z3_result[1024];
+  // TODO: fix fixed length
+  fscanf(fin, "%s", z3_result);
+  fclose(fin);
+  return z3_result;
+}
+
+void Z3Theory::addVariable(Variable *var)
+{
+  variables.push_back(var);
+}
+
+void Z3Theory::addEqualityConstraint(Term *left, Term *right)
+{
+  Function *EqualsFun = getFunction("bequals");
+  vector<Term *> sides;
+  sides.push_back(left);
+  sides.push_back(right);
+  addConstraint(getFunTerm(EqualsFun, sides));
+}
+
+void Z3Theory::addConstraint(Term *constraint)
+{
+  constraints.push_back(constraint);
+}
+
+Z3Result Z3Theory::isSatisfiable()
+{
+  ostringstream oss;
+  for (int i = 0; i < variables.size(); ++i) {
+    assert(variables[i]->sort->hasInterpretation);
+    oss << "(declare-const " << variables[i]->name << " " << variables[i]->sort->interpretation << ")" << endl;
+  }
+  for (int i = 0; i < constraints.size(); ++i) {
+    oss << "(assert " << constraints[i]->toSmtString() << ")" << endl;
+  }
+  oss << "(check-sat)" << endl;
+  string z3string = oss.str();
+  //  fprintf(stderr, "Calling z3 with:\n%s\n", z3string.c_str());
+  string result = callz3(z3string);
+  if (result == "sat") {
+    //    fprintf(stderr, "Result is SAT\n");
+    return sat;
+  } else if (result == "unsat") {
+    //    fprintf(stderr, "Result is UNSAT\n");
+    return unsat;
+  } else {
+    fprintf(stderr, "Unknown result \"%s\".\n", result.c_str());
+    assert(0);
+  }
+}
+
+Z3Result isSatisfiable(Term *constraint)
+{
+  Z3Theory theory;
+  vector<Variable *> interpretedVariables = getInterpretedVariables();
+  for (int i = 0; i < interpretedVariables.size(); ++i) {
+    theory.addVariable(interpretedVariables[i]);
+  }
+  cerr << "Checking satisfiability of " << constraint->toString() << endl;
+  theory.addConstraint(constraint);
+  return theory.isSatisfiable();
+}

@@ -1,0 +1,167 @@
+/* any file begins with the declaration of all sorts used */
+sorts Int / "Int",
+      Bool / "Bool",
+      State;
+
+// after declaring all sorts,
+// we must declare all subsort relations
+//subsort Int < AExp;
+//subsort Var < NonValAExp;
+//subsort NonValAExp < AExp;
+//subsort NonValBExp < BExp;
+//subsort AExp BExp Stmt < Code;
+//subsort Bool < BExp;
+
+/* next we must declare all function symbols */
+signature
+	// states
+	ca : Int Int -> State,
+	cb : Int Int Bool -> State,
+	cc : Int -> State,
+
+	// interpreted integers and booleans
+	mzero : -> Int / "0",
+	mone : -> Int / "1",
+	mtwo : -> Int / "2",
+	mplus : Int Int -> Int / "+",
+	mminus : Int Int -> Int / "-",
+	mtimes : Int Int -> Int / "*",
+	mdiv : Int Int -> Int / "/",
+	mle : Int Int -> Bool / "<=",
+
+	bequals : Bool Bool -> Bool / "=",
+	band : Bool Bool -> Bool / "and",
+	bor : Bool Bool -> Bool / "or",
+	bnot : Bool -> Bool / "not",
+
+	true : -> Bool / "true",
+	false : -> Bool / "false";
+
+/* next we must declare all variables */
+variables
+	B : Bool,
+	S : Int,
+	N : Int,
+	M : Int,
+	I : Int;
+
+/* next, declare all rewrite systems */
+
+// the first rewrite system is called "simplifications"
+// if there is such a rewrite system, the tool will assume
+// that it is convergent and it will use it in order to 
+// perform simplifications on the terms before other
+// operations like calling an smt solver or narrowing a term.
+rewrite-system simplifications
+	// bnot
+	bnot(false) =>
+	true,
+
+	bnot(true) =>
+	false,
+
+	// band
+	band(false, B) =>
+	false,
+	
+	band(true, B) =>
+	B,
+
+	band(B, false) =>
+	false,
+	
+	band(B, true) =>
+	B,
+
+	// bor
+	bor(false, B) =>
+	B,
+	
+	bor(true, B) =>
+	true,
+
+	bor(B, false) =>
+	B,
+	
+	bor(B, true) =>
+	true,
+
+	// mplus
+	mplus(N, mzero) =>
+	N,
+
+	mplus(mzero, N) =>
+	N,
+
+	bequals(true, B) =>
+	B,
+
+	bequals(false, B) =>
+	bnot(B),
+
+	band(B, B) =>
+	B,
+
+	bor(B, B) =>
+	B;
+
+rewrite-system default
+	ca(S, I) =>
+	cb(S, I, mle(mone, I)),
+
+	cb(S, I, true) =>
+	ca(mplus(S, I), mminus(I, mone)),
+
+	cb(S, I, false) =>
+	cc(S);
+
+rewrite-system circularities
+	cb(mzero, N, true) =>
+	cc(mdiv(mtimes(N, mplus(N, mone)), mtwo)),
+
+	cb(S, I, true) =>
+	cc(mplus(S, mdiv(mtimes(I, mplus(I, mone)), mtwo)));
+
+smt-unify cc(mplus(N, N)) and cc(mtimes(mtwo, N));
+
+smt-implies cc(mplus(N, N)) and cc(mtimes(mtwo, N));
+
+smt-narrow-search in default :
+	cb(mzero, N, true);
+ 
+smt-satisfiability band(band(band(bnot(false),bnot(false)),bnot(bor(bequals(true,mle(mone,mminus(mplus(mzero,N),mone))),false))),bequals(true,mle(mone,mminus(mplus(mzero,N),mone))));
+
+smt-prove in default : circularities;
+
+// the following queries are old -- they probably don't work anymore; I keep them for reference purposes only
+
+//smt-unify cc(mplus(N, N)) and cc(mtimes(mtwo, N));
+
+//smt-unify cc(N) /\ band(mle(mzero, N), mle(N, mzero)) and cc(mtimes(mtwo, N));
+
+//smt-unify cc(N) and cc(M);
+
+//smt-unify cc(N) /\ mle(mtwo, N) and cc(N);
+
+//smt-unify cc(mplus(N,mdiv(mtimes(mminus(N,mone),mplus(mminus(N,mone),mone)),mtwo))) /\ mle(mone,mminus(N,mone)) and cc(mdiv(mtimes(N,mplus(N,mone)),mtwo));
+
+//query-smt-narrow-search in default :
+//	cb(mzero, N, true);
+
+//query-smt-narrow-search in default :
+//	ca(mplus(mzero,N),mminus(N,mone));
+
+//is-satisfiable band(band(band(bnot(false),bnot(false)),bnot(bor(bequals(true,mle(mone,mminus(mplus(mzero,N),mone))),false))),bequals(true,mle(mone,mminus(mplus(mzero,N),mone))));
+
+//prove in default : circularities;
+
+//smt-unify cc(mplus(S,I)) /\ band(band(band(band(band(band(band(mle(mzero, I),true),true),true),bnot(mle(mone,mminus(I,mone)))),true),true),bnot(mle(mone,mminus(I,mone)))) and cc(mplus(S,mdiv(mtimes(I,mplus(I,mone)),mtwo)));
+
+//query-smt-narrow-search in circularities :
+//	cb(mplus(mzero,N),mminus(N,mone),mle(mone,mminus(N,mone)));
+
+//smt-narrow-search ca(mplus(S,I),mminus(I,mone));
+
+//smt-narrow-search ca(S, I);
+
+//smt-narrow-search cb(S, I, mle(mone, I));

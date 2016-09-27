@@ -28,6 +28,7 @@ signature
 	mtimes : Int Int -> Int / "*",
 	mdiv : Int Int -> Int / "/",
 	mle : Int Int -> Bool / "<=",
+	mequals : Int Int -> Bool / "=",
 
 	bequals : Bool Bool -> Bool / "=",
 	band : Bool Bool -> Bool / "and",
@@ -122,16 +123,24 @@ rewrite-system circularities
 	cb(S, I, true) =>
 	cc(mplus(S, mdiv(mtimes(I, mplus(I, mone)), mtwo)));
 
-smt-unify cc(mplus(N, N)) and cc(mtimes(mtwo, N));
+smt-run in simplifications : band(true, B);
 
-smt-implies cc(mplus(N, N)) and cc(mtimes(mtwo, N));
+smt-run in simplifications : band(true, false);
 
-smt-narrow-search in default :
-	cb(mzero, N, true);
- 
-smt-satisfiability band(band(band(bnot(false),bnot(false)),bnot(bor(bequals(true,mle(mone,mminus(mplus(mzero,N),mone))),false))),bequals(true,mle(mone,mminus(mplus(mzero,N),mone))));
+//smt-unify cc(mplus(N, N)) and cc(mtimes(mtwo, N));
 
-smt-prove in default : circularities;
+//smt-implies cc(mplus(N, N)) and cc(mtimes(mtwo, N));
+
+//smt-implies cb(mzero,N,true) and cc(mdiv(mtimes(N,mplus(N,mone)),mtwo));
+
+//smt-implies cb(mzero,N,true) /\ mequals(N, mzero) and cb(M, N, true);
+
+//smt-narrow-search in default :
+//	cb(mzero, N, true);
+
+//smt-satisfiability band(band(band(bnot(false),bnot(false)),bnot(bor(bequals(true,mle(mone,mminus(mplus(mzero,N),mone))),false))),bequals(true,mle(mone,mminus(mplus(mzero,N),mone))));
+
+//smt-prove in default : circularities;
 
 // the following queries are old -- they probably don't work anymore; I keep them for reference purposes only
 

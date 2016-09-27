@@ -2,6 +2,7 @@
 #include "parse.h"
 #include "querysmtimplies.h"
 #include "querysmtunify.h"
+#include "querysmtrun.h"
 #include "querysmtnarrowsearch.h"
 #include "querysmtprove.h"
 #include "querysmtsatisfiability.h"
@@ -56,6 +57,11 @@ Query *createQuerySmtSatisfiability()
   return new QuerySmtSatisfiability();
 }
 
+Query *createQuerySmtRun()
+{
+  return new QuerySmtRun();
+}
+
 std::map<std::string, QueryCreator> *registerQueries()
 {
   std::map<std::string, QueryCreator> *map;
@@ -64,6 +70,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["smt-unify"] = createQuerySmtUnify;
   (*map)["smt-implies"] = createQuerySmtImplies;
   (*map)["smt-prove"] = createQuerySmtProve;
+  (*map)["smt-run"] = createQuerySmtRun;
   (*map)["smt-satisfiability"] = createQuerySmtSatisfiability;
   return map;
 }

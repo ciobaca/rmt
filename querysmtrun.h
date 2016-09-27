@@ -1,20 +1,20 @@
-#ifndef QUERYSMTIMPLIES_H__
-#define QUERYSMTIMPLIES_H__
+#ifndef QUERYSMTRUN_H__
+#define QUERYSMTRUN_H__
 
 #include "query.h"
 #include "constrainedterm.h"
 #include <string>
 #include <map>
 
-struct QuerySmtImplies : public Query
+struct QuerySmtRun : public Query
 {
+  std::string rewriteSystemName;
   Term *term;
-  ConstrainedTerm ct;
 
-  QuerySmtImplies();
+  QuerySmtRun();
   
   virtual Query *create();
-  
+
   virtual void parse(std::string &s, int &w);
 
   virtual void execute();

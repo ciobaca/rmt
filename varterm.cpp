@@ -1,7 +1,7 @@
 #include <cassert>
 #include "varterm.h"
 #include "funterm.h"
-//#include "namterm.h"
+#include "log.h"
 #include "sort.h"
 #include "helper.h"
 #include "factories.h"
@@ -253,3 +253,27 @@ vector<Solution> VarTerm::narrowSearch(RewriteSystem &rs)
   }
   return result;
 }
+
+vector<ConstrainedSolution> VarTerm::narrowSearch(CRewriteSystem &crs)
+{
+  Log(DEBUG7) << "VarTerm::narrowSearch (crs) " << this->toString() << endl;
+  vector<ConstrainedSolution> result;
+  for (int i = 0; i < len(crs); ++i) {
+    pair<ConstrainedTerm, Term *> crewriteRule = crs[i];
+    ConstrainedTerm l = crewriteRule.first;
+    Term *r = crewriteRule.second;
+
+    Substitution subst;
+    if (this->unifyWith(l.term, subst)) {
+      Term *term = r;
+      result.push_back(ConstrainedSolution(term, subst, l.constraint));
+    }
+  }
+  return result;
+}
+
+Sort *VarTerm::getSort()
+{
+  return this->variable->sort;
+}
+

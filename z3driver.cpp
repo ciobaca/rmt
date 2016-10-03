@@ -5,6 +5,7 @@
 #include <iostream>
 #include "z3driver.h"
 #include "variable.h"
+#include "log.h"
 #include "term.h"
 #include "sort.h"
 #include "factories.h"
@@ -56,15 +57,17 @@ Z3Result Z3Theory::isSatisfiable()
   }
   oss << "(check-sat)" << endl;
   string z3string = oss.str();
+  Log(LOGSAT) << "Sending the following to Z3:" << endl << z3string;
   //  fprintf(stderr, "Calling z3 with:\n%s\n", z3string.c_str());
   string result = callz3(z3string);
   if (result == "sat") {
-    //    fprintf(stderr, "Result is SAT\n");
+    Log(LOGSAT) << "Result is SAT" << endl << z3string;
     return sat;
   } else if (result == "unsat") {
-    //    fprintf(stderr, "Result is UNSAT\n");
+    Log(LOGSAT) << "Result is UNSAT" << endl << z3string;
     return unsat;
   } else {
+    Log(LOGSAT) << "Result is UNKNOWN" << endl << z3string;
     fprintf(stderr, "Unknown result \"%s\".\n", result.c_str());
     assert(0);
   }
@@ -72,12 +75,12 @@ Z3Result Z3Theory::isSatisfiable()
 
 Z3Result isSatisfiable(Term *constraint)
 {
+  Log(LOGSAT) << "Testing satisfiability of " << constraint->toString() << endl;
   Z3Theory theory;
   vector<Variable *> interpretedVariables = getInterpretedVariables();
   for (int i = 0; i < interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
   }
-  cerr << "Checking satisfiability of " << constraint->toString() << endl;
   theory.addConstraint(constraint);
   return theory.isSatisfiable();
 }

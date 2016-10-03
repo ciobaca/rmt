@@ -8,6 +8,7 @@
 using namespace std;
 
 QuerySmtUnify::QuerySmtUnify()
+  : ct(0, 0)
 {
 }
   

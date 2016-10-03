@@ -32,6 +32,7 @@ signature
 
 	bequals : Bool Bool -> Bool / "=",
 	band : Bool Bool -> Bool / "and",
+	bimplies : Bool Bool -> Bool / "=>",
 	bor : Bool Bool -> Bool / "or",
 	bnot : Bool -> Bool / "not",
 
@@ -61,6 +62,9 @@ rewrite-system simplifications
 	bnot(true) =>
 	false,
 
+	bnot(bnot(B)) =>
+	B,
+
 	// band
 	band(false, B) =>
 	false,
@@ -73,6 +77,13 @@ rewrite-system simplifications
 	
 	band(B, true) =>
 	B,
+
+	// implies
+	bimplies(true, B) =>
+	B,
+	
+	bimplies(false, B) =>
+	true,
 
 	// bor
 	bor(false, B) =>
@@ -88,16 +99,30 @@ rewrite-system simplifications
 	true,
 
 	// mplus
-	mplus(N, mzero) =>
-	N,
+	// mplus(N, mzero) =>
+	// N,
 
-	mplus(mzero, N) =>
-	N,
+	// mplus(mzero, N) =>
+	// N,
+
+	// mequals
+	mequals(N, N) =>
+	true,
+
+	// bequals
+	bequals(B, B) =>
+	true,
 
 	bequals(true, B) =>
 	B,
 
 	bequals(false, B) =>
+	bnot(B),
+
+	bequals(B, true) =>
+	B,
+
+	bequals(B, false) =>
 	bnot(B),
 
 	band(B, B) =>
@@ -116,16 +141,19 @@ rewrite-system default
 	cb(S, I, false) =>
 	cc(S);
 
-rewrite-system circularities
-	cb(mzero, N, true) =>
+constrained-rewrite-system circularities
+	ca(mzero, N) /\ mle(mzero, N) =>
 	cc(mdiv(mtimes(N, mplus(N, mone)), mtwo)),
 
-	cb(S, I, true) =>
+	ca(S, I) /\ mle(mzero, I) =>
 	cc(mplus(S, mdiv(mtimes(I, mplus(I, mone)), mtwo)));
 
-smt-run in simplifications : band(true, B);
+//smt-narrow-search in default :
+//  cb(mplus(mplus(mzero,N),mminus(N,mone)),mminus(mminus(N,mone),mone),mle(mone,mminus(mminus(N,mone),mone))) /\ mle(mone,mminus(N,mone));
 
-smt-run in simplifications : band(true, false);
+//smt-run in simplifications : band(true, B);
+
+//smt-run in simplifications : band(true, false);
 
 //smt-unify cc(mplus(N, N)) and cc(mtimes(mtwo, N));
 
@@ -140,7 +168,7 @@ smt-run in simplifications : band(true, false);
 
 //smt-satisfiability band(band(band(bnot(false),bnot(false)),bnot(bor(bequals(true,mle(mone,mminus(mplus(mzero,N),mone))),false))),bequals(true,mle(mone,mminus(mplus(mzero,N),mone))));
 
-//smt-prove in default : circularities;
+smt-prove in default : circularities;
 
 // the following queries are old -- they probably don't work anymore; I keep them for reference purposes only
 

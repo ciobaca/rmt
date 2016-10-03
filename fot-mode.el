@@ -12,7 +12,7 @@
   "Keymap for FOT major mode")
 (add-to-list 'auto-mode-alist '("\\.fot\\'" . fot-mode))
 
-(setq fot-keywords '("sorts" "subsort" "signature" "variables" "rewrite-system" "smt-narrow-search" "smt-unify" "smt-implies" "smt-satisfiability" "smt-prove"))
+(setq fot-keywords '("sorts" "subsort" "signature" "variables" "rewrite-system" "constrained-rewrite-system" "smt-narrow-search" "smt-unify" "smt-implies" "smt-satisfiability" "smt-prove"))
 (setq fot-keywords-regexp (regexp-opt fot-keywords 'words))
 
 (setq fot-types '("Int" "Bool"))
@@ -21,7 +21,7 @@
 (setq fot-operators '(":" "->" "/" "=>" "<"))
 (setq fot-operators-regexp (regexp-opt fot-operators))
 
-(setq fot-functions '("mplus" "mtimes" "mdiv" "mminus" "mle"  "bequals" "bnot" "band" "bor"))
+(setq fot-functions '("mplus" "mtimes" "mdiv" "mminus" "mle" "mequals" "bimplies" "bequals" "bnot" "band" "bor"))
 (setq fot-functions-regexp (regexp-opt fot-functions 'words))
 
 (setq fot-constants '("true" "false" "mzero" "mone" "mtwo" ))

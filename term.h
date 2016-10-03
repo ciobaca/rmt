@@ -9,6 +9,7 @@
 #include "function.h"
 #include "rewrite.h"
 #include "solution.h"
+#include "constrainedsolution.h"
 #include "substitution.h"
 #include "helper.h"
 
@@ -20,10 +21,13 @@ struct VarTerm;
 //struct NamTerm;
 struct KnowledgeBase;
 struct ConstrainedTerm;
+struct CRewriteSystem;
 
 struct Term
 {
   virtual string toString() = 0;
+
+  virtual Sort *getSort() = 0;
 
   bool computedVars;
   vector<Variable *> allVars;
@@ -179,9 +183,17 @@ struct Term
   // this term narrows in one step.
   virtual vector<Solution> narrowSearch(RewriteSystem &) = 0;
 
+  // Performs a one-step narrowing search, i.e. finds all terms to which
+  // this term narrows in one step.
+  virtual vector<ConstrainedSolution> narrowSearch(CRewriteSystem &) = 0;
+
   // Performs a one-step narrowing search, offloading interpreted terms
   // to the SMT solver.
   virtual vector<ConstrainedTerm> smtNarrowSearch(RewriteSystem &, Term *initialConstraint);
+
+  // Performs a one-step narrowing search, offloading interpreted terms
+  // to the SMT solver.
+  virtual vector<ConstrainedTerm> smtNarrowSearch(CRewriteSystem &, Term *initialConstraint);
 
   bool smtUnifyWith(Term *other, Term *initialConstraint,
 		    Substitution &resultSubstitution, Term *&resultConstraint);

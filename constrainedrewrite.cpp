@@ -1,49 +1,56 @@
-#include "rewrite.h"
+#include "constrainedrewrite.h"
 #include "term.h"
 #include "substitution.h"
+#include "log.h"
 #include "variable.h"
 #include "factories.h"
+#include "helper.h"
 #include <cassert>
 #include <string>
 #include <sstream>
 
 using namespace std;
 
-void RewriteSystem::addRule(Term *l, Term *r)
+void CRewriteSystem::addRule(ConstrainedTerm l, Term *r)
 {
-  assert(subseteq(r->vars(), l->vars()));
+  //  assert(subseteq(r->vars(), l->vars()));
   this->push_back(make_pair(l, r));
 }
 
-RewriteSystem RewriteSystem::rename(string s)
+// .vars
+// .substitute
+
+CRewriteSystem CRewriteSystem::rename(string s)
 {
   vector<Variable *> vars;
   for (int i = 0; i < (int)this->size(); ++i) {
-    append(vars, (*this)[i].first->vars());
+    append(vars, (*this)[i].first.vars());
     append(vars, (*this)[i].second->vars());
   }
 
   map<Variable *, Variable *> r = createRenaming(vars, s);
   Substitution subst = createSubstitution(r);
 
-  RewriteSystem result;
+  CRewriteSystem result;
   for (int i = 0; i < (int)this->size(); ++i) {
-    Term *l = (*this)[i].first;
+    ConstrainedTerm l = (*this)[i].first;
     Term *r = (*this)[i].second;
-    result.push_back(make_pair(l->substitute(subst), r->substitute(subst)));
+    result.push_back(make_pair(l.substitute(subst), r->substitute(subst)));
   }
 
   return result;
 }
 
-RewriteSystem RewriteSystem::fresh(vector<Variable *> vars)
+CRewriteSystem CRewriteSystem::fresh(vector<Variable *> vars)
 {
+  Log(DEBUG8) << "Creating fresh rewrite system" << endl;
   static int counter = 0;
   vector<Variable *> myvars;
   for (int i = 0; i < (int)this->size(); ++i) {
-    append(myvars, (*this)[i].first->vars());
+    append(myvars, (*this)[i].first.vars());
     append(myvars, (*this)[i].second->vars());
   }
+  Log(DEBUG8) << "Variables: " << varVecToString(myvars) << endl;
 
   map<Variable *, Variable *> renaming;
   
@@ -61,12 +68,27 @@ RewriteSystem RewriteSystem::fresh(vector<Variable *> vars)
 
   Substitution subst = createSubstitution(renaming);
 
-  RewriteSystem result;
+  CRewriteSystem result;
   for (int i = 0; i < (int)this->size(); ++i) {
-    Term *l = (*this)[i].first;
+    ConstrainedTerm l = (*this)[i].first;
     Term *r = (*this)[i].second;
-    result.push_back(make_pair(l->substitute(subst), r->substitute(subst)));
+    result.push_back(make_pair(l.substitute(subst), r->substitute(subst)));
   }
 
   return result;
+}
+
+string CRewriteSystem::toString()
+{
+  ostringstream oss;
+  for (int i = 0; i < (int)this->size(); ++i) {
+    ConstrainedTerm l = (*this)[i].first;
+    Term *r = (*this)[i].second;
+    oss << l.toString() << " => " << r->toString();
+    if (i != this->size() - 1) {
+      oss << ", ";
+    }
+  }
+  oss << ";";
+  return oss.str();
 }

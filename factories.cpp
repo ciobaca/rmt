@@ -7,10 +7,12 @@
 //#include "namterm.h"
 #include "factories.h"
 #include "helper.h"
+#include "log.h"
 
 using namespace std;
 
 map<string, RewriteSystem> rewriteSystems;
+map<string, CRewriteSystem> cRewriteSystems;
 map<string, Variable *> variables;
 map<string, Sort *> sorts;
 map<string, Function *> functions;
@@ -32,6 +34,21 @@ bool existsRewriteSystem(string name)
 void putRewriteSystem(string name, RewriteSystem rewrite)
 {
   rewriteSystems[name] = rewrite;
+}
+
+CRewriteSystem &getCRewriteSystem(string name)
+{
+  return cRewriteSystems[name];
+}
+
+bool existsCRewriteSystem(string name)
+{
+  return cRewriteSystems.find(name) != cRewriteSystems.end();
+}
+
+void putCRewriteSystem(string name, CRewriteSystem crewrite)
+{
+  cRewriteSystems[name] = crewrite;
 }
 
 Variable *getVariable(string name)
@@ -76,7 +93,7 @@ void createUninterpretedSort(string &sortName)
 #endif
   
   sorts[sortName] = new Sort(sortName);
-  fprintf(stderr, "Creating uninterpreted sort %s.\n", sortName.c_str());
+  Log(INFO) << "Creating uninterpreted sort " << sortName << "." << endl;
 }
 
 void createInterpretedSort(string &sortName, string &interpretation)
@@ -87,7 +104,7 @@ void createInterpretedSort(string &sortName, string &interpretation)
 #endif
   
   sorts[sortName] = new Sort(sortName, interpretation);
-  fprintf(stderr, "Creating interpreted sort %s (as %s).\n", sortName.c_str(), interpretation.c_str());
+  Log(INFO) << "Creating interpreted sort " << sortName << " as (" << interpretation << ")." << endl;
 }
 
 bool sortExists(string name)
@@ -130,11 +147,12 @@ void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *re
   assert(f == 0);
 #endif
   int arity = arguments.size();
-  fprintf(stderr, "Creating uninterpreted function %s : ", name.c_str());
+  Log log(INFO);
+  log << "Creating uninterpreted function " << name << " : ";
   for (int i = 0; i < arity; ++i) {
-    fprintf(stderr, "%s ", arguments[i]->name.c_str());
+    log << arguments[i]->name << " ";
   }
-  fprintf(stderr, " -> %s\n", result->name.c_str());
+  log << " -> " << result->name << endl;
   functions[name] = new Function(name, arguments, result);
 }
 
@@ -145,31 +163,14 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
   assert(f == 0);
 #endif
   int arity = arguments.size();
-  fprintf(stderr, "Creating interpreted function %s (as %s) : ", name.c_str(), interpretation.c_str());
+  Log log(INFO);
+  log << "Creating interpreted function " << name << " (as " << interpretation << ") : ";
   for (int i = 0; i < arity; ++i) {
-    fprintf(stderr, "%s ", arguments[i]->name.c_str());
+    log << arguments[i]->name << " ";
   }
-  fprintf(stderr, " -> %s\n", result->name.c_str());
+  log << " -> " << result->name << endl;
   functions[name] = new Function(name, arguments, result, interpretation);
 }
-
-// Name *getName(string name)
-// {
-//   if (contains(names, name)) {
-//     return names[name];
-//   }
-//   return 0;
-// }
-
-// void createName(string name)
-// {
-// #ifndef NDEBUG
-//   Name *n = getName(name);
-//   assert(n == 0);
-// #endif
-
-//   names[name] = new Name(name);
-// }
 
 Term *getFunTerm(Function *f, vector<Term *> arguments)
 {
@@ -210,6 +211,12 @@ vector<Variable *> getInterpretedVariables()
   return result;
 }
 
+vector<Term *> vector0()
+{
+  vector<Term *> result;
+  return result;
+}
+
 vector<Term *> vector1(Term *term)
 {
   vector<Term *> result;
@@ -223,4 +230,154 @@ vector<Term *> vector2(Term *term1, Term *term2)
   result.push_back(term1);
   result.push_back(term2);
   return result;
+}
+
+Function *TrueFun;
+Function *FalseFun;
+Function *NotFun;
+Function *AndFun;
+Function *ImpliesFun;
+Function *OrFun;
+Function *EqualsFun;
+
+map<Sort *, Function *> ExistsFun;
+
+void createBuiltIns()
+{
+  TrueFun = getFunction("true");
+  assert(TrueFun);
+  FalseFun = getFunction("false");
+  assert(FalseFun);
+  NotFun = getFunction("bnot");
+  assert(NotFun);
+  AndFun = getFunction("band");
+  assert(AndFun);
+  ImpliesFun = getFunction("bimplies");
+  assert(ImpliesFun);
+  OrFun = getFunction("bor");
+  assert(OrFun);
+  EqualsFun = getFunction("bequals");
+  assert(EqualsFun);
+
+  assert(sortExists("Bool"));
+  
+  // small hack for existential quantifiers
+  Log(DEBUG) << "Creating built ins" << endl;
+  for (map<string, Sort *>::iterator it = sorts.begin(); it != sorts.end(); ++it) {
+    Sort *s = it->second;
+    vector<Sort *> args;
+    args.push_back(s);
+    args.push_back(sorts["Bool"]);
+    ostringstream funname;
+    funname << "_exists" << s->name;
+    Log(DEBUG) << "Creating exists function " << funname << endl;
+    createUninterpretedFunction(funname.str(), args, sorts["Bool"]);
+    ExistsFun[s] = getFunction(funname.str());
+    assert(ExistsFun[s]);
+  }
+}
+
+bool isExistsFunction(Function *f)
+{
+  for (map<Sort *, Function *>::iterator it = ExistsFun.begin(); it != ExistsFun.end(); ++it) {
+    if (it->second == f) {
+      return true;
+    }
+  }
+  return false;
+}
+
+Term *bExists(Variable *var, Term *condition)
+{
+  assert(ExistsFun[var->sort]);
+  Term *result = getFunTerm(ExistsFun[var->sort], vector2(getVarTerm(var), condition));
+  return result;
+}
+
+Term *bImplies(Term *left, Term *right)
+{
+  return getFunTerm(ImpliesFun, vector2(left, right));
+}
+
+Term *bAnd(Term *left, Term *right)
+{
+  return getFunTerm(AndFun, vector2(left, right));
+}
+
+Term *bOr(Term *left, Term *right)
+{
+  return getFunTerm(OrFun, vector2(left, right));
+}
+
+Term *bNot(Term *term)
+{
+  return getFunTerm(NotFun, vector1(term));
+}
+
+Term *bTrue()
+{
+  return getFunTerm(TrueFun, vector0());
+}
+
+Term *bFalse()
+{
+  return getFunTerm(FalseFun, vector0());
+}
+
+Term *simplifyConstraint(Term *constraint)
+{
+  if (existsRewriteSystem("simplifications")) {
+    RewriteSystem rs = getRewriteSystem("simplifications");
+    return constraint->normalize(rs);
+  }
+  return constraint;
+}
+
+ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm ct)
+{
+  if (existsRewriteSystem("simplifications")) {
+    RewriteSystem rs = getRewriteSystem("simplifications");
+    return ConstrainedTerm(ct.term->normalize(rs), ct.constraint->normalize(rs));
+  }
+  return ct;
+}
+
+Function *getEqualsFunction(Sort *sort)
+{
+  for (map<string, Function *>::iterator it = functions.begin(); it != functions.end(); ++it) {
+    Function *f = it->second;
+    if (f->arguments.size() != 2) {
+      continue;
+    }
+    if (f->arguments[0] != sort) {
+      continue;
+    }
+    if (f->arguments[1] != sort) {
+      continue;
+    }
+    if (!f->hasInterpretation) {
+      continue;
+    }
+    if (f->interpretation != "=") {
+      continue;
+    }
+    return f;
+  }
+  return 0;
+}
+
+Term *createEqualityConstraint(Term *t1, Term *t2)
+{
+  assert(t1);
+  assert(t2);
+  Sort *s1 = t1->getSort();
+  Sort *s2 = t2->getSort();
+  if (s1 != s2) {
+    assert(0);
+  }
+  Function *equalsFun = getEqualsFunction(s1);
+  if (!equalsFun) {
+    assert(0);
+  }
+  return getFunTerm(equalsFun, vector2(t1, t2));
 }

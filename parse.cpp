@@ -1,5 +1,6 @@
 #include "parse.h"
 #include "factories.h"
+#include "log.h"
 #include <iostream>
 #include <sstream>
 #include <cassert>
@@ -234,18 +235,21 @@ Term *parseTerm(const char *s)
 
 ConstrainedTerm parseConstrainedTerm(string &s, int &w)
 {
-  ConstrainedTerm ct;
-
+  Log(DEBUG) << "Parsing constrained term" << endl;
   skipWhiteSpace(s, w);
-  ct.term = parseTerm(s, w);
+  Term *term = parseTerm(s, w);
+  Log(DEBUG) << "Parsed main term: " << term->toString() << endl;
+  Term *constraint;
   skipWhiteSpace(s, w);
   if (lookAhead(s, w, "/\\")) {
     matchString(s, w, "/\\");
     skipWhiteSpace(s, w);
-    ct.constraint = parseTerm(s, w);
+    constraint = parseTerm(s, w);
+    Log(DEBUG) << "Parsed constraint term: " << constraint->toString() << endl;
   } else {
-    ct.constraint = 0;
+    constraint = bTrue();
+    assert(constraint);
+    Log(DEBUG) << "Implicit constraint: " << constraint->toString() << endl;
   }
-
-  return ct;
+  return ConstrainedTerm(term, constraint);
 }

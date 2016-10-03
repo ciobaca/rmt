@@ -14,6 +14,8 @@ struct VarTerm : public Term
   virtual vector<Variable *> computeVars();
   //  virtual vector<Name *> names();
 
+  virtual Sort *getSort();
+
   virtual Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
 
   virtual bool unifyWith(Term *, Substitution &);
@@ -42,6 +44,7 @@ struct VarTerm : public Term
 
   virtual vector<Solution> rewriteSearch(RewriteSystem &);
   virtual vector<Solution> narrowSearch(RewriteSystem &);
+  virtual vector<ConstrainedSolution> narrowSearch(CRewriteSystem &);
 
   virtual string toSmtString();
 };

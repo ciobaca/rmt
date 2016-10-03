@@ -6,6 +6,7 @@
 #include <sstream>
 #include <algorithm>
 #include <getopt.h>
+#include "log.h"
 
 #include "helper.h"
 #include "term.h"
@@ -19,6 +20,9 @@
 #include "query.h"
 #include "funterm.h"
 #include "query.h"
+#include "constrainedrewrite.h"
+
+using namespace std;
 
 static int sober_flag;
 
@@ -50,15 +54,16 @@ void outputRewrite(RewriteSystem &rewriteSystem)
 void createSubsort(vector<string> &identifiersLeft,
 		   vector<string> &identifiersRight)
 {
-  cout << "Declaring the sorts: ";
+  Log log(INFO);
+  log << "Declaring the sorts: ";
   for (int i = 0; i < identifiersLeft.size(); ++i) {
-    cout << identifiersLeft[i] << " ";
+    log << identifiersLeft[i] << " ";
   }
-  cout << "as subsorts of ";
+  log << "as subsorts of ";
   for (int i = 0; i < identifiersRight.size(); ++i) {
-    cout << identifiersRight[i] << " ";
+    log << identifiersRight[i] << " ";
   }
-  cout << endl;
+  log << endl;
   for (int i = 0; i < identifiersLeft.size(); ++i) {
     for (int j = 0; j < identifiersRight.size(); ++j) {
       Sort *left = getSort(identifiersLeft[i]);
@@ -177,7 +182,7 @@ void parseFunctions(string &s, int &w)
     skipWhiteSpace(s, w);
     string id = getIdentifier(s, w);
     if (!sortExists(id)) {
-      fprintf(stderr, "SORT: %s\n", id.c_str());
+      Log(ERROR) << "SORT: " << id << endl;
       parseError("(while parsing function symbol result) sort does not exist", w, s);
     }
     Sort *result = getSort(id);
@@ -256,11 +261,42 @@ string parseRewriteSystem(string &s, int &w, RewriteSystem &rewrite)
     matchString(s, w, "=>");
     skipWhiteSpace(s, w);
     Term *tp = parseTerm(s, w);
-    fprintf(stderr, "Parsed rewrite rule: %s => %s\n", t->toString().c_str(), tp->toString().c_str());
+    Log(INFO) << "Parsed rewrite rule: " << t->toString() << " => " << tp->toString() << endl;
     rewrite.addRule(t, tp);
     skipWhiteSpace(s, w);
     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
       expected("more rewrite rules", w, s);
+    }
+    if (s[w] == ',') {
+      match(s, w, ',');
+      continue;
+    } else {
+      match(s, w, ';');
+      break;
+    }
+  }
+  return name;
+}
+
+string parseCRewriteSystem(string &s, int &w, CRewriteSystem &crewrite)
+{
+  skipWhiteSpace(s, w);
+  matchString(s, w, "constrained-rewrite-system");
+  skipWhiteSpace(s, w);
+  string name = getIdentifier(s, w);
+  skipWhiteSpace(s, w);
+  while (w < len(s)) {
+    skipWhiteSpace(s, w);
+    ConstrainedTerm t = parseConstrainedTerm(s, w);
+    skipWhiteSpace(s, w);
+    matchString(s, w, "=>");
+    skipWhiteSpace(s, w);
+    Term *tp = parseTerm(s, w);
+    Log(INFO) << "Parsed rewrite rule: " << t.toString() << " => " << tp->toString() << endl;
+    crewrite.addRule(t, tp);
+    skipWhiteSpace(s, w);
+    if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
+      expected("more constrained rewrite rules", w, s);
     }
     if (s[w] == ',') {
       match(s, w, ',');
@@ -317,121 +353,15 @@ string parseRewriteSystem(string &s, int &w, RewriteSystem &rewrite)
 //   return result;
 // }
 
-string spaces(int tabs)
-{
-  ostringstream oss;
-  for (int i = 0; i < tabs; ++i) {
-    oss << "    ";
-  }
-  return oss.str();
-}
-
-void prove(ConstrainedTerm lhs, ConstrainedTerm rhs,
-	   RewriteSystem &rs, RewriteSystem &circ, bool hadProgress, int tabs)
-{
-  if (tabs > 4) {
-    cerr << spaces(tabs) << "Reached depth 4, stopping." << endl;
-    return;
-  }
-
-  Term *circularityConstraint;
-
-  //  cerr << spaces(tabs) << "SEARCH FOR " << lhs.toString() << endl;
-  if (existsRewriteSystem("simplifications")) {
-    RewriteSystem rs = getRewriteSystem("simplifications");
-    lhs = lhs.normalize(rs);
-    //    cerr << spaces(tabs) << "OR SIMPLY " << lhs.toString() << endl;
-  }
-  cerr << spaces(tabs) << "SIMPL SEARCH FOR " << lhs.toString() << endl;
-
-  Function *TrueFun = getFunction("true");
-  Function *FalseFun = getFunction("false");
-  Function *NotFun = getFunction("bnot");
-  Function *AndFun = getFunction("band");
-  Function *OrFun = getFunction("bor");
-  Function *EqualsFun = getFunction("bequals");
-  {
-    vector<Term *> empty;
-    circularityConstraint = getFunTerm(FalseFun, empty);
-  }
-
-  Term *initialConstraint = lhs.constraint;
-
-  if (hadProgress) {
-    vector<ConstrainedTerm> solutions;
-    //    cerr << spaces(tabs) << "Narrow search w/ circ from " << lhs.toString() << endl;
-    solutions = lhs.smtNarrowSearch(circ);
-
-    if (solutions.size()) {
-      cout << spaces(tabs + 1) << "By circularities (" << solutions.size() << " solutions):" << endl;
-    }
-    for (int i = 0; i < solutions.size(); ++i) {
-      ConstrainedTerm sol = solutions[i];
-
-      vector<Term *> arguments;
-      arguments.push_back(((FunTerm *)sol.constraint)->arguments[1]);
-      // constraint added during unification with rewrite rule
-
-      arguments.push_back(circularityConstraint);
-      // or with previous constraint
-      
-      circularityConstraint = getFunTerm(OrFun, arguments);
-
-      prove(sol, rhs, rs, circ, true, tabs + 1);
-    }
-  }
-
-  //  cerr << spaces(tabs) << "Circularities handle cases in which " << circularityConstraint->toString() << endl;
-
-  // circularityConstraint now contains the condition in which the circularities
-  // can be applied. We need to use the trusted rewrite system to prove 
-  // lhs =>* rhs in the rest of the cases.
-
-  //  cerr << spaces(tabs) << "Proving the other cases by rewriting" << endl;
-  {
-    // first, negate the condition and add the negation to the constraint
-    vector<Term *> arguments;
-    arguments.push_back(circularityConstraint);
-    circularityConstraint = getFunTerm(NotFun, arguments);
-
-    //    cerr << "Negated constraint is " << circularityConstraint->toString() << endl;
-  }
-  {
-    if (lhs.constraint) {
-      vector<Term *> arguments;
-      arguments.push_back(lhs.constraint);
-      arguments.push_back(circularityConstraint);
-      lhs.constraint = getFunTerm(AndFun, arguments);
-    } else {
-      lhs.constraint = circularityConstraint;
-    }
-    //    cerr << "New constraint is " << lhs.constraint->toString() << endl;
-  }
-
-  // search for all successors in trusted rewrite system
-  {
-    vector<ConstrainedTerm> solutions;
-    
-    //    cerr << spaces(tabs) << "Searching from " << lhs.toString() << "." << endl;
-    //    cerr << spaces(tabs) << "Narrow search w/ trusted from " << lhs.toString() << endl;
-    solutions = lhs.smtNarrowSearch(rs);
-
-    //    cerr << spaces(tabs) << "Found " << solutions.size() << " solutions." << endl;
-    if (solutions.size()) {
-      cout << spaces(tabs + 1) << "By trusted rewrites (" << solutions.size() << " solutions):" << endl;
-    }
-    for (int i = 0; i < solutions.size(); ++i) {
-      ConstrainedTerm sol = solutions[i];
-      //      cerr << "Solution #" << i << " is " << sol.toString() << endl;
-      prove(sol, rhs, rs, circ, true, tabs + 1);
-    } 
-  }
-}
-
 int VERBOSITY;
 
 int main(int argc, char **argv)
 {
+  Log(ERROR) << "You're seeing this if logging level is at least error" << std::endl;
+  Log(WARNING) << "You're seeing this if logging level is at least warning" << std::endl;
+  Log(INFO) << "You're seeing this if logging level is at least info" << std::endl;
+  Log(DEBUG) << "You're seeing this if logging level is at least debug" << std::endl;
+
   static struct option long_options[] = {
     /* These options set a flag. */
     {"sober", no_argument,       &sober_flag, 1},
@@ -470,6 +400,9 @@ int main(int argc, char **argv)
   parseFunctions(s, w);
   parseVariables(s, w);
   skipWhiteSpace(s, w);
+
+  createBuiltIns();
+
   int rsCount = 0;
   if (lookAhead(s, w, "rewrite-system")) {
     while (lookAhead(s, w, "rewrite-system")) {
@@ -480,6 +413,13 @@ int main(int argc, char **argv)
     }
   } else {
     expected("rewrite-system", w, s);
+  }
+
+  while (lookAhead(s, w, "constrained-rewrite-system")) {
+    CRewriteSystem crewrite;
+    string name = parseCRewriteSystem(s, w, crewrite);
+    putCRewriteSystem(name, crewrite);
+    skipWhiteSpace(s, w);
   }
 
   skipWhiteSpace(s, w);

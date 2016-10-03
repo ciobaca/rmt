@@ -8,6 +8,7 @@
 using namespace std;
 
 QuerySmtNarrowSearch::QuerySmtNarrowSearch()
+  : ct(0, 0)
 {
 }
   

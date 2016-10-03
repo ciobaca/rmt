@@ -67,6 +67,8 @@ map<Variable *, Variable *> createRenaming(vector<Variable *> v, string s);
 
 Substitution createSubstitution(map<Variable *, Variable *> r);
 
+string varVecToString(vector<Variable *> vars);
+
 extern int VERBOSITY;
 
 #define LOG(level,ss)				\

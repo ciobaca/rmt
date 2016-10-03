@@ -14,6 +14,8 @@ struct FunTerm : public Term
   virtual vector<Variable *> computeVars();
   //  virtual vector<Name *> names();
 
+  virtual Sort *getSort();
+
   virtual string toString();
 
   virtual Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
@@ -46,6 +48,7 @@ struct FunTerm : public Term
 
   virtual vector<Solution> rewriteSearch(RewriteSystem &);
   virtual vector<Solution> narrowSearch(RewriteSystem &);
+  virtual vector<ConstrainedSolution> narrowSearch(CRewriteSystem &);
 };
 
 #endif

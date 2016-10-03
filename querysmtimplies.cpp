@@ -9,7 +9,8 @@
 
 using namespace std;
 
-QuerySmtImplies::QuerySmtImplies()
+QuerySmtImplies::QuerySmtImplies() :
+  ct(0, 0)
 {
 }
 

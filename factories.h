@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "term.h"
+#include "constrainedrewrite.h"
 
 struct Function;
 struct Variable;
@@ -13,9 +14,27 @@ struct Sort;
 
 using namespace std;
 
+Term *bImplies(Term *, Term *);
+Term *bAnd(Term *, Term *);
+Term *bOr(Term *, Term *);
+Term *bNot(Term *);
+Term *bTrue();
+Term *bFalse();
+Term *bExists(Variable *, Term *);
+bool isExistsFunction(Function *);
+
+Function *getEqualsFunction(Sort *);
+Term *createEqualityConstraint(Term *, Term *);
+
+void createBuiltIns();
+
 RewriteSystem &getRewriteSystem(string name);
 bool existsRewriteSystem(string name);
 void putRewriteSystem(string name, RewriteSystem rewrite);
+
+CRewriteSystem &getCRewriteSystem(string name);
+bool existsCRewriteSystem(string name);
+void putCRewriteSystem(string name, CRewriteSystem crewrite);
 
 Variable *getVariable(string name);
 void createVariable(string name, Sort *sort);
@@ -46,5 +65,8 @@ vector<Variable *> getInterpretedVariables();
 
 vector<Term *> vector1(Term *term);
 vector<Term *> vector2(Term *term1, Term *term2);
+
+Term *simplifyConstraint(Term *);
+ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm);
 
 #endif

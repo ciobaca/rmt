@@ -1,8 +1,10 @@
 #include "funterm.h"
 #include "varterm.h"
+#include "log.h"
 #include "namterm.h"
 #include "factories.h"
 #include "helper.h"
+#include "sort.h"
 #include <sstream>
 #include <cassert>
 #include <iostream>
@@ -11,6 +13,7 @@ using namespace std;
 
 FunTerm::FunTerm(Function *function, vector<Term *> arguments)
 {
+  assert(this->arguments->size() == function->arguments.size());
   this->function = function;
   this->arguments = arguments;
 }
@@ -61,9 +64,22 @@ string FunTerm::toSmtString()
     oss << "(";
   }
   assert(function->hasInterpretation);
-  oss << function->interpretation;
-  for (int i = 0; i < n; ++i) {
-    oss << " " << arguments[i]->toSmtString();
+  if (isExistsFunction(function)) {
+    assert(n == 2);
+    oss << "exists ";
+    oss << "((";
+    oss << arguments[0]->toSmtString();
+    oss << " ";
+    assert(arguments[0].isVariable());
+    VarTerm *t = (VarTerm *)arguments[0];
+    oss << t->variable->sort->name;
+    oss << ")) ";
+    oss << arguments[1]->toSmtString();
+  } else {
+    oss << function->interpretation;
+    for (int i = 0; i < n; ++i) {
+      oss << " " << arguments[i]->toSmtString();
+    }
   }
   if (n) {
     oss << ")";
@@ -288,7 +304,7 @@ Term *FunTerm::rewriteOneStep(pair<Term *, Term *> rewriteRule, Substitution &ho
 
 Term *FunTerm::abstract(Substitution &substitution)
 {
-  //  fprintf(stderr, "abstracting %s.\n", this->toString().c_str());
+  // fprintf(stderr, "abstracting %s.\n", this->toString().c_str());
   if (this->function->hasInterpretation) {
     Variable *var = createFreshVariable(this->function->result);
     assert(!substitution.inDomain(var));
@@ -382,4 +398,49 @@ vector<Solution> FunTerm::narrowSearch(RewriteSystem &rs)
   }
 
   return solutions;
+}
+
+// caller needs to ensure freshness of rewrite system
+vector<ConstrainedSolution> FunTerm::narrowSearch(CRewriteSystem &crs)
+{
+  Log(DEBUG7) << "FunTerm::narrowSearch (crs) " << this->toString() << endl;
+  vector<ConstrainedSolution> solutions;
+
+  // top-most narrowing search
+  for (int i = 0; i < len(crs); ++i) {
+    pair<ConstrainedTerm, Term *> rewriteRule = crs[i];
+    ConstrainedTerm l = rewriteRule.first;
+    Term *r = rewriteRule.second;
+
+    Substitution subst;
+    //    cerr << "Trying to unify " << this->toString() << " with " << l->toString() << endl;
+    if (this->unifyWith(l.term, subst)) {
+      //      cerr << "Unification succeeded." << endl;
+      Term *term = r;
+      solutions.push_back(ConstrainedSolution(term, subst, l.constraint));
+    } else {
+      //      cerr << "Unification failed." << endl;
+    }
+  }
+
+  // inner narrowing search
+  for (int i = 0; i < len(function->arguments); ++i) {
+    vector<ConstrainedSolution> innerSolutions = arguments[i]->narrowSearch(crs);
+    for (int j = 0; j < innerSolutions.size(); ++j) {
+      vector<Term *> newArguments;
+      for (int k = 0; k < len(function->arguments); ++k) {
+	newArguments.push_back(arguments[k]);
+      }
+      newArguments[i] = innerSolutions[j].term;
+      solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
+				   innerSolutions[i].substitution, innerSolutions[i].constraint));
+    }
+  }
+
+  return solutions;
+}
+
+Sort *FunTerm::getSort()
+{
+  return this->function->result;
 }

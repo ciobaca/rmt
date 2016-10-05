@@ -26,7 +26,7 @@ enum Feature
 
 struct Log
 {
-  static const int debug_level;
+  static int debug_level;
   int level;
   bool hasFeature;
   Feature feature;

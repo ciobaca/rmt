@@ -1,0 +1,164 @@
+/* any file begins with the declaration of all sorts used */
+sorts Int / "Int",
+      Bool / "Bool",
+      Var,
+      Cfg;
+
+// after declaring all sorts,
+// we must declare all subsort relations
+// subsort Int < AExp;
+// subsort Var < NonValAExp;
+// subsort NonValAExp < AExp;
+// subsort NonValBExp < BExp;
+// subsort AExp BExp Stmt < Code;
+// subsort Bool < BExp;
+
+/* next we must declare all function symbols */
+signature
+
+	// interpreted integers and booleans
+	mzero : -> Int / "0",
+	mone : -> Int / "1",
+	mtwo : -> Int / "2",
+	mplus : Int Int -> Int / "+",
+	mminus : Int Int -> Int / "-",
+	mtimes : Int Int -> Int / "*",
+	mdiv : Int Int -> Int / "/",
+	mle : Int Int -> Bool / "<=",
+	mequals : Int Int -> Bool / "=",
+
+	bequals : Bool Bool -> Bool / "=",
+	band : Bool Bool -> Bool / "and",
+	bimplies : Bool Bool -> Bool / "=>",
+	bor : Bool Bool -> Bool / "or",
+	bnot : Bool -> Bool / "not",
+
+	true : -> Bool / "true",
+	false : -> Bool / "false",
+
+	// some program variables
+	x : -> Var,
+	y : -> Var,
+	z : -> Var,
+
+	// helper functions
+	synEq : Var Var -> Bool,
+	cfg : Bool -> Cfg;
+
+/* next we must declare all variables */
+variables
+	// necessary variables
+	X : Var,
+	Y : Var,
+	Z : Var,
+	N : Int,
+	M : Int,
+	SUM : Int,
+	B : Bool;
+
+/* next, declare all rewrite systems */
+
+// the first rewrite system is called "simplifications"
+// if there is such a rewrite system, the tool will assume
+// that it is convergent and it will use it in order to 
+// perform simplifications on the terms before other
+// operations like calling an smt solver or narrowing a term.
+rewrite-system simplifications
+	// bnot
+	bnot(false) =>
+	true,
+
+	bnot(true) =>
+	false,
+
+	bnot(bnot(B)) =>
+	B,
+
+	// band
+	band(false, B) =>
+	false,
+	
+	band(true, B) =>
+	B,
+
+	band(B, false) =>
+	false,
+	
+	band(B, true) =>
+	B,
+
+	// implies
+	bimplies(true, B) =>
+	B,
+	
+	bimplies(false, B) =>
+	true,
+
+	// bor
+	bor(false, B) =>
+	B,
+	
+	bor(true, B) =>
+	true,
+
+	bor(B, false) =>
+	B,
+	
+	bor(B, true) =>
+	true,
+
+	// mplus
+	// mplus(N, mzero) =>
+	// N,
+
+	// mplus(mzero, N) =>
+	// N,
+
+	// mequals
+	mequals(N, N) =>
+	true,
+
+	// bequals
+	bequals(B, B) =>
+	true,
+
+	bequals(true, B) =>
+	B,
+
+	bequals(false, B) =>
+	bnot(B),
+
+	bequals(B, true) =>
+	B,
+
+	bequals(B, false) =>
+	bnot(B),
+
+	band(B, B) =>
+	B,
+
+	bor(B, B) =>
+	B;
+
+/* next, declare all rewrite rules */
+rewrite-system language
+	synEq(x, y) =>
+	false,
+	synEq(x, z) =>
+	false,
+	synEq(y, z) =>
+	false,
+	synEq(y, x) =>
+	false,
+	synEq(z, y) =>
+	false,
+	synEq(z, x) =>
+	false,
+	synEq(x, x) =>
+	true,
+	synEq(y, y) =>
+	true,
+	synEq(z, z) =>
+	true;
+
+smt-narrow-search in language : cfg(true);

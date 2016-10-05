@@ -141,18 +141,20 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *initi
 
   Substitution substitution;
   // STEP 1: compute abstracted term (and constraining substitution)
+  Log(DEBUG5) << "Term::smtNarrowSearch(RewriteSystem &, Term *) " << this->toString() << " /\\ " << initialConstraint->toString() << endl;
   Term *abstractTerm = this->abstract(substitution);
 
-  //  cerr << "Abstracted term: " << abstractTerm->toString() << endl;
-  //  cerr << "Abstracting substitution: " << substitution.toString() << endl;
+  Log(DEBUG6) << "Abstract term: " << abstractTerm->toString() << endl;
+  Log(DEBUG6) << "Abstracting substitution: " << substitution.toString() << endl;
 
-  //  cerr << "Rewrite system has " << rs.size() << " rules." << endl;
   // STEP 2: perform one-step narrowing from the abstract term
+  //  Log(DEBUG6) << "Rewrite system: " << rsInit.toString() << endl;
   RewriteSystem rs = rsInit.fresh(abstractTerm->vars());
+  //  Log(DEBUG6) << "Fresh rewrite system: " << rs.toString() << endl;
   vector<Solution> solutions = abstractTerm->narrowSearch(rs);
 
-  //  cerr << "Narrowing results in " << solutions.size() << " solutions." << endl;
-  
+  Log(DEBUG6) << "Narrowing abstract term resulted in " << solutions.size() << " solutions" << endl;
+
   // STEP 3: check that the narrowing constraints are satisfiable
   // STEP 3.1: prepare generic theory for Z3
   Z3Theory theory;
@@ -170,8 +172,10 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *initi
 
   // STEP 3.2: check that the constraints are satisfiable
   for (int i = 0; i < solutions.size(); ++i) {
+    Log(DEBUG6) << "Solution " << i << ": " << solutions[i].term->toString() << " " << solutions[i].substitution.toString() << endl;
+
     Solution sol = solutions[i];
-    ConstrainedTerm constrainedTerm(sol.term, initialConstraint);
+    ConstrainedTerm constrainedTerm(sol.term->substitute(sol.substitution), initialConstraint);
 
     // STEP 3.2.1: start from the generic theory
     Z3Theory solTheory(theory); 
@@ -183,7 +187,7 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *initi
     solTheory.addConstraint(initialConstraint);
     for (Substitution::iterator it = substitution.begin(); it != substitution.end(); ++it) {
       Term *lhsTerm = getVarTerm(it->first)->substitute(sol.substitution);
-      Term *rhsTerm = it->second;
+      Term *rhsTerm = it->second->substitute(sol.substitution);
       if (it->second != it->second->substitute(sol.substitution)) {
 	Log(ERROR) << "Trouble ahead" << endl;
 	assert(0);
@@ -263,7 +267,7 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *ini
   Substitution substitution;
 
   // STEP 1: compute abstracted term (and constraining substitution)
-  Log(DEBUG5) << "Term::smtNarrowSearch " << this->toString() << " /\\ " << initialConstraint->toString() << endl;
+  Log(DEBUG5) << "Term::smtNarrowSearch(CRewriteSystem &, Term *) " << this->toString() << " /\\ " << initialConstraint->toString() << endl;
 
   Term *abstractTerm = this->abstract(substitution);
 
@@ -289,8 +293,6 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *ini
     //	    interpretedVariables[i]->sort->name.c_str());
   }
 
-  Function *TrueFun = getFunction("true");
-  Function *EqualsFun = getFunction("bequals");
   if (initialConstraint == 0) {
     initialConstraint = bTrue();
   }

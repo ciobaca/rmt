@@ -4,7 +4,8 @@
 
 using namespace std;
 
-const int Log::debug_level = INFO;
+int Log::debug_level = INFO;
+
 const bool Log::debugSatisfiability = false;
 
 bool Log::loggingEnabled()

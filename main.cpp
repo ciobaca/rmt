@@ -353,8 +353,6 @@ string parseCRewriteSystem(string &s, int &w, CRewriteSystem &crewrite)
 //   return result;
 // }
 
-int VERBOSITY;
-
 int main(int argc, char **argv)
 {
   Log(ERROR) << "You're seeing this if logging level is at least error" << std::endl;
@@ -371,7 +369,6 @@ int main(int argc, char **argv)
     {0, 0, 0, 0}
   };
 
-  VERBOSITY = 0;
   while (1) {
     int option_index;
     int c = getopt_long(argc, argv, "v:", long_options, &option_index);
@@ -380,7 +377,7 @@ int main(int argc, char **argv)
     }
     switch (c) {
     case 'v':
-      VERBOSITY = atol(optarg);
+      Log::debug_level = atol(optarg);
       break;
     }
   }

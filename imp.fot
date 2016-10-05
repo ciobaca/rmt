@@ -24,16 +24,24 @@ subsort Bool < BExp;
 
 /* next we must declare all function symbols */
 signature
-	// debug symbols
-	debug : AExp -> AExp,
-	pairdebug : AExp AExp -> AExp,
 
 	// interpreted integers and booleans
 	mzero : -> Int / "0",
 	mone : -> Int / "1",
+	mtwo : -> Int / "2",
 	mplus : Int Int -> Int / "+",
 	mminus : Int Int -> Int / "-",
+	mtimes : Int Int -> Int / "*",
+	mdiv : Int Int -> Int / "/",
 	mle : Int Int -> Bool / "<=",
+	mequals : Int Int -> Bool / "=",
+
+	bequals : Bool Bool -> Bool / "=",
+	band : Bool Bool -> Bool / "and",
+	bimplies : Bool Bool -> Bool / "=>",
+	bor : Bool Bool -> Bool / "or",
+	bnot : Bool -> Bool / "not",
+
 	true : -> Bool / "true",
 	false : -> Bool / "false",
 
@@ -43,7 +51,7 @@ signature
 	z : -> Var,
 
 	// helper functions
-	synEq : Var Var -> Stmt / "=",
+	synEq : Var Var -> Bool,
     	update : Var Int Map -> Stmt,
 	updateh : MapItem -> Stmt,
 	lookup  : Var Map -> Stmt,
@@ -92,15 +100,6 @@ signature
 
 /* next we must declare all variables */
 variables
-	// temporary variables
-// from this term: I(push(ite(_0,seq(seq(assign(z,plus(z,y)),assign(y,plus(y,_1))),while(le(y,x),seq(assign(z,plus(z,y)),assign(y,plus(y,_2))))),skip),done),cons(mi(x,_3),cons(mi(y,_4),cons(mi(z,_5),emp))))
-	_0 : Bool,
-	_1 : Int,
-	_2 : Int,
-	_3 : Int,
-	_4 : Int,
-	_5 : Int,
-
 	// necessary variables
 	X : Var,
 	Y : Var,
@@ -129,8 +128,92 @@ variables
 	ENV1 : Map,
 	ENV2 : Map;
 
+/* next, declare all rewrite systems */
+
+// the first rewrite system is called "simplifications"
+// if there is such a rewrite system, the tool will assume
+// that it is convergent and it will use it in order to 
+// perform simplifications on the terms before other
+// operations like calling an smt solver or narrowing a term.
+rewrite-system simplifications
+	// bnot
+	bnot(false) =>
+	true,
+
+	bnot(true) =>
+	false,
+
+	bnot(bnot(B)) =>
+	B,
+
+	// band
+	band(false, B) =>
+	false,
+	
+	band(true, B) =>
+	B,
+
+	band(B, false) =>
+	false,
+	
+	band(B, true) =>
+	B,
+
+	// implies
+	bimplies(true, B) =>
+	B,
+	
+	bimplies(false, B) =>
+	true,
+
+	// bor
+	bor(false, B) =>
+	B,
+	
+	bor(true, B) =>
+	true,
+
+	bor(B, false) =>
+	B,
+	
+	bor(B, true) =>
+	true,
+
+	// mplus
+	// mplus(N, mzero) =>
+	// N,
+
+	// mplus(mzero, N) =>
+	// N,
+
+	// mequals
+	mequals(N, N) =>
+	true,
+
+	// bequals
+	bequals(B, B) =>
+	true,
+
+	bequals(true, B) =>
+	B,
+
+	bequals(false, B) =>
+	bnot(B),
+
+	bequals(B, true) =>
+	B,
+
+	bequals(B, false) =>
+	bnot(B),
+
+	band(B, B) =>
+	B,
+
+	bor(B, B) =>
+	B;
+
 /* next, declare all rewrite rules */
-rewrite
+rewrite-system language
 	synEq(x, y) =>
 	false,
 	synEq(x, z) =>
@@ -263,44 +346,22 @@ rewrite
  	I(push(NVAE2, push(lehr(N), REST)), ENV),
   
  	I(push(M, push(lehr(N), REST)), ENV) =>
- 	I(push(le(N, M),       REST) , ENV),
+ 	I(push(le(N, M),       REST) , ENV);
 
-	debug(y) =>
-	debug(mone),
+constrained-rewrite-system circularities
+I(push(
+ 	seq(assign(x, N),
+   	seq(assign(y, mzero),
+ 	seq(assign(z, mzero),
+ 	    while(le(y, x),
+                   seq(assign(z, plus(z, y)),
+ 		      assign(y, plus(y, mone))))))),
+     done), emp) =>
+I(push(
+ 	    while(le(y, x),
+                   seq(assign(z, plus(z, y)),
+ 		      assign(y, plus(y, mone)))),
+     done), cons(mi(z, mzero), cons(mi(y, mzero), cons(mi(x, N), emp))))
+;
 
-	debug(y) =>
-	debug(mzero);
-
-// run debug(y);
-
-// run I(push(
-// 	seq(assign(x, N), 
-//   	seq(assign(y, mzero),
-// 	seq(assign(z, mzero),
-// 	    while(le(y, x),
-//                   seq(assign(z, plus(z, y)),
-// 		      assign(y, plus(y, mone))))))),
-//     done), emp);
-
-//smt-narrow-search I(push(ite(mle(mone, N),seq(seq(assign(z,plus(z,y)),assign(y,plus(y,mone))),while(le(y,x),seq(assign(z,plus(z,y)),assign(y,plus(y,mone))))),skip),done),cons(mi(x,N),cons(mi(y,mzero),cons(mi(z,mzero),emp))));
-
-smt-search I(push(while(le(iY, N), seq(assign(iX, plus(iX, iY)),
-    assign(iY, succ(iY)))), done), cons(mi(iX, sum(0, M - 1)), cons(mi(iY, M),
-    emp)));
-
-// reduce I(push(
-// 	seq(assign(x, N), 
-//   	seq(assign(y, mzero),
-// 	seq(assign(z, mzero),
-// 	    while(le(y, x),
-//                   seq(assign(z, plus(z, y)),
-// 		      assign(y, plus(y, mone))))))),
-//     done), emp);
-
-//rewrite-search pairdebug(debug(y), debug(y));
-
-//narrow-search pairdebug(debug(y), debug(y));
-
-//narrow-search pairdebug(debug(X), debug(X));
-
-//narrow-search I(push(ite(_0,seq(seq(assign(z,plus(z,y)),assign(y,plus(y,_1))),while(le(y,x),seq(assign(z,plus(z,y)),assign(y,plus(y,_2))))),skip),done),cons(mi(x,_3),cons(mi(y,_4),cons(mi(z,_5),emp))));
+smt-prove in language : circularities;

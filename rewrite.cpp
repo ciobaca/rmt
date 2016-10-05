@@ -70,3 +70,18 @@ RewriteSystem RewriteSystem::fresh(vector<Variable *> vars)
 
   return result;
 }
+
+string RewriteSystem::toString()
+{
+  ostringstream oss;
+  for (int i = 0; i < (int)this->size(); ++i) {
+    Term *l = (*this)[i].first;
+    Term *r = (*this)[i].second;
+    oss << l->toString() << " => " << r->toString();
+    if (i != this->size() - 1) {
+      oss << ", ";
+    }
+  }
+  oss << ";";
+  return oss.str();
+}

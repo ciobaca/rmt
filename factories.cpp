@@ -169,6 +169,7 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
     log << arguments[i]->name << " ";
   }
   log << " -> " << result->name << endl;
+  assert(interpretation != "");
   functions[name] = new Function(name, arguments, result, interpretation);
 }
 
@@ -377,6 +378,7 @@ Term *createEqualityConstraint(Term *t1, Term *t2)
   }
   Function *equalsFun = getEqualsFunction(s1);
   if (!equalsFun) {
+    Log(ERROR) << "Cannot find equality function symbol for sort " << s1->name << endl;
     assert(0);
   }
   return getFunTerm(equalsFun, vector2(t1, t2));

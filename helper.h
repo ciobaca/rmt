@@ -10,8 +10,8 @@
 
 #define len(x) ((int)x.size())
 
-#define LOG_SOLVING 1
-#define LOG_COMBINE 3
+//#define LOG_SOLVING 1
+//#define LOG_COMBINE 3
 
 #define SMALL_SOLVED "\\x"
 #define BIG_SOLVED "\\X"
@@ -71,12 +71,12 @@ string varVecToString(vector<Variable *> vars);
 
 extern int VERBOSITY;
 
-#define LOG(level,ss)				\
-  do {						\
-    if (level < VERBOSITY) {			\
-      string s = ss;				\
-      cout << s << endl;			\
-    }						\
-  } while (0)
+//#define LOG(level,ss)				\
+//  do {					\
+    //    if (level < VERBOSITY) {		\
+//      string s = ss;				\
+//      cout << s << endl;			\
+//    }						\
+//  } while (0)
 
 #endif

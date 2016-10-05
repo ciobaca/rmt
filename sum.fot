@@ -145,7 +145,7 @@ constrained-rewrite-system circularities
 	ca(mzero, N) /\ mle(mzero, N) =>
 	cc(mdiv(mtimes(N, mplus(N, mone)), mtwo)),
 
-	ca(S, I) /\ mle(mzero, I) =>
+	ca(S, I) =>
 	cc(mplus(S, mdiv(mtimes(I, mplus(I, mone)), mtwo)));
 
 //smt-narrow-search in default :

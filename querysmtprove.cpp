@@ -14,7 +14,7 @@
 using namespace std;
 
 void prove(ConstrainedTerm , Term *,
-	      RewriteSystem &, CRewriteSystem &, bool, int = 0);
+	   RewriteSystem &, CRewriteSystem &, bool, int = 0, int = 0);
 
 QuerySmtProve::QuerySmtProve()
 {
@@ -104,7 +104,8 @@ Term *proveByImplication(ConstrainedTerm lhs, Term *rhs,
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
 Term *proveByCircularities(ConstrainedTerm lhs, Term *rhs,
-			   RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress)
+			   RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress,
+			   int branchDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 2. Does lhs rewrite using circularities?" << endl;
   Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
@@ -117,13 +118,14 @@ Term *proveByCircularities(ConstrainedTerm lhs, Term *rhs,
     solutions = lhs.smtNarrowSearch(circ);
 
     Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
-  
+
+    int newBranchDepth = solutions.size() > 1 ? branchDepth + 1 : branchDepth;
     for (int i = 0; i < solutions.size(); ++i) {
       ConstrainedTerm sol = solutions[i];
       
       circularityConstraint = simplifyConstraint(bOr(sol.constraint, circularityConstraint));
       
-      prove(sol, rhs, rs, circ, true, depth + 1);
+      prove(sol, rhs, rs, circ, true, depth + 1, newBranchDepth);
     }
   }
   Log(INFO) << spaces(depth + 1) << "Circularities apply in case: " << circularityConstraint->toString() << endl;
@@ -133,22 +135,26 @@ Term *proveByCircularities(ConstrainedTerm lhs, Term *rhs,
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
 Term *proveByRewrite(ConstrainedTerm lhs, Term *rhs,
-			   RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress)
+		     RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress, int branchDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?" << endl;
+  Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
 
   // search for all successors in trusted rewrite system
   Term *rewriteConstraint = bFalse();
 
   vector<ConstrainedTerm> solutions;
-    
+
   solutions = lhs.smtNarrowSearch(rs);
 
+  Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
+
+  int newBranchDepth = (solutions.size() > 1) ? (branchDepth + 1) : branchDepth;
   for (int i = 0; i < solutions.size(); ++i) {
     ConstrainedTerm sol = solutions[i];
     
     rewriteConstraint = simplifyConstraint(bOr(sol.constraint, rewriteConstraint));
-    prove(sol, rhs, rs, circ, true, depth + 1);
+    prove(sol, rhs, rs, circ, true, depth + 1, newBranchDepth);
   }
 
   Log(INFO) << spaces(depth + 1) << "Rewrite rules apply in case: " << rewriteConstraint->toString() << endl;
@@ -157,10 +163,14 @@ Term *proveByRewrite(ConstrainedTerm lhs, Term *rhs,
 }
 
 void prove(ConstrainedTerm lhs, Term *rhs,
-	      RewriteSystem &rs, CRewriteSystem &circ, bool hadProgress, int depth)
+	   RewriteSystem &rs, CRewriteSystem &circ, bool hadProgress, int depth, int branchDepth)
 {
-  if (depth > 4) {
-    Log(WARNING) << spaces(depth) << "Reached depth 4, stopping search." << endl;
+  //  if (depth > 4) {
+  //    Log(WARNING) << spaces(depth) << "(*****) Reached depth 4, stopping search." << endl;
+  //    return;
+  //  }
+  if (branchDepth > 2) {
+    Log(WARNING) << spaces(depth) << "(*****) Reached branch depth 2, stopping search." << endl;
     return;
   }
 
@@ -176,11 +186,11 @@ void prove(ConstrainedTerm lhs, Term *rhs,
   Log(DEBUG) << spaces(depth) << "IMPL CONSTRAINT: " << simplifyConstraint(implicationConstraint)->toString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(implicationConstraint));
 
-  Term *circularityConstraint = proveByCircularities(lhs, rhs, rs, circ, depth, hadProgress);
+  Term *circularityConstraint = proveByCircularities(lhs, rhs, rs, circ, depth, hadProgress, branchDepth);
   Log(DEBUG) << spaces(depth) << "CIRC CONSTRAINT: " << simplifyConstraint(circularityConstraint)->toString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(circularityConstraint));
 
-  Term *rewriteConstraint = proveByRewrite(lhs, rhs, rs, circ, depth, hadProgress);
+  Term *rewriteConstraint = proveByRewrite(lhs, rhs, rs, circ, depth, hadProgress, branchDepth);
   Log(DEBUG) << spaces(depth) << "REWR CONSTRAINT: " << simplifyConstraint(rewriteConstraint)->toString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(rewriteConstraint));
 

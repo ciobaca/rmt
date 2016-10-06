@@ -300,6 +300,11 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *ini
   // STEP 3.2: check that the constraints are satisfiable
   for (int i = 0; i < solutions.size(); ++i) {
     ConstrainedSolution sol = solutions[i];
+    Log(DEBUG6) << "Solution #" << i << endl;
+    Log(DEBUG6) << "Term = " << sol.term->toString() << endl;
+    Log(DEBUG6) << "Substitution = " << sol.substitution.toString() << endl;
+    Log(DEBUG6) << "Abstr Substitution = " << substitution.toString() << endl;
+    Log(DEBUG6) << "Constraint = " << sol.constraint->toString() << endl;
     ConstrainedTerm constrainedTerm(sol.term, bAnd(initialConstraint, sol.constraint));
 
     // STEP 3.2.1: start from the generic theory
@@ -340,7 +345,9 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *ini
       // there's a chance the constraints are satisfiable
       // there's a chance the constraints are satisfiable
 
+      constrainedTerm.term = constrainedTerm.term->substitute(sol.substitution);
       constrainedTerm.term = constrainedTerm.term->substitute(resultSubstitution);
+      constrainedTerm.constraint = constrainedTerm.constraint->substitute(sol.substitution);
       constrainedTerm.constraint = simplifyConstraint(constrainedTerm.constraint->substitute(resultSubstitution));
 
       Log(DEBUG5) << "Introducing exists on " << constrainedTerm.term->toString() << endl;

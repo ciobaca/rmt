@@ -1,6 +1,7 @@
 /* any file begins with the declaration of all sorts used */
 sorts Int / "Int",
       Bool / "Bool",
+      BoolP,
       Var,
       Cfg;
 
@@ -12,6 +13,7 @@ sorts Int / "Int",
 // subsort NonValBExp < BExp;
 // subsort AExp BExp Stmt < Code;
 // subsort Bool < BExp;
+subsort Bool < BoolP;
 
 /* next we must declare all function symbols */
 signature
@@ -42,8 +44,8 @@ signature
 	z : -> Var,
 
 	// helper functions
-	synEq : Var Var -> Bool,
-	cfg : Bool -> Cfg;
+	synEq : Var Var -> BoolP,
+	cfg : BoolP -> Cfg;
 
 /* next we must declare all variables */
 variables
@@ -161,4 +163,4 @@ rewrite-system language
 	synEq(z, z) =>
 	true;
 
-smt-narrow-search in language : cfg(true);
+smt-narrow-search in language : cfg(synEq(X, Y));

@@ -1,6 +1,7 @@
 /* any file begins with the declaration of all sorts used */
 sorts Int / "Int",
       Bool / "Bool",
+      BoolP,
       Var,
       AExp,
       BExp,
@@ -20,7 +21,8 @@ subsort Var < NonValAExp;
 subsort NonValAExp < AExp;
 subsort NonValBExp < BExp;
 subsort AExp BExp Stmt < Code;
-subsort Bool < BExp;
+subsort Bool < BoolP;
+subsort BoolP < BExp;
 
 /* next we must declare all function symbols */
 signature
@@ -51,7 +53,7 @@ signature
 	z : -> Var,
 
 	// helper functions
-	synEq : Var Var -> Bool,
+	synEq : Var Var -> BoolP,
     	update : Var Int Map -> Stmt,
 	updateh : MapItem -> Stmt,
 	lookup  : Var Map -> Stmt,
@@ -105,6 +107,7 @@ variables
 	Y : Var,
 	Z : Var,
 	N : Int,
+	J : Int,
 	M : Int,
 	SUM : Int,
 	B : Bool,
@@ -349,6 +352,10 @@ rewrite-system language
  	I(push(le(N, M),       REST) , ENV);
 
 constrained-rewrite-system circularities
+// I(push(skip,push(while(le(y,x),seq(assign(z,plus(z,y)),assign(y,plus(y,mone)))),done)),cons(mi(x,N),cons(mi(y,mzero),cons(mi(z,mzero),emp)))) /\ mle(mzero,N)
+// =>
+// I(done, cons(mi(x,N),cons(mi(y,mplus(N, mone)),cons(mi(z,mdiv(mtimes(N, mplus(N, mone)), mtwo)),emp)))),
+
 I(push(
  	seq(assign(x, N),
    	seq(assign(y, mzero),
@@ -356,12 +363,48 @@ I(push(
  	    while(le(y, x),
                    seq(assign(z, plus(z, y)),
  		      assign(y, plus(y, mone))))))),
-     done), emp) =>
+     done), emp) /\ mle(mzero, N)
+=>
+I(done, cons(mi(x,N),cons(mi(y,mplus(N, mone)),cons(mi(z,mdiv(mtimes(N, mplus(N, mone)), mtwo)),emp)))),
+
 I(push(
- 	    while(le(y, x),
-                   seq(assign(z, plus(z, y)),
- 		      assign(y, plus(y, mone)))),
-     done), cons(mi(z, mzero), cons(mi(y, mzero), cons(mi(x, N), emp))))
+	while(le(y,x),
+		seq(assign(z,plus(z,y)),
+		assign(y,plus(y,mone)))),
+      done),
+      cons(mi(x,N),cons(mi(y,J),cons(mi(z,SUM),emp)))) /\ band(mle(mzero, J), mle(J, N))
+=>
+I(done,
+      cons(mi(x,N),cons(mi(y,mplus(N,mone)),cons(mi(z,mplus(SUM, 
+			mdiv(mtimes(mplus(mminus(N, J), mone), mplus(J, N)), mtwo)
+						)),emp))))
 ;
+
+//   J + (J + 1) + ... + N
+// = J + (J + 1) + ... + (J + N - J)
+// = J +  J      + ...    J +
+//   0 +  1      + ...    (N - J)
+// = J * (N - J + 1) + (N - J) * (N - J + 1) / 2
+// = (N - J + 1) * (J + (N - J) / 2)
+// = (N - J + 1) * (J + N) / 2
+
+// just a simple circularity that states that the assign statements
+// are correctly consumed
+
+// I(push(
+//  	seq(assign(x, N),
+//    	seq(assign(y, mzero),
+//  	seq(assign(z, mzero),
+//  	    while(le(y, x),
+//                    seq(assign(z, plus(z, y)),
+//  		      assign(y, plus(y, mone))))))),
+//      done), emp) =>
+// I(push(
+// 	while(le(y,x),
+// 		seq(assign(z,plus(z,y)),
+// 		assign(y,plus(y,mone)))),
+//       done),
+//       cons(mi(x,N),cons(mi(y,mzero),cons(mi(z,mzero),emp)))),
+
 
 smt-prove in language : circularities;

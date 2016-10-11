@@ -11,6 +11,7 @@ struct Variable;
 
 struct Substitution : public std::map<Variable *, Term *>
 {
+  Substitution();
   void apply(Substitution &);
   void force(Variable *v, Term *t);
   void add(Variable *v, Term *t);

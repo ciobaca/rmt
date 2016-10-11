@@ -148,10 +148,11 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *initi
   Log(DEBUG6) << "Abstracting substitution: " << substitution.toString() << endl;
 
   // STEP 2: perform one-step narrowing from the abstract term
-  //  Log(DEBUG6) << "Rewrite system: " << rsInit.toString() << endl;
+  Log(DEBUG7) << "Rewrite system: " << rsInit.toString() << endl;
   RewriteSystem rs = rsInit.fresh(abstractTerm->vars());
-  //  Log(DEBUG6) << "Fresh rewrite system: " << rs.toString() << endl;
+  Log(DEBUG7) << "Fresh rewrite system: " << rs.toString() << endl;
   vector<Solution> solutions = abstractTerm->narrowSearch(rs);
+  Log(DEBUG7) << "Done narrowSearch" << endl;
 
   Log(DEBUG6) << "Narrowing abstract term resulted in " << solutions.size() << " solutions" << endl;
 

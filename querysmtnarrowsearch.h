@@ -11,6 +11,9 @@ struct QuerySmtNarrowSearch : public Query
   std::string rewriteSystemName;
   ConstrainedTerm ct;
 
+  int minDepth;
+  int maxDepth;
+
   QuerySmtNarrowSearch();
   
   virtual Query *create();

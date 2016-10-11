@@ -365,7 +365,9 @@ I(push(
  		      assign(y, plus(y, mone))))))),
      done), emp) /\ mle(mzero, N)
 =>
-I(done, cons(mi(x,N),cons(mi(y,mplus(N, mone)),cons(mi(z,mdiv(mtimes(N, mplus(N, mone)), mtwo)),emp)))),
+I(done, cons(mi(y,mplus(N, mone)),cons(mi(x,N),cons(mi(z,mdiv(mtimes(N, mplus(N, mone)), mtwo)),emp)))),
+//
+// A: X op (Y op Z) = (X op Y) op Z
 
 I(push(
 	while(le(y,x),

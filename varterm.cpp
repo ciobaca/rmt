@@ -239,18 +239,20 @@ vector<Solution> VarTerm::rewriteSearch(RewriteSystem &rs)
 // caller needs to ensure freshness of rewrite system
 vector<Solution> VarTerm::narrowSearch(RewriteSystem &rs)
 {
+  Log(DEBUG7) << "VarTerm::narrowSearch(RewriteSystem &) " << this->toString() << endl;
   vector<Solution> result;
   for (int i = 0; i < len(rs); ++i) {
     pair<Term *, Term *> rewriteRule = rs[i];
     Term *l = rewriteRule.first;
     Term *r = rewriteRule.second;
-    
+    Log(DEBUG7) << "unifying with " << l->toString() << " => " << r->toString() << endl;    
     Substitution subst;
     if (this->unifyWith(l, subst)) {
       Term *term = r;
       result.push_back(Solution(term, subst));
     }
   }
+  Log(DEBUG7) << "Done VarTerm::narrowSearch(RewriteSystem &) " << this->toString() << endl;
   return result;
 }
 

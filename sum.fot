@@ -131,6 +131,21 @@ rewrite-system simplifications
 	bor(B, B) =>
 	B;
 
+
+
+
+
+// variables
+// 	B : Bool,
+// 	S : Int,
+// 	N : Int,
+// 	M : Int,
+// 	I : Int;
+// // states
+// ca : Int Int -> State,
+// cb : Int Int Bool -> State,
+// cc : Int -> State,
+
 rewrite-system default
 	ca(S, I) =>
 	cb(S, I, mle(mone, I)),
@@ -141,11 +156,34 @@ rewrite-system default
 	cb(S, I, false) =>
 	cc(S);
 
+// ca(0, 4)
+
+// cb(0, 4, true)
+// ca(4, 3)
+// cb(4, 3, true)
+// ca(7, 2)
+// cb(7, 2, true)
+// ca(9, 1)
+// cb(9, 1, true)
+// ca(10, 0)
+// cb(10, 0, false)
+
+// invariant: ca(S, I) =>* cc(S + I(I+1)/2)
+
+// cc(10)
+
+// forall I, I >= 0 -> ca(0, I) =>* cc(I*(I+1)/2)
+// corectitudine functionala
+
+
+
+
+
 constrained-rewrite-system circularities
 	ca(mzero, N) /\ mle(mzero, N) =>
 	cc(mdiv(mtimes(N, mplus(N, mone)), mtwo)),
 
-	ca(S, I) =>
+	ca(S, I) /\ mle(mzero, I) =>
 	cc(mplus(S, mdiv(mtimes(I, mplus(I, mone)), mtwo)));
 
 //smt-narrow-search in default :

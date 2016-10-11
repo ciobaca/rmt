@@ -3,6 +3,7 @@
 #include "substitution.h"
 #include "variable.h"
 #include "factories.h"
+#include "log.h"
 #include <cassert>
 #include <string>
 #include <sstream>
@@ -44,6 +45,10 @@ RewriteSystem RewriteSystem::fresh(vector<Variable *> vars)
     append(myvars, (*this)[i].first->vars());
     append(myvars, (*this)[i].second->vars());
   }
+  Log(DEBUG9) << "Variables in rewrite system: " << endl;
+  for (int i = 0; i < myvars.size(); ++i) {
+    Log(DEBUG9) << myvars[i]->name << " ";
+  }
 
   map<Variable *, Variable *> renaming;
   
@@ -56,10 +61,13 @@ RewriteSystem RewriteSystem::fresh(vector<Variable *> vars)
     string varname = oss.str();
     createVariable(varname, myvars[i]->sort);
     renaming[myvars[i]] = getVariable(varname);
+    Log(DEBUG9) << "Renaming " << myvars[i]->name << " to " << getVariable(varname)->name << endl;
   }
   counter++;
 
   Substitution subst = createSubstitution(renaming);
+
+  Log(DEBUG9) << "Created substitution " << subst.toString() << endl;
 
   RewriteSystem result;
   for (int i = 0; i < (int)this->size(); ++i) {

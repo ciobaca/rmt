@@ -13,9 +13,6 @@
 
 using namespace std;
 
-void prove(ConstrainedTerm , Term *,
-	   RewriteSystem &, CRewriteSystem &, bool, int = 0, int = 0);
-
 QuerySmtProve::QuerySmtProve()
 {
 }
@@ -24,11 +21,34 @@ Query *QuerySmtProve::create()
 {
   return new QuerySmtProve();
 }
-  
+
 void QuerySmtProve::parse(std::string &s, int &w)
 {
   matchString(s, w, "smt-prove");
   skipWhiteSpace(s, w);
+  if (lookAhead(s, w, "[")) {
+    matchString(s, w, "[");
+    skipWhiteSpace(s, w);
+    maxDepth = getNumber(s, w);
+    if (maxDepth < 0 || maxDepth > 99999) {
+      Log(ERROR) << "Maximum depth (" << maxDepth << ") must be between 0 and 99999" << endl;
+      expected("Legal maximum depth", w, s);
+    }
+    skipWhiteSpace(s, w);
+    matchString(s, w, ",");
+    skipWhiteSpace(s, w);
+    maxBranchingDepth = getNumber(s, w);
+    if (maxBranchingDepth < 0 || maxBranchingDepth > 99999) {
+      Log(ERROR) << "Maximum branching depth (" << maxBranchingDepth << ") must be between 0 and 99999" << endl;
+      expected("Legal maximum branching depth", w, s);
+    }
+    skipWhiteSpace(s, w);
+    matchString(s, w, "]");
+    skipWhiteSpace(s, w);
+  } else {
+    maxDepth = 100;
+    maxBranchingDepth = 2;
+  }
   matchString(s, w, "in");
   skipWhiteSpace(s, w);
   rewriteSystemName = getIdentifier(s, w);
@@ -66,7 +86,7 @@ string spaces(int tabs)
 
 // returns a constraint that describes when
 // lhs implies rhs
-Term *proveByImplication(ConstrainedTerm lhs, Term *rhs,
+Term *QuerySmtProve::proveByImplication(ConstrainedTerm lhs, Term *rhs,
 			 RewriteSystem &rs, CRewriteSystem &circ, int depth)
 {
   Term *unificationConstraint;
@@ -103,9 +123,9 @@ Term *proveByImplication(ConstrainedTerm lhs, Term *rhs,
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *proveByCircularities(ConstrainedTerm lhs, Term *rhs,
+Term *QuerySmtProve::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
 			   RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress,
-			   int branchDepth)
+			   int branchingDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 2. Does lhs rewrite using circularities?" << endl;
   Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
@@ -119,7 +139,7 @@ Term *proveByCircularities(ConstrainedTerm lhs, Term *rhs,
 
     Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
 
-    int newBranchDepth = solutions.size() > 1 ? branchDepth + 1 : branchDepth;
+    int newBranchDepth = solutions.size() > 1 ? branchingDepth + 1 : branchingDepth;
     for (int i = 0; i < solutions.size(); ++i) {
       ConstrainedTerm sol = solutions[i];
       
@@ -134,8 +154,8 @@ Term *proveByCircularities(ConstrainedTerm lhs, Term *rhs,
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *proveByRewrite(ConstrainedTerm lhs, Term *rhs,
-		     RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress, int branchDepth)
+Term *QuerySmtProve::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
+		     RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress, int branchingDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?" << endl;
   Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
@@ -149,7 +169,7 @@ Term *proveByRewrite(ConstrainedTerm lhs, Term *rhs,
 
   Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
 
-  int newBranchDepth = (solutions.size() > 1) ? (branchDepth + 1) : branchDepth;
+  int newBranchDepth = (solutions.size() > 1) ? (branchingDepth + 1) : branchingDepth;
   for (int i = 0; i < solutions.size(); ++i) {
     ConstrainedTerm sol = solutions[i];
     
@@ -162,15 +182,19 @@ Term *proveByRewrite(ConstrainedTerm lhs, Term *rhs,
   return rewriteConstraint;
 }
 
-void prove(ConstrainedTerm lhs, Term *rhs,
-	   RewriteSystem &rs, CRewriteSystem &circ, bool hadProgress, int depth, int branchDepth)
+void QuerySmtProve::prove(ConstrainedTerm lhs, Term *rhs,
+	   RewriteSystem &rs, CRewriteSystem &circ, bool hadProgress, int depth, int branchingDepth)
 {
   //  if (depth > 4) {
   //    Log(WARNING) << spaces(depth) << "(*****) Reached depth 4, stopping search." << endl;
   //    return;
   //  }
-  if (branchDepth > 2) {
-    Log(WARNING) << spaces(depth) << "(*****) Reached branch depth 2, stopping search." << endl;
+  if (depth > maxDepth) {
+    Log(WARNING) << spaces(depth) << "(*****) Reached depth" << maxDepth << ", stopping search." << endl;
+    return;
+  }
+  if (branchingDepth > maxBranchingDepth) {
+    Log(WARNING) << spaces(depth) << "(*****) Reached branch depth " << maxBranchingDepth << ", stopping search." << endl;
     return;
   }
 
@@ -186,11 +210,11 @@ void prove(ConstrainedTerm lhs, Term *rhs,
   Log(DEBUG) << spaces(depth) << "IMPL CONSTRAINT: " << simplifyConstraint(implicationConstraint)->toString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(implicationConstraint));
 
-  Term *circularityConstraint = proveByCircularities(lhs, rhs, rs, circ, depth, hadProgress, branchDepth);
+  Term *circularityConstraint = proveByCircularities(lhs, rhs, rs, circ, depth, hadProgress, branchingDepth);
   Log(DEBUG) << spaces(depth) << "CIRC CONSTRAINT: " << simplifyConstraint(circularityConstraint)->toString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(circularityConstraint));
 
-  Term *rewriteConstraint = proveByRewrite(lhs, rhs, rs, circ, depth, hadProgress, branchDepth);
+  Term *rewriteConstraint = proveByRewrite(lhs, rhs, rs, circ, depth, hadProgress, branchingDepth);
   Log(DEBUG) << spaces(depth) << "REWR CONSTRAINT: " << simplifyConstraint(rewriteConstraint)->toString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(rewriteConstraint));
 

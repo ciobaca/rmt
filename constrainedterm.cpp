@@ -1,6 +1,7 @@
 #include "constrainedterm.h"
 #include "term.h"
 #include <sstream>
+#include <cassert>
 
 using namespace std;
 
@@ -23,6 +24,58 @@ vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs)
 vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs)
 {
   return term->smtNarrowSearch(crs, constraint);
+}
+
+void ConstrainedTerm::smtNarrowSearchHelper(RewriteSystem &rs,
+							       int minDepth, int maxDepth, int depth,
+							       vector<ConstrainedTerm> &result)
+{
+  if (minDepth <= depth && depth <= maxDepth) {
+    result.push_back(*this);
+  } 
+  if (depth < maxDepth) {
+    vector<ConstrainedTerm> successors = this->smtNarrowSearch(rs);
+    for (int i = 0; i < successors.size(); ++i) {
+      successors[i].smtNarrowSearchHelper(rs, minDepth, maxDepth, depth + 1, result);
+    }
+  }
+}
+
+void ConstrainedTerm::smtNarrowSearchHelper(CRewriteSystem &crs,
+							       int minDepth, int maxDepth, int depth,
+							       vector<ConstrainedTerm> &result)
+{
+  if (minDepth <= depth && depth <= maxDepth) {
+    result.push_back(*this);
+  } 
+  if (depth < maxDepth) {
+    vector<ConstrainedTerm> successors = this->smtNarrowSearch(crs);
+    for (int i = 0; i < successors.size(); ++i) {
+      successors[i].smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
+    }
+  }
+}
+
+vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs, int minDepth, int maxDepth)
+{
+  assert(0 <= minDepth);
+  assert(minDepth <= maxDepth);
+  assert(maxDepth <= 99999999);
+
+  vector<ConstrainedTerm> result;
+  smtNarrowSearchHelper(rs, minDepth, maxDepth, 0, result);
+  return result;
+}
+
+vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs, int minDepth, int maxDepth)
+{
+  assert(0 <= minDepth);
+  assert(minDepth <= maxDepth);
+  assert(maxDepth <= 99999999);
+
+  vector<ConstrainedTerm> result;
+  smtNarrowSearchHelper(crs, minDepth, maxDepth, 0, result);
+  return result;
 }
 
 ConstrainedTerm ConstrainedTerm::normalize(RewriteSystem &rs)

@@ -6,6 +6,10 @@
 
 using namespace std;
 
+Substitution::Substitution()
+{
+}
+
 void Substitution::add(Variable *v, Term *t)
 {
   (*this)[v] = t;

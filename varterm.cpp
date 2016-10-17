@@ -47,13 +47,14 @@ string VarTerm::toSmtString()
 
 bool VarTerm::unifyWith(Term *t, Substitution &subst)
 {
-  logmgu("VarTerm::unifyWith", this, t, subst);
+  Log(DEBUG9) << "VarTerm::unifyWith " << this->toString() << " " << t->toString() << subst.toString() << endl;
   return t->unifyWithVarTerm(this, subst);
 }
 
 bool VarTerm::unifyWithVarTerm(VarTerm *t, Substitution &subst)
 {
-  logmgu("VarTerm::unifyWithVarTerm", this, t, subst);
+  Log(DEBUG9) << "VarTerm::unifyWithVarTerm " << this->toString() << " " << t->toString() << subst.toString() << endl;
+  Log(DEBUG9) << "VarTerm::unifyWithVarTerm, sorts: " << this->variable->sort->name << " " << t->variable->sort->name << endl;
   if (this == t) {
     return true;
   }
@@ -82,7 +83,7 @@ bool VarTerm::unifyWithVarTerm(VarTerm *t, Substitution &subst)
 
 bool VarTerm::unifyWithFunTerm(FunTerm *t, Substitution &subst)
 {
-  logmgu("VarTerm::unifyWithFunTerm", this, t, subst);
+  Log(DEBUG9) << "VarTerm::unifyWithFunTerm " << this->toString() << " " << t->toString() << subst.toString() << endl;
   vector<Variable *> ocVars = t->vars();
 
   if (subst.inDomain(this->variable)) {

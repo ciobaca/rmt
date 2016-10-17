@@ -24,13 +24,6 @@
 
 using namespace std;
 
-static int sober_flag;
-
-string sober(string s) 
-{
-  return sober_flag ? "" : s;
-}
-
 void logmgu(string s, Term *a, Term *b, Substitution &subst)
 {
 #ifdef LOGMGU
@@ -309,63 +302,10 @@ string parseCRewriteSystem(string &s, int &w, CRewriteSystem &crewrite)
   return name;
 }
 
-// Term *parseAbstract(string &s, int &w)
-// {
-//   skipWhiteSpace(s, w);
-//   matchString(s, w, "abstract");
-//   skipWhiteSpace(s, w);
-//   Term *result = parseTerm(s, w);
-//   match(s, w, ';');
-//   skipWhiteSpace(s, w);
-//   return result;
-// }
-
-// Term *parseRewriteSearch(string &s, int &w)
-// {
-//   skipWhiteSpace(s, w);
-//   matchString(s, w, "rewrite-search");
-//   skipWhiteSpace(s, w);
-//   Term *result = parseTerm(s, w);
-//   match(s, w, ';');
-//   skipWhiteSpace(s, w);
-//   return result;
-// }
-
-// Term *parseNarrowSearch(string &s, int &w)
-// {
-//   skipWhiteSpace(s, w);
-//   matchString(s, w, "narrow-search");
-//   skipWhiteSpace(s, w);
-//   Term *result = parseTerm(s, w);
-//   match(s, w, ';');
-//   skipWhiteSpace(s, w);
-//   return result;
-// }
-
-// Term *parseSmtNarrowSearch(string &s, int &w)
-// {
-//   skipWhiteSpace(s, w);
-//   matchString(s, w, "smt-narrow-search");
-//   skipWhiteSpace(s, w);
-//   Term *result = parseTerm(s, w);
-//   match(s, w, ';');
-//   skipWhiteSpace(s, w);
-//   return result;
-// }
-
 int main(int argc, char **argv)
 {
-  Log(ERROR) << "You're seeing this if logging level is at least error" << std::endl;
-  Log(WARNING) << "You're seeing this if logging level is at least warning" << std::endl;
-  Log(INFO) << "You're seeing this if logging level is at least info" << std::endl;
-  Log(DEBUG) << "You're seeing this if logging level is at least debug" << std::endl;
-
   static struct option long_options[] = {
-    /* These options set a flag. */
-    {"sober", no_argument,       &sober_flag, 1},
-    /* These options don't set a flag.
-       We distinguish them by their indices. */
-    {"verbosity",  required_argument, 0, 'v'},
+    {"verbosity",  required_argument, 0,           'v'},
     {0, 0, 0, 0}
   };
 
@@ -401,22 +341,23 @@ int main(int argc, char **argv)
   createBuiltIns();
 
   int rsCount = 0;
-  if (lookAhead(s, w, "rewrite-system")) {
-    while (lookAhead(s, w, "rewrite-system")) {
-      RewriteSystem rewrite;
-      string name = parseRewriteSystem(s, w, rewrite);
-      putRewriteSystem(name, rewrite);
-      skipWhiteSpace(s, w);
+  if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
+    while (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
+      if (lookAhead(s, w, "rewrite-system")) {
+	RewriteSystem rewrite;
+	string name = parseRewriteSystem(s, w, rewrite);
+	putRewriteSystem(name, rewrite);
+	skipWhiteSpace(s, w);
+      } else {
+	assert(lookAhead(s, w, "constrained-rewrite-system"));
+	CRewriteSystem crewrite;
+	string name = parseCRewriteSystem(s, w, crewrite);
+	putCRewriteSystem(name, crewrite);
+	skipWhiteSpace(s, w);
+      }
     }
   } else {
-    expected("rewrite-system", w, s);
-  }
-
-  while (lookAhead(s, w, "constrained-rewrite-system")) {
-    CRewriteSystem crewrite;
-    string name = parseCRewriteSystem(s, w, crewrite);
-    putCRewriteSystem(name, crewrite);
-    skipWhiteSpace(s, w);
+    expected("rewrite-system or constrained-rewrite-system", w, s);
   }
 
   skipWhiteSpace(s, w);
@@ -430,4 +371,8 @@ int main(int argc, char **argv)
     skipWhiteSpace(s, w);
     query->execute();
   } while (1);
+
+  if (w < len(s)) {
+    expected("Query", w, s);
+  }
 }

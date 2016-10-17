@@ -315,7 +315,7 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *ini
     Substitution resultSubstitution;
 
     Term *lhsTrouble, *rhsTrouble;
-    solTheory.addConstraint(initialConstraint);
+    solTheory.addConstraint(constrainedTerm.constraint);
     for (Substitution::iterator it = substitution.begin(); it != substitution.end(); ++it) {
       Term *lhsTerm = getVarTerm(it->first)->substitute(sol.substitution);
       Term *rhsTerm = it->second;
@@ -343,7 +343,6 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *ini
 
     // STEP 3.2.3: call z3 to check satisfiability
     if (solTheory.isSatisfiable() != unsat) {
-      // there's a chance the constraints are satisfiable
       // there's a chance the constraints are satisfiable
 
       constrainedTerm.term = constrainedTerm.term->substitute(sol.substitution);

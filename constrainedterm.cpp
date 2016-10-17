@@ -1,5 +1,6 @@
 #include "constrainedterm.h"
 #include "term.h"
+#include "log.h"
 #include <sstream>
 #include <cassert>
 
@@ -18,11 +19,13 @@ string ConstrainedTerm::toString()
 
 vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs)
 {
+  Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs) " << this->toString();
   return term->smtNarrowSearch(rs, constraint);
 }
 
 vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs)
 {
+  Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs) " << this->toString();
   return term->smtNarrowSearch(crs, constraint);
 }
 
@@ -78,6 +81,7 @@ vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs, in
   return result;
 }
 
+
 ConstrainedTerm ConstrainedTerm::normalize(RewriteSystem &rs)
 {
   ConstrainedTerm ct(this->term->normalize(rs), this->constraint->normalize(rs));
@@ -103,4 +107,3 @@ ConstrainedTerm ConstrainedTerm::substitute(Substitution &subst)
   ConstrainedTerm ct(term->substitute(subst), constraint->substitute(subst));
   return ct;
 }
-

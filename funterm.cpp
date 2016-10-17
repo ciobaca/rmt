@@ -150,19 +150,19 @@ Term *FunTerm::computeNormalize(RewriteSystem &rewriteSystem, map<Term *, Term *
 
 bool FunTerm::unifyWith(Term *t, Substitution &subst)
 {
-  logmgu("FunTerm::unifyWith", this, t, subst);
+  Log(DEBUG9) << "FunTerm::unifyWith " << this->toString() << " " << t->toString() << subst.toString() << endl;
   return t->unifyWithFunTerm(this, subst);
 }
 
 bool FunTerm::unifyWithVarTerm(VarTerm *t, Substitution &subst)
 {
-  logmgu("FunTerm::unifyWithVarTerm", this, t, subst);
+  Log(DEBUG9) << "FunTerm::unifyWithVarTerm " << this->toString() << " " << t->toString() << subst.toString() << endl;
   return t->unifyWithFunTerm(this, subst);
 }
 
 bool FunTerm::unifyWithFunTerm(FunTerm *t, Substitution &subst)
 {
-  logmgu("FunTerm::unifyWithFunTerm", this, t, subst);
+  Log(DEBUG9) << "FunTerm::unifyWithFunTerm " << this->toString() << " " << t->toString() << subst.toString() << endl;
   if (this->function == t->function) {
     for (int i = 0; i < len(arguments); ++i) {
       if (!this->arguments[i]->unifyWith(t->arguments[i], subst)) {
@@ -417,13 +417,13 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(CRewriteSystem &crs)
     Term *r = rewriteRule.second;
 
     Substitution subst;
-    //    cerr << "Trying to unify " << this->toString() << " with " << l->toString() << endl;
+    Log(DEBUG8) << "Trying to unify " << this->toString() << " with " << l.term->toString() << endl;
     if (this->unifyWith(l.term, subst)) {
-      //      cerr << "Unification succeeded." << endl;
+      Log(DEBUG8) << "Unification succeeded." << endl;
       Term *term = r;
       solutions.push_back(ConstrainedSolution(term, subst, l.constraint));
     } else {
-      //      cerr << "Unification failed." << endl;
+      Log(DEBUG8) << "Unification failed." << endl;
     }
   }
 

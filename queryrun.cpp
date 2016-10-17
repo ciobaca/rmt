@@ -21,7 +21,7 @@ Query *QuerySmtRun::create()
 void QuerySmtRun::parse(std::string &s, int &w)
 {
   //  cerr << "here parse" << endl;
-  matchString(s, w, "smt-run");
+  matchString(s, w, "run");
   skipWhiteSpace(s, w);
   matchString(s, w, "in");
   skipWhiteSpace(s, w);

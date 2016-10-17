@@ -24,7 +24,7 @@ Query *QuerySmtProve::create()
 
 void QuerySmtProve::parse(std::string &s, int &w)
 {
-  matchString(s, w, "smt-prove");
+  matchString(s, w, "prove");
   skipWhiteSpace(s, w);
   if (lookAhead(s, w, "[")) {
     matchString(s, w, "[");

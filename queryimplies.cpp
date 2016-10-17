@@ -21,12 +21,12 @@ Query *QuerySmtImplies::create()
   
 void QuerySmtImplies::parse(std::string &s, int &w)
 {
-  matchString(s, w, "smt-implies");
+  matchString(s, w, "implies");
   skipWhiteSpace(s, w);
   ct = parseConstrainedTerm(s, w);
   skipWhiteSpace(s, w);
-  matchString(s, w, "and");
-  skipWhiteSpace(s, w);
+  // matchString(s, w, "and");
+  // skipWhiteSpace(s, w);
   term = parseTerm(s, w);
   skipWhiteSpace(s, w);
   matchString(s, w, ";");

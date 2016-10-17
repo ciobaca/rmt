@@ -66,9 +66,12 @@ Z3Result Z3Theory::isSatisfiable()
   } else if (result == "unsat") {
     Log(LOGSAT) << "Result is UNSAT" << endl << z3string;
     return unsat;
-  } else {
+  } else if (result == "unknown") {
     Log(LOGSAT) << "Result is UNKNOWN" << endl << z3string;
-    fprintf(stderr, "Unknown result \"%s\".\n", result.c_str());
+    return unknown;
+  } else {
+    Log(LOGSAT) << "Internal error - Z3 did not return an expected satisfiability value." << endl << z3string;
+    fprintf(stderr, "Cannot interpret result returned by Z3: \"%s\".\n", result.c_str());
     assert(0);
   }
 }

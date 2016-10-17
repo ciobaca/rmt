@@ -20,7 +20,7 @@ Query *QuerySmtNarrowSearch::create()
   
 void QuerySmtNarrowSearch::parse(std::string &s, int &w)
 {
-  matchString(s, w, "smt-narrow-search");
+  matchString(s, w, "search");
   skipWhiteSpace(s, w);
   if (lookAhead(s, w, "[")) {
     matchString(s, w, "[");

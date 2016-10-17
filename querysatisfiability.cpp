@@ -19,7 +19,7 @@ Query *QuerySmtSatisfiability::create()
   
 void QuerySmtSatisfiability::parse(std::string &s, int &w)
 {
-  matchString(s, w, "smt-satisfiability");
+  matchString(s, w, "satisfiability");
   skipWhiteSpace(s, w);
   constraint = parseTerm(s, w);
   skipWhiteSpace(s, w);

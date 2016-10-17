@@ -66,12 +66,12 @@ std::map<std::string, QueryCreator> *registerQueries()
 {
   std::map<std::string, QueryCreator> *map;
   map = new std::map<std::string, QueryCreator>;
-  (*map)["smt-narrow-search"] = createQuerySmtNarrowSearch;
-  (*map)["smt-unify"] = createQuerySmtUnify;
-  (*map)["smt-implies"] = createQuerySmtImplies;
-  (*map)["smt-prove"] = createQuerySmtProve;
-  (*map)["smt-run"] = createQuerySmtRun;
-  (*map)["smt-satisfiability"] = createQuerySmtSatisfiability;
+  (*map)["search"] = createQuerySmtNarrowSearch;
+  (*map)["unify"] = createQuerySmtUnify;
+  (*map)["implies"] = createQuerySmtImplies;
+  (*map)["prove"] = createQuerySmtProve;
+  (*map)["run"] = createQuerySmtRun;
+  (*map)["satisfiability"] = createQuerySmtSatisfiability;
   return map;
 }
 

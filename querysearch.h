@@ -1,12 +1,12 @@
-#ifndef QUERYSMTNARROWSEARCH_H__
-#define QUERYSMTNARROWSEARCH_H__
+#ifndef QUERYSEARCH_H__
+#define QUERYSEARCH_H__
 
 #include "query.h"
 #include "constrainedterm.h"
 #include <string>
 #include <map>
 
-struct QuerySmtNarrowSearch : public Query
+struct QuerySearch : public Query
 {
   std::string rewriteSystemName;
   ConstrainedTerm ct;
@@ -14,7 +14,7 @@ struct QuerySmtNarrowSearch : public Query
   int minDepth;
   int maxDepth;
 
-  QuerySmtNarrowSearch();
+  QuerySearch();
   
   virtual Query *create();
   

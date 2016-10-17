@@ -1,15 +1,15 @@
-#ifndef QUERYSMTSATISFIABILITY_H__
-#define QUERYSMTSATISFIABILITY_H__
+#ifndef QUERYSATISFIABILITY_H__
+#define QUERYSATISFIABILITY_H__
 
 #include "term.h"
 #include "query.h"
 #include <string>
 #include <map>
 
-struct QuerySmtSatisfiability : public Query
+struct QuerySatisfiability : public Query
 {
   Term *constraint;
-  QuerySmtSatisfiability();
+  QuerySatisfiability();
   
   virtual Query *create();
   

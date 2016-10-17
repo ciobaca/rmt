@@ -1,11 +1,11 @@
 #include "query.h"
 #include "parse.h"
-#include "querysmtimplies.h"
-#include "querysmtunify.h"
-#include "querysmtrun.h"
-#include "querysmtnarrowsearch.h"
-#include "querysmtprove.h"
-#include "querysmtsatisfiability.h"
+#include "queryimplies.h"
+#include "queryunify.h"
+#include "queryrun.h"
+#include "querysearch.h"
+#include "queryprove.h"
+#include "querysatisfiability.h"
 
 #include <string>
 #include <map>
@@ -32,46 +32,46 @@ Query *Query::lookAheadQuery(std::string &s, int &w)
   return 0;
 }
 
-Query *createQuerySmtNarrowSearch()
+Query *createQuerySearch()
 {
-  return new QuerySmtNarrowSearch();
+  return new QuerySearch();
 }
 
-Query *createQuerySmtUnify()
+Query *createQueryUnify()
 {
-  return new QuerySmtUnify();
+  return new QueryUnify();
 }
 
-Query *createQuerySmtImplies()
+Query *createQueryImplies()
 {
-  return new QuerySmtImplies();
+  return new QueryImplies();
 }
 
-Query *createQuerySmtProve()
+Query *createQueryProve()
 {
-  return new QuerySmtProve();
+  return new QueryProve();
 }
 
-Query *createQuerySmtSatisfiability()
+Query *createQuerySatisfiability()
 {
-  return new QuerySmtSatisfiability();
+  return new QuerySatisfiability();
 }
 
-Query *createQuerySmtRun()
+Query *createQueryRun()
 {
-  return new QuerySmtRun();
+  return new QueryRun();
 }
 
 std::map<std::string, QueryCreator> *registerQueries()
 {
   std::map<std::string, QueryCreator> *map;
   map = new std::map<std::string, QueryCreator>;
-  (*map)["search"] = createQuerySmtNarrowSearch;
-  (*map)["unify"] = createQuerySmtUnify;
-  (*map)["implies"] = createQuerySmtImplies;
-  (*map)["prove"] = createQuerySmtProve;
-  (*map)["run"] = createQuerySmtRun;
-  (*map)["satisfiability"] = createQuerySmtSatisfiability;
+  (*map)["search"] = createQuerySearch;
+  (*map)["unify"] = createQueryUnify;
+  (*map)["implies"] = createQueryImplies;
+  (*map)["prove"] = createQueryProve;
+  (*map)["run"] = createQueryRun;
+  (*map)["satisfiability"] = createQuerySatisfiability;
   return map;
 }
 

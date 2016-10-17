@@ -1,5 +1,5 @@
-#ifndef QUERYSMTUNIFY_H__
-#define QUERYSMTUNIFY_H__
+#ifndef QUERYUNIFY_H__
+#define QUERYUNIFY_H__
 
 #include "query.h"
 #include "term.h"
@@ -7,12 +7,12 @@
 #include <string>
 #include <map>
 
-struct QuerySmtUnify : public Query
+struct QueryUnify : public Query
 {
   Term *term;
   ConstrainedTerm ct;
 
-  QuerySmtUnify();
+  QueryUnify();
   virtual Query *create();
   virtual void parse(std::string &s, int &w);
   virtual void execute();

@@ -1,4 +1,4 @@
-#include "querysmtprove.h"
+#include "queryprove.h"
 #include "constrainedterm.h"
 #include "parse.h"
 #include "factories.h"
@@ -13,16 +13,16 @@
 
 using namespace std;
 
-QuerySmtProve::QuerySmtProve()
+QueryProve::QueryProve()
 {
 }
   
-Query *QuerySmtProve::create()
+Query *QueryProve::create()
 {
-  return new QuerySmtProve();
+  return new QueryProve();
 }
 
-void QuerySmtProve::parse(std::string &s, int &w)
+void QueryProve::parse(std::string &s, int &w)
 {
   matchString(s, w, "prove");
   skipWhiteSpace(s, w);
@@ -60,7 +60,7 @@ void QuerySmtProve::parse(std::string &s, int &w)
   matchString(s, w, ";");
 }
   
-void QuerySmtProve::execute()
+void QueryProve::execute()
 {
   RewriteSystem &rs = getRewriteSystem(rewriteSystemName);
   CRewriteSystem &circ = getCRewriteSystem(circularitiesRewriteSystemName);
@@ -86,7 +86,7 @@ string spaces(int tabs)
 
 // returns a constraint that describes when
 // lhs implies rhs
-Term *QuerySmtProve::proveByImplication(ConstrainedTerm lhs, Term *rhs,
+Term *QueryProve::proveByImplication(ConstrainedTerm lhs, Term *rhs,
 			 RewriteSystem &rs, CRewriteSystem &circ, int depth)
 {
   Term *unificationConstraint;
@@ -123,7 +123,7 @@ Term *QuerySmtProve::proveByImplication(ConstrainedTerm lhs, Term *rhs,
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *QuerySmtProve::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
+Term *QueryProve::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
 			   RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress,
 			   int branchingDepth)
 {
@@ -154,7 +154,7 @@ Term *QuerySmtProve::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *QuerySmtProve::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
+Term *QueryProve::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
 		     RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress, int branchingDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?" << endl;
@@ -182,7 +182,7 @@ Term *QuerySmtProve::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
   return rewriteConstraint;
 }
 
-void QuerySmtProve::prove(ConstrainedTerm lhs, Term *rhs,
+void QueryProve::prove(ConstrainedTerm lhs, Term *rhs,
 	   RewriteSystem &rs, CRewriteSystem &circ, bool hadProgress, int depth, int branchingDepth)
 {
   //  if (depth > 4) {

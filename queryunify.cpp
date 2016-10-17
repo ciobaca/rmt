@@ -1,4 +1,4 @@
-#include "querysmtunify.h"
+#include "queryunify.h"
 #include "parse.h"
 #include "factories.h"
 #include <string>
@@ -7,17 +7,17 @@
 
 using namespace std;
 
-QuerySmtUnify::QuerySmtUnify()
+QueryUnify::QueryUnify()
   : ct(0, 0)
 {
 }
   
-Query *QuerySmtUnify::create()
+Query *QueryUnify::create()
 {
-  return new QuerySmtUnify();
+  return new QueryUnify();
 }
   
-void QuerySmtUnify::parse(std::string &s, int &w)
+void QueryUnify::parse(std::string &s, int &w)
 {
   matchString(s, w, "smt-unify");
   skipWhiteSpace(s, w);
@@ -30,7 +30,7 @@ void QuerySmtUnify::parse(std::string &s, int &w)
   matchString(s, w, ";");
 }
 
-void QuerySmtUnify::execute()
+void QueryUnify::execute()
 {
   Substitution subst;
   Term *constraint = 0;

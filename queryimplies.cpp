@@ -1,4 +1,4 @@
-#include "querysmtimplies.h"
+#include "queryimplies.h"
 #include "parse.h"
 #include "factories.h"
 #include "z3driver.h"
@@ -9,17 +9,17 @@
 
 using namespace std;
 
-QuerySmtImplies::QuerySmtImplies() :
+QueryImplies::QueryImplies() :
   ct(0, 0)
 {
 }
 
-Query *QuerySmtImplies::create()
+Query *QueryImplies::create()
 {
-  return new QuerySmtImplies();
+  return new QueryImplies();
 }
   
-void QuerySmtImplies::parse(std::string &s, int &w)
+void QueryImplies::parse(std::string &s, int &w)
 {
   matchString(s, w, "implies");
   skipWhiteSpace(s, w);
@@ -32,7 +32,7 @@ void QuerySmtImplies::parse(std::string &s, int &w)
   matchString(s, w, ";");
 }
 
-void QuerySmtImplies::execute()
+void QueryImplies::execute()
 {
   Substitution subst;
   Term *constraint = 0;

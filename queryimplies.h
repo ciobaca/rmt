@@ -1,17 +1,17 @@
-#ifndef QUERYSMTIMPLIES_H__
-#define QUERYSMTIMPLIES_H__
+#ifndef QUERYIMPLIES_H__
+#define QUERYIMPLIES_H__
 
 #include "query.h"
 #include "constrainedterm.h"
 #include <string>
 #include <map>
 
-struct QuerySmtImplies : public Query
+struct QueryImplies : public Query
 {
   Term *term;
   ConstrainedTerm ct;
 
-  QuerySmtImplies();
+  QueryImplies();
   
   virtual Query *create();
   

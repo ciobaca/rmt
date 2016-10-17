@@ -1,4 +1,4 @@
-#include "querysmtsatisfiability.h"
+#include "querysatisfiability.h"
 #include "parse.h"
 #include "z3driver.h"
 #include <string>
@@ -8,16 +8,16 @@
 
 using namespace std;
 
-QuerySmtSatisfiability::QuerySmtSatisfiability()
+QuerySatisfiability::QuerySatisfiability()
 {
 }
 
-Query *QuerySmtSatisfiability::create()
+Query *QuerySatisfiability::create()
 {
-  return new QuerySmtSatisfiability();
+  return new QuerySatisfiability();
 }
   
-void QuerySmtSatisfiability::parse(std::string &s, int &w)
+void QuerySatisfiability::parse(std::string &s, int &w)
 {
   matchString(s, w, "satisfiability");
   skipWhiteSpace(s, w);
@@ -26,7 +26,7 @@ void QuerySmtSatisfiability::parse(std::string &s, int &w)
   matchString(s, w, ";");
 }
 
-void QuerySmtSatisfiability::execute()
+void QuerySatisfiability::execute()
 {
   Z3Result result = isSatisfiable(constraint);
   if (result == sat) {

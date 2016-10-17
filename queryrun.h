@@ -1,17 +1,17 @@
-#ifndef QUERYSMTRUN_H__
-#define QUERYSMTRUN_H__
+#ifndef QUERYRUN_H__
+#define QUERYRUN_H__
 
 #include "query.h"
 #include "constrainedterm.h"
 #include <string>
 #include <map>
 
-struct QuerySmtRun : public Query
+struct QueryRun : public Query
 {
   std::string rewriteSystemName;
   Term *term;
 
-  QuerySmtRun();
+  QueryRun();
   
   virtual Query *create();
 

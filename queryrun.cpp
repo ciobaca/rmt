@@ -1,4 +1,4 @@
-#include "querysmtrun.h"
+#include "queryrun.h"
 #include "parse.h"
 #include "factories.h"
 #include "z3driver.h"
@@ -9,16 +9,16 @@
 
 using namespace std;
 
-QuerySmtRun::QuerySmtRun()
+QueryRun::QueryRun()
 {
 }
 
-Query *QuerySmtRun::create()
+Query *QueryRun::create()
 {
-  return new QuerySmtRun();
+  return new QueryRun();
 }
   
-void QuerySmtRun::parse(std::string &s, int &w)
+void QueryRun::parse(std::string &s, int &w)
 {
   //  cerr << "here parse" << endl;
   matchString(s, w, "run");
@@ -34,7 +34,7 @@ void QuerySmtRun::parse(std::string &s, int &w)
   matchString(s, w, ";");
 }
 
-void QuerySmtRun::execute()
+void QueryRun::execute()
 {
   //  cerr << "here execute" << endl;
   //  virtual Term *rewriteOneStep(RewriteSystem &, Substitution &how) = 0;

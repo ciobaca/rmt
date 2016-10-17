@@ -1,5 +1,5 @@
-#ifndef QUERYSMTPROVE_H__
-#define QUERYSMTPROVE_H__
+#ifndef QUERYPROVE_H__
+#define QUERYPROVE_H__
 
 #include "query.h"
 #include "constrainedterm.h"
@@ -10,7 +10,7 @@ struct RewriteSystem;
 struct CRewriteSystem;
 struct Term;
 
-struct QuerySmtProve : public Query
+struct QueryProve : public Query
 {
   std::string rewriteSystemName;
   std::string circularitiesRewriteSystemName;
@@ -18,7 +18,7 @@ struct QuerySmtProve : public Query
   int maxDepth;
   int maxBranchingDepth;
 
-  QuerySmtProve();
+  QueryProve();
   
   virtual Query *create();
   

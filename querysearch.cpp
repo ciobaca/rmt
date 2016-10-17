@@ -1,4 +1,4 @@
-#include "querysmtnarrowsearch.h"
+#include "querysearch.h"
 #include "parse.h"
 #include "factories.h"
 #include <string>
@@ -8,17 +8,17 @@
 
 using namespace std;
 
-QuerySmtNarrowSearch::QuerySmtNarrowSearch()
+QuerySearch::QuerySearch()
   : ct(0, 0)
 {
 }
   
-Query *QuerySmtNarrowSearch::create()
+Query *QuerySearch::create()
 {
-  return new QuerySmtNarrowSearch();
+  return new QuerySearch();
 }
   
-void QuerySmtNarrowSearch::parse(std::string &s, int &w)
+void QuerySearch::parse(std::string &s, int &w)
 {
   matchString(s, w, "search");
   skipWhiteSpace(s, w);
@@ -48,7 +48,7 @@ void QuerySmtNarrowSearch::parse(std::string &s, int &w)
   matchString(s, w, ";");
 }
 
-void QuerySmtNarrowSearch::execute()
+void QuerySearch::execute()
 {
   if (existsRewriteSystem(rewriteSystemName)) {
     RewriteSystem &rs = getRewriteSystem(rewriteSystemName);

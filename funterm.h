@@ -2,7 +2,7 @@
 #define FUNTERM_H__
 
 #include "term.h"
-#include "solution.h"
+#include "constrainedsolution.h"
 
 struct FunTerm : public Term
 {
@@ -12,18 +12,15 @@ struct FunTerm : public Term
   FunTerm(Function *function, vector<Term *> arguments);
 
   virtual vector<Variable *> computeVars();
-  //  virtual vector<Name *> names();
 
   virtual Sort *getSort();
 
-  virtual string toString();
 
   virtual Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
 
   virtual bool unifyWith(Term *, Substitution &);
   virtual bool unifyWithFunTerm(FunTerm *, Substitution &);
   virtual bool unifyWithVarTerm(VarTerm *, Substitution &);
-  //  virtual bool unifyWithNamTerm(NamTerm *, Substitution &);
 
   virtual bool isVariable();
 
@@ -33,7 +30,6 @@ struct FunTerm : public Term
   virtual Term *computeNormalize(RewriteSystem &, map<Term *, Term *> &);
 
   virtual bool computeIsInstanceOf(Term *, Substitution &, map<pair<Term *, Term *>, bool> &);
-  //  virtual bool computeIsGeneralizationOf(NamTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
   virtual bool computeIsGeneralizationOf(VarTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
   virtual bool computeIsGeneralizationOf(FunTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
 
@@ -44,10 +40,12 @@ struct FunTerm : public Term
 
   virtual Term *abstract(Substitution &);
 
+  virtual string toString();
   virtual string toSmtString();
+  virtual string toPrettyString();
 
-  virtual vector<Solution> rewriteSearch(RewriteSystem &);
-  virtual vector<Solution> narrowSearch(RewriteSystem &);
+  virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
+  virtual vector<ConstrainedSolution> narrowSearch(RewriteSystem &);
   virtual vector<ConstrainedSolution> narrowSearch(CRewriteSystem &);
 };
 

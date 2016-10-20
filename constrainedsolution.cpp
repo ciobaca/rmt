@@ -2,24 +2,38 @@
 #include <sstream>
 #include "substitution.h"
 #include "term.h"
+#include "constrainedterm.h"
+#include "factories.h"
 
 using namespace std;
 
-ConstrainedSolution::ConstrainedSolution(Term *term, Substitution substitution, Term *constraint) :
+ConstrainedSolution::ConstrainedSolution(Term *term, Term *constraint, Substitution subst, Term *lhsTerm) :
   term(term),
-  substitution(substitution),
-  constraint(constraint)
+  constraint(constraint),
+  subst(subst),
+  lhsTerm(lhsTerm)
+{
+}
+
+ConstrainedSolution::ConstrainedSolution(Term *term, Substitution subst, Term *lhsTerm) :
+  term(term),
+  constraint(bTrue()),
+  subst(subst),
+  lhsTerm(lhsTerm)
 {
 }
 
 std::string ConstrainedSolution::toString() {
   std::ostringstream oss;
-  oss << "term: " << term->toString() << std::endl;
-  oss << "subst: ";
-  for (Substitution::iterator it = substitution.begin(); it != substitution.end(); ++it) {
-    oss << it->first->name << " |-> " << it->second->toString() << "; ";
-  }
-  oss << "constraint: " << constraint->toString() << std::endl;
-  oss << std::endl;
+  oss << term->toString() << " if " << constraint->toString();
+  //  oss << "subst: " << subst.toString() << endl;
+  //  oss << "lhs term: " << lhsTerm->toString() << endl;
+  //  oss << endl;
   return oss.str();
 }
+
+ConstrainedTerm ConstrainedSolution::getConstrainedTerm()
+{
+  return ConstrainedTerm(term, constraint);
+}
+

@@ -25,20 +25,29 @@ struct CRewriteSystem;
 
 struct Term
 {
-  virtual string toString() = 0;
-
   virtual Sort *getSort() = 0;
 
   bool computedVars;
+  bool computedUniqueVars;
   vector<Variable *> allVars;
+  vector<Variable *> allUniqueVars;
 
   Term() {
     computedVars = false;
+    computedUniqueVars = false;
   }
 
   // Returns the set of variables that appear in the term.  The result
   // is cached (a second call to vars will be O(1)).
   virtual vector<Variable *> vars();
+
+  // Returns the set of variables in a term; no repetitions. Prefer
+  // the cached version below to this one.
+  virtual vector<Variable *> computeUniqueVars();
+  
+  // Returns the set of variables in a term; no repetitions. Caches
+  // the result.
+  virtual vector<Variable *> uniqueVars();
 
   // Compute the set of names that appear in the term.  virtual
   //  vector<Name *> names() = 0;
@@ -177,11 +186,11 @@ struct Term
 
   // Performs a one-step rewrite search, i.e. finds all terms to which
   // this reduces in one step.
-  virtual vector<Solution> rewriteSearch(RewriteSystem &) = 0;
+  virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &) = 0;
 
   // Performs a one-step narrowing search, i.e. finds all terms to which
   // this term narrows in one step.
-  virtual vector<Solution> narrowSearch(RewriteSystem &) = 0;
+  virtual vector<ConstrainedSolution> narrowSearch(RewriteSystem &) = 0;
 
   // Performs a one-step narrowing search, i.e. finds all terms to which
   // this term narrows in one step.
@@ -189,11 +198,11 @@ struct Term
 
   // Performs a one-step narrowing search, offloading interpreted terms
   // to the SMT solver.
-  virtual vector<ConstrainedTerm> smtNarrowSearch(RewriteSystem &, Term *initialConstraint);
+  virtual vector<ConstrainedSolution> smtNarrowSearch(RewriteSystem &, Term *initialConstraint);
 
   // Performs a one-step narrowing search, offloading interpreted terms
   // to the SMT solver.
-  virtual vector<ConstrainedTerm> smtNarrowSearch(CRewriteSystem &, Term *initialConstraint);
+  virtual vector<ConstrainedSolution> smtNarrowSearch(CRewriteSystem &, Term *initialConstraint);
 
   bool smtUnifyWith(Term *other, Term *initialConstraint,
 		    Substitution &resultSubstitution, Term *&resultConstraint);
@@ -220,6 +229,12 @@ struct Term
 
   // return the reprezentation of a term in smt-speak (Z3)
   virtual string toSmtString() = 0;
+
+  // returns an infix representation of the term as a string
+  virtual string toString() = 0;
+
+  // returns a pretier representation of the term
+  virtual string toPrettyString() = 0;
 };
 
 void logmgu(string, Term *, Term *, Substitution &);

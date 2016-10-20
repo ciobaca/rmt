@@ -58,7 +58,6 @@ Z3Result Z3Theory::isSatisfiable()
   oss << "(check-sat)" << endl;
   string z3string = oss.str();
   Log(LOGSAT) << "Sending the following to Z3:" << endl << z3string;
-  //  fprintf(stderr, "Calling z3 with:\n%s\n", z3string.c_str());
   string result = callz3(z3string);
   if (result == "sat") {
     Log(LOGSAT) << "Result is SAT" << endl << z3string;

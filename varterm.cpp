@@ -20,12 +20,6 @@ vector<Variable *> VarTerm::computeVars()
   return result;
 }
 
-// vector<Name *> VarTerm::names()
-// {
-//   vector<Name *> result;
-//   return result;
-// }
-
 Term *VarTerm::computeSubstitution(Substitution &subst, map<Term *, Term *> &)
 {
   if (subst.inDomain(variable)) {
@@ -41,6 +35,11 @@ string VarTerm::toString()
 }
 
 string VarTerm::toSmtString()
+{
+  return variable->name;
+}
+
+string VarTerm::toPrettyString()
 {
   return variable->name;
 }
@@ -100,17 +99,6 @@ bool VarTerm::unifyWithFunTerm(FunTerm *t, Substitution &subst)
   }
 }
 
-// bool VarTerm::unifyWithNamTerm(NamTerm *t, Substitution &subst)
-// {
-//   logmgu("VarTerm::unifyWithNamTerm", this, t, subst);
-//   if (subst.inDomain(this->variable)) {
-//     return subst.image(this->variable)->unifyWithNamTerm(t, subst);
-//   } else {
-//     subst.force(this->variable, t);
-//     return true;
-//   }
-// }
-
 bool VarTerm::isVariable()
 {
   return true;
@@ -138,19 +126,6 @@ bool VarTerm::computeIsInstanceOf(Term *t, Substitution &s, map<pair<Term *, Ter
   return t->computeIsGeneralizationOf(this, s, cache);
 }
 
-// bool VarTerm::computeIsGeneralizationOf(NamTerm *t, Substitution &s, map<pair<Term *, Term *>, bool> &cache)
-// {
-//   if (!contains(cache, make_pair((Term *)t, (Term *)this))) {
-//     if (contains(s, this->variable)) {
-//       cache[make_pair(t, this)] = s.image(this->variable) == t;
-//     } else {
-//       s.add(this->variable, t);
-//       cache[make_pair(t, this)] = true;
-//     }
-//   }
-//   return cache[make_pair(t, this)];
-// }
-
 bool VarTerm::computeIsGeneralizationOf(VarTerm *t, Substitution &s, map<pair<Term *, Term *>, bool> &cache)
 {
   if (!contains(cache, make_pair((Term *)t, (Term *)this))) {
@@ -175,11 +150,9 @@ bool VarTerm::computeIsGeneralizationOf(FunTerm *t, Substitution &s, map<pair<Te
       cache[make_pair(t, this)] = s.image(this->variable) == t;
     } else {
       if (this->variable->sort->hasSubSortTR(t->function->result)) {
-	//	fprintf(stderr, "%s has %s as subsort\n", this->variable->sort->name.c_str(), t->function->result->name.c_str());
 	s.add(this->variable, t);
 	cache[make_pair(t, this)] = true;
       } else {
-	//	fprintf(stderr, "NOT %s has %s as subsort\n", this->variable->sort->name.c_str(), t->function->result->name.c_str());
 	cache[make_pair(t, this)] = false;
       }
     }
@@ -220,9 +193,9 @@ Term *VarTerm::abstract(Substitution &substitution)
   }
 }
 
-vector<Solution> VarTerm::rewriteSearch(RewriteSystem &rs)
+vector<ConstrainedSolution> VarTerm::rewriteSearch(RewriteSystem &rs)
 {
-  vector<Solution> result;
+  vector<ConstrainedSolution> result;
   for (int i = 0; i < len(rs); ++i) {
     pair<Term *, Term *> rewriteRule = rs[i];
     Term *l = rewriteRule.first;
@@ -231,17 +204,17 @@ vector<Solution> VarTerm::rewriteSearch(RewriteSystem &rs)
     Substitution subst;
     if (this->isInstanceOf(l, subst)) {
       Term *term = r->substitute(subst);
-      result.push_back(Solution(term, subst));
+      result.push_back(ConstrainedSolution(term, subst, l));
     }
   }
   return result;
 }
 
 // caller needs to ensure freshness of rewrite system
-vector<Solution> VarTerm::narrowSearch(RewriteSystem &rs)
+vector<ConstrainedSolution> VarTerm::narrowSearch(RewriteSystem &rs)
 {
   Log(DEBUG7) << "VarTerm::narrowSearch(RewriteSystem &) " << this->toString() << endl;
-  vector<Solution> result;
+  vector<ConstrainedSolution> result;
   for (int i = 0; i < len(rs); ++i) {
     pair<Term *, Term *> rewriteRule = rs[i];
     Term *l = rewriteRule.first;
@@ -250,7 +223,7 @@ vector<Solution> VarTerm::narrowSearch(RewriteSystem &rs)
     Substitution subst;
     if (this->unifyWith(l, subst)) {
       Term *term = r;
-      result.push_back(Solution(term, subst));
+      result.push_back(ConstrainedSolution(term->substitute(subst), subst, l));
     }
   }
   Log(DEBUG7) << "Done VarTerm::narrowSearch(RewriteSystem &) " << this->toString() << endl;
@@ -269,7 +242,7 @@ vector<ConstrainedSolution> VarTerm::narrowSearch(CRewriteSystem &crs)
     Substitution subst;
     if (this->unifyWith(l.term, subst)) {
       Term *term = r;
-      result.push_back(ConstrainedSolution(term, subst, l.constraint));
+      result.push_back(ConstrainedSolution(term->substitute(subst), l.constraint->substitute(subst), subst, l.term));
     }
   }
   return result;

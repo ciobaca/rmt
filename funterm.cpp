@@ -28,16 +28,6 @@ vector<Variable *> FunTerm::computeVars()
   return result;
 }
 
-// vector<Name *> FunTerm::names()
-// {
-//   vector<Name *> result;
-//   for (int i = 0; i < len(arguments); ++i) {
-//     vector<Name *> temp = arguments[i]->names();
-//     append(result, temp);
-//   }
-//   return result;
-// }
-
 string FunTerm::toString()
 {
   assert(len(function->arguments) == len(arguments));
@@ -83,6 +73,25 @@ string FunTerm::toSmtString()
   }
   if (n) {
     oss << ")";
+  }
+  return oss.str();
+}
+
+string FunTerm::toPrettyString()
+{
+  if (function->hasInterpretation) {
+    return this->toSmtString();
+  }
+  assert(len(function->arguments) == len(arguments));
+  int n = len(function->arguments);
+
+  ostringstream oss;
+  oss << function->name;
+  if (n) {
+    oss << "(";
+  }
+  for (int i = 0; i < n; ++i) {
+    oss << arguments[i]->toPrettyString() << (i == n - 1 ? ")" : ",");
   }
   return oss.str();
 }
@@ -327,9 +336,9 @@ Term *FunTerm::abstract(Substitution &substitution)
   }
 }
 
-vector<Solution> FunTerm::rewriteSearch(RewriteSystem &rs)
+vector<ConstrainedSolution> FunTerm::rewriteSearch(RewriteSystem &rs)
 {
-  vector<Solution> solutions;
+  vector<ConstrainedSolution> solutions;
 
   // top-most rewrite search
   for (int i = 0; i < len(rs); ++i) {
@@ -340,21 +349,22 @@ vector<Solution> FunTerm::rewriteSearch(RewriteSystem &rs)
     Substitution subst;
     if (this->isInstanceOf(l, subst)) {
       Term *term = r->substitute(subst);
-      solutions.push_back(Solution(term, subst));
+      solutions.push_back(ConstrainedSolution(term, subst, l));
     }
   }
 
   // inner rewrite search
   for (int i = 0; i < len(function->arguments); ++i) {
-    vector<Solution> innerSolutions = arguments[i]->rewriteSearch(rs);
+    vector<ConstrainedSolution> innerSolutions = arguments[i]->rewriteSearch(rs);
     for (int j = 0; j < innerSolutions.size(); ++j) {
       vector<Term *> newArguments;
       for (int k = 0; k < len(function->arguments); ++k) {
 	newArguments.push_back(arguments[k]);
       }
       newArguments[i] = innerSolutions[j].term;
-      solutions.push_back(Solution(getFunTerm(function, newArguments),
-				   innerSolutions[i].substitution));
+      solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
+				   innerSolutions[i].subst,
+				   innerSolutions[i].lhsTerm));
     }
   }
 
@@ -362,10 +372,10 @@ vector<Solution> FunTerm::rewriteSearch(RewriteSystem &rs)
 }
 
 // caller needs to ensure freshness of rewrite system
-vector<Solution> FunTerm::narrowSearch(RewriteSystem &rs)
+vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
 {
   Log(DEBUG7) << "FunTerm::narrowSearch(RewriteSystem &rs)" << this->toString() << endl;
-  vector<Solution> solutions;
+  vector<ConstrainedSolution> solutions;
 
   // top-most narrowing search
   for (int i = 0; i < len(rs); ++i) {
@@ -375,12 +385,9 @@ vector<Solution> FunTerm::narrowSearch(RewriteSystem &rs)
     Log(DEBUG7) << "Top-mosting with " << l->toString() << " => " << r->toString() << endl;
 
     Substitution subst;
-    Log(DEBUG7) << "Initial subst " << subst.toString() << endl;
-    //    cerr << "Trying to unify " << this->toString() << " with " << l->toString() << endl;
     if (this->unifyWith(l, subst)) {
-      //      cerr << "Unification succeeded." << endl;
       Term *term = r;
-      solutions.push_back(Solution(term, subst));
+      solutions.push_back(ConstrainedSolution(term->substitute(subst), subst, l));
     } else {
       //      cerr << "Unification failed." << endl;
     }
@@ -389,15 +396,16 @@ vector<Solution> FunTerm::narrowSearch(RewriteSystem &rs)
   // inner narrowing search
   for (int i = 0; i < len(function->arguments); ++i) {
     Log(DEBUG7) << "Innering with " << arguments[i]->toString() << endl;
-    vector<Solution> innerSolutions = arguments[i]->narrowSearch(rs);
+    vector<ConstrainedSolution> innerSolutions = arguments[i]->narrowSearch(rs);
     for (int j = 0; j < innerSolutions.size(); ++j) {
       vector<Term *> newArguments;
       for (int k = 0; k < len(function->arguments); ++k) {
 	newArguments.push_back(arguments[k]);
       }
       newArguments[i] = innerSolutions[j].term;
-      solutions.push_back(Solution(getFunTerm(function, newArguments),
-				   innerSolutions[j].substitution));
+      solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
+				   innerSolutions[j].subst,
+				   innerSolutions[i].lhsTerm));
     }
   }
   Log(DEBUG7) << "Done FunTerm::narrowSearch(RewriteSystem &rs) " << this->toString() << endl;
@@ -421,7 +429,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(CRewriteSystem &crs)
     if (this->unifyWith(l.term, subst)) {
       Log(DEBUG8) << "Unification succeeded." << endl;
       Term *term = r;
-      solutions.push_back(ConstrainedSolution(term, subst, l.constraint));
+      solutions.push_back(ConstrainedSolution(term->substitute(subst), l.constraint->substitute(subst), subst, l.term));
     } else {
       Log(DEBUG8) << "Unification failed." << endl;
     }
@@ -437,7 +445,9 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(CRewriteSystem &crs)
       }
       newArguments[i] = innerSolutions[j].term;
       solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
-				   innerSolutions[i].substitution, innerSolutions[i].constraint));
+					      innerSolutions[i].constraint,
+					      innerSolutions[i].subst,
+					      innerSolutions[i].lhsTerm));
     }
   }
 

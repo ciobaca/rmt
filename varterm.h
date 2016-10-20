@@ -9,10 +9,7 @@ struct VarTerm : public Term
 
   VarTerm(Variable *variable);
 
-  virtual string toString();
-
   virtual vector<Variable *> computeVars();
-  //  virtual vector<Name *> names();
 
   virtual Sort *getSort();
 
@@ -21,7 +18,6 @@ struct VarTerm : public Term
   virtual bool unifyWith(Term *, Substitution &);
   virtual bool unifyWithFunTerm(FunTerm *, Substitution &);
   virtual bool unifyWithVarTerm(VarTerm *, Substitution &);
-  //  virtual bool unifyWithNamTerm(NamTerm *, Substitution &);
 
   virtual bool isVariable();
 
@@ -31,7 +27,6 @@ struct VarTerm : public Term
   virtual Term *computeNormalize(RewriteSystem &, map<Term *, Term *> &);
 
   virtual bool computeIsInstanceOf(Term *, Substitution &, map<pair<Term *, Term *>, bool> &);
-  //  virtual bool computeIsGeneralizationOf(NamTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
   virtual bool computeIsGeneralizationOf(VarTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
   virtual bool computeIsGeneralizationOf(FunTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
 
@@ -42,11 +37,14 @@ struct VarTerm : public Term
 
   virtual Term *abstract(Substitution &);
 
-  virtual vector<Solution> rewriteSearch(RewriteSystem &);
-  virtual vector<Solution> narrowSearch(RewriteSystem &);
+  virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
+  virtual vector<ConstrainedSolution> narrowSearch(RewriteSystem &);
   virtual vector<ConstrainedSolution> narrowSearch(CRewriteSystem &);
 
+  virtual string toString();
   virtual string toSmtString();
+  virtual string toPrettyString();
+
 };
 
 #endif

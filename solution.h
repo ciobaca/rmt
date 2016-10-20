@@ -9,14 +9,15 @@
 struct Term;
 //struct Substitution;
 
-struct Solution
-{
-  Term *term;
-  Substitution substitution;
+//struct Solution
+//{
+//  Term *term;
+//  Substitution substitution;
+  //  Term *lhsTerm;
 
-  Solution(Term *term, Substitution substitution);
+  //  Solution(Term *term, Substitution substitution, Term *lhs);
 
-  std::string toString();
-};
+//  std::string toString();
+//};
 
 #endif

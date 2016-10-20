@@ -52,12 +52,12 @@ void QuerySearch::execute()
 {
   if (existsRewriteSystem(rewriteSystemName)) {
     RewriteSystem &rs = getRewriteSystem(rewriteSystemName);
-  
+
     vector<ConstrainedTerm> solutions = ct.smtNarrowSearch(rs, minDepth, maxDepth);
     cout << solutions.size() << " solutions." << endl;
     for (int i = 0; i < solutions.size(); ++i) {
       cout << "Solution #" << i + 1 << ":" << endl;
-      cout << solutions[i].toString() << endl;
+      cout << simplifyConstrainedTerm(solutions[i]).toString() << endl;
     }
   } else if (existsCRewriteSystem(rewriteSystemName)) {
     CRewriteSystem &crs = getCRewriteSystem(rewriteSystemName);
@@ -66,7 +66,7 @@ void QuerySearch::execute()
     cout << solutions.size() << " solutions." << endl;
     for (int i = 0; i < solutions.size(); ++i) {
       cout << "Solution #" << i + 1 << ":" << endl;
-      cout << solutions[i].toString() << endl;
+      cout << simplifyConstrainedTerm(solutions[i]).toString() << endl;
     }
   } else {
     Log(ERROR) << "Could not find rewrite system " << rewriteSystemName << " (neigher regular or constrained)" << endl;

@@ -1,6 +1,7 @@
 #include "constrainedterm.h"
 #include "term.h"
 #include "log.h"
+#include "factories.h"
 #include <sstream>
 #include <cassert>
 
@@ -11,22 +12,35 @@ string ConstrainedTerm::toString()
   ostringstream oss;
   oss << term->toString();
   if (constraint) {
-    oss << " /\\ ";
+    oss << " if ";
     oss << constraint->toString();
   }
   return oss.str();
 }
 
-vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs)
+string ConstrainedTerm::toPrettyString()
 {
-  Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs) " << this->toString();
-  return term->smtNarrowSearch(rs, constraint);
+  ostringstream oss;
+  oss << term->toPrettyString();
+  if (constraint) {
+    oss << " if ";
+    oss << constraint->toPrettyString();
+  }
+  return oss.str();
 }
 
-vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs)
+vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs)
+{
+  Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs) " << this->toString();
+  vector<ConstrainedSolution> sols = term->smtNarrowSearch(rs, constraint);
+  return sols;
+}
+
+vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs)
 {
   Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs) " << this->toString();
-  return term->smtNarrowSearch(crs, constraint);
+  vector<ConstrainedSolution> sols = term->smtNarrowSearch(crs, constraint);
+  return sols;
 }
 
 void ConstrainedTerm::smtNarrowSearchHelper(RewriteSystem &rs,
@@ -35,11 +49,11 @@ void ConstrainedTerm::smtNarrowSearchHelper(RewriteSystem &rs,
 {
   if (minDepth <= depth && depth <= maxDepth) {
     result.push_back(*this);
-  } 
+  }
   if (depth < maxDepth) {
-    vector<ConstrainedTerm> successors = this->smtNarrowSearch(rs);
-    for (int i = 0; i < successors.size(); ++i) {
-      successors[i].smtNarrowSearchHelper(rs, minDepth, maxDepth, depth + 1, result);
+    vector<ConstrainedSolution> sols = this->smtNarrowSearch(rs);
+    for (int i = 0; i < sols.size(); ++i) {
+      ConstrainedTerm(sols[i].term, sols[i].constraint).smtNarrowSearchHelper(rs, minDepth, maxDepth, depth + 1, result);
     }
   }
 }
@@ -52,9 +66,9 @@ void ConstrainedTerm::smtNarrowSearchHelper(CRewriteSystem &crs,
     result.push_back(*this);
   } 
   if (depth < maxDepth) {
-    vector<ConstrainedTerm> successors = this->smtNarrowSearch(crs);
-    for (int i = 0; i < successors.size(); ++i) {
-      successors[i].smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
+    vector<ConstrainedSolution> sols = this->smtNarrowSearch(crs);
+    for (int i = 0; i < sols.size(); ++i) {
+      ConstrainedTerm(sols[i].term, sols[i].constraint).smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
     }
   }
 }

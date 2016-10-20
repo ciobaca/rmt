@@ -23,6 +23,10 @@ map<Variable *, Term *> varTerms;
 
 RewriteSystem &getRewriteSystem(string name)
 {
+  if (!existsRewriteSystem(name)) {
+    Log(ERROR) << "Cannot find rewrite system " << name << endl;
+    assert(0);
+  }
   return rewriteSystems[name];
 }
 

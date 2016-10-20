@@ -20,6 +20,25 @@ vector<Variable *> Term::vars()
   }
 }
 
+vector<Variable *> Term::computeUniqueVars()
+{
+  vector<Variable *> myv = this->vars();
+  sort(myv.begin(), myv.end());
+  vector<Variable *>::iterator last = unique(myv.begin(), myv.end());
+  myv.erase(last, myv.end());
+  return myv;
+}
+
+vector<Variable *> Term::uniqueVars()
+{
+  if (computedUniqueVars) {
+    return allUniqueVars;
+  } else {
+    computedUniqueVars = true;
+    return allUniqueVars = computeUniqueVars();
+  }
+}
+
 Term *Term::substitute(Substitution &subst)
 {
   map<Term *, Term *> cache;
@@ -85,12 +104,9 @@ bool Term::smtUnifyWith(Term *other, Term *initialConstraint,
   Substitution unifyingSubstitution;
   if (abstractTerm->unifyWith(other, unifyingSubstitution)) {
     Z3Theory theory;
-    //  fprintf(stderr, "Preparing z3 theory.\n");
     vector<Variable *> interpretedVariables = getInterpretedVariables();
     for (int i = 0; i < interpretedVariables.size(); ++i) {
       theory.addVariable(interpretedVariables[i]);
-      //    fprintf(stderr, "Declaring variable %s : %s.\n", interpretedVariables[i]->name.c_str(),
-      //	    interpretedVariables[i]->sort->name.c_str());
     }
 
     if (initialConstraint == 0) {
@@ -120,8 +136,6 @@ bool Term::smtUnifyWith(Term *other, Term *initialConstraint,
 	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
   	}
       }
-      //    fprintf(stderr, "Declaring constraint %s = %s.\n", getVarTerm(it->first)->toString().c_str(),
-      //	    it->second->toString().c_str());
     }
 
     // STEP 3.2.3: call z3 to check satisfiability
@@ -135,163 +149,35 @@ bool Term::smtUnifyWith(Term *other, Term *initialConstraint,
   }
 }
 
-vector<ConstrainedTerm> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *initialConstraint)
+vector<ConstrainedSolution> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *initialConstraint)
 {
-  vector<ConstrainedTerm> finalResult;
+  vector<ConstrainedSolution> finalResult;
 
-  Substitution substitution;
+  Substitution abstractingSubstitution;
+
   // STEP 1: compute abstracted term (and constraining substitution)
-  Log(DEBUG5) << "Term::smtNarrowSearch(RewriteSystem &, Term *) " << this->toString() << " /\\ " << initialConstraint->toString() << endl;
-  Term *abstractTerm = this->abstract(substitution);
+  Log(DEBUG5) << "Term::smtNarrowSearch(CRewriteSystem &, Term *) " <<
+    this->toString() << " /\\ " << initialConstraint->toString() << endl;
+
+  Term *abstractTerm = this->abstract(abstractingSubstitution);
 
   Log(DEBUG6) << "Abstract term: " << abstractTerm->toString() << endl;
-  Log(DEBUG6) << "Abstracting substitution: " << substitution.toString() << endl;
+  Log(DEBUG6) << "Abstracting substitution: " << abstractingSubstitution.toString() << endl;
 
   // STEP 2: perform one-step narrowing from the abstract term
   Log(DEBUG7) << "Rewrite system: " << rsInit.toString() << endl;
   RewriteSystem rs = rsInit.fresh(abstractTerm->vars());
   Log(DEBUG7) << "Fresh rewrite system: " << rs.toString() << endl;
-  vector<Solution> solutions = abstractTerm->narrowSearch(rs);
-  Log(DEBUG7) << "Done narrowSearch" << endl;
-
-  Log(DEBUG6) << "Narrowing abstract term resulted in " << solutions.size() << " solutions" << endl;
-
-  // STEP 3: check that the narrowing constraints are satisfiable
-  // STEP 3.1: prepare generic theory for Z3
-  Z3Theory theory;
-  //  fprintf(stderr, "Preparing z3 theory.\n");
-  vector<Variable *> interpretedVariables = getInterpretedVariables();
-  for (int i = 0; i < interpretedVariables.size(); ++i) {
-    theory.addVariable(interpretedVariables[i]);
-    //    fprintf(stderr, "Declaring variable %s : %s.\n", interpretedVariables[i]->name.c_str(),
-    //	    interpretedVariables[i]->sort->name.c_str());
-  }
-
-  if (initialConstraint == 0) {
-    initialConstraint = bTrue();
-  }
-
-  // STEP 3.2: check that the constraints are satisfiable
-  for (int i = 0; i < solutions.size(); ++i) {
-    Log(DEBUG6) << "Solution " << i << ": " << solutions[i].term->toString() << " " << solutions[i].substitution.toString() << endl;
-
-    Solution sol = solutions[i];
-    ConstrainedTerm constrainedTerm(sol.term->substitute(sol.substitution), initialConstraint);
-
-    // STEP 3.2.1: start from the generic theory
-    Z3Theory solTheory(theory); 
-
-    // STEP 3.2.2: add constraints
-    Substitution resultSubstitution;
-
-    Term *lhsTrouble, *rhsTrouble;
-    solTheory.addConstraint(initialConstraint);
-    for (Substitution::iterator it = substitution.begin(); it != substitution.end(); ++it) {
-      Term *lhsTerm = getVarTerm(it->first)->substitute(sol.substitution);
-      Term *rhsTerm = it->second->substitute(sol.substitution);
-      if (it->second != it->second->substitute(sol.substitution)) {
-	Log(ERROR) << "Trouble ahead" << endl;
-	assert(0);
-      }
-      solTheory.addEqualityConstraint(lhsTerm, rhsTerm);
-      if (lhsTerm != rhsTerm) {
-  	if (lhsTerm->isVariable()) {
-  	  Variable *var = ((VarTerm *)lhsTerm)->variable;
-  	  resultSubstitution.force(var, rhsTerm);
-
-	  constrainedTerm.constraint = bAnd(constrainedTerm.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
-  	} else if (rhsTerm->isVariable()) {
-  	  Variable *var = ((VarTerm *)rhsTerm)->variable;
-  	  resultSubstitution.force(var, lhsTerm);
-
-	  constrainedTerm.constraint = bAnd(constrainedTerm.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
-  	} else {
-	  constrainedTerm.constraint = bAnd(constrainedTerm.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
-  	}
-      }
-      //    fprintf(stderr, "Declaring constraint %s = %s.\n", getVarTerm(it->first)->toString().c_str(),
-      //	    it->second->toString().c_str());
-    }
-
-    // STEP 3.2.3: call z3 to check satisfiability
-    if (solTheory.isSatisfiable() != unsat) {
-      // there's a chance the constraints are satisfiable
-
-      constrainedTerm.term = constrainedTerm.term->substitute(resultSubstitution);
-      constrainedTerm.constraint = simplifyConstraint(constrainedTerm.constraint->substitute(resultSubstitution));
-
-      Log(DEBUG5) << "Introducing exists on " << constrainedTerm.term->toString() << endl;
-      Log(DEBUG5) << "                   /\\ " << constrainedTerm.constraint->toString() << endl;
-
-      vector<Variable *> varsMore = constrainedTerm.constraint->vars();
-      vector<Variable *> varsLess = this->vars(); // constrainedTerm.term->vars();
-      vector<Variable *> vars;
-      for (vector<Variable *>::iterator it = varsMore.begin(); it != varsMore.end(); ++it) {
-	bool found = false;
-	for (vector<Variable *>::iterator jt = varsLess.begin(); jt != varsLess.end(); ++jt) {
-	  Variable *my = *it;
-	  Variable *te = *jt;
-	  if (my == te) {
-	    found = true;
-	    break;
-	  }
-	}
-	for (vector<Variable *>::iterator jt = vars.begin(); jt != vars.end(); ++jt) {
-	  Variable *my = *it;
-	  Variable *te = *jt;
-	  if (my == te) {
-	    found = true;
-	    break;
-	  }
-	}
-	if (!found) {
-	  vars.push_back(*it);
-	}
-      }
-      for (vector<Variable *>::iterator it = vars.begin(); it != vars.end(); ++it) {
-	constrainedTerm.constraint = bExists(*it, constrainedTerm.constraint);
-      }
-
-      Log(DEBUG4) << "Resulting constrainedTerm = " << constrainedTerm.toString() << endl;
-
-      finalResult.push_back(constrainedTerm);
-    }
-  }
-
-  return finalResult;
-}
-
-vector<ConstrainedTerm> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *initialConstraint)
-{
-  vector<ConstrainedTerm> finalResult;
-
-  Substitution substitution;
-
-  // STEP 1: compute abstracted term (and constraining substitution)
-  Log(DEBUG5) << "Term::smtNarrowSearch(CRewriteSystem &, Term *) " << this->toString() << " /\\ " << initialConstraint->toString() << endl;
-
-  Term *abstractTerm = this->abstract(substitution);
-
-  Log(DEBUG6) << "Abstract term: " << abstractTerm->toString() << endl;
-  Log(DEBUG6) << "Abstracting substitution: " << substitution.toString() << endl;
-
-  // STEP 2: perform one-step narrowing from the abstract term
-  Log(DEBUG6) << "Conditional system: " << crsInit.toString() << endl;
-  CRewriteSystem crs = crsInit.fresh(abstractTerm->vars());
-  Log(DEBUG6) << "Fresh rewrite system: " << crs.toString() << endl;
-  vector<ConstrainedSolution> solutions = abstractTerm->narrowSearch(crs);
+  vector<ConstrainedSolution> solutions = abstractTerm->narrowSearch(rs);
 
   Log(DEBUG6) << "Narrowing abstract term resulted in " << solutions.size() << " solutions" << endl;
   
   // STEP 3: check that the narrowing constraints are satisfiable
   // STEP 3.1: prepare generic theory for Z3
   Z3Theory theory;
-  //  fprintf(stderr, "Preparing z3 theory.\n");
   vector<Variable *> interpretedVariables = getInterpretedVariables();
   for (int i = 0; i < interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
-    //    fprintf(stderr, "Declaring variable %s : %s.\n", interpretedVariables[i]->name.c_str(),
-    //	    interpretedVariables[i]->sort->name.c_str());
   }
 
   if (initialConstraint == 0) {
@@ -301,88 +187,145 @@ vector<ConstrainedTerm> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *ini
   // STEP 3.2: check that the constraints are satisfiable
   for (int i = 0; i < solutions.size(); ++i) {
     ConstrainedSolution sol = solutions[i];
-    Log(DEBUG6) << "Solution #" << i << endl;
-    Log(DEBUG6) << "Term = " << sol.term->toString() << endl;
-    Log(DEBUG6) << "Substitution = " << sol.substitution.toString() << endl;
-    Log(DEBUG6) << "Abstr Substitution = " << substitution.toString() << endl;
-    Log(DEBUG6) << "Constraint = " << sol.constraint->toString() << endl;
-    ConstrainedTerm constrainedTerm(sol.term, bAnd(initialConstraint, sol.constraint));
+    sol.term = sol.term->substitute(abstractingSubstitution);
+    sol.constraint = sol.constraint->substitute(abstractingSubstitution);
+
+    Log(DEBUG7) << "Solution #" << i << endl;
+    Log(DEBUG7) << "Term = " << sol.term->toString() << endl;
+    Log(DEBUG7) << "Constraint = " << sol.constraint->toString() << endl;
+    Log(DEBUG7) << "Subst = " << sol.subst.toString() << endl;
+    Log(DEBUG7) << "LHS Term = " << sol.lhsTerm->toString() << endl;
+
+    sol.constraint = bAnd(initialConstraint, sol.constraint);
 
     // STEP 3.2.1: start from the generic theory
-    Z3Theory solTheory(theory); 
 
-    // STEP 3.2.2: add constraints
-    Substitution resultSubstitution;
-
-    Term *lhsTrouble, *rhsTrouble;
-    solTheory.addConstraint(constrainedTerm.constraint);
-    for (Substitution::iterator it = substitution.begin(); it != substitution.end(); ++it) {
-      Term *lhsTerm = getVarTerm(it->first)->substitute(sol.substitution);
+    Substitution simplifyingSubst;
+    // STEP 3.2.2: add constraints resulting from abstracting theory
+    for (Substitution::iterator it = abstractingSubstitution.begin(); it != abstractingSubstitution.end(); ++it) {
+      Term *lhsTerm = getVarTerm(it->first)->substitute(sol.subst)->substitute(abstractingSubstitution);
       Term *rhsTerm = it->second;
-      if (it->second != it->second->substitute(sol.substitution)) {
-	Log(ERROR) << "TROUBLE AHEAD" << endl;
-	assert(0);
+      if (lhsTerm == rhsTerm) {
+	continue;
       }
-      solTheory.addEqualityConstraint(lhsTerm, rhsTerm);
-      if (lhsTerm != rhsTerm) {
-  	if (lhsTerm->isVariable()) {
-  	  Variable *var = ((VarTerm *)lhsTerm)->variable;
-  	  resultSubstitution.force(var, rhsTerm);
-
-	  constrainedTerm.constraint = bAnd(constrainedTerm.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
-  	} else if (rhsTerm->isVariable()){
-  	  Variable *var = ((VarTerm *)rhsTerm)->variable;
-  	  resultSubstitution.force(var, lhsTerm);
-
-	  constrainedTerm.constraint = bAnd(constrainedTerm.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
-  	} else {
-	  constrainedTerm.constraint = bAnd(constrainedTerm.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
-  	}
+      bool simplifiedConstraint = false;
+      if (lhsTerm->isVariable()) {
+	Variable *var = ((VarTerm *)lhsTerm)->variable;
+	if (!simplifyingSubst.inDomain(var)) {
+	  simplifiedConstraint = true;
+	  simplifyingSubst.add(var, rhsTerm);
+	}
+      }
+      if (!simplifiedConstraint && rhsTerm->isVariable()) {
+	Variable *var = ((VarTerm *)rhsTerm)->variable;
+	if (!simplifyingSubst.inDomain(var)) {
+	  simplifiedConstraint = true;
+	  simplifyingSubst.add(var, lhsTerm);
+	}
+      }
+      if (!simplifiedConstraint) {
+	sol.constraint = bAnd(sol.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
       }
     }
+    sol.constraint = sol.constraint->substitute(simplifyingSubst);
+    sol.term = sol.term->substitute(simplifyingSubst);
 
+    Z3Theory solTheory(theory); 
+    solTheory.addConstraint(sol.constraint);
     // STEP 3.2.3: call z3 to check satisfiability
     if (solTheory.isSatisfiable() != unsat) {
-      // there's a chance the constraints are satisfiable
+      finalResult.push_back(sol);
+    }
+  }
 
-      constrainedTerm.term = constrainedTerm.term->substitute(sol.substitution);
-      constrainedTerm.term = constrainedTerm.term->substitute(resultSubstitution);
-      constrainedTerm.constraint = constrainedTerm.constraint->substitute(sol.substitution);
-      constrainedTerm.constraint = simplifyConstraint(constrainedTerm.constraint->substitute(resultSubstitution));
+  return finalResult;
+}
 
-      Log(DEBUG5) << "Introducing exists on " << constrainedTerm.term->toString() << endl;
-      Log(DEBUG5) << "                   /\\ " << constrainedTerm.constraint->toString() << endl;
+vector<ConstrainedSolution> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *initialConstraint)
+{
+  vector<ConstrainedSolution> finalResult;
 
-      vector<Variable *> varsMore = constrainedTerm.constraint->vars();
-      vector<Variable *> varsLess = this->vars(); // constrainedTerm.term->vars();
-      vector<Variable *> vars;
-      for (vector<Variable *>::iterator it = varsMore.begin(); it != varsMore.end(); ++it) {
-	bool found = false;
-	for (vector<Variable *>::iterator jt = varsLess.begin(); jt != varsLess.end(); ++jt) {
-	  Variable *my = *it;
-	  Variable *te = *jt;
-	  if (my == te) {
-	    found = true;
-	    break;
-	  }
-	}
-	for (vector<Variable *>::iterator jt = vars.begin(); jt != vars.end(); ++jt) {
-	  Variable *my = *it;
-	  Variable *te = *jt;
-	  if (my == te) {
-	    found = true;
-	    break;
-	  }
-	}
-	if (!found) {
-	  vars.push_back(*it);
+  Substitution abstractingSubstitution;
+
+  // STEP 1: compute abstracted term (and constraining substitution)
+  Log(DEBUG5) << "Term::smtNarrowSearch(CRewriteSystem &, Term *) " <<
+    this->toString() << " /\\ " << initialConstraint->toString() << endl;
+
+  Term *abstractTerm = this->abstract(abstractingSubstitution);
+
+  Log(DEBUG6) << "Abstract term: " << abstractTerm->toString() << endl;
+  Log(DEBUG6) << "Abstracting substitution: " << abstractingSubstitution.toString() << endl;
+
+  // STEP 2: perform one-step narrowing from the abstract term
+  Log(DEBUG7) << "Conditional system: " << crsInit.toString() << endl;
+  CRewriteSystem crs = crsInit.fresh(abstractTerm->vars());
+  Log(DEBUG7) << "Fresh rewrite system: " << crs.toString() << endl;
+  vector<ConstrainedSolution> solutions = abstractTerm->narrowSearch(crs);
+
+  Log(DEBUG6) << "Narrowing abstract term resulted in " << solutions.size() << " solutions" << endl;
+  
+  // STEP 3: check that the narrowing constraints are satisfiable
+  // STEP 3.1: prepare generic theory for Z3
+  Z3Theory theory;
+  vector<Variable *> interpretedVariables = getInterpretedVariables();
+  for (int i = 0; i < interpretedVariables.size(); ++i) {
+    theory.addVariable(interpretedVariables[i]);
+  }
+
+  if (initialConstraint == 0) {
+    initialConstraint = bTrue();
+  }
+
+  // STEP 3.2: check that the constraints are satisfiable
+  for (int i = 0; i < solutions.size(); ++i) {
+    ConstrainedSolution sol = solutions[i];
+    sol.term = sol.term->substitute(abstractingSubstitution);
+    sol.constraint = sol.constraint->substitute(abstractingSubstitution);
+
+    Log(DEBUG7) << "Solution #" << i << endl;
+    Log(DEBUG7) << "Term = " << sol.term->toString() << endl;
+    Log(DEBUG7) << "Constraint = " << sol.constraint->toString() << endl;
+    Log(DEBUG7) << "LHS Term = " << sol.lhsTerm->toString() << endl;
+
+    sol.constraint = bAnd(initialConstraint, sol.constraint);
+
+    // STEP 3.2.1: start from the generic theory
+
+    Substitution simplifyingSubst;
+    // STEP 3.2.2: add constraints resulting from abstracting theory
+    for (Substitution::iterator it = abstractingSubstitution.begin(); it != abstractingSubstitution.end(); ++it) {
+      Term *lhsTerm = getVarTerm(it->first)->substitute(sol.subst)->substitute(abstractingSubstitution);
+      Term *rhsTerm = it->second;
+      if (lhsTerm == rhsTerm) {
+	continue;
+      }
+      bool simplifiedConstraint = false;
+      if (lhsTerm->isVariable()) {
+	Variable *var = ((VarTerm *)lhsTerm)->variable;
+	if (!simplifyingSubst.inDomain(var)) {
+	  simplifiedConstraint = true;
+	  simplifyingSubst.add(var, rhsTerm);
 	}
       }
-      for (vector<Variable *>::iterator it = vars.begin(); it != vars.end(); ++it) {
-	constrainedTerm.constraint = bExists(*it, constrainedTerm.constraint);
+      if (!simplifiedConstraint && rhsTerm->isVariable()) {
+	Variable *var = ((VarTerm *)rhsTerm)->variable;
+	if (!simplifyingSubst.inDomain(var)) {
+	  simplifiedConstraint = true;
+	  simplifyingSubst.add(var, lhsTerm);
+	}
       }
+      if (!simplifiedConstraint) {
+	sol.constraint = bAnd(sol.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
+      }
+    }
+    sol.constraint = sol.constraint->substitute(simplifyingSubst);
+    sol.term = sol.term->substitute(simplifyingSubst);
 
-      finalResult.push_back(constrainedTerm);
+    Z3Theory solTheory(theory); 
+    solTheory.addConstraint(sol.constraint);
+    // STEP 3.2.3: call z3 to check satisfiability
+    if (solTheory.isSatisfiable() != unsat) {
+      finalResult.push_back(sol);
     }
   }
 

@@ -9,15 +9,19 @@
 #include "term.h"
 #include "sort.h"
 #include "factories.h"
+#include <string.h>
 
 using namespace std;
+
+string smt_prelude;
 
 string callz3(string s)
 {
   FILE *fout = fopen("z3_temp.input", "w");
+  fprintf(fout, "%s\n", smt_prelude.c_str());
   fprintf(fout, "%s", s.c_str());
   fclose(fout);
-  system("z3 -in < z3_temp.input > z3_temp.output");
+  system("z3 -T:1 -in < z3_temp.input > z3_temp.output");
   FILE *fin = fopen("z3_temp.output", "r");
   char z3_result[1024];
   // TODO: fix fixed length
@@ -68,8 +72,15 @@ Z3Result Z3Theory::isSatisfiable()
   } else if (result == "unknown") {
     Log(LOGSAT) << "Result is UNKNOWN" << endl << z3string;
     return unknown;
+  } else if (result == "timeout") {
+    Log(LOGSAT) << "Result is timeout" << endl << z3string;
+    return unknown;
   } else {
-    Log(LOGSAT) << "Internal error - Z3 did not return an expected satisfiability value." << endl << z3string;
+    Log(ERROR) << "Internal error - Z3 did not return an expected satisfiability value." << endl << z3string;
+    Log(ERROR) << "Tried to smt the following constraints:" << endl;
+    for (int i = 0; i < constraints.size(); ++i) {
+      Log(ERROR) << constraints[i]->toString() << endl;
+    }
     fprintf(stderr, "Cannot interpret result returned by Z3: \"%s\".\n", result.c_str());
     assert(0);
   }

@@ -1,0 +1,22 @@
+(set-option :smt.mbqi true)
+(define-fun-rec gcd ((x Int) (y Int)) Int
+  (ite (< x 0)
+    0
+    (ite (< y 0)
+      0
+      (ite (= y 0)
+        x
+        (gcd (mod x y) x)
+      )
+  )
+  )
+)
+(declare-const a Int)
+(declare-const b Int)
+(assert (> a 0))
+(assert (> b 0))
+(define-fun hypothesis () Bool
+  (= (gcd a b) (gcd (mod a b) a))
+)
+(assert (not hypothesis))
+(check-sat)

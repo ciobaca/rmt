@@ -4,7 +4,6 @@
 #include "sort.h"
 #include "funterm.h"
 #include "varterm.h"
-//#include "namterm.h"
 #include "factories.h"
 #include "helper.h"
 #include "log.h"
@@ -19,7 +18,6 @@ map<string, Function *> functions;
 //map<string, Name *> names;
 map<pair<Function *, vector<Term *> >, Term *> funTerms;
 map<Variable *, Term *> varTerms;
-//map<Name *, Term *> namTerms;
 
 RewriteSystem &getRewriteSystem(string name)
 {
@@ -334,6 +332,8 @@ Term *simplifyConstraint(Term *constraint)
   if (existsRewriteSystem("simplifications")) {
     RewriteSystem rs = getRewriteSystem("simplifications");
     return constraint->normalize(rs);
+  } else {
+    assert(0);
   }
   return constraint;
 }
@@ -343,6 +343,8 @@ ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm ct)
   if (existsRewriteSystem("simplifications")) {
     RewriteSystem rs = getRewriteSystem("simplifications");
     return ConstrainedTerm(ct.term->normalize(rs), ct.constraint->normalize(rs));
+  } else {
+    assert(0);
   }
   return ct;
 }

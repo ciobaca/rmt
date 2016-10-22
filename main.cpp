@@ -68,6 +68,18 @@ void createSubsort(vector<string> &identifiersLeft,
   }
 }
 
+extern string smt_prelude;
+
+void parseSmtPrelude(string &s, int &w)
+{
+  skipWhiteSpace(s, w);
+  if (lookAhead(s, w, "smt-prelude")) {
+    matchString(s, w, "smt-prelude");
+    skipWhiteSpace(s, w);
+    smt_prelude = getQuotedString(s, w);
+  }
+}
+
 void parseSorts(string &s, int &w)
 {
   skipWhiteSpace(s, w);
@@ -332,6 +344,7 @@ int main(int argc, char **argv)
     s += "\n";
   }
 
+  parseSmtPrelude(s, w);
   parseSorts(s, w);
   parseSubsorts(s, w);
   parseFunctions(s, w);

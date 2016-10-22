@@ -284,7 +284,7 @@ void QueryProve::prove(ConstrainedTerm lhs, Term *rhs,
   lhs = simplifyConstrainedTerm(lhs);
 
   if (isSatisfiable(simplifyConstraint(lhs.constraint)) != unsat) {
-    cout << spaces(depth) << "! Could not show that " <<  simplifyConstrainedTerm(lhs).toPrettyString() << " => " << rhs->toPrettyString() << endl;
+    cout << spaces(depth) << "! Remaining proof obligation: " <<  simplifyConstrainedTerm(lhs).toPrettyString() << " => " << rhs->toPrettyString() << endl;
     unproven.push_back(ProofObligation(simplifyConstrainedTerm(lhs), rhs, Completeness));
 
     cout << spaces(depth) << "* Assuming that " << initialLhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;
@@ -444,9 +444,9 @@ void QueryProve::proveCRS(ConstrainedTerm lhs, Term *rhs,
   lhs.constraint = bAnd(lhs.constraint, bNot(rewriteConstraint));
   lhs = simplifyConstrainedTerm(lhs);
 
-  if (isSatisfiable(simplifyConstraint(lhs.constraint)) != unsat) {
-    cout << spaces(depth) << "! Could not show that " <<  simplifyConstrainedTerm(lhs).toPrettyString() << " => " << rhs->toPrettyString() << endl;
-    unproven.push_back(ProofObligation(simplifyConstrainedTerm(lhs), rhs, Completeness));
+  if (isSatisfiable(lhs.constraint) != unsat) {
+    cout << spaces(depth) << "! Remaining proof obligation:" << lhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;
+    unproven.push_back(ProofObligation(lhs, rhs, Completeness));
 
     cout << spaces(depth) << "* Assuming that " << initialLhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;
   } else {

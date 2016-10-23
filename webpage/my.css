@@ -1,0 +1,78 @@
+*  
+{ 
+    margin: 0; 
+    padding: 0; 
+    border: 0; 
+}
+
+li
+{
+    padding: 10px;
+}
+
+body 
+{ 
+    font: 125.0%/1.8 "Lucida Grande", "Lucida Sans", Tahoma, Verdana, sans-serif; 
+    color: #000000;
+    text-align: center; 
+} 
+
+#wrapper 
+{
+    padding: 60px;
+    margin: 0px;
+    width: 800px;  
+    text-align: left;   
+    margin-left: auto;  
+    margin-right: auto;  
+    background-color: #F8F8F8; 
+}
+
+.code
+{
+    padding: 15px;
+    font: 100.0%/1.2 "Lucida Console", ;
+    width: 760px;
+    text-align: left;
+    margin-left: 20px;  
+    margin-right: 20px;  
+    background-color: #F0F0F0;
+    white-space: pre;
+}
+
+.scode
+{
+    padding: 0px;
+    font: 100.0%/1.0 "Lucida Console", "Monaco", "Consolas", "Courier", "Courier New", monospace;
+    background-color: #F8F8F8;
+}
+
+h1 
+    { 
+    font-size: 2.0em; 
+} 
+
+h2 
+    { 
+    font-size: 1.5em;     
+} 
+
+h3 
+    { 
+    font-size: 1.2em; 
+} 
+
+h4 
+    { 
+    font-size: 1.0em;     
+} 
+
+h5 
+    { 
+    font-size: 0.9em;     
+} 
+
+p 
+    { 
+    font-size: 1em;     
+}

@@ -1,60 +1,60 @@
-;; fot-mode-el -- Major mode for FOT files
+;; rmt-mode-el -- Major mode for RMT files
 
 ;; Author: Stefan Ciobaca
 ;; (C) 2016 Stefan Ciobaca stefan.ciobaca@gmail.com
 
-(defvar fot-mode-hook nil)
+(defvar rmt-mode-hook nil)
 
-(defvar fot-mode-map
-  (let ((fot-mode-map (make-keymap)))
-    (define-key fot-mode-map "\C-j" 'newline-and-indent)
-    fot-mode-map)
-  "Keymap for FOT major mode")
-(add-to-list 'auto-mode-alist '("\\.fot\\'" . fot-mode))
+(defvar rmt-mode-map
+  (let ((rmt-mode-map (make-keymap)))
+    (define-key rmt-mode-map "\C-j" 'newline-and-indent)
+    rmt-mode-map)
+  "Keymap for RMT major mode")
+(add-to-list 'auto-mode-alist '("\\.rmt\\'" . rmt-mode))
 
-(setq fot-keywords '("sorts" "subsort" "signature" "variables" "rewrite-system" "constrained-rewrite-system" "smt-narrow-search" "smt-unify" "smt-implies" "smt-satisfiability" "smt-prove"))
-(setq fot-keywords-regexp (regexp-opt fot-keywords 'words))
+(setq rmt-keywords '("sorts" "subsort" "signature" "variables" "rewrite-system" "constrained-rewrite-system" "smt-narrow-search" "smt-unify" "smt-implies" "smt-satisfiability" "smt-prove"))
+(setq rmt-keywords-regexp (regexp-opt rmt-keywords 'words))
 
-(setq fot-types '("Int" "Bool"))
-(setq fot-types-regexp (regexp-opt fot-types 'words))
+(setq rmt-types '("Int" "Bool"))
+(setq rmt-types-regexp (regexp-opt rmt-types 'words))
 
-(setq fot-operators '(":" "->" "/" "=>" "<"))
-(setq fot-operators-regexp (regexp-opt fot-operators))
+(setq rmt-operators '(":" "->" "/" "=>" "<"))
+(setq rmt-operators-regexp (regexp-opt rmt-operators))
 
-(setq fot-functions '("mplus" "mtimes" "mdiv" "mminus" "mle" "mequals" "bimplies" "bequals" "bnot" "band" "bor"))
-(setq fot-functions-regexp (regexp-opt fot-functions 'words))
+(setq rmt-functions '("mplus" "mtimes" "mdiv" "mminus" "mle" "mequals" "bimplies" "bequals" "bnot" "band" "bor"))
+(setq rmt-functions-regexp (regexp-opt rmt-functions 'words))
 
-(setq fot-constants '("true" "false" "mzero" "mone" "mtwo" ))
-(setq fot-constants-regexp (regexp-opt fot-constants 'words))
+(setq rmt-constants '("true" "false" "mzero" "mone" "mtwo" ))
+(setq rmt-constants-regexp (regexp-opt rmt-constants 'words))
 
 ; generate optimized regexp for keywords
 ;(kill-new (regexp-opt '("sorts" "subsort" "signature" "rewrite") t))
 
-(setq fot-font-lock-keywords
+(setq rmt-font-lock-keywords
       `(
-        (,fot-types-regexp . font-lock-type-face)
-        (,fot-constants-regexp . font-lock-constant-face)
-        (,fot-operators-regexp . font-lock-builtin-face)
-        (,fot-functions-regexp . font-lock-function-name-face)
-        (,fot-keywords-regexp . font-lock-keyword-face)
+        (,rmt-types-regexp . font-lock-type-face)
+        (,rmt-constants-regexp . font-lock-constant-face)
+        (,rmt-operators-regexp . font-lock-builtin-face)
+        (,rmt-functions-regexp . font-lock-function-name-face)
+        (,rmt-keywords-regexp . font-lock-keyword-face)
         ;; note: order above matters, because once colored, that part won't change.
         ;; in general, longer words first
         ))
 
 
-(defvar fot-mode-syntax-table
-  (let ((fot-mode-syntax-table (make-syntax-table)))
-    (modify-syntax-entry ?/ ". 124b" fot-mode-syntax-table)
-    (modify-syntax-entry ?* ". 23" fot-mode-syntax-table)
-    (modify-syntax-entry ?\n "> b" fot-mode-syntax-table)
-    fot-mode-syntax-table)
-  "Syntax table for fot-mode")
+(defvar rmt-mode-syntax-table
+  (let ((rmt-mode-syntax-table (make-syntax-table)))
+    (modify-syntax-entry ?/ ". 124b" rmt-mode-syntax-table)
+    (modify-syntax-entry ?* ". 23" rmt-mode-syntax-table)
+    (modify-syntax-entry ?\n "> b" rmt-mode-syntax-table)
+    rmt-mode-syntax-table)
+  "Syntax table for rmt-mode")
 
-(define-derived-mode fot-mode fundamental-mode
-  (use-local-map fot-mode-map)
-  (set-syntax-table fot-mode-syntax-table)
-  (setq font-lock-defaults '((fot-font-lock-keywords)))
-  (setq major-mode 'fot-mode)
-  (setq mode-name "FOT"))
+(define-derived-mode rmt-mode fundamental-mode
+  (use-local-map rmt-mode-map)
+  (set-syntax-table rmt-mode-syntax-table)
+  (setq font-lock-defaults '((rmt-font-lock-keywords)))
+  (setq major-mode 'rmt-mode)
+  (setq mode-name "RMT"))
 
-(provide 'fot-mode)
+(provide 'rmt-mode)

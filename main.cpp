@@ -373,6 +373,8 @@ int main(int argc, char **argv)
     expected("rewrite-system or constrained-rewrite-system", w, s);
   }
 
+  Log(INFO) << simplifyConstraint(bAnd(bTrue(), bFalse()))->toString() << endl;
+
   skipWhiteSpace(s, w);
   Query *query;
   do {

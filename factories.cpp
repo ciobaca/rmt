@@ -331,6 +331,7 @@ Term *simplifyConstraint(Term *constraint)
 {
   if (existsRewriteSystem("simplifications")) {
     RewriteSystem rs = getRewriteSystem("simplifications");
+    Log(DEBUG9) << "Normalizing constraint " << constraint->toString() << endl;
     return constraint->normalize(rs);
   } else {
     assert(0);

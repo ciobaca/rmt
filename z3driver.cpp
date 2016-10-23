@@ -15,13 +15,16 @@ using namespace std;
 
 string smt_prelude;
 
+string prover = "z3 -T:2 -in <";
+//string prover = "cvc4 --lang smtlib2";
+
 string callz3(string s)
 {
   FILE *fout = fopen("z3_temp.input", "w");
   fprintf(fout, "%s\n", smt_prelude.c_str());
   fprintf(fout, "%s", s.c_str());
   fclose(fout);
-  system("z3 -T:1 -in < z3_temp.input > z3_temp.output");
+  system((prover + " z3_temp.input > z3_temp.output").c_str());
   FILE *fin = fopen("z3_temp.output", "r");
   char z3_result[1024];
   // TODO: fix fixed length

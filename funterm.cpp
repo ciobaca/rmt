@@ -130,6 +130,7 @@ Term *FunTerm::computeSubstitution(Substitution &subst, map<Term *, Term *> &cac
 
 Term *FunTerm::computeNormalize(RewriteSystem &rewriteSystem, map<Term *, Term *> &cache)
 {
+  Log(DEBUG9) << "computNormalizing " << this->toString() << endl;
   if (!contains(cache, (Term *)this)) {
     vector<Term *> subterms;
     for (int i = 0; i < len(function->arguments); ++i) {
@@ -143,9 +144,11 @@ Term *FunTerm::computeNormalize(RewriteSystem &rewriteSystem, map<Term *, Term *
 	pair<Term *, Term *> rewriteRule = rewriteSystem[i];
 	Term *l = rewriteRule.first;
 	Term *r = rewriteRule.second;
+	Log(DEBUG9) << "Testing " << result->toString() << " with rewrite rule " << l->toString() << " ==> " << r->toString() << endl;
 
 	Substitution subst;
 	if (result->isInstanceOf(l, subst)) {
+	  Log(DEBUG9) << "Is instance " << result->toString() << " of " << l->toString() << endl;
 	  result = r->substitute(subst);
 	  done = false;
 	}
@@ -225,11 +228,6 @@ bool FunTerm::computeIsInstanceOf(Term *t, Substitution &s, map<pair<Term *, Ter
   return t->computeIsGeneralizationOf(this, s, cache);
 }
 
-// bool FunTerm::computeIsGeneralizationOf(NamTerm *t, Substitution &s, map<pair<Term *, Term *>, bool> &cache)
-// {
-//   return false;
-// }
-
 bool FunTerm::computeIsGeneralizationOf(VarTerm *t, Substitution &s, map<pair<Term *, Term *>, bool> &cache)
 {
   return false;
@@ -237,17 +235,21 @@ bool FunTerm::computeIsGeneralizationOf(VarTerm *t, Substitution &s, map<pair<Te
 
 bool FunTerm::computeIsGeneralizationOf(FunTerm *t, Substitution &s, map<pair<Term *, Term *>, bool> &cache)
 {
+  Log(DEBUG9) << "Testing is " << this->toString() << " is a generalization of " << t->toString() << endl;
   if (!contains(cache, make_pair((Term *)t, (Term *)this))) {
     if (this->function != t->function) {
+      Log(DEBUG9) << "Nope, not same function symbol" << endl;
       cache[make_pair(t, this)] = false;
     } else {
       bool result = true;
       for (int i = 0; i < len(t->arguments); ++i) {
 	if (!t->arguments[i]->computeIsInstanceOf(arguments[i], s, cache)) {
 	  result = false;
+	  Log(DEBUG9) << "Nope, argument " << i << " failed." << endl;
 	  break;
 	}
       }
+      Log(DEBUG9) << "Yeap it is." << endl;
       cache[make_pair(t, this)] = result;
       if (result) {
 	assert(this->substitute(s) == t);

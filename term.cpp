@@ -53,6 +53,7 @@ bool Term::isNormalized(RewriteSystem &rewriteSystem)
 
 Term *Term::normalize(RewriteSystem &rewriteSystem)
 {
+  Log(DEBUG9) << "Normalizing " << this->toString() << endl;
   map<Term *, Term *> cache;
   return computeNormalize(rewriteSystem, cache);
 }

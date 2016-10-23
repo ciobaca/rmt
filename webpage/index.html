@@ -1,1 +1,212 @@
-welcome
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
+
+  <head>
+
+    <title> RMT: A Tool for Rewriting Modulo Theories</title>
+    <style type="text/css" media="screen">@import "my.css";</style> 
+    <meta name="DC.title" content="Title here" /> 
+    <meta name="DC.subject" content="Keywords here" /> 
+    <meta name="DC.description" content="Description here" /> 
+    <meta name="DC.format" content="text/html" /> 
+    <meta name="DC.publisher" content="Publisher here" /> 
+    <meta name="DC.language" content="en" /> 
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" /> 
+
+  </head>  
+
+  <body>
+    <div id="wrapper">
+
+    <h1>RMT</h1>
+
+    RMT is a tool for proving reachability properties in constrained
+    term rewriting systems. It is a command line tool. In order to
+    obtain it, install it and use it, follow the instructions below.
+
+    <h2>To report problems</h2>
+
+    If there is something that is not working or if you have questions
+    on RMT, please contact me at: stefan.ciobaca@gmail.com.
+
+    <h2>Installing RMT</h2>
+
+    <h3>From source</h3>
+
+    <ol>
+
+      <li> <a href="https://github.com/Z3Prover/z3/releases">Download</a> and
+      install Z3 for your platform, if not already installed. Make
+      sure that the Z3 binary is in your PATH. You can check that this
+      is the case by opening the command prompt/bash and running <span class="scode">z3</span>.
+
+	If all goes well, you should see something like this:
+
+	<div class="code">> z3
+Error: input file was not specified.
+For usage information: z3 -h</div>
+
+      </li>
+
+      <li> (optional) <a href="https://cmake.org/download/">Download</a> and
+      install CMake, if not already installed. You only need CMake if
+      you plan to contribute to RMT.
+      </li>
+
+      <li> (optional) <a href="http://cvc4.cs.nyu.edu/downloads/">Download></a> and
+      install CVC4, if not already installed. You only need CVC4 if
+      you are not happy with using Z3 as your SMT solver.</li>
+
+      <li> <a href="rmtsrc.zip">Download</a> the RMT source code itself
+      and unpack it in a directory of your choice. </li>
+
+      <div class="code">> unzip rmtsrc.zip</div>
+
+      <li> Compile RMT. You have two choices:
+	<ul>
+	  <li> If you have CMake installed, run the following commands in the directory where you unzipped rmt:
+	    <div class="code">> cmake .
+> make</div>
+	  </li>
+	  <li> If you do not have CMake installed, run the following command:
+	    <div class="code">> g++ -O2 -o main *.cpp</div>
+	  </li>
+	</ul> Test RMT. If everything went well, you should be able to
+	run RMT:<div class="code">> ./main -v 0 < sum.rmt</div>
+      </li>
+
+      <li> (optional) Install Emacs support for RMT. Add the file
+      "rmt-mode.el" that is part of the .zip file you downloaded to
+      your ".emacs" file. </li>
+
+    </ol>
+
+    <h3>Binaries</h3>
+
+    Follow steps 1-4 and 6 above. Download the executable for you platform and place it in a directory of your choice:
+
+    <ul>
+
+    <li>MacOSX 10.9: <a href="macbinary.zip">RMT binary for Mac OS X</a></li>
+
+    <li>Linux (binary will be available on the 24th of October): <a href="rmt-binary-linux.zip">RMT
+    binary for Linux (compiled on Ubuntu)</a></li>
+
+    <li>Windows (binary will be available on the 24th of October): <a href="rmt-binary-windows.zip">RMT binary for Windows</a></li>
+
+    </ul>
+
+    <h2>Using RMT</h2>
+
+    You can run RMT on the set of examples provided in the .zip files
+    you downloaded. For example, you can try to run RMT on the file
+    <span class="scode">example1.rmt</span>:
+
+    <div class="code">./main -v 0 < example1.rmt</div>
+    
+    The RMT executable has only one option: <span class="code">-v N</span> determines the verbosity. <span class="code">N</span> is
+    the verbosity level. It currently runs from 0 (minimal) to 12
+    (maximal). Be warned that, when the verbosity level is 12, a lot
+    of output is printed out.
+
+    Even without a high verbosity level, the proof trees output by RMT
+    are sometimes very large. In this case, we suggest that you pipe
+    the output to less as follows:
+
+    <div class="code">./main -v 0 < example1.rmt 2>&1 | less -S</div>
+
+    The <span class="scode">2>&1</span> option redirects stderr to stdout. The <span class="scode">-S</span> option for <span class="scode">less</span> stops
+    line wrapping.
+
+    <h2>Next up</h2>
+
+    Check out the example files that come with RMT. Read each of them
+    to learn about RMT and run them as explained above. There are several examples, each having the filename <span class="scode">exampleN.rmt</span>.
+
+    <h2>But something does not work</h2>
+
+    Ooops. Here are some things to check:
+
+    <ul>
+      <li>RMT does not compile.</li>
+
+      Are you using a modern compiler? We have successfully compiled
+      RMT on Linux, MacOSX and Windows using recent versions of clang,
+      gcc and respectively Visual Studio.
+
+      <li>RMT compiled, but it does not run.</li>
+
+      If you are on Linux, did you remember to prefix the executable
+      name with "./", as the current directory is not in the PATH by
+      default? If you are on Windows, is the executable in the current
+      directory?
+
+      <li>RMT segfaults.</li>
+
+      <p>Ooops. There are several reasons why RMT can segfault. The most
+      common case is that the Z3 executable is not found. Make sure
+      that z3 is installed and that the directory where the z3
+	executable lives is in the path.</p>
+
+      <p>The second thing to check is access rights. RMT communicates
+      with z3 by creating a "z3_temp.input" file in the current
+      directory and reading back the result from
+      "z3_temp.output". Therefore RMT needs read and write access.</p>
+
+      <p>The other reason why RMT might crash is an internal error. RMT
+      compiles with assertion on by default. Therefore you should get
+      at least an idea of why it crashed. You can always increase the
+      verbosity level (use "-v 12" for maximal verbosity) and see
+      where it crashes.</p>
+
+      <p>Make sure that you have defined all of the expected built-in
+      signature correctly (boolean and operations on booleans, etc.).</p>
+      
+      <p>Also, please report any crashes to me
+      (stefan.ciobaca@gmail.com). Crash reports will help improve the
+      tool.</p>
+
+      <li>RMT runs, but I cannot make sense of the output.</li>
+
+      Yeap, I know. Some of the proof trees output by RMT are really
+      huge. They can be a mess to navigate, especially when you are
+      trying to debug a circularity. The best way around this is to
+      pipe the output through <span class="scode">less -S</span> as
+      explained above. You can then navigate the output using the
+      arrow keys.
+
+      <li>RMT works, but the output is incorrect.</li>
+
+      Are you sure that it's a bug? You might have forgotten something
+      in your specification or z3 might not be able to handle the
+      problems it receives from RMT. However, if you are reasonably
+      sure that it's a bug in RMT, please report it to me
+      (stefan.ciobaca@gmail.com) as this will help improve the tool.
+
+      <li>I tried to specify a reachability property, but the tool
+      says there are proof obligations left.</li>
+
+      There are several things that might have gone wrong: (1) The
+      search depth is not big enough. You can increase the search
+      depth by adding parameters to "prove" as in the following
+      example:
+
+      <div class="code">prove [200,3] in here : what;</div>
+
+      200 represented the maximum depth and 5 the maximum branching
+      depth. By default, they are 100 and 2. (2) The second
+      possibility is that z3 cannot handle your problem (it might
+      timeout or return unknown). Try to run z3 by hand on the proof
+      obligations generated by the RMT. (3) The last problem is that
+      the circularities that you have specified are untrue or
+      incomplete. You might want to go through them one more time, as
+      they can be tricky to get right.
+
+      <p>Do not hesitate to contact me (stefan.ciobaca@gmail.com) if you need assistance with this.</p>
+
+    </ul>
+
+    </div>
+  </body>
+
+</html>

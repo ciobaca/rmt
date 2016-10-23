@@ -10,16 +10,16 @@ using namespace std;
 ConstrainedSolution::ConstrainedSolution(Term *term, Term *constraint, Substitution subst, Term *lhsTerm) :
   term(term),
   constraint(constraint),
-  subst(subst),
-  lhsTerm(lhsTerm)
+  lhsTerm(lhsTerm),
+  subst(subst)
 {
 }
 
 ConstrainedSolution::ConstrainedSolution(Term *term, Substitution subst, Term *lhsTerm) :
   term(term),
   constraint(bTrue()),
-  subst(subst),
-  lhsTerm(lhsTerm)
+  lhsTerm(lhsTerm),
+  subst(subst)
 {
 }
 

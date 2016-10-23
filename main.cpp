@@ -353,7 +353,6 @@ int main(int argc, char **argv)
 
   createBuiltIns();
 
-  int rsCount = 0;
   if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
     while (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
       if (lookAhead(s, w, "rewrite-system")) {

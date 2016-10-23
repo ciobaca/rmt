@@ -114,7 +114,6 @@ bool Term::smtUnifyWith(Term *other, Term *initialConstraint,
       initialConstraint = bTrue();
     }
 
-    Term *lhsTrouble, *rhsTrouble;
     theory.addConstraint(initialConstraint);
     resultConstraint = initialConstraint;
     for (Substitution::iterator it = abstractingSubstitution.begin();

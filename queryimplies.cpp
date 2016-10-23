@@ -40,17 +40,17 @@ void QueryImplies::execute()
   //    cerr << "here" << endl;
   if (term->smtUnifyWith(ct.term, 0, subst, constraint)) {
     //      cerr << "here2" << endl;
-    Function *TrueFun = getFunction("true");
-    Function *AndFun = getFunction("band");
-    Function *OrFun = getFunction("bor");
-    Function *NotFun = getFunction("bnot");
-    Function *EqualsFun = getFunction("bequals");
+    // Function *TrueFun = getFunction("true");
+    // Function *AndFun = getFunction("band");
+    // Function *OrFun = getFunction("bor");
+    // Function *NotFun = getFunction("bnot");
+    // Function *EqualsFun = getFunction("bequals");
     
-    assert(TrueFun);
-    assert(AndFun);
-    assert(OrFun);
-    assert(NotFun);
-    assert(EqualsFun);
+    // assert(TrueFun);
+    // assert(AndFun);
+    // assert(OrFun);
+    // assert(NotFun);
+    // assert(EqualsFun);
     
     // query.ct.constraint -> constraint is valid iff
     // (not query.ct.constraint or constraint) is valid iff
@@ -59,9 +59,9 @@ void QueryImplies::execute()
     //      cerr << "here3" << endl;
     if (ct.constraint == 0) {
       vector<Term *> empty;
-      ct.constraint = getFunTerm(TrueFun, empty);
+      ct.constraint = bTrue();
     }
-    Term *constraintToCheck = getFunTerm(AndFun, vector2(ct.constraint, getFunTerm(NotFun, vector1(constraint))));
+    Term *constraintToCheck = bAnd(ct.constraint, bNot(constraint));
     //      cerr << "here4" << endl;
     Z3Result result = isSatisfiable(constraintToCheck);
     //      cerr << "here5" << endl;

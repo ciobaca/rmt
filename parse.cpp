@@ -171,8 +171,13 @@ bool lookAhead(string &s, int &pos, string what)
 void matchString(string &s, int &pos, string what)
 {
   for (int i = 0; i < len(what); ++i) {
-    match(s, pos, what[i]);
+    if (!(pos + i < len(s) && s[pos + i] == what[i])) {
+      ostringstream oss;
+      oss << "\"" << what << "\"";
+      expected(oss.str(), pos, s);
+    }
   }
+  pos += len(what);
 }
 
 void match(string &s, int &pos, char c)

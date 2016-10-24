@@ -1,19 +1,12 @@
-smt-prelude
+smt-prelude "(define-fun-rec gcd ((x Int) (y Int)) Int
+     (ite (= y 0)
+      x
+      (gcd y (- x y))
+     )
+)
+(assert (forall ((X Int) (Y Int)) (=> (>= X Y) (= (mod X Y) (mod (- X Y) Y)))))
+(assert (forall ((X Int) (Y Int)) (=> (and (< X Y) (>= X 0)) (= X (mod X Y)))))
 "
-(set-logic ALL_SUPPORTED)
-(declare-fun gcd (Int Int) Int)
-(assert (forall ((x Int) (y Int))
-	(= (gcd x y)
-           (ite (= y 0)
-              x
-              (gcd y (mod x y))
-           ))))
-;;(define-fun-rec gcd ((x Int) (y Int)) Int
-;;     (ite (= y 0)
-;;      x
-;;      (gcd y (mod x y))
-;;     )
-;;)"
 
 sorts Int / "Int", Bool / "Bool", State;
 // subsort Int < State;
@@ -27,13 +20,14 @@ signature mzero : -> Int / "0", mone : -> Int / "1", mtwo : -> Int / "2", mthree
 
   bequals : Bool Bool->Bool / "=", band : Bool Bool->Bool / "and",
   bimplies : Bool Bool->Bool / "=>", bor : Bool Bool->Bool / "or",
+  biff : Bool Bool -> Bool / "iff",
   bnot : Bool->Bool / "not", true : ->Bool / "true", false : ->Bool / "false",
 
-  init : Int Int -> State, loop : Int Int Int Int Int Int Int Int -> State, done : Int Int Int Int Int -> State,
+  init : Int Int -> State, loop : Int Int -> State, done : Int -> State,
   ok : Int Int -> State;
 
 variables S : Int, N : Int, I : Int, J : Int, X : Int, Y : Int, Z : Int, A : Int, B : Int,
- C : Int, D : Int, BB : Bool;
+ C : Int, D : Int, BB : Bool, U : Int, V : Int;
 
 rewrite-system simplifications
   bnot(false) => true, bnot(true) => false, bnot(bnot(BB)) => BB,
@@ -45,23 +39,15 @@ rewrite-system simplifications
   bequals(BB, false) => bnot(BB), band(BB, BB) => BB, bor(BB, BB) => BB;
 
 constrained-rewrite-system gcd
-  init(X, Y) => loop(X, Y, X, Y, mone, mzero, mzero, mone),
+  init(X, Y) => loop(X, Y),
 
-  loop(I, J, X, Y, A, B, C, D) /\ bnot(mequals(Y, mzero)) =>
-  loop(I, J, Y, mmod(X, Y),//mminus(X, mtimes(mdiv(X, Y), Y)),
-       C, D,
-       mminus(A, mtimes(mdiv(X, Y), C)), mminus(B, mtimes(mdiv(X, Y), D))),
+  loop(X, Y) /\ mle(Y, X) => loop(mminus(X, Y), Y),
 
-  loop(I, J, X, Y, A, B, C, D) /\ mequals(Y, mzero) => done(I, J, X, A, B),
-
-  done(I, J, mgcd(I, J), A, B) /\ mequals(mgcd(I, J), mplus(mtimes(A, I), mtimes(B, J))) => ok(I, J);
+  loop(X, Y) /\ bnot(mle(Y, X)) => done(X);
 
 constrained-rewrite-system circ
-  init(X, Y) => ok(X, Y),
+  init(X, Y) /\ mle(mzero, X) => done(mmod(X, Y)),
 
-  loop(I, J, X, Y, A, B, C, D) /\ band(band(
-  	  mequals(X, mplus(mtimes(A, I), mtimes(B, J))),
-	  mequals(Y, mplus(mtimes(C, I), mtimes(D, J)))),
-	  mequals(mgcd(I, J), mgcd(X, Y))) => ok(I, J);
+  loop(X, Y) /\ mle(mzero, X) => done(mmod(X, Y));
 
-prove in gcd : circ;
+prove [2,2] in gcd : circ;

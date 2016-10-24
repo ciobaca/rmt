@@ -5,7 +5,6 @@
 #include <vector>
 #include <sstream>
 #include <algorithm>
-#include <getopt.h>
 #include "log.h"
 
 #include "helper.h"
@@ -21,6 +20,7 @@
 #include "funterm.h"
 #include "query.h"
 #include "constrainedrewrite.h"
+#include <getopt.h>
 
 using namespace std;
 

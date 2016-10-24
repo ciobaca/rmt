@@ -16,13 +16,13 @@
   </head>  
 
   <body>
-    <div id="wrapper">
-
-    <h1>RMT</h1>
+    <div id="wrapper"><h1>RMT</h1>
 
     RMT is a tool for proving reachability properties in constrained
     term rewriting systems. It is a command line tool. In order to
     obtain it, install it and use it, follow the instructions below.
+
+      RMT is described in the following article (submitted): <a href="rmtsubmission.pdf">PDF file </a> submitted.
 
     <h2>To report problems</h2>
 
@@ -62,17 +62,31 @@ For usage information: z3 -h</div>
 
       <div class="code">> unzip rmtsrc.zip</div>
 
-      <li> Compile RMT. You have two choices:
-	<ul>
-	  <li> If you have CMake installed, run the following commands in the directory where you unzipped rmt:
+      <li> Compile RMT. Do not worry too much about the possible
+	warnings you get during the compilation process. You have two
+	choices for compilation:<ul>
+
+	  <li> If you have CMake installed, run the following commands
+	  in the directory where you unzipped rmt:
 	    <div class="code">> cmake .
 > make</div>
 	  </li>
 	  <li> If you do not have CMake installed, run the following command:
 	    <div class="code">> g++ -O2 -o main *.cpp</div>
 	  </li>
-	</ul> Test RMT. If everything went well, you should be able to
-	run RMT:<div class="code">> ./main -v 0 < sum.rmt</div>
+
+	  <li>If you are compiling in Windows, add all *.cpp and *.h header files to a project in a recent version of Visual Studio. You will also need to get an implementation of the "getopt.h" POSIX header file. We suggest to use this <a href="https://www.codefull.org/2015/04/cannot-find-getopt-h-header-file-when-compiling-under-windows/">getopt.h header file</a> and add it to the project before compiling. </li>
+
+	</ul>
+
+	Test RMT:
+
+	<ul>
+	  <li>On Linux and MacOSX, if everything went well, you should
+	    be able to run RMT as follows from a shell:<div class="code">> ./main -v 0 < example1.rmt</div></li>
+
+	  <li>On Windows, run RMT as follows from the command prompt:<div class="code">> rmt.exe -v 0 < example1.rmt</div></li>
+	</ul>
       </li>
 
       <li> (optional) Install Emacs support for RMT. Add the file
@@ -83,16 +97,18 @@ For usage information: z3 -h</div>
 
     <h3>Binaries</h3>
 
-    Follow steps 1-4 and 6 above. Download the executable for you platform and place it in a directory of your choice:
+    Follow steps 1-4 and 6 above. Download the executable for you
+    platform and place it in a directory of your choice. Make sure you
+    set the executions rights on the binary.
 
     <ul>
 
     <li>MacOSX 10.9: <a href="macbinary.zip">RMT binary for Mac OS X</a></li>
 
-    <li>Linux (binary will be available on the 24th of October): <a href="rmt-binary-linux.zip">RMT
-    binary for Linux (compiled on Ubuntu)</a></li>
+    <li>Linux: <a href="linuxbinary.zip">RMT binary for Linux
+    (compiled on Ubuntu 16.04)</a></li>
 
-    <li>Windows (binary will be available on the 24th of October): <a href="rmt-binary-windows.zip">RMT binary for Windows</a></li>
+    <li>Windows: <a href="windowsbinary.zip">RMT binary for Windows</a></li>
 
     </ul>
 
@@ -177,6 +193,40 @@ For usage information: z3 -h</div>
       pipe the output through <span class="scode">less -S</span> as
       explained above. You can then navigate the output using the
       arrow keys.
+
+      <li>There is an error when executing example7.rmt.</li>
+
+      Do you have a recent version of Z3? The smt-prelude in
+      example7.rmt uses recursive function definitions, which were
+      added relatively recently. You can try to replace the recursive
+      definition with an axiomatization if you must use an old version
+      of Z3.
+
+      <li>How do I replace Z3 with CVC4? </li>
+
+      In the file z3_driver.cpp, find the two lines below and comment
+      out the first one and uncomment the second one:
+
+      <div class="code">string prover = "z3 -T:2 -in <";
+//string prover = "cvc4 --lang smtlib2";</div>
+
+      Recompile the tool as described above. In order to use CVC4 on
+      some file, add in the smt-prelude declaration a line "(set-logic
+      ALL_SUPPORTED)". For example, the start of your .rmt file should
+      look like this:
+      <div class="code">smt-prelude "(set-logic ALL_SUPPORTED)
+(define-fun f (Int Int) Int)
+(assert (= 0 (f 0 0)))
+[...]"
+sorts Int / "Int", Bool / "Bool", State;
+subsort Int < State;
+[...]</div>
+
+      <li>How do I debug an error with Z3?</li>
+
+      The tool interacts with Z3 through two files: z3_temp.input and
+      z3_temp.output. You can take a look at them in order to
+      understand what the interaction with the SMT solver.
 
       <li>RMT works, but the output is incorrect.</li>
 

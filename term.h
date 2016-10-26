@@ -49,6 +49,9 @@ struct Term
   // the result.
   virtual vector<Variable *> uniqueVars();
 
+  // Returns whether the term contains the variable given as argument
+  virtual bool hasVariable(Variable *);
+
   // Compute the set of names that appear in the term.  virtual
   //  vector<Name *> names() = 0;
 

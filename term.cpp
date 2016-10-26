@@ -196,7 +196,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *i
     Log(DEBUG7) << "Subst = " << sol.subst.toString() << endl;
     Log(DEBUG7) << "LHS Term = " << sol.lhsTerm->toString() << endl;
 
-    sol.constraint = bAnd(initialConstraint, sol.constraint);
+    sol.constraint = bAnd(initialConstraint->substitute(abstractingSubstitution), sol.constraint);
 
     // STEP 3.2.1: start from the generic theory
 
@@ -284,35 +284,36 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term 
 
     Log(DEBUG7) << "Solution #" << i << endl;
     Log(DEBUG7) << "Term = " << sol.term->toString() << endl;
+    Log(DEBUG7) << "Subst = " << sol.subst.toString() << endl;
     Log(DEBUG7) << "Constraint = " << sol.constraint->toString() << endl;
     Log(DEBUG7) << "LHS Term = " << sol.lhsTerm->toString() << endl;
 
-    sol.constraint = bAnd(initialConstraint, sol.constraint);
+    sol.constraint = bAnd(initialConstraint->substitute(abstractingSubstitution), sol.constraint);
 
     // STEP 3.2.1: start from the generic theory
 
     Substitution simplifyingSubst;
     // STEP 3.2.2: add constraints resulting from abstracting theory
     for (Substitution::iterator it = abstractingSubstitution.begin(); it != abstractingSubstitution.end(); ++it) {
-      Term *lhsTerm = getVarTerm(it->first)->substitute(sol.subst)->substitute(abstractingSubstitution);
-      Term *rhsTerm = it->second;
+      Term *lhsTerm = getVarTerm(it->first)->substitute(sol.subst)->substitute(abstractingSubstitution)->substitute(simplifyingSubst);
+      Term *rhsTerm = it->second->substitute(simplifyingSubst);
       if (lhsTerm == rhsTerm) {
 	continue;
       }
       bool simplifiedConstraint = false;
       if (lhsTerm->isVariable()) {
-	Variable *var = ((VarTerm *)lhsTerm)->variable;
-	if (!simplifyingSubst.inDomain(var)) {
-	  simplifiedConstraint = true;
-	  simplifyingSubst.add(var, rhsTerm);
-	}
+      	Variable *var = ((VarTerm *)lhsTerm)->variable;
+      	if (!simplifyingSubst.inDomain(var)) {
+      	  simplifiedConstraint = true;
+      	  simplifyingSubst.add(var, rhsTerm);
+      	}
       }
       if (!simplifiedConstraint && rhsTerm->isVariable()) {
-	Variable *var = ((VarTerm *)rhsTerm)->variable;
-	if (!simplifyingSubst.inDomain(var)) {
-	  simplifiedConstraint = true;
-	  simplifyingSubst.add(var, lhsTerm);
-	}
+      	Variable *var = ((VarTerm *)rhsTerm)->variable;
+      	if (!simplifyingSubst.inDomain(var)) {
+      	  simplifiedConstraint = true;
+      	  simplifyingSubst.add(var, lhsTerm);
+      	}
       }
       if (!simplifiedConstraint) {
 	sol.constraint = bAnd(sol.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
@@ -320,6 +321,13 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term 
     }
     sol.constraint = sol.constraint->substitute(simplifyingSubst);
     sol.term = sol.term->substitute(simplifyingSubst);
+    sol.simplifyingSubst = simplifyingSubst;
+    Log(DEBUG7) << "Solution #" << i << " (after simplification)" << endl;
+    Log(DEBUG7) << "Term = " << sol.term->toString() << endl;
+    Log(DEBUG7) << "Subst = " << sol.subst.toString() << endl;
+    Log(DEBUG7) << "Constraint = " << sol.constraint->toString() << endl;
+    Log(DEBUG7) << "LHS Term = " << sol.lhsTerm->toString() << endl;
+    Log(DEBUG7) << "Simplifying subst = " << simplifyingSubst.toString() << endl;
 
     Z3Theory solTheory(theory); 
     solTheory.addConstraint(sol.constraint);
@@ -330,4 +338,15 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term 
   }
 
   return finalResult;
+}
+
+bool Term::hasVariable(Variable *var)
+{
+  vector<Variable *> uvars = uniqueVars();
+  for (vector<Variable *>::iterator it = uvars.begin(); it != uvars.end(); ++it) {
+    if (*it == var) {
+      return true;
+    }
+  }
+  return false;
 }

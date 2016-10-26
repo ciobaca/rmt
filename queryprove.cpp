@@ -200,7 +200,8 @@ Term *QueryProve::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
 						     introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
 						     circularityConstraint));
       
-      prove(ConstrainedTerm(sol.term, sol.constraint), rhs, rs, circ, true, depth + 1, newBranchDepth);
+      prove(ConstrainedTerm(sol.term, sol.constraint), rhs->substitute(sol.simplifyingSubst), rs, circ, true, depth + 1, newBranchDepth);
+      
     }
   }
   Log(INFO) << spaces(depth + 1) << "Circularities apply in case: " << circularityConstraint->toString() << endl;
@@ -231,7 +232,7 @@ Term *QueryProve::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
     rewriteConstraint = simplifyConstraint(bOr(
 					       introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
 					       rewriteConstraint));
-    prove(ConstrainedTerm(sol.term, sol.constraint), rhs, rs, circ, true, depth + 1, newBranchDepth);
+    prove(ConstrainedTerm(sol.term, sol.constraint), rhs->substitute(sol.simplifyingSubst), rs, circ, true, depth + 1, newBranchDepth);
   }
 
   Log(INFO) << spaces(depth + 1) << "Rewrite rules apply in case: " << rewriteConstraint->toString() << endl;
@@ -362,7 +363,7 @@ Term *QueryProve::proveByCircularitiesCRS(ConstrainedTerm lhs, Term *rhs,
 						     introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
 						     circularityConstraint));
 
-      proveCRS(ConstrainedTerm(sol.term, sol.constraint), rhs, crs, circ, true, depth + 1, newBranchDepth);
+      proveCRS(ConstrainedTerm(sol.term, sol.constraint), rhs->substitute(sol.simplifyingSubst), crs, circ, true, depth + 1, newBranchDepth);
     }
   }
   Log(INFO) << spaces(depth + 1) << "Circularities apply in case: " << circularityConstraint->toString() << endl;
@@ -391,7 +392,7 @@ Term *QueryProve::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
     rewriteConstraint = simplifyConstraint(bOr(
 					       introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
 					       rewriteConstraint));
-    proveCRS(ConstrainedTerm(sol.term, sol.constraint), rhs, crs, circ, true, depth + 1, newBranchDepth);
+    proveCRS(ConstrainedTerm(sol.term, sol.constraint), rhs->substitute(sol.simplifyingSubst), crs, circ, true, depth + 1, newBranchDepth);
   }
 
   Log(INFO) << spaces(depth + 1) << "Rewrite rules apply in case: " << rewriteConstraint->toString() << endl;

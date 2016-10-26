@@ -51,17 +51,12 @@ constrained-rewrite-system multbyadd
 
   loop2(S, Y, X, T) /\ bnot(mle(mone, X)) => loop(mplus(S, T), mminus(Y, mone));
 
-//  loop(mplus(S, mtimes(Y, Y)), mminus(Y, mone));
-
 constrained-rewrite-system circ
   init(Y) /\ mle(mzero, Y) =>
 
   done(mdiv(mtimes(Y, mtimes(mplus(Y, mone), mplus(mtimes(Y, mtwo),
 mone))),msix)),
 
-
-//  loop2(S, Y, X, T) /\ mle(mzero, X) => loop(mplus(S, mplus(T,
-//  mtimes(X, X))), mminus(Y, mone)),
 
   loop2(S, Y, X, T) /\ band(mle(mone, Y), mle(mone, X)) =>
 

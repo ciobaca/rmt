@@ -10,14 +10,6 @@ Run the example with
 The expected output is for the proof to go through.
 
 */
-// smt-prelude "(define-fun-rec gcd ((x Int) (y Int)) Int
-//      (ite (= y 0)
-//       x
-//       (gcd y (- x y))
-//      )
-// )
-// (assert (forall ((X Int) (Y Int)) (= (gcd X Y) (gcd Y (mod X Y)))))" // HINT
-
 sorts Int / "Int", Bool / "Bool", State;
 // subsort Int < State;
 

@@ -4,6 +4,7 @@
 #include <string>
 #include <map>
 #include <iostream>
+#include "factories.h"
 
 using namespace std;
 

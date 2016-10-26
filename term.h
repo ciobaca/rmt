@@ -237,6 +237,4 @@ struct Term
   virtual string toPrettyString() = 0;
 };
 
-void logmgu(string, Term *, Term *, Substitution &);
-
 #endif

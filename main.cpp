@@ -1,3 +1,13 @@
+/*
+Entry point of RMT tool.
+
+(C) 2016 Stefan Ciobaca
+stefan.ciobaca@gmail.com
+Faculty of Computer Science
+"Alexandru Ioan Cuza" University
+Iasi, Romania
+http:://profs.info.uaic.ro/~stefan.ciobaca/rmt/
+ */
 #include <iostream>
 #include <string>
 #include <map>
@@ -23,18 +33,6 @@
 #include <getopt.h>
 
 using namespace std;
-
-void logmgu(string s, Term *a, Term *b, Substitution &subst)
-{
-#ifdef LOGMGU
-  cerr << s << " " << a->toString() << " and " << b->toString() << endl;
-  cerr << "subst = ";
-  for (Substitution::iterator it = subst.begin(); it != subst.end(); ++it) {
-    cerr << it->first->name << "->" << it->second->toString() << "; ";
-  }
-  cerr << endl;
-#endif
-}
 
 void outputRewrite(RewriteSystem &rewriteSystem)
 {
@@ -314,6 +312,9 @@ string parseCRewriteSystem(string &s, int &w, CRewriteSystem &crewrite)
   return name;
 }
 
+/*
+entry point to the RMT tool
+ */
 int main(int argc, char **argv)
 {
   static struct option long_options[] = {

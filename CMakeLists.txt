@@ -1,4 +1,4 @@
 cmake_minimum_required(VERSION 2.8.9)
-project(main)
+project(rmt)
 file(GLOB SOURCES "*.cpp")
-add_executable(main ${SOURCES})
+add_executable(rmt ${SOURCES})

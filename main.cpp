@@ -387,6 +387,6 @@ int main(int argc, char **argv)
   } while (1);
 
   if (w < len(s)) {
-    expected("Query", w, s);
+    expected("query", w, s);
   }
 }

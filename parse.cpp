@@ -48,7 +48,7 @@ void parseError(string error, int &where, string text)
   computeErrorLocation(errorLocation, where, text);
   cout << "Error: " << error << " at line " << errorLocation.line << ", column " << errorLocation.column << "." << endl;
   printErrorLocation(errorLocation, where, text);
-  abort();
+  exit(0);
 }
 
 void expected(string what, int &where, string text)
@@ -57,7 +57,7 @@ void expected(string what, int &where, string text)
   computeErrorLocation(errorLocation, where, text);
   cout << "expected " << what << " at line " << errorLocation.line << ", column " << errorLocation.column << "." << endl;
   printErrorLocation(errorLocation, where, text);
-  abort();
+  exit(0);
 }
 
 bool isIdentifierChar(char c)

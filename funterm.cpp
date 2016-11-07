@@ -406,7 +406,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
       newArguments[i] = innerSolutions[j].term;
       solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
 				   innerSolutions[j].subst,
-				   innerSolutions[i].lhsTerm));
+				   innerSolutions[j].lhsTerm));
     }
   }
   Log(DEBUG7) << "Done FunTerm::narrowSearch(RewriteSystem &rs) " << this->toString() << endl;
@@ -446,9 +446,9 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(CRewriteSystem &crs)
       }
       newArguments[i] = innerSolutions[j].term;
       solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
-					      innerSolutions[i].constraint,
-					      innerSolutions[i].subst,
-					      innerSolutions[i].lhsTerm));
+					      innerSolutions[j].constraint,
+					      innerSolutions[j].subst,
+					      innerSolutions[j].lhsTerm));
     }
   }
 

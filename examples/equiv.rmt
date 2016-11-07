@@ -245,60 +245,61 @@ constrained-rewrite-system myrsDone
 // pair(leftInit(mzero, N), rightInit(mzero, mone, N)) /\ mle(mzero, N) => ok
 
 // // test run
-// smt-narrow-search [0,6] in right :
-// 	pair(leftInit(mzero, mtwo), rightInit(mzero, mone, mtwo));
-// smt-narrow-search [0,6] in left :
-// 	pair(leftInit(mzero, mtwo), rightInit(mzero, mone, mtwo));
+search [1,1] in right :
+ 	pair(leftInit(mzero, mtwo), rightInit(mzero, mone, mtwo));
+
+//search [0,6] in left :
+ //	pair(leftInit(mzero, mtwo), rightInit(mzero, mone, mtwo));
 
 // check implication (what we have to prove is directly implied by circularity)
-//smt-narrow-search [1,1] in myrsCirc :
+//search [1,1] in myrsCirc :
 //	pair(leftInit(mzero, N), rightInit(mzero, mone, N)) /\ mle(mzero, N);
 
 // STEP 2. now prove the circularity
 // make progress in both languages
-smt-narrow-search [1,1] in left:
-        pair(leftInit(S, I),
-             rightInit(SP, IP, NP))
-        /\
-        band(band(mequals(S, mdiv(mtimes(mminus(NP, IP), mplus(mplus(IP, NP), mone)), mtwo)),
-                  mequals(SP, mdiv(mtimes(IP, mminus(IP, mone)), mtwo))),
-                  mequals(mplus(I, IP), mplus(NP, mone)));
+// search [1,1] in left:
+//         pair(leftInit(S, I),
+//              rightInit(SP, IP, NP))
+//         /\
+//         band(band(mequals(S, mdiv(mtimes(mminus(NP, IP), mplus(mplus(IP, NP), mone)), mtwo)),
+//                   mequals(SP, mdiv(mtimes(IP, mminus(IP, mone)), mtwo))),
+//                   mequals(mplus(I, IP), mplus(NP, mone)));
 
-smt-narrow-search [1,1] in right:
-pair(leftLoop(S,I,mle(mone,I)),rightInit(SP,IP,NP)) /\
-band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone)));
+// search [1,1] in right:
+// pair(leftLoop(S,I,mle(mone,I)),rightInit(SP,IP,NP)) /\
+// band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone)));
 
-// now make a case analysis:
-// case 1: I = 0
-// step in both languages
-smt-narrow-search [1,1] in left:
-pair(leftLoop(S,I,mle(mone,I)),rightLoop(SP,IP,NP,mle(IP,NP))) /\ 
-band(
-band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),
-mequals(I, mzero));
+// // now make a case analysis:
+// // case 1: I = 0
+// // step in both languages
+// search [1,1] in left:
+// pair(leftLoop(S,I,mle(mone,I)),rightLoop(SP,IP,NP,mle(IP,NP))) /\ 
+// band(
+// band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),
+// mequals(I, mzero));
 
-smt-narrow-search [1,1] in right:
-pair(leftDone(S),rightLoop(SP,IP,NP,mle(IP,NP))) /\ band(band(band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),mequals(I,mzero)),bnot(mle(mone,I)));
+// search [1,1] in right:
+// pair(leftDone(S),rightLoop(SP,IP,NP,mle(IP,NP))) /\ band(band(band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),mequals(I,mzero)),bnot(mle(mone,I)));
 
-// check implication:
-smt-narrow-search [1,1] in myrsDone :
-pair(leftDone(S),rightDone(SP)) /\ _existsInt(I,band(band(band(band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),mequals(I,mzero)),bnot(mle(mone,I))),bnot(mle(IP,NP))));
-// ok
+// // check implication:
+// search [1,1] in myrsDone :
+// pair(leftDone(S),rightDone(SP)) /\ _existsInt(I,band(band(band(band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),mequals(I,mzero)),bnot(mle(mone,I))),bnot(mle(IP,NP))));
+// // ok
 
-// case 2: 1 <= I
-// step in left
-smt-narrow-search [1,1] in left:
-pair(leftLoop(S,I,mle(mone,I)),rightLoop(SP,IP,NP,mle(IP,NP))) /\ 
-band(
-band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),
-mle(mone, I));
+// // case 2: 1 <= I
+// // step in left
+// search [1,1] in left:
+// pair(leftLoop(S,I,mle(mone,I)),rightLoop(SP,IP,NP,mle(IP,NP))) /\ 
+// band(
+// band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),
+// mle(mone, I));
 
-smt-narrow-search [1,1] in right:
-pair(leftInit(mplus(S,I),mminus(I,mone)),rightLoop(SP,IP,NP,mle(IP,NP))) /\ band(band(band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),mle(mone,I)),mle(mone,I));
+// search [1,1] in right:
+// pair(leftInit(mplus(S,I),mminus(I,mone)),rightLoop(SP,IP,NP,mle(IP,NP))) /\ band(band(band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),mle(mone,I)),mle(mone,I));
 
-// check implication
-smt-narrow-search in myrsCirc :
-pair(leftInit(mplus(S,I),mminus(I,mone)),rightInit(mplus(SP,IP),mplus(IP,mone),NP)) /\ band(band(band(band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),mle(mone,I)),mle(mone,I)),mle(IP,NP));
-// ok
+// // check implication
+// search in myrsCirc :
+// pair(leftInit(mplus(S,I),mminus(I,mone)),rightInit(mplus(SP,IP),mplus(IP,mone),NP)) /\ band(band(band(band(band(mequals(S,mdiv(mtimes(mminus(NP,IP),mplus(mplus(IP,NP),mone)),mtwo)),mequals(SP,mdiv(mtimes(IP,mminus(IP,mone)),mtwo))),mequals(mplus(I,IP),mplus(NP,mone))),mle(mone,I)),mle(mone,I)),mle(IP,NP));
+// // ok
 
-// DONE PROOF
+// // DONE PROOF

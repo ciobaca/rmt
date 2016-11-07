@@ -40,7 +40,7 @@ Substitution createSubstitution(map<Variable *, Variable *> r)
 string varVecToString(vector<Variable *> vars)
 {
   ostringstream oss;
-  for (int i = 0; i < vars.size(); ++i) {
+  for (int i = 0; i < (int)vars.size(); ++i) {
     oss << vars[i]->name << " ";
   }
   return oss.str();

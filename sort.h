@@ -38,7 +38,7 @@ struct Sort
     if (this == sort) {
       return 1;
     }
-    for (int i = 0; i < subSorts.size(); ++i) {
+    for (int i = 0; i < (int)subSorts.size(); ++i) {
       if (subSorts[i]->hasSubSortTR(sort)) {
 	return 1;
       }

@@ -30,7 +30,7 @@ std::string stringFromReason(Reason reason)
 
 Term *introduceExists(Term *constraint, vector<Variable *> vars)
 {
-  for (int i = 0; i < vars.size(); ++i) {
+  for (int i = 0; i < (int)vars.size(); ++i) {
     if (vars[i]->sort->hasInterpretation) {
       constraint = bExists(vars[i], constraint);
     }
@@ -91,7 +91,7 @@ void QueryProve::execute()
     RewriteSystem &rs = getRewriteSystem(rewriteSystemName);
     CRewriteSystem &circ = getCRewriteSystem(circularitiesRewriteSystemName);
 
-    for (int i = 0; i < circ.size(); ++i) {
+    for (int i = 0; i < (int)circ.size(); ++i) {
       ConstrainedTerm lhs = circ[i].first;
       Term *rhs = circ[i].second;
       cout << endl;
@@ -100,7 +100,7 @@ void QueryProve::execute()
       prove(lhs, rhs, rs, circ, false);
       cout << "--------" << endl;
       cout << "Circularity #" << i + 1 << (unproven.size() ? " not proved. The following proof obligations failed:" : " proved.") << endl;
-      for (int i = 0; i < unproven.size(); ++i) {
+      for (int i = 0; i < (int)unproven.size(); ++i) {
 	cout << "Remaining proof obligation #" << i + 1 << " (reason: " << stringFromReason(unproven[i].reason) << "): " <<
 	  unproven[i].lhs.toPrettyString() << " => " << unproven[i].rhs->toPrettyString() << endl;
       }
@@ -109,7 +109,7 @@ void QueryProve::execute()
     CRewriteSystem &crs = getCRewriteSystem(rewriteSystemName);
     CRewriteSystem &circ = getCRewriteSystem(circularitiesRewriteSystemName);
 
-    for (int i = 0; i < circ.size(); ++i) {
+    for (int i = 0; i < (int)circ.size(); ++i) {
       ConstrainedTerm lhs = circ[i].first;
       Term *rhs = circ[i].second;
       cout << endl;
@@ -118,7 +118,7 @@ void QueryProve::execute()
       proveCRS(lhs, rhs, crs, circ, false);
       cout << "--------" << endl;
       cout << "Circularity #" << i + 1 << (unproven.size() ? " not proved. The following proof obligations failed:" : " proved.") << endl;
-      for (int i = 0; i < unproven.size(); ++i) {
+      for (int i = 0; i < (int)unproven.size(); ++i) {
 	cout << "Remaining proof obligation #" << i + 1 << " (reason: " << stringFromReason(unproven[i].reason) << "): " <<
 	  unproven[i].lhs.toPrettyString() << " => " << unproven[i].rhs->toPrettyString() << endl;
       }
@@ -193,7 +193,7 @@ Term *QueryProve::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
     Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
 
     int newBranchDepth = solutions.size() > 1 ? branchingDepth + 1 : branchingDepth;
-    for (int i = 0; i < solutions.size(); ++i) {
+    for (int i = 0; i < (int)solutions.size(); ++i) {
       ConstrainedSolution sol = solutions[i];
       
       circularityConstraint = simplifyConstraint(bOr(
@@ -226,7 +226,7 @@ Term *QueryProve::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
   Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
 
   int newBranchDepth = (solutions.size() > 1) ? (branchingDepth + 1) : branchingDepth;
-  for (int i = 0; i < solutions.size(); ++i) {
+  for (int i = 0; i < (int)solutions.size(); ++i) {
     ConstrainedSolution sol = solutions[i];
     
     rewriteConstraint = simplifyConstraint(bOr(
@@ -356,7 +356,7 @@ Term *QueryProve::proveByCircularitiesCRS(ConstrainedTerm lhs, Term *rhs,
     Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
 
     int newBranchDepth = solutions.size() > 1 ? branchingDepth + 1 : branchingDepth;
-    for (int i = 0; i < solutions.size(); ++i) {
+    for (int i = 0; i < (int)solutions.size(); ++i) {
       ConstrainedSolution sol = solutions[i];
 
       circularityConstraint = simplifyConstraint(bOr(
@@ -386,7 +386,7 @@ Term *QueryProve::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
   Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
 
   int newBranchDepth = (solutions.size() > 1) ? (branchingDepth + 1) : branchingDepth;
-  for (int i = 0; i < solutions.size(); ++i) {
+  for (int i = 0; i < (int)solutions.size(); ++i) {
     ConstrainedSolution sol = solutions[i];
 
     rewriteConstraint = simplifyConstraint(bOr(

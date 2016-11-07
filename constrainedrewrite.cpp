@@ -85,7 +85,7 @@ string CRewriteSystem::toString()
     ConstrainedTerm l = (*this)[i].first;
     Term *r = (*this)[i].second;
     oss << l.toString() << " => " << r->toString();
-    if (i != this->size() - 1) {
+    if (i != (int)this->size() - 1) {
       oss << ", ";
     }
   }

@@ -326,7 +326,7 @@ Term *FunTerm::abstract(Substitution &substitution)
     return result;
   } else {
     vector<Term *> abstractedArguments;
-    for (int i = 0; i < arguments.size(); ++i) {
+    for (int i = 0; i < (int)arguments.size(); ++i) {
       //      fprintf(stderr, "abstracting argument %d.n\n", i);
       abstractedArguments.push_back(arguments[i]->abstract(substitution));
       //      fprintf(stderr, "finished abstracting argument %d.n\n", i);
@@ -357,7 +357,7 @@ vector<ConstrainedSolution> FunTerm::rewriteSearch(RewriteSystem &rs)
   // inner rewrite search
   for (int i = 0; i < len(function->arguments); ++i) {
     vector<ConstrainedSolution> innerSolutions = arguments[i]->rewriteSearch(rs);
-    for (int j = 0; j < innerSolutions.size(); ++j) {
+    for (int j = 0; j < (int)innerSolutions.size(); ++j) {
       vector<Term *> newArguments;
       for (int k = 0; k < len(function->arguments); ++k) {
 	newArguments.push_back(arguments[k]);
@@ -398,7 +398,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
   for (int i = 0; i < len(function->arguments); ++i) {
     Log(DEBUG7) << "Innering with " << arguments[i]->toString() << endl;
     vector<ConstrainedSolution> innerSolutions = arguments[i]->narrowSearch(rs);
-    for (int j = 0; j < innerSolutions.size(); ++j) {
+    for (int j = 0; j < (int)innerSolutions.size(); ++j) {
       vector<Term *> newArguments;
       for (int k = 0; k < len(function->arguments); ++k) {
 	newArguments.push_back(arguments[k]);
@@ -439,7 +439,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(CRewriteSystem &crs)
   // inner narrowing search
   for (int i = 0; i < len(function->arguments); ++i) {
     vector<ConstrainedSolution> innerSolutions = arguments[i]->narrowSearch(crs);
-    for (int j = 0; j < innerSolutions.size(); ++j) {
+    for (int j = 0; j < (int)innerSolutions.size(); ++j) {
       vector<Term *> newArguments;
       for (int k = 0; k < len(function->arguments); ++k) {
 	newArguments.push_back(arguments[k]);

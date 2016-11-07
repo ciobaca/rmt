@@ -71,12 +71,4 @@ string varVecToString(vector<Variable *> vars);
 
 extern int VERBOSITY;
 
-//#define LOG(level,ss)				\
-//  do {					\
-    //    if (level < VERBOSITY) {		\
-//      string s = ss;				\
-//      cout << s << endl;			\
-//    }						\
-//  } while (0)
-
 #endif

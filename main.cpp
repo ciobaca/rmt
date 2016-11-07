@@ -46,16 +46,16 @@ void createSubsort(vector<string> &identifiersLeft,
 {
   Log log(INFO);
   log << "Declaring the sorts: ";
-  for (int i = 0; i < identifiersLeft.size(); ++i) {
+  for (int i = 0; i < (int)identifiersLeft.size(); ++i) {
     log << identifiersLeft[i] << " ";
   }
   log << "as subsorts of ";
-  for (int i = 0; i < identifiersRight.size(); ++i) {
+  for (int i = 0; i < (int)identifiersRight.size(); ++i) {
     log << identifiersRight[i] << " ";
   }
   log << endl;
-  for (int i = 0; i < identifiersLeft.size(); ++i) {
-    for (int j = 0; j < identifiersRight.size(); ++j) {
+  for (int i = 0; i < (int)identifiersLeft.size(); ++i) {
+    for (int j = 0; j < (int)identifiersRight.size(); ++j) {
       Sort *left = getSort(identifiersLeft[i]);
       Sort *right = getSort(identifiersRight[j]);
       assert(left);

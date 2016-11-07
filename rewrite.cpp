@@ -46,7 +46,7 @@ RewriteSystem RewriteSystem::fresh(vector<Variable *> vars)
     append(myvars, (*this)[i].second->vars());
   }
   Log(DEBUG9) << "Variables in rewrite system: " << endl;
-  for (int i = 0; i < myvars.size(); ++i) {
+  for (int i = 0; i < (int)myvars.size(); ++i) {
     Log(DEBUG9) << myvars[i]->name << " ";
   }
 
@@ -86,7 +86,7 @@ string RewriteSystem::toString()
     Term *l = (*this)[i].first;
     Term *r = (*this)[i].second;
     oss << l->toString() << " => " << r->toString();
-    if (i != this->size() - 1) {
+    if (i != (int)this->size() - 1) {
       oss << ", ";
     }
   }

@@ -55,11 +55,11 @@ void Z3Theory::addConstraint(Term *constraint)
 Z3Result Z3Theory::isSatisfiable()
 {
   ostringstream oss;
-  for (int i = 0; i < variables.size(); ++i) {
+  for (int i = 0; i < (int)variables.size(); ++i) {
     assert(variables[i]->sort->hasInterpretation);
     oss << "(declare-const " << variables[i]->name << " " << variables[i]->sort->interpretation << ")" << endl;
   }
-  for (int i = 0; i < constraints.size(); ++i) {
+  for (int i = 0; i < (int)constraints.size(); ++i) {
     oss << "(assert " << constraints[i]->toSmtString() << ")" << endl;
   }
   oss << "(check-sat)" << endl;
@@ -81,7 +81,7 @@ Z3Result Z3Theory::isSatisfiable()
   } else {
     Log(ERROR) << "Internal error - Z3 did not return an expected satisfiability value." << endl << z3string;
     Log(ERROR) << "Tried to smt the following constraints:" << endl;
-    for (int i = 0; i < constraints.size(); ++i) {
+    for (int i = 0; i < (int)constraints.size(); ++i) {
       Log(ERROR) << constraints[i]->toString() << endl;
     }
     fprintf(stderr, "Cannot interpret result returned by Z3: \"%s\".\n", result.c_str());
@@ -94,7 +94,7 @@ Z3Result isSatisfiable(Term *constraint)
   Log(LOGSAT) << "Testing satisfiability of " << constraint->toString() << endl;
   Z3Theory theory;
   vector<Variable *> interpretedVariables = getInterpretedVariables();
-  for (int i = 0; i < interpretedVariables.size(); ++i) {
+  for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
   }
   theory.addConstraint(constraint);

@@ -106,7 +106,7 @@ bool Term::smtUnifyWith(Term *other, Term *initialConstraint,
   if (abstractTerm->unifyWith(other, unifyingSubstitution)) {
     Z3Theory theory;
     vector<Variable *> interpretedVariables = getInterpretedVariables();
-    for (int i = 0; i < interpretedVariables.size(); ++i) {
+    for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
       theory.addVariable(interpretedVariables[i]);
     }
 
@@ -176,7 +176,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *i
   // STEP 3.1: prepare generic theory for Z3
   Z3Theory theory;
   vector<Variable *> interpretedVariables = getInterpretedVariables();
-  for (int i = 0; i < interpretedVariables.size(); ++i) {
+  for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
   }
 
@@ -185,7 +185,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *i
   }
 
   // STEP 3.2: check that the constraints are satisfiable
-  for (int i = 0; i < solutions.size(); ++i) {
+  for (int i = 0; i < (int)solutions.size(); ++i) {
     ConstrainedSolution sol = solutions[i];
     sol.term = sol.term->substitute(abstractingSubstitution);
     sol.constraint = sol.constraint->substitute(abstractingSubstitution);
@@ -268,7 +268,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term 
   // STEP 3.1: prepare generic theory for Z3
   Z3Theory theory;
   vector<Variable *> interpretedVariables = getInterpretedVariables();
-  for (int i = 0; i < interpretedVariables.size(); ++i) {
+  for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
   }
 
@@ -277,7 +277,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term 
   }
 
   // STEP 3.2: check that the constraints are satisfiable
-  for (int i = 0; i < solutions.size(); ++i) {
+  for (int i = 0; i < (int)solutions.size(); ++i) {
     ConstrainedSolution sol = solutions[i];
     sol.term = sol.term->substitute(abstractingSubstitution);
     sol.constraint = sol.constraint->substitute(abstractingSubstitution);

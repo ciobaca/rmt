@@ -38,7 +38,7 @@ void QueryImplies::execute()
   Term *constraint = 0;
   cout << "Testing implication between " << ct.toString() << " and " << term->toString() << endl;
   //    cerr << "here" << endl;
-  if (term->smtUnifyWith(ct.term, 0, subst, constraint)) {
+  if (term->unifyModuloTheories(ct.term, subst, constraint)) {
     //      cerr << "here2" << endl;
     // Function *TrueFun = getFunction("true");
     // Function *AndFun = getFunction("band");

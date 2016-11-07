@@ -146,7 +146,7 @@ Term *QueryProveReachability::proveByImplication(ConstrainedTerm lhs, Term *rhs,
   Substitution subst;
 
   Log(DEBUG) << spaces(depth + 1) << "STEP 1. Does lhs imply rhs?" << endl;
-  if (lhs.term->smtUnifyWith(rhs, 0, subst, unificationConstraint)) {
+  if (lhs.term->unifyModuloTheories(rhs, subst, unificationConstraint)) {
     Log(DEBUG4) << spaces(depth + 1) << "lhs unifies with rhs" << endl;
     Log(DEBUG4) << spaces(depth + 1) << "Unification constraint: " << unificationConstraint->toString() << endl;
     Term *constraint = bImplies(lhs.constraint, unificationConstraint);
@@ -309,7 +309,7 @@ Term *QueryProveReachability::proveByImplicationCRS(ConstrainedTerm lhs, Term *r
   Substitution subst;
 
   Log(DEBUG) << spaces(depth + 1) << "STEP 1. Does lhs imply rhs?" << endl;
-  if (lhs.term->smtUnifyWith(rhs, 0, subst, unificationConstraint)) {
+  if (lhs.term->unifyModuloTheories(rhs, subst, unificationConstraint)) {
     Log(DEBUG4) << spaces(depth + 1) << "lhs unifies with rhs" << endl;
     Log(DEBUG4) << spaces(depth + 1) << "Unification constraint: " << unificationConstraint->toString() << endl;
     Term *constraint = bImplies(lhs.constraint, unificationConstraint);

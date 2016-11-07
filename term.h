@@ -205,8 +205,12 @@ struct Term
   // to the SMT solver.
   virtual vector<ConstrainedSolution> smtNarrowSearch(CRewriteSystem &, Term *initialConstraint);
 
-  bool smtUnifyWith(Term *other, Term *initialConstraint,
-		    Substitution &resultSubstitution, Term *&resultConstraint);
+  // Perform a unification modulo theories between *this and *other.
+  // Assume t1 = *this and t2 = *other.
+  // Builds a substitution sigma = resultSubstitution and a constraint c = resultConstraint
+  // such that c implies t1\sigma = t2\sigma.
+  // Returns false if c is unsatisfiable.
+  bool unifyModuloTheories(Term *other, Substitution &resultSubstitution, Term *&resultConstraint);
 
   // Returns the number of different subterms (the same subterm is
   // counted only once, even if it appears in different places).  Uses

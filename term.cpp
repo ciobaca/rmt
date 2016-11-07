@@ -95,11 +95,10 @@ Term *Term::rewriteTopMost(pair<Term *, Term *> rewriteRule, Substitution &how)
   return this;
 }
 
-bool Term::smtUnifyWith(Term *other, Term *initialConstraint,
-		   Substitution &resultSubstitution, Term *&resultConstraint)
+bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Term *&resultConstraint)
 {
   Substitution abstractingSubstitution;
-  // STEP 1: compute abstracted term (and constraining substitution)
+
   Term *abstractTerm = this->abstract(abstractingSubstitution);
 
   Substitution unifyingSubstitution;
@@ -110,12 +109,7 @@ bool Term::smtUnifyWith(Term *other, Term *initialConstraint,
       theory.addVariable(interpretedVariables[i]);
     }
 
-    if (initialConstraint == 0) {
-      initialConstraint = bTrue();
-    }
-
-    theory.addConstraint(initialConstraint);
-    resultConstraint = initialConstraint;
+    resultConstraint = bTrue();
     for (Substitution::iterator it = abstractingSubstitution.begin();
 	 it != abstractingSubstitution.end(); ++it) {
       Term *lhsTerm = getVarTerm(it->first)->substitute(unifyingSubstitution);
@@ -138,7 +132,6 @@ bool Term::smtUnifyWith(Term *other, Term *initialConstraint,
       }
     }
 
-    // STEP 3.2.3: call z3 to check satisfiability
     if (theory.isSatisfiable() != unsat) {
       return true;
     } else {

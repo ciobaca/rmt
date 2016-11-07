@@ -9,7 +9,6 @@
 using namespace std;
 
 QueryUnify::QueryUnify()
-  : ct(0, 0)
 {
 }
   
@@ -22,11 +21,9 @@ void QueryUnify::parse(std::string &s, int &w)
 {
   matchString(s, w, "unify");
   skipWhiteSpace(s, w);
-  ct = parseConstrainedTerm(s, w);
+  t1 = parseTerm(s, w);
   skipWhiteSpace(s, w);
-  matchString(s, w, "and");
-  skipWhiteSpace(s, w);
-  term = parseTerm(s, w);
+  t2 = parseTerm(s, w);
   skipWhiteSpace(s, w);
   matchString(s, w, ";");
 }
@@ -34,18 +31,13 @@ void QueryUnify::parse(std::string &s, int &w)
 void QueryUnify::execute()
 {
   Substitution subst;
-  Term *constraint = 0;
-  cout << "Unifying " << ct.toString() << " and " << term->toString() << endl;
-  if (term->smtUnifyWith(ct.term, ct.constraint,
-			       subst, constraint)) {
+  cout << "Unifying " << t1->toString() << " and " << t2->toString() << endl;
+  Term *constraint;
+  if (t1->unifyModuloTheories(t2, subst, constraint)) {
     cout << "Unification results:" << endl;
     cout << "Substitution: " << subst.toString() << endl;
     cout << "Constraint: " << constraint->toString() << endl;
-    if (existsRewriteSystem("simplifications")) {
-      RewriteSystem rs = getRewriteSystem("simplifications");
-      constraint = constraint->normalize(rs);
-    }
-    cout << "Simplified constraint: " << constraint->toString() << endl;
+    cout << "Constraint (simplified): " << simplifyConstraint(constraint)->toString() << endl;
   } else {
     cout << "No unification." << endl;
   }

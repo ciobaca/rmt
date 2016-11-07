@@ -275,9 +275,8 @@ implies pair(leftInit(mzero, N), rightInit(mzero, mone, N)) /\ mle(mzero, N)
         pair(leftInit(S, I),
              rightInit(SP, IP, NP));
 
-unify pair(leftInit(mzero, N), rightInit(mzero, mone, N)) /\ mle(mzero, N) and
-        pair(leftInit(S, I),
-             rightInit(SP, IP, NP));
+unify pair(leftInit(mzero, N), rightInit(mzero, mone, N))
+      pair(leftInit(S, I), rightInit(SP, IP, NP));
 //        /\
   //      band(band(mequals(S, mdiv(mtimes(mminus(NP, IP), mplus(mplus(IP, NP), mone)), mtwo)),
     //              mequals(SP, mdiv(mtimes(IP, mminus(IP, mone)), mtwo))),

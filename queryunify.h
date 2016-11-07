@@ -9,8 +9,8 @@
 
 struct QueryUnify : public Query
 {
-  Term *term;
-  ConstrainedTerm ct;
+  Term *t1;
+  Term *t2;
 
   QueryUnify();
   virtual Query *create();

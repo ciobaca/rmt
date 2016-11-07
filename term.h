@@ -4,7 +4,6 @@
 #include <string>
 #include <vector>
 
-#include "name.h"
 #include "variable.h"
 #include "function.h"
 #include "rewrite.h"

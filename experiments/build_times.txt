@@ -1,0 +1,40 @@
+We performed an experiment with using make versus ninja to compile RMT. The running times are below.
+
+
+Clean build of RMT
+
+Using make (time is in seconds):
+12.771
+12.971
+12.787
+12.800
+12.591
+
+Using ninja (time is in seconds):
+12.505
+12.528
+12.302
+12.414
+12.472
+
+
+
+Build of RMT after "touch ../funterm.cpp"
+
+Using ninja:
+
+2.796
+2.774
+2.783
+2.772
+2.787
+
+Using make:
+
+2.964
+2.976
+2.970
+3.000
+2.872
+2.913
+2.922

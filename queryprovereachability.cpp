@@ -1,4 +1,4 @@
-#include "queryprove.h"
+#include "queryprovereachability.h"
 #include "constrainedterm.h"
 #include "parse.h"
 #include "factories.h"
@@ -38,16 +38,16 @@ Term *introduceExists(Term *constraint, vector<Variable *> vars)
   return constraint;
 }
 
-QueryProve::QueryProve()
+QueryProveReachability::QueryProveReachability()
 {
 }
   
-Query *QueryProve::create()
+Query *QueryProveReachability::create()
 {
-  return new QueryProve();
+  return new QueryProveReachability();
 }
 
-void QueryProve::parse(std::string &s, int &w)
+void QueryProveReachability::parse(std::string &s, int &w)
 {
   matchString(s, w, "prove");
   skipWhiteSpace(s, w);
@@ -85,7 +85,7 @@ void QueryProve::parse(std::string &s, int &w)
   matchString(s, w, ";");
 }
   
-void QueryProve::execute()
+void QueryProveReachability::execute()
 {
   if (existsRewriteSystem(rewriteSystemName)) {
     RewriteSystem &rs = getRewriteSystem(rewriteSystemName);
@@ -139,7 +139,7 @@ string spaces(int tabs)
 
 // returns a constraint that describes when
 // lhs implies rhs
-Term *QueryProve::proveByImplication(ConstrainedTerm lhs, Term *rhs,
+Term *QueryProveReachability::proveByImplication(ConstrainedTerm lhs, Term *rhs,
 			 RewriteSystem &rs, CRewriteSystem &circ, int depth)
 {
   Term *unificationConstraint;
@@ -176,7 +176,7 @@ Term *QueryProve::proveByImplication(ConstrainedTerm lhs, Term *rhs,
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *QueryProve::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
+Term *QueryProveReachability::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
 			   RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress,
 			   int branchingDepth)
 {
@@ -210,7 +210,7 @@ Term *QueryProve::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *QueryProve::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
+Term *QueryProveReachability::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
 		     RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress, int branchingDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?" << endl;
@@ -240,7 +240,7 @@ Term *QueryProve::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
   return rewriteConstraint;
 }
 
-void QueryProve::prove(ConstrainedTerm lhs, Term *rhs,
+void QueryProveReachability::prove(ConstrainedTerm lhs, Term *rhs,
 	   RewriteSystem &rs, CRewriteSystem &circ, bool hadProgress, int depth, int branchingDepth)
 {
   if (depth > maxDepth) {
@@ -302,7 +302,7 @@ void QueryProve::prove(ConstrainedTerm lhs, Term *rhs,
 
 // returns a constraint that describes when
 // lhs implies rhs
-Term *QueryProve::proveByImplicationCRS(ConstrainedTerm lhs, Term *rhs,
+Term *QueryProveReachability::proveByImplicationCRS(ConstrainedTerm lhs, Term *rhs,
 			 CRewriteSystem &crs, CRewriteSystem &circ, int depth)
 {
   Term *unificationConstraint;
@@ -339,7 +339,7 @@ Term *QueryProve::proveByImplicationCRS(ConstrainedTerm lhs, Term *rhs,
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *QueryProve::proveByCircularitiesCRS(ConstrainedTerm lhs, Term *rhs,
+Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term *rhs,
 			   CRewriteSystem &crs, CRewriteSystem &circ, int depth, bool hadProgress,
 			   int branchingDepth)
 {
@@ -372,7 +372,7 @@ Term *QueryProve::proveByCircularitiesCRS(ConstrainedTerm lhs, Term *rhs,
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *QueryProve::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
+Term *QueryProveReachability::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
 		     CRewriteSystem &crs, CRewriteSystem &circ, int depth, bool hadProgress, int branchingDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?" << endl;
@@ -400,7 +400,7 @@ Term *QueryProve::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
   return rewriteConstraint;
 }
 
-void QueryProve::proveCRS(ConstrainedTerm lhs, Term *rhs,
+void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
 			  CRewriteSystem &crs, CRewriteSystem &circ, bool hadProgress, int depth, int branchingDepth
 			  )
 {

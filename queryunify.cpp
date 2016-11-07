@@ -20,7 +20,7 @@ Query *QueryUnify::create()
   
 void QueryUnify::parse(std::string &s, int &w)
 {
-  matchString(s, w, "smt-unify");
+  matchString(s, w, "unify");
   skipWhiteSpace(s, w);
   ct = parseConstrainedTerm(s, w);
   skipWhiteSpace(s, w);

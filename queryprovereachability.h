@@ -1,5 +1,5 @@
-#ifndef QUERYPROVE_H__
-#define QUERYPROVE_H__
+#ifndef QUERYPROVEREACHABILITY_H__
+#define QUERYPROVEREACHABILITY_H__
 
 #include "query.h"
 #include "constrainedterm.h"
@@ -32,7 +32,7 @@ struct ProofObligation
   }
 };
 
-struct QueryProve : public Query
+struct QueryProveReachability : public Query
 {
   std::string rewriteSystemName;
   std::string circularitiesRewriteSystemName;
@@ -42,7 +42,7 @@ struct QueryProve : public Query
 
   std::vector<ProofObligation> unproven;
 
-  QueryProve();
+  QueryProveReachability();
   
   virtual Query *create();
   

@@ -4,7 +4,7 @@
 #include "queryunify.h"
 #include "queryrun.h"
 #include "querysearch.h"
-#include "queryprove.h"
+#include "queryprovereachability.h"
 #include "querysatisfiability.h"
 
 #include <string>
@@ -47,9 +47,9 @@ Query *createQueryImplies()
   return new QueryImplies();
 }
 
-Query *createQueryProve()
+Query *createQueryProveReachability()
 {
-  return new QueryProve();
+  return new QueryProveReachability();
 }
 
 Query *createQuerySatisfiability()
@@ -69,7 +69,8 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["search"] = createQuerySearch;
   (*map)["unify"] = createQueryUnify;
   (*map)["implies"] = createQueryImplies;
-  (*map)["prove"] = createQueryProve;
+  // TODO: after TACAS, change command "prove" to "prove-reachability"
+  (*map)["prove"] = createQueryProveReachability;
   (*map)["run"] = createQueryRun;
   (*map)["satisfiability"] = createQuerySatisfiability;
   return map;

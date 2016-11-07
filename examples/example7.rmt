@@ -57,12 +57,15 @@ every invocation. In our case, we use the SMT prelude to define a
 recursive function that computes the gcd by repeated subtraction.
 
 */
-smt-prelude "(define-fun-rec gcd ((x Int) (y Int)) Int
+smt-prelude "
+(declare-fun gcd (Int Int) Int)
+(assert (forall ((x Int) (y Int))
+(= (gcd x y)
      (ite (= y 0)
       x
       (gcd y (- x y))
      )
-)"
+)))"
 
 sorts Int / "Int", Bool / "Bool", State;
 // subsort Int < State;

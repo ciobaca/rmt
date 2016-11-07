@@ -1,7 +1,6 @@
 #include "funterm.h"
 #include "varterm.h"
 #include "log.h"
-#include "namterm.h"
 #include "factories.h"
 #include "helper.h"
 #include "sort.h"

@@ -23,7 +23,6 @@ http:://profs.info.uaic.ro/~stefan.ciobaca/rmt/
 #include "factories.h"
 #include "sort.h"
 #include "z3driver.h"
-#include "solution.h"
 #include "search.h"
 #include "constrainedterm.h"
 #include "query.h"

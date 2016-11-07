@@ -15,7 +15,7 @@ using namespace std;
 
 string smt_prelude;
 
-string prover = "z3 -T:2 -in <";
+string prover = "z3 -T:5 -in <";
 //string prover = "cvc4 --lang smtlib2";
 
 string callz3(string s)

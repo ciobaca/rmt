@@ -234,25 +234,18 @@ constrained-rewrite-system myrsCirc
 constrained-rewrite-system myrsDone
 	pair(leftDone(S), rightDone(S)) => ok;
 
-/*
-prove-equivalences
+show-equivalent in left and right :
 
-  pair(leftInit(mzero, N), rightInit(mzero, mone, N)) if mle(mzero, N),
+  pair(leftInit(mzero, N), rightInit(mzero, mone, N)) /\ mle(mzero, N),
 
-  pair(leftInit(S, I), rightInit(SP, IP, NP)) if
+  pair(leftInit(S, I), rightInit(SP, IP, NP)) /\
         band(band(mequals(S, mdiv(mtimes(mminus(NP, IP), mplus(mplus(IP, NP), mone)), mtwo)),
                   mequals(SP, mdiv(mtimes(IP, mminus(IP, mone)), mtwo))),
                   mequals(mplus(I, IP), mplus(NP, mone)))
 
 with-base
 
-  pair(leftDone(S), rightDone(S))
-
-in
-
-  left and right;
-
-*/
+  pair(leftDone(S), rightDone(S));
 
 // J + (J + 1) + ... + N
 // = (N - J + 1) * (J + N) / 2

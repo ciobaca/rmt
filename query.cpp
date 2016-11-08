@@ -5,6 +5,7 @@
 #include "queryrun.h"
 #include "querysearch.h"
 #include "queryprovereachability.h"
+#include "queryproveequivalence.h"
 #include "querysatisfiability.h"
 
 #include <string>
@@ -52,6 +53,11 @@ Query *createQueryProveReachability()
   return new QueryProveReachability();
 }
 
+Query *createQueryProveEquivalence()
+{
+  return new QueryProveEquivalence();
+}
+
 Query *createQuerySatisfiability()
 {
   return new QuerySatisfiability();
@@ -71,6 +77,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["implies"] = createQueryImplies;
   // TODO: after TACAS, change command "prove" to "prove-reachability"
   (*map)["prove"] = createQueryProveReachability;
+  (*map)["show-equivalent"] = createQueryProveEquivalence;
   (*map)["run"] = createQueryRun;
   (*map)["satisfiability"] = createQuerySatisfiability;
   return map;

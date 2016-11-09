@@ -69,4 +69,6 @@ vector<Term *> vector2(Term *term1, Term *term2);
 Term *simplifyConstraint(Term *);
 ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm);
 
+Term *introduceExists(Term *, vector<Variable *>);
+
 #endif

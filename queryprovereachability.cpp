@@ -28,16 +28,6 @@ std::string stringFromReason(Reason reason)
   return "unknown reason";
 }
 
-Term *introduceExists(Term *constraint, vector<Variable *> vars)
-{
-  for (int i = 0; i < (int)vars.size(); ++i) {
-    if (vars[i]->sort->hasInterpretation) {
-      constraint = bExists(vars[i], constraint);
-    }
-  }
-  return constraint;
-}
-
 QueryProveReachability::QueryProveReachability()
 {
 }

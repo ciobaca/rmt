@@ -8,8 +8,8 @@
 
 struct QueryImplies : public Query
 {
-  Term *term;
-  ConstrainedTerm ct;
+  ConstrainedTerm ct1;
+  ConstrainedTerm ct2;
 
   QueryImplies();
   

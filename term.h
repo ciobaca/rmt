@@ -242,4 +242,6 @@ struct Term
   virtual string toPrettyString() = 0;
 };
 
+bool unabstractSolution(Substitution, ConstrainedSolution &);
+
 #endif

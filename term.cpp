@@ -103,6 +103,7 @@ bool unabstractSolution(Substitution abstractingSubstitution,
   Log(DEBUG7) << "Constraint = " << solution.constraint->toString() << endl;
   Log(DEBUG7) << "Subst = " << solution.subst.toString() << endl;
   Log(DEBUG7) << "LHS Term = " << solution.lhsTerm->toString() << endl;
+  Log(DEBUG7) << "Abstracting substitution = " << abstractingSubstitution.toString() << endl;
 
   solution.term = solution.term->substitute(abstractingSubstitution);
   solution.constraint = solution.constraint->substitute(abstractingSubstitution);
@@ -152,46 +153,62 @@ bool unabstractSolution(Substitution abstractingSubstitution,
 
 bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Term *&resultConstraint)
 {
+  Log(DEBUG5) << "unifyModuloTheories " << this->toString() << " and " <<
+    other->toString() << endl;
   Substitution abstractingSubstitution;
 
   Term *abstractTerm = this->abstract(abstractingSubstitution);
-
+  Log(DEBUG6) << "Abstract term: " << abstractTerm->toString() << endl;
+  Log(DEBUG6) << "Abstracting substitution: " << abstractingSubstitution.toString() << endl;
+  
   Substitution unifyingSubstitution;
   if (abstractTerm->unifyWith(other, unifyingSubstitution)) {
-    Z3Theory theory;
-    vector<Variable *> interpretedVariables = getInterpretedVariables();
-    for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
-      theory.addVariable(interpretedVariables[i]);
-    }
+    Log(DEBUG6) << "Syntactic unification succeeded. Unifying substitution: " << endl;
+    Log(DEBUG6) << unifyingSubstitution.toString() << endl;
+    Term *whatever = bTrue();
+    ConstrainedSolution sol(whatever, bTrue(), unifyingSubstitution, whatever);
 
-    resultConstraint = bTrue();
-    for (Substitution::iterator it = abstractingSubstitution.begin();
-	 it != abstractingSubstitution.end(); ++it) {
-      Term *lhsTerm = getVarTerm(it->first)->substitute(unifyingSubstitution);
-      Term *rhsTerm = it->second->substitute(unifyingSubstitution);
-      theory.addEqualityConstraint(lhsTerm, rhsTerm);
-      if (lhsTerm != rhsTerm) {
-  	if (lhsTerm->isVariable()) {
-  	  Variable *var = ((VarTerm *)lhsTerm)->variable;
-  	  resultSubstitution.force(var, rhsTerm);
-
-	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
-  	} else if (rhsTerm->isVariable()){
-	  Variable *var = ((VarTerm *)rhsTerm)->variable;
-	  resultSubstitution.force(var, lhsTerm);
-
-	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
-  	} else {
-	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
-  	}
-      }
-    }
-
-    if (theory.isSatisfiable() != unsat) {
+    if (unabstractSolution(abstractingSubstitution, sol)) {
+      resultSubstitution = sol.simplifyingSubst;
+      resultConstraint = sol.constraint;
       return true;
     } else {
       return false;
     }
+    // Z3Theory theory;
+    // vector<Variable *> interpretedVariables = getInterpretedVariables();
+    // for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
+    //   theory.addVariable(interpretedVariables[i]);
+    // }
+
+    // resultConstraint = bTrue();
+    // for (Substitution::iterator it = abstractingSubstitution.begin();
+    // 	 it != abstractingSubstitution.end(); ++it) {
+    //   Term *lhsTerm = getVarTerm(it->first)->substitute(unifyingSubstitution);
+    //   Term *rhsTerm = it->second->substitute(unifyingSubstitution);
+    //   theory.addEqualityConstraint(lhsTerm, rhsTerm);
+    //   if (lhsTerm != rhsTerm) {
+    // 	if (lhsTerm->isVariable()) {
+    // 	  Variable *var = ((VarTerm *)lhsTerm)->variable;
+    // 	  resultSubstitution.force(var, rhsTerm);
+
+    // 	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
+    // 	} else if (rhsTerm->isVariable()){
+    // 	  Variable *var = ((VarTerm *)rhsTerm)->variable;
+    // 	  resultSubstitution.force(var, lhsTerm);
+
+    // 	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
+    // 	} else {
+    // 	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
+    // 	}
+    //   }
+    // }
+
+    // if (theory.isSatisfiable() != unsat) {
+    //   return true;
+    // } else {
+    //   return false;
+    // }
   } else {
     return false;
   }

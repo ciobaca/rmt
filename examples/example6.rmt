@@ -413,7 +413,12 @@ I(done,
 // Now ask the system to perform the proof.
 // Note that the search depth is increased from the default 100 to 103,
 // because the second circularity needs 103 search steps.
+//search in language : I(push(synEq(y,x),push(update(y,mzero,cons(mi(x,N),emp)),push(updateEnv,push(seq(assign(z,mzero),while(le(y,x),seq(assign(z,plus(z,y)),
+//assign(y,plus(y,mone))))),done)))),emp);
+
 prove [103,2] in language : circularities;
+
+//search in language : I(push(seq(assign(x,N),seq(assign(y,mzero),seq(assign(z,mzero),while(le(y,x),seq(assign(z,plus(z,y)),assign(y,plus(y,mone))))))),done),emp) /\ mle(mzero,N);
 
 // Try to see what happens when you decrease the search depth from 103
 // to 100.

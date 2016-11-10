@@ -123,11 +123,11 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
       Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
       if ((!(simplifyingSubst.inDomain(var)))) {
 	if ((!(rhsTerm->hasVariable(var)))) {
-	  //	  if ((!(abstractingSubstitution.inRange(var)))) {
+	  if ((!(abstractingSubstitution.inRange(var)))) {
 	    Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << rhsTerm->toString() << "." << endl;
 	    simplifiedConstraint = true;
 	    simplifyingSubst.add(var, rhsTerm);
-	    //	  }
+	  }
 	}
       }
     }
@@ -137,7 +137,7 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
       Log(DEBUG7) << "Variable " << var->name << " in domain of simplifyingSubst: " << simplifyingSubst.inDomain(var) << endl;
       Log(DEBUG7) << "Term " << lhsTerm->toString() << " has variable " << var->name << ": " << lhsTerm->hasVariable(var) << endl;
       Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
-      if (!simplifyingSubst.inDomain(var) && !lhsTerm->hasVariable(var)) { // && !abstractingSubstitution.inRange(var)) {
+      if (!simplifyingSubst.inDomain(var) && !lhsTerm->hasVariable(var) && !abstractingSubstitution.inRange(var)) {
 	Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << lhsTerm->toString() << "." << endl;
 	simplifiedConstraint = true;
 	simplifyingSubst.add(var, lhsTerm);
@@ -149,12 +149,15 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
     }
   }
 
-  Substitution resultSubst;
-  for (Substitution::iterator it = solution.subst.begin(); it != solution.subst.end(); ++it) {
-    resultSubst.force(it->first, it->second->substitute(abstractingSubstitution));
+  Substitution resultSubst = solution.subst;
+  for (Substitution::iterator it = abstractingSubstitution.begin(); it != abstractingSubstitution.end(); ++it) {
+    resultSubst.force(it->first, it->second);
   }
   solution.subst = resultSubst;
   solution.simplifyingSubst = simplifyingSubst;
+
+  Log(DEBUG7) << "Solution.subst = " << solution.subst.toString() << endl;
+  Log(DEBUG7) << "Solution.simplifyingSubst = " << solution.simplifyingSubst.toString() << endl;
 
   Log(DEBUG7) << "Checking satisfiability of " << solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst)->toString() << "." << endl;
   Z3Theory theory;
@@ -190,7 +193,10 @@ bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Te
 
     if (unabstractSolution(abstractingSubstitution, sol)) {
       resultSubstitution = sol.subst; // TODO: compus cu simplifyingSubst?;
-      resultConstraint = sol.constraint;
+      resultConstraint = sol.constraint->substitute(sol.simplifyingSubst);
+      for (Substitution::iterator it = sol.simplifyingSubst.begin(); it != sol.simplifyingSubst.end(); ++it) {
+	resultSubstitution.force(it->first, it->second);
+      }
       return true;
     } else {
       return false;

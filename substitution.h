@@ -16,6 +16,7 @@ struct Substitution : public std::map<Variable *, Term *>
   void force(Variable *v, Term *t);
   void add(Variable *v, Term *t);
   bool inDomain(Variable *v);
+  bool inRange(Variable *v);
   Term *image(Variable *v);
   std::string toString();
 };

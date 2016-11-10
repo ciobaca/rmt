@@ -190,7 +190,9 @@ Term *QueryProveReachability::proveByCircularities(ConstrainedTerm lhs, Term *rh
 						     introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
 						     circularityConstraint));
       
-      prove(ConstrainedTerm(sol.term, sol.constraint), rhs->substitute(sol.simplifyingSubst), rs, circ, true, depth + 1, newBranchDepth);
+      prove(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
+			    sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst)),
+	    rhs->substitute(sol.subst)->substitute(sol.simplifyingSubst), rs, circ, true, depth + 1, newBranchDepth);
       
     }
   }
@@ -222,7 +224,9 @@ Term *QueryProveReachability::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
     rewriteConstraint = simplifyConstraint(bOr(
 					       introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
 					       rewriteConstraint));
-    prove(ConstrainedTerm(sol.term, sol.constraint), rhs->substitute(sol.simplifyingSubst), rs, circ, true, depth + 1, newBranchDepth);
+    prove(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
+			  sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst)),
+	  rhs->substitute(sol.subst)->substitute(sol.simplifyingSubst), rs, circ, true, depth + 1, newBranchDepth);
   }
 
   Log(INFO) << spaces(depth + 1) << "Rewrite rules apply in case: " << rewriteConstraint->toString() << endl;
@@ -353,7 +357,9 @@ Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term 
 						     introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
 						     circularityConstraint));
 
-      proveCRS(ConstrainedTerm(sol.term, sol.constraint), rhs->substitute(sol.simplifyingSubst), crs, circ, true, depth + 1, newBranchDepth);
+      proveCRS(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
+			       sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst)),
+	       rhs->substitute(sol.subst)->substitute(sol.simplifyingSubst), crs, circ, true, depth + 1, newBranchDepth);
     }
   }
   Log(INFO) << spaces(depth + 1) << "Circularities apply in case: " << circularityConstraint->toString() << endl;
@@ -382,7 +388,9 @@ Term *QueryProveReachability::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
     rewriteConstraint = simplifyConstraint(bOr(
 					       introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
 					       rewriteConstraint));
-    proveCRS(ConstrainedTerm(sol.term, sol.constraint), rhs->substitute(sol.simplifyingSubst), crs, circ, true, depth + 1, newBranchDepth);
+    proveCRS(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
+			     sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst)),
+	     rhs->substitute(sol.subst)->substitute(sol.simplifyingSubst), crs, circ, true, depth + 1, newBranchDepth);
   }
 
   Log(INFO) << spaces(depth + 1) << "Rewrite rules apply in case: " << rewriteConstraint->toString() << endl;

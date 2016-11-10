@@ -388,7 +388,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
     Substitution subst;
     if (this->unifyWith(l, subst)) {
       Term *term = r;
-      solutions.push_back(ConstrainedSolution(term->substitute(subst), subst, l));
+      solutions.push_back(ConstrainedSolution(term, subst, l));
     } else {
       //      cerr << "Unification failed." << endl;
     }
@@ -430,7 +430,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(CRewriteSystem &crs)
     if (this->unifyWith(l.term, subst)) {
       Log(DEBUG8) << "Unification succeeded." << endl;
       Term *term = r;
-      solutions.push_back(ConstrainedSolution(term->substitute(subst), l.constraint->substitute(subst), subst, l.term));
+      solutions.push_back(ConstrainedSolution(term, l.constraint, subst, l.term));
     } else {
       Log(DEBUG8) << "Unification failed." << endl;
     }

@@ -8,15 +8,14 @@ struct Term;
 
 /*
   Represents a solution to a narrowing search question.
+  
+  If we are asked to compute the successors of a term t in R, then a
+  constrained solution { term |-> t_i, constraint |-> c_i, lhsTerm |-> l,
+  subst |-> pi, simplifyingSubst |-> omega } is sound if:
 
-  The interpretation of a solution should be that "term" can be
-  reached if "constraint /\ simplifyingSubst" is true.
-
-  lhsTerm should the lhs of the rewrite rule that generated this
-  solution.
-
-  subst should be the mgu that was used to instantiate the lhs of the
-  rule that was applied.
+  t pi_i omega_i => t_i pi_i omega_i if c_i pi_i omega_i in one step,
+  
+  for all valuations of the variables involved.
  */
 struct ConstrainedTerm;
 

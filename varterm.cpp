@@ -223,7 +223,7 @@ vector<ConstrainedSolution> VarTerm::narrowSearch(RewriteSystem &rs)
     Substitution subst;
     if (this->unifyWith(l, subst)) {
       Term *term = r;
-      result.push_back(ConstrainedSolution(term->substitute(subst), subst, l));
+      result.push_back(ConstrainedSolution(term, subst, l));
     }
   }
   Log(DEBUG7) << "Done VarTerm::narrowSearch(RewriteSystem &) " << this->toString() << endl;
@@ -242,7 +242,7 @@ vector<ConstrainedSolution> VarTerm::narrowSearch(CRewriteSystem &crs)
     Substitution subst;
     if (this->unifyWith(l.term, subst)) {
       Term *term = r;
-      result.push_back(ConstrainedSolution(term->substitute(subst), l.constraint->substitute(subst), subst, l.term));
+      result.push_back(ConstrainedSolution(term, l.constraint, subst, l.term));
     }
   }
   return result;

@@ -35,6 +35,16 @@ bool Substitution::inDomain(Variable *v)
   return contains(*this, v);
 }
 
+bool Substitution::inRange(Variable *v)
+{
+  for (Substitution::iterator it = this->begin(); it != this->end(); ++it) {
+    if (it->second->hasVariable(v)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 Term *Substitution::image(Variable *v)
 {
   assert(contains(*this, v));

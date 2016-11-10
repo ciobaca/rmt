@@ -53,7 +53,8 @@ void ConstrainedTerm::smtNarrowSearchHelper(RewriteSystem &rs,
   if (depth < maxDepth) {
     vector<ConstrainedSolution> sols = this->smtNarrowSearch(rs);
     for (int i = 0; i < (int)sols.size(); ++i) {
-      ConstrainedTerm(sols[i].term, sols[i].getFullConstraint(*this)).smtNarrowSearchHelper(rs, minDepth, maxDepth, depth + 1, result);
+      ConstrainedTerm(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst),
+		      sols[i].getFullConstraint(*this)->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)).smtNarrowSearchHelper(rs, minDepth, maxDepth, depth + 1, result);
     }
   }
 }
@@ -68,7 +69,8 @@ void ConstrainedTerm::smtNarrowSearchHelper(CRewriteSystem &crs,
   if (depth < maxDepth) {
     vector<ConstrainedSolution> sols = this->smtNarrowSearch(crs);
     for (int i = 0; i < (int)sols.size(); ++i) {
-      ConstrainedTerm(sols[i].term, sols[i].getFullConstraint(*this)).smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
+      ConstrainedTerm(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst),
+		      sols[i].getFullConstraint(*this)->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)).smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
     }
   }
 }

@@ -123,3 +123,10 @@ ConstrainedTerm ConstrainedTerm::substitute(Substitution &subst)
   ConstrainedTerm ct(term->substitute(subst), constraint->substitute(subst));
   return ct;
 }
+
+extern int freshVariableCounter;
+
+ConstrainedTerm ConstrainedTerm::fresh()
+{
+  // TODO return fresh constrained term
+}

@@ -37,9 +37,11 @@ RewriteSystem RewriteSystem::rename(string s)
   return result;
 }
 
-RewriteSystem RewriteSystem::fresh(vector<Variable *> vars)
+int freshVariableCounter = 0;
+
+RewriteSystem RewriteSystem::fresh()
 {
-  static int counter = 0;
+  //  static int counter = 0;
   vector<Variable *> myvars;
   for (int i = 0; i < (int)this->size(); ++i) {
     append(myvars, (*this)[i].first->vars());
@@ -57,13 +59,13 @@ RewriteSystem RewriteSystem::fresh(vector<Variable *> vars)
       continue;
     }
     ostringstream oss;
-    oss << myvars[i]->name << "_" << counter;
+    oss << myvars[i]->name << "_" << freshVariableCounter;
     string varname = oss.str();
     createVariable(varname, myvars[i]->sort);
     renaming[myvars[i]] = getVariable(varname);
     Log(DEBUG9) << "Renaming " << myvars[i]->name << " to " << getVariable(varname)->name << endl;
   }
-  counter++;
+  freshVariableCounter++;
 
   Substitution subst = createSubstitution(renaming);
 

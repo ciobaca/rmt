@@ -257,7 +257,8 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *i
 
   // STEP 2: perform one-step narrowing from the abstract term
   Log(DEBUG7) << "Rewrite system: " << rsInit.toString() << endl;
-  RewriteSystem rs = rsInit.fresh(abstractTerm->vars());
+  //  RewriteSystem rs = rsInit.fresh(abstractTerm->vars()); -- no more need to state fresh w.r.t whom
+  RewriteSystem rs = rsInit.fresh();
   Log(DEBUG7) << "Fresh rewrite system: " << rs.toString() << endl;
   vector<ConstrainedSolution> solutions = abstractTerm->narrowSearch(rs);
 

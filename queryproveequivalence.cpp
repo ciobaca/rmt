@@ -95,35 +95,39 @@ void QueryProveEquivalence::parse(std::string &s, int &w)
 // 
 // X are all variables in <t1 if c1>
 // Y are all variables in <t2 if c2>
-// Term *whenImplies(ConstrainedTerm current, ConstrainedTerm goal)
-// {
-// }
-
-// // returns the constraint c such that we have arrived with current into base
-// Term *QueryProveEquivalence::whenImpliesBase(ConstrainedTerm current)
-// {
-//   Term *constraintResult = bTrue();
-//   for (int i = 0; i < (int)base.size(); ++i) {
-//     Term *constraint = whenImplies(current, base[i]);
-//     constraintResult = bOr(constraintResult, constraint);
-//   }
-//   return constraintResutl;
-// }
+Term *whenImplies(ConstrainedTerm current, ConstrainedTerm goal)
+{
   
+  return bFalse();
+}
+
+// returns the constraint c such that we have arrived with current into base
+Term *QueryProveEquivalence::whenImpliesBase(ConstrainedTerm current)
+{
+  Term *constraintResult = bTrue();
+  for (int i = 0; i < (int)base.size(); ++i) {
+    Term *constraint = whenImplies(current, base[i]);
+    constraintResult = bOr(constraintResult, constraint);
+  }
+  return constraintResult;
+}
+
 void QueryProveEquivalence::execute()
 {
-  // cout << "TODO: Trying to prove equivalence." << endl;
-  // CRewriteSystem crsLeft = getCRewriteSystem(lrsName);
-  // CRewriteSystem crsRight = getCRewriteSystem(rrsName);
-  // Log(DEBUG6) << "Proving equivalence" << endl;
-  // Log(DEBUG6) << "Left constrained rewrite sytem:" << endl;
-  // Log(DEBUG6) << crsLeft.toString() << endl;
-  // Log(DEBUG6) << "Rigth constrained rewrite sytem:" << endl;
-  // Log(DEBUG6) << crsRight.toString() << endl;
-  // // prove all circularities
-  // for (int i = 0; i < (int)circularities.size(); ++i) {
-  //   ConstrainedTerm ct = circularities[i];
+  cout << "TODO: Trying to prove equivalence." << endl;
+  CRewriteSystem crsLeft = getCRewriteSystem(lrsName);
+  CRewriteSystem crsRight = getCRewriteSystem(rrsName);
+  Log(DEBUG6) << "Proving equivalence" << endl;
+  Log(DEBUG6) << "Left constrained rewrite sytem:" << endl;
+  Log(DEBUG6) << crsLeft.toString() << endl;
+  Log(DEBUG6) << "Rigth constrained rewrite sytem:" << endl;
+  Log(DEBUG6) << crsRight.toString() << endl;
+  // prove all circularities
+  for (int i = 0; i < (int)circularities.size(); ++i) {
+    ConstrainedTerm ct = circularities[i];
 
-  //   Term *constraint = whenImpliesBase(ct);
-  // }
+    Log(DEBUG5) << "Proving equivalence circularity #" << (i + 1) << endl;
+    Log(DEBUG5) << "To prove: " << ct.toString() << endl;
+    Term *constraint = whenImpliesBase(ct);
+  }
 }

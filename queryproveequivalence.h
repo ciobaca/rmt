@@ -23,6 +23,8 @@ struct QueryProveEquivalence : public Query
   virtual void parse(std::string &s, int &w);
   
   virtual void execute();
+
+  Term *whenImpliesBase(ConstrainedTerm current);
 };
 
 #endif

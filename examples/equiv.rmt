@@ -144,7 +144,7 @@ rewrite-system simplifications
 	bor(B, B) =>
 	B;
 
-rewrite-system left
+constrained-rewrite-system left
 	leftInit(S, I) =>
 	leftLoop(S, I, mle(mone, I)),
 
@@ -154,7 +154,7 @@ rewrite-system left
 	leftLoop(S, I, false) =>
 	leftDone(S);
 
-rewrite-system right
+constrained-rewrite-system right
 	rightInit(S, I, N) =>
 	rightLoop(S, I, N, mle(I, N)),
 
@@ -164,7 +164,7 @@ rewrite-system right
 	rightLoop(S, I, N, false) =>
 	rightDone(S);
 
-rewrite-system both
+constrained-rewrite-system both
 	leftInit(S, I) =>
 	leftLoop(S, I, mle(mone, I)),
 

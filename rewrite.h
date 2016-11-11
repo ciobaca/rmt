@@ -13,7 +13,7 @@ struct RewriteSystem : public vector<pair<Term *, Term *> >
 {
   void addRule(Term *l, Term *r);
   RewriteSystem rename(string);
-  RewriteSystem fresh(vector<Variable *>);
+  RewriteSystem fresh();
   string toString();
 };
 

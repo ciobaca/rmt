@@ -19,6 +19,32 @@ map<string, Function *> functions;
 map<pair<Function *, vector<Term *> >, Term *> funTerms;
 map<Variable *, Term *> varTerms;
 
+int freshVariableCounter = 0;
+
+// provides a fresh renaming for the set of variables in the "vars" vector
+// if a variable appears twice in the vector, it will be be assigned a single new renaming
+// the fresh variables are obtained by adding "_" and a fresh number to the
+// end of the variable names
+map<Variable *, Variable *> freshRenaming(vector<Variable *> vars)
+{
+  map<Variable *, Variable *> renaming;
+  
+  for (int i = 0; i < len(vars); ++i) {
+    if (contains(renaming, vars[i])) {
+      continue;
+    }
+    ostringstream oss;
+    oss << vars[i]->name << "_" << freshVariableCounter;
+    string varname = oss.str();
+    createVariable(varname, vars[i]->sort);
+    renaming[vars[i]] = getVariable(varname);
+    Log(DEBUG9) << "Renaming " << vars[i]->name << " to " << getVariable(varname)->name << endl;
+  }
+  freshVariableCounter++;
+
+  return renaming;
+}
+
 RewriteSystem &getRewriteSystem(string name)
 {
   if (!existsRewriteSystem(name)) {

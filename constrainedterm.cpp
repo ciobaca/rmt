@@ -124,9 +124,15 @@ ConstrainedTerm ConstrainedTerm::substitute(Substitution &subst)
   return ct;
 }
 
-extern int freshVariableCounter;
-
 ConstrainedTerm ConstrainedTerm::fresh()
 {
-  // TODO return fresh constrained term
+  vector<Variable *> myvars;
+  append(myvars, term->vars());
+  append(myvars, constraint->vars());
+
+  map<Variable *, Variable *> renaming = freshRenaming(myvars);
+
+  Substitution subst = createSubstitution(renaming);
+
+  return this->substitute(subst);
 }

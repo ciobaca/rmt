@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <string>
+#include <map>
 #include "term.h"
 #include "constrainedrewrite.h"
 
@@ -11,8 +12,6 @@ struct Variable;
 struct Name;
 struct Term;
 struct Sort;
-
-using namespace std;
 
 Term *bImplies(Term *, Term *);
 Term *bAnd(Term *, Term *);
@@ -28,47 +27,49 @@ Term *createEqualityConstraint(Term *, Term *);
 
 void createBuiltIns();
 
-RewriteSystem &getRewriteSystem(string name);
-bool existsRewriteSystem(string name);
-void putRewriteSystem(string name, RewriteSystem rewrite);
+RewriteSystem &getRewriteSystem(std::string name);
+bool existsRewriteSystem(std::string name);
+void putRewriteSystem(std::string name, RewriteSystem rewrite);
 
-CRewriteSystem &getCRewriteSystem(string name);
-bool existsCRewriteSystem(string name);
-void putCRewriteSystem(string name, CRewriteSystem crewrite);
+CRewriteSystem &getCRewriteSystem(std::string name);
+bool existsCRewriteSystem(std::string name);
+void putCRewriteSystem(std::string name, CRewriteSystem crewrite);
 
-Variable *getVariable(string name);
-void createVariable(string name, Sort *sort);
+Variable *getVariable(std::string name);
+void createVariable(std::string name, Sort *sort);
 
-Sort *getSort(string name);
-void createUninterpretedSort(string &sortName);
-void createInterpretedSort(string &sortName, string &interpretation);
+Sort *getSort(std::string name);
+void createUninterpretedSort(std::string &sortName);
+void createInterpretedSort(std::string &sortName, std::string &interpretation);
 
-Variable *getInternalVariable(string name, Sort *);
+Variable *getInternalVariable(std::string name, Sort *);
 
-Function *getFunction(string name);
-void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result);
-void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, string interpretation);
+Function *getFunction(std::string name);
+void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result);
+void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, std::string interpretation);
 
-Name *getName(string name);
-void createName(string name);
+Name *getName(std::string name);
+void createName(std::string name);
 
-Term *getFunTerm(Function *f, vector<Term *> arguments);
+Term *getFunTerm(Function *f, std::vector<Term *> arguments);
 Term *getVarTerm(Variable *v);
 Term *getNamTerm(Name *n);
 
-bool variableExists(string name);
-bool sortExists(string name);
+bool variableExists(std::string name);
+bool sortExists(std::string name);
 
 Variable *createFreshVariable(Sort *);
 
-vector<Variable *> getInterpretedVariables();
+std::vector<Variable *> getInterpretedVariables();
 
-vector<Term *> vector1(Term *term);
-vector<Term *> vector2(Term *term1, Term *term2);
+std::vector<Term *> vector1(Term *term);
+std::vector<Term *> vector2(Term *term1, Term *term2);
 
 Term *simplifyConstraint(Term *);
 ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm);
 
-Term *introduceExists(Term *, vector<Variable *>);
+Term *introduceExists(Term *, std::vector<Variable *>);
+
+std::map<Variable *, Variable *> freshRenaming(std::vector<Variable *>);
 
 #endif

@@ -37,8 +37,6 @@ RewriteSystem RewriteSystem::rename(string s)
   return result;
 }
 
-int freshVariableCounter = 0;
-
 RewriteSystem RewriteSystem::fresh()
 {
   //  static int counter = 0;
@@ -52,20 +50,7 @@ RewriteSystem RewriteSystem::fresh()
     Log(DEBUG9) << myvars[i]->name << " ";
   }
 
-  map<Variable *, Variable *> renaming;
-  
-  for (int i = 0; i < len(myvars); ++i) {
-    if (contains(renaming, myvars[i])) {
-      continue;
-    }
-    ostringstream oss;
-    oss << myvars[i]->name << "_" << freshVariableCounter;
-    string varname = oss.str();
-    createVariable(varname, myvars[i]->sort);
-    renaming[myvars[i]] = getVariable(varname);
-    Log(DEBUG9) << "Renaming " << myvars[i]->name << " to " << getVariable(varname)->name << endl;
-  }
-  freshVariableCounter++;
+  map<Variable *, Variable *> renaming = freshRenaming(myvars);
 
   Substitution subst = createSubstitution(renaming);
 

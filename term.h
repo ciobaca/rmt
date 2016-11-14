@@ -113,8 +113,19 @@ struct Term
   // parameter will contain the witness substitution.
   virtual bool isInstanceOf(Term *, Substitution &);
 
-  // Checks if the term is a variable.
-  virtual bool isVariable() = 0;
+  // Checks if the term consists of a single variable.
+  virtual bool isVarTerm() = 0;
+
+  // Checks if the term is a function symbol applied to some other terms.
+  virtual bool isFunTerm() = 0;
+
+  // Converts the term "this" to a VarTerm.
+  // Assumes that isVariable() is true.
+  virtual VarTerm *getAsVarTerm() = 0;
+  
+  // Converts the term "this" to a FunTerm.
+  // Assumes that isFunTerm() is true.
+  virtual FunTerm *getAsFunTerm() = 0;
 
   virtual ~Term() {}
 

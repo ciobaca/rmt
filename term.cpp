@@ -115,9 +115,9 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
       continue;
     }
     bool simplifiedConstraint = false;
-    if (lhsTerm->isVariable()) {
+    if (lhsTerm->isVarTerm()) {
       Log(DEBUG7) << "Left-hand side is a variable." << endl;
-      Variable *var = ((VarTerm *)lhsTerm)->variable;
+      Variable *var = lhsTerm->getAsVarTerm()->variable;
       Log(DEBUG7) << "Variable " << var->name << " in domain of simplifyingSubst: " << simplifyingSubst.inDomain(var) << endl;
       Log(DEBUG7) << "Term " << rhsTerm->toString() << " has variable " << var->name << ": " << rhsTerm->hasVariable(var) << endl;
       Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
@@ -131,9 +131,9 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
 	}
       }
     }
-    if (!simplifiedConstraint && rhsTerm->isVariable()) {
+    if (!simplifiedConstraint && rhsTerm->isVarTerm()) {
       Log(DEBUG7) << "Right-hand side is a variable." << endl;
-      Variable *var = ((VarTerm *)rhsTerm)->variable;
+      Variable *var = rhsTerm->getAsVarTerm()->variable;
       Log(DEBUG7) << "Variable " << var->name << " in domain of simplifyingSubst: " << simplifyingSubst.inDomain(var) << endl;
       Log(DEBUG7) << "Term " << lhsTerm->toString() << " has variable " << var->name << ": " << lhsTerm->hasVariable(var) << endl;
       Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;

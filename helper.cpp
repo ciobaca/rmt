@@ -45,3 +45,12 @@ string varVecToString(vector<Variable *> vars)
   }
   return oss.str();
 }
+
+string spaces(int tabs)
+{
+  ostringstream oss;
+  for (int i = 0; i < tabs; ++i) {
+    oss << "    ";
+  }
+  return oss.str();
+}

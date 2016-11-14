@@ -6,6 +6,7 @@
 #include "z3driver.h"
 #include "log.h"
 #include "sort.h"
+#include "helper.h"
 #include <string>
 #include <sstream>
 #include <map>
@@ -116,15 +117,6 @@ void QueryProveReachability::execute()
   } else {
     Log(ERROR) << "Cannot find (constrained) rewrite system " << rewriteSystemName << endl;
   }
-}
-
-string spaces(int tabs)
-{
-  ostringstream oss;
-  for (int i = 0; i < tabs; ++i) {
-    oss << "    ";
-  }
-  return oss.str();
 }
 
 // returns a constraint that describes when

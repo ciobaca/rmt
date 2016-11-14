@@ -69,6 +69,8 @@ Substitution createSubstitution(map<Variable *, Variable *> r);
 
 string varVecToString(vector<Variable *> vars);
 
+string spaces(int);
+
 extern int VERBOSITY;
 
 #endif

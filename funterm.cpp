@@ -186,15 +186,25 @@ bool FunTerm::unifyWithFunTerm(FunTerm *t, Substitution &subst)
   }
 }
 
-// bool FunTerm::unifyWithNamTerm(NamTerm *t, Substitution &subst)
-// {
-//   logmgu("FunTerm::unifyWithNamTerm", this, t, subst);
-//   return false;
-// }
-
-bool FunTerm::isVariable()
+bool FunTerm::isVarTerm()
 {
   return false;
+}
+
+VarTerm *FunTerm::getAsVarTerm()
+{
+  assert(0);
+  return 0;
+}
+
+bool FunTerm::isFunTerm()
+{
+  return true;
+}
+
+FunTerm *FunTerm::getAsFunTerm()
+{
+  return (FunTerm *)this;
 }
 
 vector<pair<Term *, Term *> > FunTerm::split()

@@ -22,7 +22,10 @@ struct FunTerm : public Term
   virtual bool unifyWithFunTerm(FunTerm *, Substitution &);
   virtual bool unifyWithVarTerm(VarTerm *, Substitution &);
 
-  virtual bool isVariable();
+  virtual bool isVarTerm();
+  virtual bool isFunTerm();
+  virtual VarTerm *getAsVarTerm();
+  virtual FunTerm *getAsFunTerm();
 
   virtual vector<pair<Term *, Term *> > split();
 

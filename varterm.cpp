@@ -99,9 +99,25 @@ bool VarTerm::unifyWithFunTerm(FunTerm *t, Substitution &subst)
   }
 }
 
-bool VarTerm::isVariable()
+bool VarTerm::isVarTerm()
 {
   return true;
+}
+
+VarTerm *VarTerm::getAsVarTerm()
+{
+  return (VarTerm *)this;
+}
+
+bool VarTerm::isFunTerm()
+{
+  return false;
+}
+
+FunTerm *VarTerm::getAsFunTerm()
+{
+  assert(0);
+  return 0;
 }
 
 vector<pair<Term *, Term *> > VarTerm::split()

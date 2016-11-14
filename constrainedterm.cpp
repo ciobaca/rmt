@@ -2,6 +2,7 @@
 #include "term.h"
 #include "log.h"
 #include "factories.h"
+#include "z3driver.h"
 #include <sstream>
 #include <cassert>
 
@@ -135,4 +136,33 @@ ConstrainedTerm ConstrainedTerm::fresh()
   Substitution subst = createSubstitution(renaming);
 
   return this->substitute(subst);
+}
+
+
+// assume *this = <t1 if c1>
+// assume goal = <t2 if c2>
+// returns a constraint c such that
+//
+// forall X, c(X) /\ c1(X) -> exists Y, s.t. c2(X, Y) /\ t1(X) = t2(X,Y)
+// 
+// X are all variables in <t1 if c1>
+// Y are all variables in <t2 if c2>
+Term *ConstrainedTerm::whenImplies(ConstrainedTerm goal)
+{
+  ConstrainedTerm freshGoal = goal.fresh();
+  vector<Variable *> vars = freshGoal.vars();
+  Substitution subst;
+  Term *constraint;
+  if (this->term->unifyModuloTheories(freshGoal.term, subst, constraint)) {
+    Term *lhsConstraint = this->constraint->substitute(subst);
+    Term *rhsConstraint = freshGoal.constraint->substitute(subst);
+    Term *resultingConstraint = bImplies(lhsConstraint, introduceExists(bAnd(constraint, rhsConstraint), vars));
+    if (isSatisfiable(bNot(resultingConstraint)) == unsat) {
+      return bTrue();
+    }
+    if (isSatisfiable(resultingConstraint) != unsat) {
+      return resultingConstraint;
+    }
+  }
+  return bFalse();
 }

@@ -37,6 +37,8 @@ ConstrainedTerm(Term *term, Term *constraint) : term(term), constraint(constrain
   std::vector<Variable *> vars();
   ConstrainedTerm substitute(Substitution &);
 
+  Term *whenImplies(ConstrainedTerm goal);
+
   ConstrainedTerm fresh();
 };
 

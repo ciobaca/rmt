@@ -234,6 +234,11 @@ constrained-rewrite-system myrsCirc
 constrained-rewrite-system myrsDone
 	pair(leftDone(S), rightDone(S)) => ok;
 
+
+implies 
+  pair(leftDone(mzero), rightDone(N)) /\ mequals(mzero, N)
+  pair(leftDone(S), rightDone(S));
+
 show-equivalent in left and right :
 
   pair(leftInit(mzero, N), rightInit(mzero, mone, N)) /\ mle(mzero, N),

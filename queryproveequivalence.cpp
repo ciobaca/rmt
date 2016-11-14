@@ -87,26 +87,12 @@ void QueryProveEquivalence::parse(std::string &s, int &w)
   matchString(s, w, ";");
 }
 
-// assume current = <t1 if c1>
-// assume goal = <t2 if c2>
-// returns a constraint c such that
-//
-// forall X, c(X) /\ c1(X) -> exists Y, s.t. c2(X, Y) /\ t1(X) = t2(X,Y)
-// 
-// X are all variables in <t1 if c1>
-// Y are all variables in <t2 if c2>
-Term *whenImplies(ConstrainedTerm current, ConstrainedTerm goal)
-{
-  
-  return bFalse();
-}
-
 // returns the constraint c such that we have arrived with current into base
 Term *QueryProveEquivalence::whenImpliesBase(ConstrainedTerm current)
 {
   Term *constraintResult = bTrue();
   for (int i = 0; i < (int)base.size(); ++i) {
-    Term *constraint = whenImplies(current, base[i]);
+    Term *constraint = current.whenImplies(base[i]);
     constraintResult = bOr(constraintResult, constraint);
   }
   return constraintResult;
@@ -114,7 +100,6 @@ Term *QueryProveEquivalence::whenImpliesBase(ConstrainedTerm current)
 
 void QueryProveEquivalence::execute()
 {
-  cout << "TODO: Trying to prove equivalence." << endl;
   CRewriteSystem crsLeft = getCRewriteSystem(lrsName);
   CRewriteSystem crsRight = getCRewriteSystem(rrsName);
   Log(DEBUG6) << "Proving equivalence" << endl;

@@ -99,6 +99,17 @@ Term *QueryProveEquivalence::whenImpliesBase(ConstrainedTerm current)
   return constraintResult;
 }
 
+// returns the constraint c such that we have arrived with current into a circularity
+Term *QueryProveEquivalence::whenImpliesCircularity(ConstrainedTerm current)
+{
+  Term *constraintResult = bFalse();
+  for (int i = 0; i < (int)circularities.size(); ++i) {
+    Term *constraint = current.whenImplies(circularities[i]);
+    constraintResult = bOr(constraintResult, constraint);
+  }
+  return constraintResult;
+}
+
 void decomposeConstrainedTermEq(ConstrainedTerm ct, Term *&lhs, Term *&rhs)
 {
   if (!ct.term->isFunTerm()) {
@@ -126,7 +137,8 @@ bool QueryProveEquivalence::possibleLhsBase(Term *lhs)
     Term *lhsBase, *rhsBase;
     decomposeConstrainedTermEq(base[i], lhsBase, rhsBase);
     Substitution subst;
-    if (lhsBase->unifyWith(lhs, subst)) {
+    Term *constraint;
+    if (lhsBase->unifyModuloTheories(lhs, subst, constraint)) {
       return true;
     }
   }
@@ -139,24 +151,57 @@ bool QueryProveEquivalence::possibleRhsBase(Term *rhs)
   //  decomposeConstrainedTermEq(ct, lhs, rhs);
   for (int i = 0; i < (int)base.size(); ++i) {
     Term *lhsBase, *rhsBase;
-    Substitution subst;
     decomposeConstrainedTermEq(base[i], lhsBase, rhsBase);
-    if (rhsBase->unifyWith(rhs, subst)) {
+    Substitution subst;
+    Term *constraint;
+    if (rhsBase->unifyModuloTheories(rhs, subst, constraint)) {
       return true;
     }
   }
   return false;
 }
 
-bool QueryProveEquivalence::proveEquivalenceExistsRight(ConstrainedTerm ct, bool progress, int depth, int branchingDepth)
+bool QueryProveEquivalence::possibleLhsCircularity(Term *lhs)
+{
+  //  Term *lhs, *rhs;
+  //  decomposeConstrainedTermEq(ct, lhs, rhs);
+  for (int i = 0; i < (int)circularities.size(); ++i) {
+    Term *lhsCircularity, *rhsCircularity;
+    decomposeConstrainedTermEq(circularities[i], lhsCircularity, rhsCircularity);
+    Substitution subst;
+    Term *constraint;
+    if (lhsCircularity->unifyModuloTheories(lhs, subst, constraint)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool QueryProveEquivalence::possibleRhsCircularity(Term *rhs)
+{
+  //  Term *lhs, *rhs;
+  //  decomposeConstrainedTermEq(ct, lhs, rhs);
+  for (int i = 0; i < (int)circularities.size(); ++i) {
+    Term *lhsCircularity, *rhsCircularity;
+    decomposeConstrainedTermEq(circularities[i], lhsCircularity, rhsCircularity);
+    Substitution subst;
+    Term *constraint;
+    if (rhsCircularity->unifyModuloTheories(rhs, subst, constraint)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool QueryProveEquivalence::proveEquivalenceExistsRight(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
 {
   Term *lhs, *rhs;
   decomposeConstrainedTermEq(ct, lhs, rhs);
 
   Log(DEBUG5) << spaces(depth) << "try exists right " << ct.toString() << endl;
-  if (possibleRhsBase(rhs)) {
+  if (possibleRhsBase(rhs) || (progressRight && possibleRhsCircularity(rhs))) {
     Log(DEBUG5) << spaces(depth) << "possible rhs base" << endl;
-    if (proveEquivalence(ct, progress, depth + 1, branchingDepth + 1)) {
+    if (proveEquivalence(ct, progressLeft, progressRight, depth + 1, branchingDepth + 1)) {
       Log(DEBUG5) << spaces(depth) << "oki exists right " << ct.toString() << endl;
       return true;
     }
@@ -168,7 +213,7 @@ bool QueryProveEquivalence::proveEquivalenceExistsRight(ConstrainedTerm ct, bool
   }
   vector<ConstrainedTerm> rhsSuccessors = ConstrainedTerm(rhs, ct.constraint).smtNarrowSearch(crsRight, 1, 1);
   for (int i = 0; i < (int)rhsSuccessors.size(); ++i) {
-    if (proveEquivalenceExistsRight(pairC(lhs, rhsSuccessors[i].term, bAnd(ct.constraint, rhsSuccessors[i].constraint)), progress, depth + 1, branchingDepth)) {
+    if (proveEquivalenceExistsRight(pairC(lhs, rhsSuccessors[i].term, bAnd(ct.constraint, rhsSuccessors[i].constraint)), progressLeft, true, depth + 1, branchingDepth)) {
       Log(DEBUG5) << spaces(depth) << "oke exists right " << ct.toString() << endl;
       return true;
     }
@@ -177,15 +222,17 @@ bool QueryProveEquivalence::proveEquivalenceExistsRight(ConstrainedTerm ct, bool
   return false;
 }
 
-bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool progress, int depth, int branchingDepth)
+bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
 {
   Term *lhs, *rhs;
   decomposeConstrainedTermEq(ct, lhs, rhs);
 
   Log(DEBUG5) << spaces(depth) << "try forall left " << ct.toString() << endl;
-  if (possibleLhsBase(lhs)) {
-    Log(DEBUG5) << spaces(depth) << "possible lhs base" << endl;
-    if (proveEquivalenceExistsRight(ct, progress, depth + 1, branchingDepth)) {
+  Log(DEBUG5) << spaces(depth) << "possible lhs base " << possibleLhsBase(lhs) << endl;
+  Log(DEBUG5) << spaces(depth) << "progressLeft " << progressLeft << "; possibleLhsCircularity " << possibleLhsCircularity(lhs) << endl;
+  if (possibleLhsBase(lhs) || (progressLeft && possibleLhsCircularity(lhs))) {
+    Log(DEBUG5) << spaces(depth) << "possible lhs base or circularity" << endl;
+    if (proveEquivalenceExistsRight(ct, progressLeft, progressRight, depth + 1, branchingDepth)) {
       Log(DEBUG5) << spaces(depth) << "oki forall left " << ct.toString();
       return true;
     }
@@ -197,7 +244,7 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
   }
   vector<ConstrainedTerm> lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft, 1, 1);
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {
-    if (!proveEquivalenceForallLeft(pairC(lhsSuccessors[i].term, rhs, bAnd(ct.constraint, lhsSuccessors[i].constraint)), progress, depth + 1, branchingDepth)) {
+    if (!proveEquivalenceForallLeft(pairC(lhsSuccessors[i].term, rhs, bAnd(ct.constraint, lhsSuccessors[i].constraint)), true, progressRight, depth + 1, branchingDepth)) {
       Log(DEBUG5) << spaces(depth) << "not forall left " << ct.toString() << endl;
       return false;
     }
@@ -206,20 +253,24 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
   return true;
 }
 
-bool QueryProveEquivalence::proveEquivalence(ConstrainedTerm ct, bool progress, int depth, int branchingDepth)
+bool QueryProveEquivalence::proveEquivalence(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
 {
-  cout << spaces(depth) << "Proving equivalence circularity" << ct.toString() << endl;
+  cout << spaces(depth) << "Proving equivalence circularity " << ct.toString() << endl;
+  cout << spaces(depth) << "Testing for base" << endl;
   Term *constraint = simplifyConstraint(whenImpliesBase(ct));
   if (constraint == bTrue()) {
-    cout << spaces(depth) << "Proof succeeeded: reached based equivalence." << endl; 
+    cout << spaces(depth) << "Proof succeeded: reached based equivalence." << endl; 
     return true;
   } else {
-    if (progress) {
+    cout << spaces(depth) << "Instance of base only when " + constraint->toString() << endl;
+    if (progressLeft && progressRight) {
+      cout << spaces(depth) << "Testing for circularity" << endl;
       constraint = simplifyConstraint(whenImpliesCircularity(ct));
       if (constraint == bTrue()) {
-	cout << spaces(depth) << "Proof succeeeded: reached based equivalence." << endl; 
+	cout << spaces(depth) << "Proof succeeded: reached based equivalence." << endl; 
 	return true;
       }
+      cout << spaces(depth) << "Instance of circularity only when " + constraint->toString() << endl;
     }
     if (branchingDepth > maxBranchingDepth) {
       cout << spaces(depth) << "Proof failed: branching depth limit exceeded." << endl;
@@ -229,8 +280,12 @@ bool QueryProveEquivalence::proveEquivalence(ConstrainedTerm ct, bool progress, 
       cout << spaces(depth) << "Proof failed: depth limit exceeded." << endl;
       return false;
     }
-    bool result = proveEquivalenceForallLeft(ct, progress, depth + 1, branchingDepth);
-    cout << spaces(depth) << "Proof succeeeded." << endl; 
+    bool result = proveEquivalenceForallLeft(ct, progressLeft, progressRight, depth + 1, branchingDepth);
+    if (result) {
+      cout << spaces(depth) << "Proof succeeded." << endl;
+    } else {
+      cout << spaces(depth) << "Proof failed." << endl;
+    }
     return result;
   }
 }
@@ -288,7 +343,7 @@ void QueryProveEquivalence::execute()
   for (int i = 0; i < (int)circularities.size(); ++i) {
     cout << "Proving equivalence circularity #" << (i + 1) << endl;
     ConstrainedTerm ct = circularities[i];
-    if (proveEquivalence(ct, false, 0, 0)) {
+    if (proveEquivalence(ct, false, false, false, false)) {
       cout << "Succeeded in proving circularity #" << (i + 1) << endl;
     } else {
       cout << "Failed to prove circularity #" << (i + 1) << endl;

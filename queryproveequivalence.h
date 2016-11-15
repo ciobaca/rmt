@@ -35,11 +35,16 @@ struct QueryProveEquivalence : public Query
   virtual void execute();
 
   Term *whenImpliesBase(ConstrainedTerm current);
+  Term *whenImpliesCircularity(ConstrainedTerm current);
+
   bool possibleLhsBase(Term *);
   bool possibleRhsBase(Term *);
-  bool proveEquivalenceForallLeft(ConstrainedTerm ct, bool progress, int depth, int branchingDepth);
-  bool proveEquivalenceExistsRight(ConstrainedTerm ct, bool progress, int depth, int branchingDepth);
-  bool proveEquivalence(ConstrainedTerm ct, bool progress, int depth, int branchingDepth);
+  bool possibleLhsCircularity(Term *lhs);
+  bool possibleRhsCircularity(Term *rhs);
+
+  bool proveEquivalenceForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth);
+  bool proveEquivalenceExistsRight(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth);
+  bool proveEquivalence(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth);
 };
 
 #endif

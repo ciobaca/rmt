@@ -1,3 +1,11 @@
+smt-prelude "
+(define-fun sumUpTo ((n Int)) Int
+  (div (* n (+ n 1)) 2)
+)
+(define-fun sum ((a Int) (b Int)) Int
+  (- (sumUpTo b) (sumUpTo (- a 1))))
+"
+
 /* any file begins with the declaration of all sorts used */
 sorts Int / "Int",
       Bool / "Bool",
@@ -38,6 +46,7 @@ signature
 	mdiv : Int Int -> Int / "div",
 	mle : Int Int -> Bool / "<=",
 	mequals : Int Int -> Bool / "=",
+	msum : Int Int -> Bool / "sum",
 
 	bequals : Bool Bool -> Bool / "=",
 	band : Bool Bool -> Bool / "and",
@@ -239,14 +248,14 @@ constrained-rewrite-system myrsDone
 //   pair(leftDone(mzero), rightDone(N)) /\ mequals(mzero, N)
 //   pair(leftDone(S), rightDone(S));
 
-show-equivalent [2,2] in left and right :
+show-equivalent [7, 2] in left and right :
 
-  pair(leftInit(mzero, N), rightInit(mzero, mone, N)) /\ mle(mzero, N),
+  pair(leftInit(mzero, N), rightInit(mzero, mzero, N)) /\ mle(mzero, N),
 
   pair(leftInit(S, I), rightInit(SP, IP, NP)) /\
-        band(band(mequals(S, mdiv(mtimes(mminus(NP, IP), mplus(mplus(IP, NP), mone)), mtwo)),
-                  mequals(SP, mdiv(mtimes(IP, mminus(IP, mone)), mtwo))),
-                  mequals(mplus(I, IP), mplus(NP, mone)))
+        band(band(band(mequals(S, msum(mplus(mminus(NP, IP), mone), NP)),
+                  mequals(SP, msum(mzero, mminus(IP, mone)))),
+                  mequals(mplus(I, IP), NP)), mle(mzero, NP))
 
 with-base
 

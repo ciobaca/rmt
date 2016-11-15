@@ -239,7 +239,7 @@ constrained-rewrite-system myrsDone
 //   pair(leftDone(mzero), rightDone(N)) /\ mequals(mzero, N)
 //   pair(leftDone(S), rightDone(S));
 
-show-equivalent in left and right :
+show-equivalent [2,2] in left and right :
 
   pair(leftInit(mzero, N), rightInit(mzero, mone, N)) /\ mle(mzero, N),
 

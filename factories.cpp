@@ -220,15 +220,6 @@ Term *getVarTerm(Variable *v)
   }
 }
 
-// Term *getNamTerm(Name *n)
-// {
-//   if (contains(namTerms, n)) {
-//     return namTerms[n];
-//   } else {
-//     return namTerms[n] = new NamTerm(n);
-//   }
-// }
-
 vector<Variable *> getInterpretedVariables()
 {
   vector<Variable *> result;

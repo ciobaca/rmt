@@ -6,6 +6,7 @@
 #include <vector>
 #include "constrainedterm.h"
 #include "constrainedrewrite.h"
+#include "function.h"
 
 struct QueryProveEquivalence : public Query
 {
@@ -13,6 +14,11 @@ struct QueryProveEquivalence : public Query
   std::string rrsName;
   std::vector<ConstrainedTerm> circularities;
   std::vector<ConstrainedTerm> base;
+
+  Function *pairFun;
+
+  Term *pair(Term *, Term *);
+  ConstrainedTerm pairC(Term *, Term *, Term *);
 
   CRewriteSystem crsLeft;
   CRewriteSystem crsRight;
@@ -31,9 +37,9 @@ struct QueryProveEquivalence : public Query
   Term *whenImpliesBase(ConstrainedTerm current);
   bool possibleLhsBase(Term *);
   bool possibleRhsBase(Term *);
-  void proveEquivalenceForallLeft(ConstrainedTerm ct, bool progress, int depth);
-  void proveEquivalenceExistsRight(ConstrainedTerm ct, bool progress, int depth);
-  void proveEquivalence(ConstrainedTerm ct, bool progress, int depth);
+  bool proveEquivalenceForallLeft(ConstrainedTerm ct, bool progress, int depth, int branchingDepth);
+  bool proveEquivalenceExistsRight(ConstrainedTerm ct, bool progress, int depth, int branchingDepth);
+  bool proveEquivalence(ConstrainedTerm ct, bool progress, int depth, int branchingDepth);
 };
 
 #endif

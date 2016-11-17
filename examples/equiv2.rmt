@@ -56,12 +56,12 @@ signature
 	y : -> Var,
 	z : -> Var,
 
-	V1 : -> Var,
-	C1 : -> Var,
-	C2 : -> Var,
-	V2 : -> Var,
-	S1 : -> Stmt,
-	E1 : -> NonValAExp,
+	pV1 : -> Var,
+	pC1 : -> Var,
+	pC2 : -> Var,
+	pV2 : -> Var,
+	pS1 : -> Stmt,
+	pE1 : -> NonValAExp,
 	iS1 : Var Var Var Var -> IntP,
 	iE1 : Var Var -> IntP,
 
@@ -119,11 +119,13 @@ variables
 	X : Var,
 	Y : Var,
 	Z : Var,
-	N : Int,
-	J : Int,
-	M : Int,
-	SUM : Int,
-	B : Bool,
+
+	N : IntP,
+	J : IntP,
+	M : IntP,
+	SUM : IntP,
+
+	B : BoolP,
 	BE : BExp,
 	BE1 : BExp,
 	BE2 : BExp,
@@ -229,25 +231,63 @@ rewrite-system simplifications
 	B;
 
 /* next, declare all rewrite rules */
-rewrite-system language
-	synEq(x, y) =>
-	false,
-	synEq(x, z) =>
-	false,
-	synEq(y, z) =>
-	false,
-	synEq(y, x) =>
-	false,
-	synEq(z, y) =>
-	false,
-	synEq(z, x) =>
-	false,
-	synEq(x, x) =>
-	true,
-	synEq(y, y) =>
-	true,
-	synEq(z, z) =>
-	true,
+constrained-rewrite-system language
+	synEq(x, x) => true,
+	synEq(y, y) => true,
+	synEq(z, z) => true,
+	synEq(pV1, pV1) => true,
+	synEq(pV2, pV2) => true,
+	synEq(pC1, pC1) => true,
+	synEq(pC2, pC2) => true,
+
+	synEq(x, y) => false,
+	synEq(x, z) => false,
+	synEq(x, pV1) => false,
+	synEq(x, pV2) => false,
+	synEq(x, pC1) => false,
+	synEq(x, pC2) => false,
+	
+	synEq(y, z) => false,
+	synEq(y, x) => false,
+	synEq(y, pV1) => false,
+	synEq(y, pV2) => false,
+	synEq(y, pC1) => false,
+	synEq(y, pC2) => false,
+
+	synEq(z, y) => false,
+	synEq(z, x) => false,
+	synEq(z, pV1) => false,
+	synEq(z, pV2) => false,
+	synEq(z, pC1) => false,
+	synEq(z, pC2) => false,
+
+	synEq(pV1, x) => false,
+	synEq(pV1, y) => false,
+	synEq(pV1, z) => false,
+	synEq(pV1, pV2) => false,
+	synEq(pV1, pC1) => false,
+	synEq(pV1, pC2) => false,
+
+	synEq(pV2, x) => false,
+	synEq(pV2, y) => false,
+	synEq(pV2, z) => false,
+	synEq(pV2, pV1) => false,
+	synEq(pV2, pC1) => false,
+	synEq(pV2, pC2) => false,
+
+	synEq(pC1, x) => false,
+	synEq(pC1, y) => false,
+	synEq(pC1, z) => false,
+	synEq(pC1, pV1) => false,
+	synEq(pC1, pV2) => false,
+	synEq(pC1, pC2) => false,
+
+	synEq(pC2, x) => false,
+	synEq(pC2, y) => false,
+	synEq(pC2, z) => false,
+	synEq(pC2, pV1) => false,
+	synEq(pC2, pV2) => false,
+	synEq(pC2, pC1) => false,
 
 	I(push(update(X, N, emp),   REST), ENV) =>
 	I(push(cons(mi(X, N), emp), REST), ENV),
@@ -366,24 +406,39 @@ rewrite-system language
 
 
 // symbolic variables, statements and expressions
-   	I(push(E1, REST), ENV) =>
-	I(push(iE1(C2,V2), REST), ENV),
+   	I(push(pE1, REST), ENV) =>
+	I(push(iE1(pC2,pV2), REST), ENV),
 
-	I(push(S1, REST), ENV) =>
-	I(push(update(C1, iS1(C1,C2,V1,V2), ENV), push(updateEnv, REST)), emp)
+	I(push(pS1, REST), ENV) =>
+	I(push(update(pC1, iS1(pC1,pC2,pV1,pV2), ENV), push(updateEnv, REST)), emp)
 ;
 
-show-equivalent [7, 2] in language and language :
-  pair(I(push(seq(assign(V1, E1),
-                  seq(S1,
-		      assign(V2, E1))),
+// search to end with left hand side
+search [32,32] in language :
+I(push(seq(assign(pV1, pE1),
+                  seq(pS1,
+		      assign(pV2, pE1))),
 	      done),
-         emp),
-       I(push(seq(assign(V1, E1),
-                  seq(S1,
-		      assign(V2, V1))),
-	      done),
-         emp))
-with-base
-  pair(I(done, ENV), I(done, ENV));
+         emp);
 
+// search to end with right hand side
+search [35,35] in language :
+        I(push(seq(assign(pV1, pE1),
+                   seq(pS1,
+ 		      assign(pV2, pV1))),
+ 	      done),
+          emp);
+	 
+ show-equivalent [40, 2] in language and language :
+   pair(I(push(seq(assign(pV1, pE1),
+                   seq(pS1,
+ 		      assign(pV2, pE1))),
+ 	      done),
+          emp),
+        I(push(seq(assign(pV1, pE1),
+                   seq(pS1,
+		      assign(pV2, pV1))),
+ 	      done),
+          emp))
+ with-base
+   pair(I(done, ENV), I(done, ENV));

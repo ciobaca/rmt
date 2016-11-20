@@ -1,9 +1,15 @@
 /* any file begins with the declaration of all sorts used */
+smt-prelude
+"(declare-fun iS1 (Int Int Int Int) Int)
+ (declare-fun iE1 (Int Int) Int)
+ (declare-datatypes () ((Var varX varY varZ varC1 varC2 varV1 varV2)))
+"
+
 sorts Int / "Int",
       Bool / "Bool",
       IntP,
       BoolP,
-      Var,
+      Var / "Var",
       AExp,
       BExp,
       NonValAExp,
@@ -11,8 +17,7 @@ sorts Int / "Int",
       Stmt,
       Code,
       CompStack,
-      Map,
-      MapItem,
+      Map / "(Array Var Int)",
       CfgI,
       State;
 
@@ -26,6 +31,8 @@ subsort NonValBExp < BExp;
 subsort AExp BExp Stmt < Code;
 subsort Bool < BoolP;
 subsort BoolP < BExp;
+subsort AExp < Stmt;
+subsort BExp < Stmt;
 
 /* next we must declare all function symbols */
 signature
@@ -40,6 +47,7 @@ signature
 	mtimes : Int Int -> Int / "*",
 	mdiv : Int Int -> Int / "/",
 	mle : Int Int -> Bool / "<=",
+	mless : Int Int -> Bool / "<",
 	mequals : Int Int -> Bool / "=",
 
 	bequals : Bool Bool -> Bool / "=",
@@ -51,57 +59,64 @@ signature
 	true : -> Bool / "true",
 	false : -> Bool / "false",
 
-	// some program variables
-	x : -> Var,
-	y : -> Var,
-	z : -> Var,
+	mapequals : Map Map -> Bool / "=",
 
-	pV1 : -> Var,
-	pC1 : -> Var,
-	pC2 : -> Var,
-	pV2 : -> Var,
+	// some program variables
+	x : -> Var / "varX",
+	y : -> Var / "varY",
+	z : -> Var / "varZ",
+
+	pV1 : -> Var / "varV1",
+	pV2 : -> Var / "varV2",
+	pC1 : -> Var / "varC1",
+	pC2 : -> Var / "varC2",
+	
 	pS1 : -> Stmt,
 	pE1 : -> NonValAExp,
-	iS1 : Var Var Var Var -> IntP,
-	iE1 : Var Var -> IntP,
+	iS1 : Int Int Int Int -> Int / "iS1",
+	iE1 : Int Int -> Int / "iE1",
 
 	// helper functions
-	synEq : Var Var -> BoolP,
-    	update : Var Int Map -> Stmt,
-	updateh : MapItem -> Stmt,
-	lookup  : Var Map -> Stmt,
-    	lookuph : Var Int Map -> Stmt,
+	synEq : Var Var -> Bool / "=",
+
+	update : Map Var Int -> Map / "store",
+	lookup  : Map Var -> IntP / "select",
 
 	// arithmetic and boolean expressions
 	plus : AExp AExp -> NonValAExp,
 	plushl : AExp -> AExp,
     	plushr : AExp -> AExp,
 
+	minus : AExp AExp -> NonValAExp,
+	minushl : AExp -> AExp,
+    	minushr : AExp -> AExp,
+
 	pred : AExp -> NonValAExp,
-	predh : -> AExp,
+	predh : -> Stmt,
 
 	succ : AExp -> NonValAExp,
-	succh : -> AExp,
+	succh : -> Stmt,
 
 	le   : AExp AExp -> NonValBExp,
     	lehl : AExp -> BExp,
     	lehr : AExp -> BExp,
 
+	less   : AExp AExp -> NonValBExp,
+    	lesshl : AExp -> BExp,
+    	lesshr : AExp -> BExp,
+
+	not : BExp -> NonValBExp,
+	noth : -> Stmt,
+
 	// computation stack
 	done : -> CompStack,
 	push : Code CompStack -> CompStack,
-
-	// environment
-	mi : Var Int -> MapItem,
-	emp : -> Map,
-	cons : MapItem Map -> Map,
 
 	// configuration
 	I : CompStack Map -> CfgI,
 
 	// statements
 	assign : Var AExp -> Stmt,
-	updateEnv : -> Stmt,
     	assignh : Var -> Stmt,
 
 	skip : -> Stmt,
@@ -111,7 +126,11 @@ signature
 	ite : BExp Stmt Stmt -> Stmt,
 	iteh : Stmt Stmt -> Stmt,
 
-	while : BExp Stmt -> Stmt;
+	while : BExp Stmt -> Stmt,
+
+	for : Var AExp AExp Stmt -> Stmt,
+	forhl : Var AExp Stmt -> Stmt,
+	forhr : Var AExp Stmt -> Stmt;
 
 /* next we must declare all variables */
 variables
@@ -120,12 +139,12 @@ variables
 	Y : Var,
 	Z : Var,
 
-	N : IntP,
-	J : IntP,
-	M : IntP,
-	SUM : IntP,
+	N : Int,
+	J : Int,
+	M : Int,
+	SUM : Int,
 
-	B : BoolP,
+	B : Bool,
 	BE : BExp,
 	BE1 : BExp,
 	BE2 : BExp,
@@ -141,8 +160,11 @@ variables
 	S : Stmt,
 	S1 : Stmt,
 	S2 : Stmt,
+	S3 : Stmt,
+	S4 : Stmt,
 	REST : CompStack,
 	ENV : Map,
+	ENVP : Map,
 	ENV1 : Map,
 	ENV2 : Map;
 
@@ -232,89 +254,9 @@ rewrite-system simplifications
 
 /* next, declare all rewrite rules */
 constrained-rewrite-system language
-	synEq(x, x) => true,
-	synEq(y, y) => true,
-	synEq(z, z) => true,
-	synEq(pV1, pV1) => true,
-	synEq(pV2, pV2) => true,
-	synEq(pC1, pC1) => true,
-	synEq(pC2, pC2) => true,
-
-	synEq(x, y) => false,
-	synEq(x, z) => false,
-	synEq(x, pV1) => false,
-	synEq(x, pV2) => false,
-	synEq(x, pC1) => false,
-	synEq(x, pC2) => false,
-	
-	synEq(y, z) => false,
-	synEq(y, x) => false,
-	synEq(y, pV1) => false,
-	synEq(y, pV2) => false,
-	synEq(y, pC1) => false,
-	synEq(y, pC2) => false,
-
-	synEq(z, y) => false,
-	synEq(z, x) => false,
-	synEq(z, pV1) => false,
-	synEq(z, pV2) => false,
-	synEq(z, pC1) => false,
-	synEq(z, pC2) => false,
-
-	synEq(pV1, x) => false,
-	synEq(pV1, y) => false,
-	synEq(pV1, z) => false,
-	synEq(pV1, pV2) => false,
-	synEq(pV1, pC1) => false,
-	synEq(pV1, pC2) => false,
-
-	synEq(pV2, x) => false,
-	synEq(pV2, y) => false,
-	synEq(pV2, z) => false,
-	synEq(pV2, pV1) => false,
-	synEq(pV2, pC1) => false,
-	synEq(pV2, pC2) => false,
-
-	synEq(pC1, x) => false,
-	synEq(pC1, y) => false,
-	synEq(pC1, z) => false,
-	synEq(pC1, pV1) => false,
-	synEq(pC1, pV2) => false,
-	synEq(pC1, pC2) => false,
-
-	synEq(pC2, x) => false,
-	synEq(pC2, y) => false,
-	synEq(pC2, z) => false,
-	synEq(pC2, pV1) => false,
-	synEq(pC2, pV2) => false,
-	synEq(pC2, pC1) => false,
-
-	I(push(update(X, N, emp),   REST), ENV) =>
-	I(push(cons(mi(X, N), emp), REST), ENV),
-
-    	I(push(update(X, N, cons(mi(Y, M), ENV1)),   REST), ENV) =>
-    	I(push(synEq(X, Y), push(update(X, N, cons(mi(Y, M), ENV1)), REST)), ENV),
-
-    	I(push(true, push(update(X, N, cons(mi(Y, M), ENV1)),   REST)), ENV) =>
-    	I(push(cons(mi(X, N), ENV1), REST), ENV),
-
-    	I(push(false, push(update(X, N, cons(mi(Y, M), ENV1)),   REST)), ENV) =>
-    	I(push(update(X, N, ENV1), push(updateh(mi(Y, M)), REST)), ENV),
-
-    	I(push(ENV1, push(updateh(mi(Y, M)),   REST)), ENV) =>
-    	I(push(cons(mi(Y, M), ENV1), REST), ENV),
-
-	I(push(lookup(X, cons(mi(Y, M), ENV1)),   REST), ENV) =>
-	I(push(synEq(X, Y), push(lookuph(X, M, ENV1), REST)), ENV),
-
-	I(push(true, push(lookuph(X, M, ENV1),   REST)), ENV) =>
-	I(push(M,                                REST),  ENV),
-
-	I(push(false, push(lookuph(X, M, ENV1),  REST)), ENV) =>
-	I(push(lookup(X, ENV1),                  REST),  ENV),
-
+// language
  	I(push(X,              REST), ENV) =>
- 	I(push(lookup(X, ENV), REST), ENV),
+ 	I(push(lookup(ENV, X), REST), ENV),
 
 	I(push(pred(N),            REST), ENV) =>
 	I(push(mminus(N, mone),    REST), ENV),
@@ -325,6 +267,16 @@ constrained-rewrite-system language
 	I(push(N, push(predh, REST)), ENV) =>
 	I(push(pred(N),       REST) , ENV),
 
+	I(push(not(B),  REST), ENV) =>
+	I(push(bnot(B), REST), ENV),
+
+	I(push(not(NVBE),       REST) , ENV) =>
+	I(push(NVBE, push(noth, REST)), ENV),
+
+	I(push(B, push(noth, REST)), ENV) =>
+	I(push(not(B),       REST) , ENV),
+
+
 	I(push(succ(N),           REST), ENV) =>
 	I(push(mplus(N, mone),    REST), ENV),
 
@@ -334,11 +286,8 @@ constrained-rewrite-system language
 	I(push(N, push(succh, REST)), ENV) =>
 	I(push(succ(N),       REST) , ENV),
 
-	I(push(assign(X, N),                      REST), ENV) =>
-        I(push(update(X, N, ENV), push(updateEnv, REST)), emp),
-
-        I(push(ENV,  push(updateEnv, REST)), emp) =>
-	I(push(skip,                 REST), ENV),
+	I(push(assign(X, N), REST), ENV) =>
+        I(REST,       update(ENV, X, N)),
     
  	I(push(assign(X, NVAE),       REST) , ENV) =>
  	I(push(NVAE, push(assignh(X), REST)), ENV),
@@ -387,6 +336,41 @@ constrained-rewrite-system language
  	I(push(M, push(plushr(N), REST)), ENV) =>
  	I(push(plus(N, M)       , REST) , ENV),
 
+// subtraction operator
+ 	I(push(minus(N, M),     REST), ENV) =>
+ 	I(push(mminus(N, M),    REST), ENV),
+
+	I(push(minus(NVAE1, AE2),        REST) , ENV) =>
+	I(push(NVAE1, push(minushl(AE2), REST)), ENV),
+  
+ 	I(push(N, push(minushl(AE2), REST)), ENV) =>
+ 	I(push(minus(N, AE2)       , REST) , ENV),
+
+ 	I(push(minus(N, NVAE2)       , REST) , ENV) =>
+ 	I(push(NVAE2, push(minushr(N), REST)), ENV),
+
+ 	I(push(M, push(minushr(N), REST)), ENV) =>
+ 	I(push(minus(N, M)       , REST) , ENV),
+
+// for statement
+ 	I(push(for(X, NVAE1, NVAE2, S),        REST ), ENV) =>
+ 	I(push(NVAE1, push(forhl(X, NVAE2, S), REST)), ENV),
+
+ 	I(push(N, push(forhl(X, NVAE2, S), REST)), ENV) =>
+ 	I(push(for(X, N, NVAE2, S),        REST) , ENV),
+
+ 	I(push(for(X, N, NVAE2, S),            REST ), ENV) =>
+ 	I(push(NVAE2, push(forhr(X, N, S),     REST)), ENV),
+
+ 	I(push(M, push(forhr(X, N, S), REST)), ENV) =>
+ 	I(push(for(X, N, M, S),        REST) , ENV),
+
+	I(push(for(X, N, M, S),                                         REST), ENV) /\ mle(N, M) =>
+	I(push(seq(assign(X, N), S), push(for(X, mplus(N, mone), M, S), REST)), ENV),
+
+	I(push(for(X, N, M, S), REST), ENV) /\ bnot(mle(N, M)) =>
+	I(                      REST, ENV),
+
 // less than or equal to operator2
 
  	I(push(le(N, M),  REST), ENV) =>
@@ -404,37 +388,44 @@ constrained-rewrite-system language
  	I(push(M, push(lehr(N), REST)), ENV) =>
  	I(push(le(N, M),       REST) , ENV),
 
+// strictly less than
+
+ 	I(push(less(N, M),  REST), ENV) =>
+ 	I(push(mless(N, M), REST), ENV),
+
+ 	I(push(less(NVAE1, AE2),        REST) , ENV) =>
+ 	I(push(NVAE1, push(lesshl(AE2), REST)), ENV),
+
+ 	I(push(N, push(lesshl(AE2), REST)), ENV) =>
+ 	I(push(less(N, AE2),        REST) , ENV),
+
+ 	I(push(less(N, NVAE2),        REST) , ENV) =>
+ 	I(push(NVAE2, push(lesshr(N), REST)), ENV),
+  
+ 	I(push(M, push(lesshr(N), REST)), ENV) =>
+ 	I(push(less(N, M),       REST) , ENV),
 
 // symbolic variables, statements and expressions
    	I(push(pE1, REST), ENV) =>
-	I(push(iE1(pC2,pV2), REST), ENV),
+	I(push(iE1(lookup(ENV,pC2),lookup(ENV,pV2)), REST), ENV),
 
 	I(push(pS1, REST), ENV) =>
-	I(push(update(pC1, iS1(pC1,pC2,pV1,pV2), ENV), push(updateEnv, REST)), emp)
+	I(REST, update(ENV, pC1, iS1(lookup(ENV, pC1),lookup(ENV,pC2),lookup(ENV,pV1),lookup(ENV, pV2))))
 ;
 
-// // search to end with left hand side
-// search [32,32] in language :
-// I(push(seq(assign(pV1, pE1),
-//                   seq(pS1,
-// 		      assign(pV2, pE1))),
-// 	      done),
-//          emp);
+//search [3,3] in language :
+//	I(push(assign(x, mone), done), emp);
 
-// // search to end with right hand side
-// search [35,35] in language :
-//         I(push(seq(assign(pV1, pE1),
-//                    seq(pS1,
-//  		      assign(pV2, pV1))),
-//  	      done),
-//           emp);
-	 
- show-equivalent [40, 2] in language and language :
-   pair(I(push(S1,
- 	      done),
-          ENV),
-        I(push(S1, push(skip,
- 	      done)),
-          ENV))
- with-base
-   pair(I(done, ENV), I(done, ENV));
+show-equivalent [40, 2] in language and language :
+//    pair(
+// 	I(push(for(x, mone, N, pS1), done), ENV),
+// 	I(push(ite(le(mone, N), seq(assign(x, mone), while(le(x, N), seq(pS1, assign(x, plus(x, mone))))), skip), done), ENV))
+
+// ,
+   pair(
+	I(push(for(x, M, N, pS1), done), ENV),
+
+	I(push(assign(x, M), push(while(less(x, N), seq(pS1, assign(x, plus(x, mone)))), done)), ENV))
+
+with-base
+   pair(I(done, ENV), I(done, ENVP)) /\ mequals(lookup(ENV, x), lookup(ENVP, x));

@@ -41,6 +41,7 @@ struct QueryProveEquivalence : public Query
   bool possibleRhsBase(Term *);
   bool possibleLhsCircularity(Term *lhs);
   bool possibleRhsCircularity(Term *rhs);
+  bool possibleCircularity(ConstrainedTerm ct);
 
   bool proveEquivalenceForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth);
   bool proveEquivalenceExistsRight(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth);

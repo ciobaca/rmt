@@ -176,7 +176,7 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
 
 bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Term *&resultConstraint)
 {
-  Log(DEBUG5) << "unifyModuloTheories " << this->toString() << " and " <<
+  Log(DEBUG6) << "unifyModuloTheories " << this->toString() << " and " <<
     other->toString() << endl;
   Substitution abstractingSubstitution;
 

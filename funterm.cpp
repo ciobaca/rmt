@@ -61,7 +61,8 @@ string FunTerm::toSmtString()
     oss << " ";
     assert(arguments[0].isVariable());
     VarTerm *t = (VarTerm *)arguments[0];
-    oss << t->variable->sort->name;
+    assert(t->variable->sort->hasInterpretation);
+    oss << t->variable->sort->interpretation;
     oss << ")) ";
     oss << arguments[1]->toSmtString();
   } else {

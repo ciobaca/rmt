@@ -25,6 +25,8 @@ struct Term
 {
   virtual Sort *getSort() = 0;
 
+  bool hasDefinedFunctions;
+
   bool computedVars;
   bool computedUniqueVars;
   vector<Variable *> allVars;
@@ -210,11 +212,21 @@ struct Term
 
   // Performs a one-step narrowing search, offloading interpreted terms
   // to the SMT solver.
-  virtual vector<ConstrainedSolution> smtNarrowSearch(RewriteSystem &, Term *initialConstraint);
+  virtual vector<ConstrainedSolution> smtNarrowSearchBasic(RewriteSystem &, Term *initialConstraint);
 
   // Performs a one-step narrowing search, offloading interpreted terms
   // to the SMT solver.
-  virtual vector<ConstrainedSolution> smtNarrowSearch(CRewriteSystem &, Term *initialConstraint);
+  virtual vector<ConstrainedSolution> smtNarrowSearchBasic(CRewriteSystem &, Term *initialConstraint);
+
+  // Performs a one-step narrowing search, offloading interpreted terms
+  // to the SMT solver. If the term contains defined functions, it
+  // solves them using the "functions" rewrite system first.
+  virtual vector<ConstrainedSolution> smtNarrowSearchWdf(RewriteSystem &, Term *initialConstraint);
+
+  // Performs a one-step narrowing search, offloading interpreted terms
+  // to the SMT solver. If the term contains defined functions, it
+  // solves them using the "functions" rewrite system first.
+  virtual vector<ConstrainedSolution> smtNarrowSearchWdf(CRewriteSystem &, Term *initialConstraint);
 
   // Perform a unification modulo theories between *this and *other.
   // Assume t1 = *this and t2 = *other.

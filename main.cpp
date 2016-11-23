@@ -190,18 +190,24 @@ void parseFunctions(string &s, int &w)
     Sort *result = getSort(id);
     string interpretation;
     bool hasInterpretation = false;
+    bool isDefined = false;
     skipWhiteSpace(s, w);
     if (lookAhead(s, w, "/")) {
       matchString(s, w, "/");
       skipWhiteSpace(s, w);
-      interpretation = getQuotedString(s, w);
-      hasInterpretation = true;
+      if (lookAhead(s, w, "\"")) {
+	interpretation = getQuotedString(s, w);
+	hasInterpretation = true;
+      } else {
+	matchString(s, w, "defined");
+	isDefined = true;
+      }
     }
     skipWhiteSpace(s, w);
     if (hasInterpretation) {
       createInterpretedFunction(f, arguments, result, interpretation);
     } else {
-      createUninterpretedFunction(f, arguments, result);
+      createUninterpretedFunction(f, arguments, result, isDefined);
     }
     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
       expected("more function symbols", w, s);

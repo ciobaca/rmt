@@ -45,7 +45,7 @@ void createInterpretedSort(std::string &sortName, std::string &interpretation);
 Variable *getInternalVariable(std::string name, Sort *);
 
 Function *getFunction(std::string name);
-void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result);
+void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, bool isDefined);
 void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, std::string interpretation);
 
 Name *getName(std::string name);

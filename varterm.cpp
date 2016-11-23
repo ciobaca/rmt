@@ -8,9 +8,10 @@
 
 using namespace std;
 
-VarTerm::VarTerm(Variable *variable)
+VarTerm::VarTerm(Variable *variable) :
+  variable(variable)
 {
-  this->variable = variable;
+  hasDefinedFunctions = false;
 }
 
 vector<Variable *> VarTerm::computeVars()

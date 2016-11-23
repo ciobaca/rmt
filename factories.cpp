@@ -168,7 +168,7 @@ Function *getFunction(string name)
   }
 }
 
-void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result)
+void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result, bool isDefined)
 {
 #ifndef NDEBUG
   Function *f = getFunction(name);
@@ -181,7 +181,7 @@ void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *re
     log << arguments[i]->name << " ";
   }
   log << " -> " << result->name << endl;
-  functions[name] = new Function(name, arguments, result);
+  functions[name] = new Function(name, arguments, result, isDefined);
 }
 
 void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, string interpretation)
@@ -291,7 +291,7 @@ void createBuiltIns()
     ostringstream funname;
     funname << "_exists" << s->name;
     Log(DEBUG) << "Creating exists function " << funname << endl;
-    createUninterpretedFunction(funname.str(), args, sorts["Bool"]);
+    createUninterpretedFunction(funname.str(), args, sorts["Bool"], false);
     ExistsFun[s] = getFunction(funname.str());
     assert(ExistsFun[s]);
   }

@@ -16,7 +16,7 @@ Query *QuerySatisfiability::create()
 {
   return new QuerySatisfiability();
 }
-  
+
 void QuerySatisfiability::parse(std::string &s, int &w)
 {
   matchString(s, w, "satisfiability");

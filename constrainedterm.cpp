@@ -33,14 +33,14 @@ string ConstrainedTerm::toPrettyString()
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs)
 {
   Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs) " << this->toString();
-  vector<ConstrainedSolution> sols = term->smtNarrowSearch(rs, constraint);
+  vector<ConstrainedSolution> sols = term->smtNarrowSearchWdf(rs, constraint);
   return sols;
 }
 
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs)
 {
   Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs) " << this->toString();
-  vector<ConstrainedSolution> sols = term->smtNarrowSearch(crs, constraint);
+  vector<ConstrainedSolution> sols = term->smtNarrowSearchWdf(crs, constraint);
   return sols;
 }
 

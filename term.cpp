@@ -240,14 +240,14 @@ bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Te
   }
 }
 
-vector<ConstrainedSolution> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *initialConstraint)
+vector<ConstrainedSolution> Term::smtNarrowSearchBasic(RewriteSystem &rsInit, Term *initialConstraint)
 {
   vector<ConstrainedSolution> finalResult;
 
   Substitution abstractingSubstitution;
 
   // STEP 1: compute abstracted term (and constraining substitution)
-  Log(DEBUG5) << "Term::smtNarrowSearch(CRewriteSystem &, Term *) " <<
+  Log(DEBUG5) << "Term::smtNarrowSearchBasic(CRewriteSystem &, Term *) " <<
     this->toString() << " /\\ " << initialConstraint->toString() << endl;
 
   Term *abstractTerm = this->abstract(abstractingSubstitution);
@@ -281,14 +281,14 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(RewriteSystem &rsInit, Term *i
   return finalResult;
 }
 
-vector<ConstrainedSolution> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term *initialConstraint)
+vector<ConstrainedSolution> Term::smtNarrowSearchBasic(CRewriteSystem &crsInit, Term *initialConstraint)
 {
   vector<ConstrainedSolution> finalResult;
 
   Substitution abstractingSubstitution;
 
   // STEP 1: compute abstracted term (and constraining substitution)
-  Log(DEBUG5) << "Term::smtNarrowSearch(CRewriteSystem &, Term *) " <<
+  Log(DEBUG5) << "Term::smtNarrowSearchBasic(CRewriteSystem &, Term *) " <<
     this->toString() << " /\\ " << initialConstraint->toString() << endl;
 
   Term *abstractTerm = this->abstract(abstractingSubstitution);
@@ -321,6 +321,26 @@ vector<ConstrainedSolution> Term::smtNarrowSearch(CRewriteSystem &crsInit, Term 
   }
 
   return finalResult;
+}
+
+vector<ConstrainedSolution> Term::smtNarrowSearchWdf(RewriteSystem &rsInit, Term *initialConstraint)
+{
+  if (hasDefinedFunctions) {
+    RewriteSystem functionsRS = getRewriteSystem("functions");
+    return smtNarrowSearchBasic(functionsRS, initialConstraint);
+  } else {
+    return smtNarrowSearchBasic(rsInit, initialConstraint);
+  }
+}
+
+vector<ConstrainedSolution> Term::smtNarrowSearchWdf(CRewriteSystem &crsInit, Term *initialConstraint)
+{
+  if (hasDefinedFunctions) {
+    RewriteSystem functionsRS = getRewriteSystem("functions");
+    return smtNarrowSearchBasic(functionsRS, initialConstraint);
+  } else {
+    return smtNarrowSearchBasic(crsInit, initialConstraint);
+  }
 }
 
 bool Term::hasVariable(Variable *var)

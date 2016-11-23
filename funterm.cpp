@@ -10,11 +10,21 @@
 
 using namespace std;
 
-FunTerm::FunTerm(Function *function, vector<Term *> arguments)
+FunTerm::FunTerm(Function *function, vector<Term *> arguments) :
+  function(function),
+  arguments(arguments)
+  //  hasDefinedFunctions(function->isDefined)
 {
+  hasDefinedFunctions = function->isDefined;
   assert(this->arguments->size() == function->arguments.size());
-  this->function = function;
-  this->arguments = arguments;
+  if (!hasDefinedFunctions) {
+    for (vector<Term *>::iterator it = arguments.begin(); it != arguments.end(); ++it) {
+      if ((*it)->hasDefinedFunctions) {
+	hasDefinedFunctions = true;
+	break;
+      }
+    }
+  }
 }
 
 vector<Variable *> FunTerm::computeVars()

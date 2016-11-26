@@ -138,13 +138,13 @@ Term *FunTerm::computeSubstitution(Substitution &subst, map<Term *, Term *> &cac
   return cache[this];
 }
 
-Term *FunTerm::computeNormalize(RewriteSystem &rewriteSystem, map<Term *, Term *> &cache)
+Term *FunTerm::computeNormalize(RewriteSystem &rewriteSystem, map<Term *, Term *> &cache, bool optimallyReducing)
 {
-  Log(DEBUG9) << "computNormalizing " << this->toString() << endl;
+  Log(DEBUG9) << "computeNormalizing " << this->toString() << endl;
   if (!contains(cache, (Term *)this)) {
     vector<Term *> subterms;
     for (int i = 0; i < len(function->arguments); ++i) {
-      subterms.push_back(arguments[i]->computeNormalize(rewriteSystem, cache));
+      subterms.push_back(arguments[i]->computeNormalize(rewriteSystem, cache, optimallyReducing));
     }
     Term *result = getFunTerm(function, subterms);
     bool done = false;
@@ -160,6 +160,9 @@ Term *FunTerm::computeNormalize(RewriteSystem &rewriteSystem, map<Term *, Term *
 	if (result->isInstanceOf(l, subst)) {
 	  Log(DEBUG9) << "Is instance " << result->toString() << " of " << l->toString() << endl;
 	  result = r->substitute(subst);
+	  if (!optimallyReducing) {
+	    result = result->computeNormalize(rewriteSystem, cache, optimallyReducing);
+	  }
 	  done = false;
 	}
       }

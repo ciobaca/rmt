@@ -27,7 +27,7 @@ struct VarTerm : public Term
   virtual vector<pair<Term *, Term *> > split();
 
   virtual bool computeIsNormalized(RewriteSystem &rewriteSystem, map<Term *, bool> &);
-  virtual Term *computeNormalize(RewriteSystem &, map<Term *, Term *> &);
+  virtual Term *computeNormalize(RewriteSystem &, map<Term *, Term *> &, bool);
 
   virtual bool computeIsInstanceOf(Term *, Substitution &, map<pair<Term *, Term *>, bool> &);
   virtual bool computeIsGeneralizationOf(VarTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);

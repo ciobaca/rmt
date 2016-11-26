@@ -133,7 +133,7 @@ bool VarTerm::computeIsNormalized(RewriteSystem &, map<Term *, bool> &)
   return true;
 }
 
-Term *VarTerm::computeNormalize(RewriteSystem &, map<Term *, Term *> &)
+Term *VarTerm::computeNormalize(RewriteSystem &, map<Term *, Term *> &, bool)
 {
   return this;
 }

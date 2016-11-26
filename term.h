@@ -83,7 +83,8 @@ struct Term
   // terminating.  The normalization is quite fast, using a cache that
   // remembers for each subterm appearing in the computation the
   // normalized form.
-  virtual Term *normalize(RewriteSystem &rewriteSystem);
+  // The boolean parameter should be set to false if the rs is not optimally reducing.
+  virtual Term *normalize(RewriteSystem &rewriteSystem, bool = true);
 
   // Unifies this term with the parameter. Implements visitor pattern
   // for multiple dispatch.  The substitution is the substitution
@@ -144,7 +145,8 @@ struct Term
   // second parameter) that remembers for each subterm appearing in
   // the computation the normalized form. You should probably use
   // "normalize()" instead of this function.
-  virtual Term *computeNormalize(RewriteSystem &, map<Term *, Term *> &) = 0;
+  // The boolean parameter should be false when the rs is not optimally reducing.
+  virtual Term *computeNormalize(RewriteSystem &, map<Term *, Term *> &, bool = true) = 0;
 
   // Checks whethere the current term is an instance of the parameter
   // (i.e. if there exists a substitution sigma such that *this =

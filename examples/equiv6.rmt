@@ -554,8 +554,6 @@ constrained-rewrite-system flanguage
 	contextexp(lambda(XF, FEXP1), FNV) => app(lambda(XF, FEXP1), contextexp(FNV)),
 	app(lambda(XF, FEXP1), VF) => contextexp(app(lambda(XF, FEXP1), VF)),
 	contextexp(lambda(XF, FEXP1), VF) => contextexp(substitute(XF, VF, FEXP1))
-
-		
 ;
 
 show-equivalent [100, 1] in language and language :

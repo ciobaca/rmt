@@ -45,17 +45,19 @@ Term *Term::substitute(Substitution &subst)
   return computeSubstitution(subst, cache);
 }
 
-bool Term::isNormalized(RewriteSystem &rewriteSystem)   
+bool Term::isNormalized(RewriteSystem &rewriteSystem)
 {
   map<Term *, bool> cache;
-  return computeIsNormalized(rewriteSystem, cache);   
+  return computeIsNormalized(rewriteSystem, cache);
 }
 
-Term *Term::normalize(RewriteSystem &rewriteSystem)
+Term *Term::normalize(RewriteSystem &rewriteSystem, bool optimallyReducing)
 {
   Log(DEBUG9) << "Normalizing " << this->toString() << endl;
   map<Term *, Term *> cache;
-  return computeNormalize(rewriteSystem, cache);
+  Term *result = computeNormalize(rewriteSystem, cache, optimallyReducing);
+  //  Log(DEBUG) << "normalize " << this->toString() << " is " << result->toString() << endl;
+  return result;
 }
 
 bool Term::isInstanceOf(Term *t, Substitution &s)
@@ -325,22 +327,26 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(CRewriteSystem &crsInit, 
 
 vector<ConstrainedSolution> Term::smtNarrowSearchWdf(RewriteSystem &rsInit, Term *initialConstraint)
 {
+  Log(DEBUG) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
+  Term *searchStart = this;
   if (hasDefinedFunctions) {
     RewriteSystem functionsRS = getRewriteSystem("functions");
-    return smtNarrowSearchBasic(functionsRS, initialConstraint);
-  } else {
-    return smtNarrowSearchBasic(rsInit, initialConstraint);
+    searchStart = this->normalize(functionsRS, false);
   }
+  Log(DEBUG) << "Staring basic narrowing search from " << searchStart->toString() << endl;
+  return searchStart->smtNarrowSearchBasic(rsInit, initialConstraint);
 }
 
 vector<ConstrainedSolution> Term::smtNarrowSearchWdf(CRewriteSystem &crsInit, Term *initialConstraint)
 {
+  Log(DEBUG) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
+  Term *searchStart = this;
   if (hasDefinedFunctions) {
     RewriteSystem functionsRS = getRewriteSystem("functions");
-    return smtNarrowSearchBasic(functionsRS, initialConstraint);
-  } else {
-    return smtNarrowSearchBasic(crsInit, initialConstraint);
+    searchStart = this->normalize(functionsRS, false);
   }
+  Log(DEBUG) << "Staring basic narrowing search from " << searchStart->toString() << endl;
+  return searchStart->smtNarrowSearchBasic(crsInit, initialConstraint);
 }
 
 bool Term::hasVariable(Variable *var)

@@ -519,11 +519,31 @@ constrained-rewrite-system flanguage
 	contextexp(miu(XF, FEXP)) => contextexp(substitute(XF, miu(XF, FEXP), FEXP))
 ;
 
-show-equivalent [100, 1] in language and flanguage :
-   pair(IC(push(
-		seq(assign(x, mone),
-		    seq(assign(y, mtwo),
-		        assign(x, plus(x, y)))), done), ENV),
-	F(contextexp(app(app(lam(fvarX, lam(fvarY, fplus(fvarX, fvarY))), mtwo), mone))))
- with-base
-     pair(IC(done, ENV), F(contextexp(SUM))) /\ mequals(lookup(ENV, x), SUM);
+show-equivalent in language and flanguage :
+
+pair(
+
+IC(push(while(le(y,N), seq(assign(z,plus(z,y)),
+assign(y,plus(y,mone)))), done),
+ENV),
+
+F(contextexp(app(app(miu(fvarF, lam(fvarX, lam(fvarY, fite(fle(fvarX,
+ N), app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY,fvarX)),
+ fvarY)))), fplus(J,mone)), fplus(SUM,J)))))
+
+/\ band(mle(mone, N),
+	band(mequals(lookup(ENV, y), mplus(J, mone)),
+	     mequals(lookup(ENV, z), mplus(SUM, J))))
+
+with-base
+
+pair(IC(done, ENV), F(contextexp(SUM))) /\ mequals(lookup(ENV, z), SUM);
+
+// 	F(contextexp(app(app(miu(fvarF, lam(fvarX, lam(fvarY, fite(fle(fvarX, N), app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY, fvarX)), fvarY)))), I), S))) /\ band(mle(I, N), mle(mone, N)) =>
+// 	F(contextexp(mplus(S, sum(I, N))))
+// this circularity will not work by itself since "I" and "S" will generally not be integers during the program call
+// instead of I we will find fplus(_, 1) and instead of S we will find fplus(_, I)
+//,
+
+// 	F(contextexp(app(app(miu(fvarF, lam(fvarX, lam(fvarY, fite(fle(fvarX, N), app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY, fvarX)), fvarY)))), mzero), S))) /\ mle(mone, N) =>
+// 	F(contextexp(mplus(S, sum(mone,N))))

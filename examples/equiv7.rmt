@@ -1,3 +1,5 @@
+// EQUIVALENCE OF TWO PROGRAMS
+// THAT BOTH COMPUTE THE SUM OF THE FIRST N NATURALS
 smt-prelude
 "(declare-fun uifun (Int Int) Int)
  (declare-datatypes () ((Var varX varY varZ varC1 varC2 varV1 varV2)))
@@ -63,7 +65,7 @@ signature
 	mplus : Int Int -> Int / "+",
 	mminus : Int Int -> Int / "-",
 	mtimes : Int Int -> Int / "*",
-	mdiv : Int Int -> Int / "/",
+	mdiv : Int Int -> Int / "div",
 	mle : Int Int -> Bool / "<=",
 	mless : Int Int -> Bool / "<",
 	mequals : Int Int -> Bool / "=",

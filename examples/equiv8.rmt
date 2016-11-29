@@ -1,9 +1,14 @@
+// EQUIVALENCE OF TWO PROGRAMS
+// THAT BOTH COMPUTE THE COLLATZ SEQUENCE
 smt-prelude
 "(declare-fun uifun (Int Int) Int)
  (declare-datatypes () ((Var varX varY varZ varC1 varC2 varV1 varV2)))
  (declare-datatypes () ((VarF fvarX fvarY fvarZ fvarF)))
  (define-fun sumUpTo ((n Int)) Int
     (div (* n (+ n 1)) 2)
+ )
+ (define-fun even ((n Int)) Bool
+    (= (mod n 2) 0)
  )
  (define-fun sum ((a Int) (b Int)) Int
    (- (sumUpTo b) (sumUpTo (- a 1))))
@@ -60,12 +65,14 @@ signature
 	mzero : -> Int / "0",
 	mone : -> Int / "1",
 	mtwo : -> Int / "2",
+	mthree : -> Int / "3",
 	mplus : Int Int -> Int / "+",
 	mminus : Int Int -> Int / "-",
 	mtimes : Int Int -> Int / "*",
 	mdiv : Int Int -> Int / "div",
 	mle : Int Int -> Bool / "<=",
 	mless : Int Int -> Bool / "<",
+	meven : Int -> Bool / "even",
 	mequals : Int Int -> Bool / "=",
 
 	sum : Int Int -> Int / "sum",
@@ -87,7 +94,12 @@ signature
 	miu : VarF ExpF -> NonValExpF,
 	lam : VarF ExpF -> ValExpF,
 
+	feven : ExpF -> NonValExpF,
+	fnot : ExpF -> NonValExpF,
+	fequals : ExpF ExpF -> NonValExpF,
 	fplus : ExpF ExpF -> NonValExpF,
+	fdiv : ExpF ExpF -> NonValExpF,
+	ftimes : ExpF ExpF -> NonValExpF,
 	fminus : ExpF ExpF -> NonValExpF,
 	fle : ExpF ExpF -> NonValExpF,
 	fless : ExpF ExpF -> NonValExpF,
@@ -128,10 +140,25 @@ signature
 	update : Map Var Int -> Map / "store",
 	lookup  : Map Var -> IntP / "select",
 
+	// equality
+	iequals : AExp AExp -> NonValBExp,
+	iequalshl : AExp -> BExp,
+	iequalshr : AExp -> BExp,
+
 	// arithmetic and boolean expressions
 	plus : AExp AExp -> NonValAExp,
 	plushl : AExp -> AExp,
     	plushr : AExp -> AExp,
+
+	// arithmetic and boolean expressions
+	times : AExp AExp -> NonValAExp,
+	timeshl : AExp -> AExp,
+    	timeshr : AExp -> AExp,
+
+	// arithmetic and boolean expressions
+	div : AExp AExp -> NonValAExp,
+	divhl : AExp -> AExp,
+    	divhr : AExp -> AExp,
 
 	// uninterpreted function Z3
 	muifun : Int Int -> Int / "uifun",
@@ -146,10 +173,10 @@ signature
     	minushr : AExp -> AExp,
 
 	pred : AExp -> NonValAExp,
-	predh : -> Stmt,
+	predh : -> AExp,
 
 	succ : AExp -> NonValAExp,
-	succh : -> Stmt,
+	succh : -> AExp,
 
 	le   : AExp AExp -> NonValBExp,
     	lehl : AExp -> BExp,
@@ -159,8 +186,11 @@ signature
     	lesshl : AExp -> BExp,
     	lesshr : AExp -> BExp,
 
+	ieven : AExp -> NonValBExp,
+	ievenh : -> AExp,
+
 	not : BExp -> NonValBExp,
-	noth : -> Stmt,
+	noth : -> BExp,
 
 	// computation stack
 	done : -> CompStack,
@@ -265,8 +295,13 @@ rewrite-system functions
   substitute(fvarF, FEXP, fvarX) => fvarX,
   substitute(fvarF, FEXP, fvarY) => fvarY,
   substitute(fvarF, FEXP, fvarZ) => fvarZ,
-  
+
+  substitute(XF, FEXP, feven(FEXP1)) => feven(substitute(XF, FEXP, FEXP1)),
+  substitute(XF, FEXP, fnot(FEXP1)) => fnot(substitute(XF, FEXP, FEXP1)),
+  substitute(XF, FEXP, fequals(FEXP1, FEXP2)) => fequals(substitute(XF, FEXP, FEXP1), substitute(XF, FEXP, FEXP2)),
   substitute(XF, FEXP, fplus(FEXP1, FEXP2)) => fplus(substitute(XF, FEXP, FEXP1), substitute(XF, FEXP, FEXP2)),
+  substitute(XF, FEXP, ftimes(FEXP1, FEXP2)) => ftimes(substitute(XF, FEXP, FEXP1), substitute(XF, FEXP, FEXP2)),
+  substitute(XF, FEXP, fdiv(FEXP1, FEXP2)) => fdiv(substitute(XF, FEXP, FEXP1), substitute(XF, FEXP, FEXP2)),
   substitute(XF, FEXP, fminus(FEXP1, FEXP2)) => fminus(substitute(XF, FEXP, FEXP1), substitute(XF, FEXP, FEXP2)),
   substitute(XF, FEXP, fless(FEXP1, FEXP2)) => fless(substitute(XF, FEXP, FEXP1), substitute(XF, FEXP, FEXP2)),
   substitute(XF, FEXP, fle(FEXP1, FEXP2)) => fle(substitute(XF, FEXP, FEXP1), substitute(XF, FEXP, FEXP2)),
@@ -325,6 +360,7 @@ constrained-rewrite-system language
 	IC(push(N, push(predh, REST)), ENV) =>
 	IC(push(pred(N),       REST) , ENV),
 
+
 	IC(push(not(B),  REST), ENV) =>
 	IC(push(bnot(B), REST), ENV),
 
@@ -333,6 +369,16 @@ constrained-rewrite-system language
 
 	IC(push(B, push(noth, REST)), ENV) =>
 	IC(push(not(B),       REST) , ENV),
+
+
+	IC(push(ieven(N), REST), ENV) =>
+	IC(push(meven(N), REST), ENV),
+
+	IC(push(ieven(NVAE),       REST) , ENV) =>
+	IC(push(NVAE, push(ievenh, REST)), ENV),
+
+	IC(push(N, push(ievenh, REST)), ENV) =>
+	IC(push(ieven(N),       REST) , ENV),
 
 
 	IC(push(succ(N),           REST), ENV) =>
@@ -344,7 +390,6 @@ constrained-rewrite-system language
 	IC(push(N, push(succh, REST)), ENV) =>
 	IC(push(succ(N),       REST) , ENV),
 
-// 
 	IC(push(assign(X, N), REST), ENV) =>
         IC(REST,       update(ENV, X, N)),
     
@@ -394,6 +439,38 @@ constrained-rewrite-system language
 
  	IC(push(M, push(plushr(N), REST)), ENV) =>
  	IC(push(plus(N, M)       , REST) , ENV),
+
+// multiplication operator
+ 	IC(push(times(N, M),     REST), ENV) =>
+ 	IC(push(mtimes(N, M),    REST), ENV),
+
+	IC(push(times(NVAE1, AE2),        REST) , ENV) =>
+	IC(push(NVAE1, push(timeshl(AE2), REST)), ENV),
+  
+ 	IC(push(N, push(timeshl(AE2), REST)), ENV) =>
+ 	IC(push(times(N, AE2)       , REST) , ENV),
+
+ 	IC(push(times(N, NVAE2)       , REST) , ENV) =>
+ 	IC(push(NVAE2, push(timeshr(N), REST)), ENV),
+
+ 	IC(push(M, push(timeshr(N), REST)), ENV) =>
+ 	IC(push(times(N, M)       , REST) , ENV),
+
+// division operator
+ 	IC(push(div(N, M),     REST), ENV) =>
+ 	IC(push(mdiv(N, M),    REST), ENV),
+
+	IC(push(div(NVAE1, AE2),        REST) , ENV) =>
+	IC(push(NVAE1, push(divhl(AE2), REST)), ENV),
+  
+ 	IC(push(N, push(divhl(AE2), REST)), ENV) =>
+ 	IC(push(div(N, AE2)       , REST) , ENV),
+
+ 	IC(push(div(N, NVAE2)       , REST) , ENV) =>
+ 	IC(push(NVAE2, push(divhr(N), REST)), ENV),
+
+ 	IC(push(M, push(divhr(N), REST)), ENV) =>
+ 	IC(push(div(N, M)       , REST) , ENV),
 
 // uninterpreted function
  	IC(push(uifun(N, M),     REST), ENV) =>
@@ -446,6 +523,23 @@ constrained-rewrite-system language
 	IC(push(for(X, N, M, S), REST), ENV) /\ bnot(mle(N, M)) =>
 	IC(                      REST, ENV),
 
+// equality operator
+
+ 	IC(push(iequals(N, M),  REST), ENV) =>
+ 	IC(push(mequals(N, M), REST), ENV),
+
+ 	IC(push(iequals(NVAE1, AE2),        REST) , ENV) =>
+ 	IC(push(NVAE1, push(iequalshl(AE2), REST)), ENV),
+
+ 	IC(push(N, push(iequalshl(AE2), REST)), ENV) =>
+ 	IC(push(iequals(N, AE2),        REST) , ENV),
+
+ 	IC(push(iequals(N, NVAE2),        REST) , ENV) =>
+ 	IC(push(NVAE2, push(iequalshr(N), REST)), ENV),
+  
+ 	IC(push(M, push(iequalshr(N), REST)), ENV) =>
+ 	IC(push(iequals(N, M),       REST) , ENV),
+
 // less than or equal to operator2
 
  	IC(push(le(N, M),  REST), ENV) =>
@@ -482,11 +576,31 @@ constrained-rewrite-system language
 ;
 
 constrained-rewrite-system flanguage
+	contextexp(feven(FNV)) => feven(contextexp(FNV)),
+	feven(contextexp(I)) => contextexp(feven(I)),
+	contextexp(feven(I)) => contextexp(meven(I)),
+
+	contextexp(fnot(FNV)) => fnot(contextexp(FNV)),
+	fnot(contextexp(B)) => contextexp(fnot(B)),
+	contextexp(fnot(B)) => contextexp(bnot(B)),
+
 	contextexp(fplus(FNV, FEXP)) => fplus(contextexp(FNV), FEXP),
 	fplus(contextexp(I), FEXP) => contextexp(fplus(I, FEXP)),
 	contextexp(fplus(I, FNV)) => fplus(I, contextexp(FNV)),
 	fplus(I, contextexp(J)) => contextexp(fplus(I, J)),
 	contextexp(fplus(I, J)) => contextexp(mplus(I, J)),
+
+	contextexp(fdiv(FNV, FEXP)) => fdiv(contextexp(FNV), FEXP),
+	fdiv(contextexp(I), FEXP) => contextexp(fdiv(I, FEXP)),
+	contextexp(fdiv(I, FNV)) => fdiv(I, contextexp(FNV)),
+	fdiv(I, contextexp(J)) => contextexp(fdiv(I, J)),
+	contextexp(fdiv(I, J)) => contextexp(mdiv(I, J)),
+
+	contextexp(ftimes(FNV, FEXP)) => ftimes(contextexp(FNV), FEXP),
+	ftimes(contextexp(I), FEXP) => contextexp(ftimes(I, FEXP)),
+	contextexp(ftimes(I, FNV)) => ftimes(I, contextexp(FNV)),
+	ftimes(I, contextexp(J)) => contextexp(ftimes(I, J)),
+	contextexp(ftimes(I, J)) => contextexp(mtimes(I, J)),
 
 	contextexp(fminus(FNV, FEXP)) => fminus(contextexp(FNV), FEXP),
 	fminus(contextexp(I), FEXP) => contextexp(fminus(I, FEXP)),
@@ -499,6 +613,12 @@ constrained-rewrite-system flanguage
 	contextexp(fless(I, FNV)) => fless(I, contextexp(FNV)),
 	fless(I, contextexp(J)) => contextexp(fless(I, J)),
 	contextexp(fless(I, J)) => contextexp(mless(I, J)),
+	
+	contextexp(fequals(FNV, FEXP)) => fequals(contextexp(FNV), FEXP),
+	fequals(contextexp(I), FEXP) => contextexp(fequals(I, FEXP)),
+	contextexp(fequals(I, FNV)) => fequals(I, contextexp(FNV)),
+	fequals(I, contextexp(J)) => contextexp(fequals(I, J)),
+	contextexp(fequals(I, J)) => contextexp(mequals(I, J)),
 	
 	contextexp(fle(FNV, FEXP)) => fle(contextexp(FNV), FEXP),
 	fle(contextexp(I), FEXP) => contextexp(fle(I, FEXP)),
@@ -520,11 +640,130 @@ constrained-rewrite-system flanguage
 	contextexp(miu(XF, FEXP)) => contextexp(substitute(XF, miu(XF, FEXP), FEXP))
 ;
 
-show-equivalent [100, 1] in language and flanguage :
-   pair(IC(push(
-		seq(assign(x, mone),
-		    seq(assign(y, mtwo),
-		        assign(x, plus(x, y)))), done), ENV),
-	F(contextexp(app(app(lam(fvarX, lam(fvarY, fplus(fvarX, fvarY))), mtwo), mone))))
- with-base
-     pair(IC(done, ENV), F(contextexp(SUM))) /\ mequals(lookup(ENV, x), SUM);
+show-equivalent in language and flanguage :
+
+pair(
+
+IC(push(while(not(iequals(x, mone)),
+              seq(assign(y, plus(y, mone)),
+	          ite(ieven(x), assign(x, div(x, mtwo)),
+		                assign(x, plus(times(x, mthree), mone))))),
+	done), ENV),
+
+F(contextexp(
+   fite(fnot(fequals(N, mone)),
+        fite(feven(N),
+	     app(app(
+
+miu(fvarF, lam(fvarX, lam(fvarY,
+   fite(fnot(fequals(fvarX, mone)),
+        fite(feven(fvarX),
+	     app(app(fvarF, fdiv(fvarX, mtwo)), fplus(fvarY, mone)),
+	     app(app(fvarF, fplus(ftimes(fvarX, mthree), mone)), fplus(fvarY, mone))),
+	fvarY)))),
+             fdiv(N, mtwo)), fplus(I, mone)),
+	     
+	     app(app(
+miu(fvarF, lam(fvarX, lam(fvarY,
+   fite(fnot(fequals(fvarX, mone)),
+        fite(feven(fvarX),
+	     app(app(fvarF, fdiv(fvarX, mtwo)), fplus(fvarY, mone)),
+	     app(app(fvarF, fplus(ftimes(fvarX, mthree), mone)), fplus(fvarY, mone))),
+	fvarY)))),
+	
+	     fplus(ftimes(N, mthree), mone)), fplus(I, mone))),
+	I))))
+	                    
+/\ band(mequals(lookup(ENV, x), N),
+        mequals(lookup(ENV, y), I))
+
+with-base
+
+pair(IC(done, ENV), F(contextexp(N))) /\ mequals(lookup(ENV, y), N);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 	F(contextexp(app(app(miu(fvarF, lam(fvarX, lam(fvarY, fite(fle(fvarX, N), app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY, fvarX)), fvarY)))), I), S))) /\ band(mle(I, N), mle(mone, N)) =>
+// 	F(contextexp(mplus(S, sum(I, N))))
+// this circularity will not work by itself since "I" and "S" will generally not be integers during the program call
+// instead of I we will find fplus(_, 1) and instead of S we will find fplus(_, I)
+//,
+
+// 	F(contextexp(app(app(miu(fvarF, lam(fvarX, lam(fvarY, fite(fle(fvarX, N), app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY, fvarX)), fvarY)))), mzero), S))) /\ mle(mone, N) =>
+// 	F(contextexp(mplus(S, sum(mone,N))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// bimplies(
+// band(band(band(band(band(
+// mequals(lookup(ENV,x),N),
+// mequals(lookup(ENV,y),I)),
+// band(band(
+// mequals(lookup(ENV,x),N),
+// mequals(lookup(ENV,y),I)),
+// bnot(mequals(lookup(ENV,x),mone)))),
+// band(band(band(
+// mequals(lookup(ENV,x),N),
+// mequals(lookup(ENV,y),I)),
+// band(band(
+// mequals(lookup(ENV,x),N),
+// mequals(lookup(ENV,y),I)),bnot(mequals(lookup(ENV,x),mone)))),meven(lookup(update(ENV,y,mplus(lookup(ENV,y),mone)),x)))),band(band(band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),bnot(mequals(lookup(ENV,x),mone)))),band(band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),bnot(mequals(lookup(ENV,x),mone)))),meven(lookup(update(ENV,y,mplus(lookup(ENV,y),mone)),x)))),bnot(mequals(N,mone)))),band(band(band(band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),bnot(mequals(lookup(ENV,x),mone)))),band(band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),bnot(mequals(lookup(ENV,x),mone)))),meven(lookup(update(ENV,y,mplus(lookup(ENV,y),mone)),x)))),band(band(band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),bnot(mequals(lookup(ENV,x),mone)))),band(band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),band(band(mequals(lookup(ENV,x),N),mequals(lookup(ENV,y),I)),bnot(mequals(lookup(ENV,x),mone)))),meven(lookup(update(ENV,y,mplus(lookup(ENV,y),mone)),x)))),bnot(mequals(N,mone)))),meven(N))),
+
+// _existsInt(I_190,_existsMap(ENV_190,_existsInt(N_190,_existsMap(ENV_190,_existsInt(I_190,_existsInt(I_190,_existsInt(N_190,_existsInt(I_190,_existsInt(N_190,_existsInt(N_190,_existsInt(N_190,_existsMap(ENV_190,band(
+// mequals(lookup(update(update(ENV,y,mplus(lookup(ENV,y),mone)),x,mdiv(lookup(update(ENV,y,mplus(lookup(ENV,y),mone)),x),mtwo)),x),mdiv(N,mtwo)),
+// mequals(lookup(update(update(ENV,y,mplus(lookup(ENV,y),mone)),x,mdiv(lookup(update(ENV,y,mplus(lookup(ENV,y),mone)),x),mtwo)),y),mplus(I,mone))
+// ))))))))))))))
+
+
+
+// mequals(lookup(update(update(ENV,y,mplus(lookup(ENV,y),mone)),x,mdiv(N,mtwo)),x),mdiv(N,mtwo)),
+// mequals(lookup(update(update(ENV,y,mplus(lookup(ENV,y),mone)),x,mdiv(N,mtwo)),y),mplus(I,mone))
+

@@ -230,7 +230,7 @@ vector<ConstrainedSolution> VarTerm::rewriteSearch(RewriteSystem &rs)
 // caller needs to ensure freshness of rewrite system
 vector<ConstrainedSolution> VarTerm::narrowSearch(RewriteSystem &rs)
 {
-  Log(DEBUG7) << "VarTerm::narrowSearch(RewriteSystem &) " << this->toString() << endl;
+  Log(DEBUG9) << "VarTerm::narrowSearch(RewriteSystem &) " << this->toString() << endl;
   vector<ConstrainedSolution> result;
   for (int i = 0; i < len(rs); ++i) {
     pair<Term *, Term *> rewriteRule = rs[i];
@@ -243,7 +243,7 @@ vector<ConstrainedSolution> VarTerm::narrowSearch(RewriteSystem &rs)
       result.push_back(ConstrainedSolution(term, subst, l));
     }
   }
-  Log(DEBUG7) << "Done VarTerm::narrowSearch(RewriteSystem &) " << this->toString() << endl;
+  Log(DEBUG9) << "Done VarTerm::narrowSearch(RewriteSystem &) " << this->toString() << endl;
   return result;
 }
 

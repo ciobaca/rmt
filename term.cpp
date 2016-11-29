@@ -111,9 +111,9 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
   for (Substitution::iterator it = abstractingSubstitution.begin(); it != abstractingSubstitution.end(); ++it) {
     Term *lhsTerm = getVarTerm(it->first)->substitute(solution.subst)->substitute(abstractingSubstitution)->substitute(simplifyingSubst);
     Term *rhsTerm = it->second->substitute(simplifyingSubst);
-    Log(DEBUG7) << "Processing constraint " << lhsTerm->toString() << " = " << rhsTerm->toString() << endl;
+    Log(DEBUG9) << "Processing constraint " << lhsTerm->toString() << " = " << rhsTerm->toString() << endl;
     if (lhsTerm == rhsTerm) {
-      Log(DEBUG7) << "Constraint is trivial, skipping" << endl;
+      Log(DEBUG9) << "Constraint is trivial, skipping" << endl;
       continue;
     }
     bool simplifiedConstraint = false;
@@ -290,21 +290,21 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(CRewriteSystem &crsInit, 
   Substitution abstractingSubstitution;
 
   // STEP 1: compute abstracted term (and constraining substitution)
-  Log(DEBUG5) << "Term::smtNarrowSearchBasic(CRewriteSystem &, Term *) " <<
+  Log(DEBUG8) << "Term::smtNarrowSearchBasic(CRewriteSystem &, Term *) " <<
     this->toString() << " /\\ " << initialConstraint->toString() << endl;
 
   Term *abstractTerm = this->abstract(abstractingSubstitution);
 
-  Log(DEBUG6) << "Abstract term: " << abstractTerm->toString() << endl;
-  Log(DEBUG6) << "Abstracting substitution: " << abstractingSubstitution.toString() << endl;
+  Log(DEBUG9) << "Abstract term: " << abstractTerm->toString() << endl;
+  Log(DEBUG9) << "Abstracting substitution: " << abstractingSubstitution.toString() << endl;
 
   // STEP 2: perform one-step narrowing from the abstract term
-  Log(DEBUG7) << "Conditional system: " << crsInit.toString() << endl;
+  Log(DEBUG9) << "Conditional system: " << crsInit.toString() << endl;
   CRewriteSystem crs = crsInit.fresh(abstractTerm->vars());
-  Log(DEBUG7) << "Fresh rewrite system: " << crs.toString() << endl;
+  Log(DEBUG9) << "Fresh rewrite system: " << crs.toString() << endl;
   vector<ConstrainedSolution> solutions = abstractTerm->narrowSearch(crs);
 
-  Log(DEBUG6) << "Narrowing abstract term resulted in " << solutions.size() << " solutions" << endl;
+  Log(DEBUG9) << "Narrowing abstract term resulted in " << solutions.size() << " solutions" << endl;
   
   // STEP 3: check that the narrowing constraints are satisfiable
   if (initialConstraint == 0) {
@@ -327,25 +327,23 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(CRewriteSystem &crsInit, 
 
 vector<ConstrainedSolution> Term::smtNarrowSearchWdf(RewriteSystem &rsInit, Term *initialConstraint)
 {
-  Log(DEBUG) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
+  Log(DEBUG7) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
   Term *searchStart = this;
   if (hasDefinedFunctions) {
     RewriteSystem functionsRS = getRewriteSystem("functions");
     searchStart = this->normalize(functionsRS, false);
   }
-  Log(DEBUG) << "Staring basic narrowing search from " << searchStart->toString() << endl;
   return searchStart->smtNarrowSearchBasic(rsInit, initialConstraint);
 }
 
 vector<ConstrainedSolution> Term::smtNarrowSearchWdf(CRewriteSystem &crsInit, Term *initialConstraint)
 {
-  Log(DEBUG) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
+  Log(DEBUG7) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
   Term *searchStart = this;
   if (hasDefinedFunctions) {
     RewriteSystem functionsRS = getRewriteSystem("functions");
     searchStart = this->normalize(functionsRS, false);
   }
-  Log(DEBUG) << "Staring basic narrowing search from " << searchStart->toString() << endl;
   return searchStart->smtNarrowSearchBasic(crsInit, initialConstraint);
 }
 

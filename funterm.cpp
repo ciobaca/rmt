@@ -399,7 +399,7 @@ vector<ConstrainedSolution> FunTerm::rewriteSearch(RewriteSystem &rs)
 // caller needs to ensure freshness of rewrite system
 vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
 {
-  Log(DEBUG7) << "FunTerm::narrowSearch(RewriteSystem &rs)" << this->toString() << endl;
+  Log(DEBUG9) << "FunTerm::narrowSearch(RewriteSystem &rs)" << this->toString() << endl;
   vector<ConstrainedSolution> solutions;
 
   // top-most narrowing search
@@ -433,7 +433,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
 				   innerSolutions[j].lhsTerm));
     }
   }
-  Log(DEBUG7) << "Done FunTerm::narrowSearch(RewriteSystem &rs) " << this->toString() << endl;
+  Log(DEBUG9) << "Done FunTerm::narrowSearch(RewriteSystem &rs) " << this->toString() << endl;
   return solutions;
 }
 

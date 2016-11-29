@@ -45,7 +45,7 @@ signature
 	mplus : Int Int -> Int / "+",
 	mminus : Int Int -> Int / "-",
 	mtimes : Int Int -> Int / "*",
-	mdiv : Int Int -> Int / "/",
+	mdiv : Int Int -> Int / "div",
 	mle : Int Int -> Bool / "<=",
 	mless : Int Int -> Bool / "<",
 	mequals : Int Int -> Bool / "=",

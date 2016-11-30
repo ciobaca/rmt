@@ -193,13 +193,18 @@ bool QueryProveEquivalence::possibleCircularity(ConstrainedTerm ct)
 
 bool QueryProveEquivalence::proveEquivalenceExistsRight(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
 {
+  if (depth > maxDepth) {
+    cout << spaces(depth) << "! proof failed (exceeded maximum depth) forall left " << ct.toString() << endl;
+    return false;
+  }
+
   Term *lhs, *rhs;
   decomposeConstrainedTermEq(ct, lhs, rhs);
 
   cout << spaces(depth) << "+ prove exists right " << ct.toString() << endl;
   if ((possibleLhsBase(lhs) && possibleRhsBase(rhs)) || (progressLeft && progressRight && possibleCircularity(ct))) {
     Log(DEBUG5) << spaces(depth) << "possible rhs base" << endl;
-    if (proveEquivalence(ct, progressLeft, progressRight, depth + 1, branchingDepth + 1)) {
+    if (proveBaseCase(ct, progressLeft, progressRight, depth + 1, branchingDepth)) {
       cout << spaces(depth) << "- proof successful exists right " << ct.toString() << endl;
       return true;
     }
@@ -225,6 +230,10 @@ bool QueryProveEquivalence::proveEquivalenceExistsRight(ConstrainedTerm ct, bool
 
 bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
 {
+  if (depth > maxDepth) {
+    cout << spaces(depth) << "! proof failed (exceeded maximum depth) forall left " << ct.toString() << endl;
+    return false;
+  }
   Term *lhs, *rhs;
   decomposeConstrainedTermEq(ct, lhs, rhs);
 
@@ -239,10 +248,6 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
     }
     Log(DEBUG5) << spaces(depth) << "close, but no cigar" << endl;
   }
-  if (depth > maxDepth) {
-    cout << spaces(depth) << "! proof failed (exceeded maximum depth) forall left " << ct.toString() << endl;
-    return false;
-  }
   vector<ConstrainedSolution> lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft);
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {
     ConstrainedSolution sol = lhsSuccessors[i];
@@ -253,15 +258,19 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
       return false;
     }
   }
-  cout << spaces(depth) << "- proof succeeded forall left " << ct.toString() << endl;
-  return true;
+  if (lhsSuccessors.size() > 0) {
+    cout << spaces(depth) << "- proof succeeded forall left " << ct.toString() << endl;
+    return true;
+  } else {
+    cout << spaces(depth) << "- proof failed forall left (no successors) " << ct.toString() << endl;
+    return false;
+  }
 }
 
-bool QueryProveEquivalence::proveEquivalence(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
+bool QueryProveEquivalence::proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
 {
   ct = ct.normalizeFunctions();
-  cout << spaces(depth) << "Proving equivalence circularity " << ct.toString() << endl;
-  Log(DEBUG5) << spaces(depth) << "Testing for base" << endl;
+  cout << spaces(depth) << "Trying to prove base case: " << ct.toString() << endl;
   Term *constraint = simplifyConstraint(whenImpliesBase(ct));
   if (constraint == bTrue()) {
     cout << spaces(depth) << "Proof succeeded: reached based equivalence." << endl; 
@@ -272,28 +281,28 @@ bool QueryProveEquivalence::proveEquivalence(ConstrainedTerm ct, bool progressLe
       Log(DEBUG5) << spaces(depth) << "Testing for circularity" << endl;
       constraint = simplifyConstraint(whenImpliesCircularity(ct));
       if (constraint == bTrue()) {
-	cout << spaces(depth) << "Proof succeeded: reached based equivalence." << endl; 
+	cout << spaces(depth) << "Proof succeeded: reached a circularity." << endl; 
 	return true;
       }
       Log(DEBUG5) << spaces(depth) << "Instance of circularity only when " + constraint->toString() << endl;
       Log(DEBUG5) << spaces(depth) << "Instance of circularity only when (SMT) " + constraint->toSmtString() << endl;
     }
-    if (branchingDepth > maxBranchingDepth) {
-      cout << spaces(depth) << "Proof failed: branching depth limit exceeded." << endl;
-      return false;
-    }
-    if (depth > maxDepth) {
-      cout << spaces(depth) << "Proof failed: depth limit exceeded." << endl;
-      return false;
-    }
-    bool result = proveEquivalenceForallLeft(ct, progressLeft, progressRight, depth + 1, branchingDepth);
-    if (result) {
-      cout << spaces(depth) << "Proof succeeded." << endl;
-    } else {
-      cout << spaces(depth) << "Proof failed." << endl;
-    }
-    return result;
   }
+  cout << spaces(depth) << "Proof failed" << endl;
+  return false;
+}
+
+bool QueryProveEquivalence::proveEquivalence(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
+{
+  ct = ct.normalizeFunctions();
+  cout << spaces(depth) << "Proving equivalence circularity " << ct.toString() << endl;
+  bool result = proveEquivalenceForallLeft(ct, progressLeft, progressRight, depth + 1, branchingDepth);
+  if (result) {
+    cout << spaces(depth) << "Proof succeeded." << endl;
+  } else {
+    cout << spaces(depth) << "Proof failed." << endl;
+  }
+  return result;
 }
 
 Term *QueryProveEquivalence::pair(Term *left, Term *right)

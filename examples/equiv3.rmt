@@ -425,7 +425,7 @@ show-equivalent [40, 2] in language and language :
    pair(
 	I(push(for(x, M, N, pS1), done), ENV),
 
-	I(push(assign(x, M), push(while(less(x, N), seq(pS1, assign(x, plus(x, mone)))), done)), ENV))
+	I(push(assign(x, M), push(while(less(x, N), seq(pS1, assign(x, plus(x, mone)))), done)), ENV)) /\ mle(M, N)
 
 with-base
    pair(I(done, ENV), I(done, ENVP)) /\ mequals(lookup(ENV, x), lookup(ENVP, x));

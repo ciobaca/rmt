@@ -46,6 +46,7 @@ struct QueryProveEquivalence : public Query
   bool proveEquivalenceForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth);
   bool proveEquivalenceExistsRight(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth);
   bool proveEquivalence(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth);
+  bool proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth);
 };
 
 #endif

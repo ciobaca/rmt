@@ -411,7 +411,7 @@ Term *createEqualityConstraint(Term *t1, Term *t2)
 Term *introduceExists(Term *constraint, vector<Variable *> vars)
 {
   for (int i = 0; i < (int)vars.size(); ++i) {
-    if (vars[i]->sort->hasInterpretation) {
+    if (vars[i]->sort->hasInterpretation && constraint->hasVariable(vars[i])) {
       constraint = bExists(vars[i], constraint);
     }
   }

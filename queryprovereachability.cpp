@@ -177,9 +177,10 @@ Term *QueryProveReachability::proveByCircularities(ConstrainedTerm lhs, Term *rh
     int newBranchDepth = solutions.size() > 1 ? branchingDepth + 1 : branchingDepth;
     for (int i = 0; i < (int)solutions.size(); ++i) {
       ConstrainedSolution sol = solutions[i];
-      
+
       circularityConstraint = simplifyConstraint(bOr(
-						     introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
+						     introduceExists(sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst),
+								     sol.lhsTerm->uniqueVars()),
 						     circularityConstraint));
       
       prove(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
@@ -214,7 +215,8 @@ Term *QueryProveReachability::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
     ConstrainedSolution sol = solutions[i];
     
     rewriteConstraint = simplifyConstraint(bOr(
-					       introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
+					       introduceExists(sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst),
+							       sol.lhsTerm->uniqueVars()),
 					       rewriteConstraint));
     prove(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
 			  sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst)),
@@ -346,7 +348,8 @@ Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term 
       ConstrainedSolution sol = solutions[i];
 
       circularityConstraint = simplifyConstraint(bOr(
-						     introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
+						     introduceExists(sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst),
+								     sol.lhsTerm->uniqueVars()),
 						     circularityConstraint));
 
       proveCRS(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
@@ -378,7 +381,8 @@ Term *QueryProveReachability::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
     ConstrainedSolution sol = solutions[i];
 
     rewriteConstraint = simplifyConstraint(bOr(
-					       introduceExists(sol.constraint, sol.lhsTerm->uniqueVars()),
+					       introduceExists(sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst),
+							       sol.lhsTerm->uniqueVars()),
 					       rewriteConstraint));
     proveCRS(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
 			     sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst)),

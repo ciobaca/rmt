@@ -36,6 +36,7 @@ private:
     this->result = result;
     this->hasInterpretation = true;
     this->interpretation = interpretation;
+    this->isDefined = false;
   }
 
   friend void createUninterpretedFunction(string, vector<Sort *>, Sort *, bool);

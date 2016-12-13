@@ -35,6 +35,7 @@ struct Term
   Term() {
     computedVars = false;
     computedUniqueVars = false;
+    hasDefinedFunctions = false;
   }
 
   // Returns the set of variables that appear in the term.  The result

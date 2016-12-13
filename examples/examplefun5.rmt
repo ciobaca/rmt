@@ -10,6 +10,10 @@ smt-prelude
  )
  (define-fun sum ((a Int) (b Int)) Int
    (- (sumUpTo b) (sumUpTo (- a 1))))
+ (define-fun sumofsquaresUpTo ((n Int)) Int
+   (div (* n (+ n 1) (+ n n 1)) 6))
+ (define-fun sumofsquares ((a Int) (b Int)) Int
+   (- (sumofsquaresUpTo b) (sumofsquaresUpTo (- a 1))))
 "
 
 sorts Int / "Int",
@@ -59,6 +63,7 @@ signature
 	mequals : Int Int -> Bool / "=",
 
 	sum : Int Int -> Int / "sum",
+	sumofsquares : Int Int -> Int / "sumofsquares",
 
 	bequals : Bool Bool -> Bool / "=",
 	band : Bool Bool -> Bool / "and",
@@ -260,22 +265,25 @@ constrained-rewrite-system flanguage
 ;
 
 constrained-rewrite-system circularities
-	F(contextexp(app(app(miu(fvarF, lam(fvarX, lam(fvarY, fite(fle(fvarX, N), app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY,fvarX)), fvarY)))), fplus(I,mone)), fplus(S,I)))) /\ band(mle(mplus(I, mone), N), mle(mone, N)) =>
-	F(contextexp(mplus(S, sum(I, N))))
+	F(contextexp(app(app(miu(fvarF,
+	                     lam(fvarX, lam(fvarY,
+			     fite(fle(fvarX, N),
+			          app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY, ftimes(fvarX, fvarX))),
+				  fvarY)))),
+		             fplus(I,mone)), fplus(S,ftimes(I, I)))))
+			     /\ band(mle(mplus(I, mone), N), mle(mone, N)) =>
+	F(contextexp(mplus(S, sumofsquares(I, N))))
 
 ,	
 
-// 	F(contextexp(app(app(miu(fvarF, lam(fvarX, lam(fvarY, fite(fle(fvarX, N), app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY, fvarX)), fvarY)))), I), S))) /\ band(mle(I, N), mle(mone, N)) =>
-// 	F(contextexp(mplus(S, sum(I, N))))
-// this circularity will not work by itself since "I" and "S" will generally not be integers during the program call
-// instead of I we will find fplus(_, 1) and instead of S we will find fplus(_, I)
-//,
-
- 	F(contextexp(app(app(miu(fvarF, lam(fvarX, lam(fvarY, fite(fle(fvarX, N), app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY, fvarX)), fvarY)))), mzero), S))) /\ mle(mone, N) =>
- 	F(contextexp(mplus(S, sum(mone,N))))
+ 	F(contextexp(app(app(miu(fvarF,
+	                    lam(fvarX, lam(fvarY,
+			    fite(fle(fvarX, N),
+			           app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY, ftimes(fvarX, fvarX))),
+				   fvarY)))),
+			    mzero), S))) /\ mle(mone, N) =>
+ 	F(contextexp(mplus(S, sumofsquares(mone, N))))
 ;
 
 
 prove [100,3] in flanguage : circularities;
-
-//search [48,48] in flanguage : F(contextexp(app(app(miu(fvarF, lam(fvarX, lam(fvarY, fite(fle(fvarX, N), app(app(fvarF, fplus(fvarX, mone)), fplus(fvarY, fvarX)), fvarY)))), I), S))) /\ mle(mone, N);

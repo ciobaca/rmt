@@ -74,9 +74,11 @@ Z3Result Z3Theory::isSatisfiable()
     return unsat;
   } else if (result == "unknown") {
     Log(LOGSAT) << "Result is UNKNOWN" << endl << z3string;
+    Log(WARNING) << "Result is UNKNOWN" << endl << z3string;
     return unknown;
   } else if (result == "timeout") {
     Log(LOGSAT) << "Result is timeout" << endl << z3string;
+    Log(WARNING) << "Result is timeout" << endl << z3string;
     return unknown;
   } else {
     Log(ERROR) << "Internal error - Z3 did not return an expected satisfiability value." << endl << z3string;

@@ -15,6 +15,8 @@ http:://profs.info.uaic.ro/~stefan.ciobaca/rmt/
 #include <vector>
 #include <sstream>
 #include <algorithm>
+#include <cstring>
+#include <cstdlib>
 #include "log.h"
 
 #include "helper.h"
@@ -29,7 +31,7 @@ http:://profs.info.uaic.ro/~stefan.ciobaca/rmt/
 #include "funterm.h"
 #include "query.h"
 #include "constrainedrewrite.h"
-#include <getopt.h>
+//#include <getopt.h>
 
 using namespace std;
 
@@ -317,28 +319,34 @@ string parseCRewriteSystem(string &s, int &w, CRewriteSystem &crewrite)
   return name;
 }
 
+void abortWithMessage(string error)
+{
+	cout << "Error: " << error << endl;
+	exit(0);
+}
+
 /*
 entry point to the RMT tool
  */
 int main(int argc, char **argv)
 {
-  static struct option long_options[] = {
-    {"verbosity",  required_argument, 0,           'v'},
-    {0, 0, 0, 0}
-  };
+//  static struct option long_options[] = {
+//    {"verbosity",  required_argument, 0,           'v'},
+//    {0, 0, 0, 0}
+//  };
 
-  while (1) {
-    int option_index;
-    int c = getopt_long(argc, argv, "v:", long_options, &option_index);
-    if (c == -1) {
-      break;
-    }
-    switch (c) {
-    case 'v':
-      Log::debug_level = atol(optarg);
-      break;
-    }
-  }
+  if (argc != 1) {
+	  if (argc != 3) {
+		  if (strcmp(argv[1], "-v") != 0) {
+			  abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (-v not found)");
+		  }
+		  char *end;
+		  Log::debug_level = strtol(argv[2], &end, 10);
+		  if (!*end) {
+			  abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (verbosity level not specified)");
+		  }
+	  }
+  } 
 
   string s;
   int w = 0;

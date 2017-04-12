@@ -2,6 +2,7 @@
 #define LOG_H__
 
 #include <iostream>
+#include <fstream>
 
 const int ERROR = 0;
 const int WARNING = 1;

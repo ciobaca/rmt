@@ -9,7 +9,7 @@
 #include "term.h"
 #include "sort.h"
 #include "factories.h"
-#include <string.h>
+#include <string>
 
 using namespace std;
 
@@ -88,6 +88,7 @@ Z3Result Z3Theory::isSatisfiable()
     }
     fprintf(stderr, "Cannot interpret result returned by Z3: \"%s\".\n", result.c_str());
     assert(0);
+	return unknown;
   }
 }
 

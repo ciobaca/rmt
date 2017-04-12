@@ -18,6 +18,7 @@ bool Log::loggingEnabled()
       return debugSatisfiability;
     default:
       assert(0);
+	  return false;
     }
   } else {
     return level <= debug_level;

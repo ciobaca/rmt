@@ -290,7 +290,7 @@ void createBuiltIns()
     args.push_back(sorts["Bool"]);
     ostringstream funname;
     funname << "_exists" << s->name;
-    Log(DEBUG) << "Creating exists function " << funname << endl;
+    Log(DEBUG) << "Creating exists function " << funname.str() << endl;
     createUninterpretedFunction(funname.str(), args, sorts["Bool"], false);
     ExistsFun[s] = getFunction(funname.str());
     assert(ExistsFun[s]);

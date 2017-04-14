@@ -1,0 +1,80 @@
+To report problems
+
+If there is something that is not working or if you have questions on RMT, please contact me at: stefan.ciobaca@gmail.com.
+
+Installing RMT
+
+From source
+
+1) Download (https://github.com/Z3Prover/z3/releases) and install Z3 for your platform, if not already installed. Make sure that the Z3 binary is in your PATH. You can check that this is the case by opening the command prompt/bash and running z3. If all goes well, you should see something like this:
+> z3
+Error: input file was not specified.
+For usage information: z3 -h
+
+2) Download the RMT source code
+
+> git clone https://github.com/ciobaca/rmt
+
+3) Compile RMT
+
+> g++ -O2 -o rmt *.cpp
+
+4) Test RMT:
+
+> ./rmt -v 0 < example1.rmt
+
+5) (optional) Install Emacs support for RMT. Add the file "rmt-mode.el" to your ".emacs" file.
+
+Using RMT
+
+You can run RMT on the set of examples provided in the .zip files you downloaded. For example, you can try to run RMT on the file example1.rmt:
+
+./main -v 0 < example1.rmt
+
+The RMT executable has only one option: -v N determines the verbosity.  N is the verbosity level. It currently runs from 0 (minimal) to 12 (maximal). Be warned that, when the verbosity level is 12, a lot of output is printed out. Even without a high verbosity level, the proof trees output by RMT are sometimes very large. In this case, we suggest that you pipe the output to less as follows:
+
+./main -v 0 < example1.rmt 2>&1 | less -S
+
+The 2>&1 option redirects stderr to stdout. The -S option for less stops line wrapping.
+Next up
+
+Check out the example files that come with RMT. Read each of them to learn about RMT and run them as explained above. There are several examples, each having the filename exampleN.rmt.
+
+But something does not work
+
+Ooops. Here are some things to check:
+RMT does not compile.
+Are you using a modern compiler? We have successfully compiled RMT on Linux, MacOSX and Windows using recent versions of clang, gcc and respectively Visual Studio. If you are on MacOSX, you need to install the developer tools. If you have recently upgraded the MacOsX system, you might need to reinstall the developer tools.
+RMT compiled, but it does not run.
+If you are on Linux, did you remember to prefix the executable name with "./", as the current directory is not in the PATH by default? If you are on Windows, is the executable in the current directory?
+RMT segfaults.
+Ooops. There are several reasons why RMT can segfault. The most common case is that the Z3 executable is not found. Make sure that z3 is installed and that the directory where the z3 executable lives is in the path.
+The second thing to check is access rights. RMT communicates with z3 by creating a "z3_temp.input" file in the current directory and reading back the result from "z3_temp.output". Therefore RMT needs read and write access.
+The other reason why RMT might crash is an internal error. RMT compiles with assertion on by default. Therefore you should get at least an idea of why it crashed. You can always increase the verbosity level (use "-v 12" for maximal verbosity) and see where it crashes.
+Make sure that you have defined all of the expected built-in signature correctly (boolean and operations on booleans, etc.).
+Also, please report any crashes to me (stefan.ciobaca@gmail.com). Crash reports will help improve the tool.
+RMT runs, but I cannot make sense of the output.
+Yeap, I know. Some of the proof trees output by RMT are really huge. They can be a mess to navigate, especially when you are trying to debug a circularity. The best way around this is to pipe the output through less -S as explained above. You can then navigate the output using the arrow keys.
+There is an error when executing example7.rmt.
+Do you have a recent version of Z3? The smt-prelude in example7.rmt uses recursive function definitions, which were added relatively recently. You can try to replace the recursive definition with an axiomatization if you must use an old version of Z3.
+How do I replace Z3 with CVC4?
+In the file z3_driver.cpp, find the two lines below and comment out the first one and uncomment the second one:
+string prover = "z3 -T:2 -in <";
+//string prover = "cvc4 --lang smtlib2";
+Recompile the tool as described above. In order to use CVC4 on some file, add in the smt-prelude declaration a line "(set-logic ALL_SUPPORTED)". For example, the start of your .rmt file should look like this:
+smt-prelude "(set-logic ALL_SUPPORTED)
+(define-fun f (Int Int) Int)
+(assert (= 0 (f 0 0)))
+[...]"
+sorts Int / "Int", Bool / "Bool", State;
+subsort Int < State;
+[...]
+How do I debug an error with Z3?
+The tool interacts with Z3 through two files: z3_temp.input and z3_temp.output. You can take a look at them in order to understand what the interaction with the SMT solver.
+RMT works, but the output is incorrect.
+Are you sure that it's a bug? You might have forgotten something in your specification or z3 might not be able to handle the problems it receives from RMT. However, if you are reasonably sure that it's a bug in RMT, please report it to me (stefan.ciobaca@gmail.com) as this will help improve the tool.
+I tried to specify a reachability property, but the tool says there are proof obligations left.
+There are several things that might have gone wrong: (1) The search depth is not big enough. You can increase the search depth by adding parameters to "prove" as in the following example:
+prove [200,3] in here : what;
+200 represented the maximum depth and 5 the maximum branching depth. By default, they are 100 and 2. (2) The second possibility is that z3 cannot handle your problem (it might timeout or return unknown). Try to run z3 by hand on the proof obligations generated by the RMT. (3) The last problem is that the circularities that you have specified are untrue or incomplete. You might want to go through them one more time, as they can be tricky to get right.
+

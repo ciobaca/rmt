@@ -1,0 +1,11 @@
+
+(declare-const B Bool)
+(declare-const I Int)
+(declare-const N Int)
+(declare-const N_0 Int)
+(declare-const S Int)
+(declare-const S_0 Int)
+(declare-const _0 Int)
+(declare-const _1 Int)
+(assert (and true (not (<= 1 N))))
+(check-sat)

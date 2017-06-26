@@ -39,12 +39,15 @@ Variable *getVariable(std::string name);
 void createVariable(std::string name, Sort *sort);
 
 Sort *getSort(std::string name);
+Sort *getIntSort();
 void createUninterpretedSort(std::string &sortName);
 void createInterpretedSort(std::string &sortName, std::string &interpretation);
 
 Variable *getInternalVariable(std::string name, Sort *);
 
 Function *getFunction(std::string name);
+Function *getMinusFunction();
+Term *getIntOneConstant();
 void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, bool isDefined);
 void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, std::string interpretation);
 

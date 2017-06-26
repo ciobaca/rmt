@@ -113,6 +113,11 @@ Sort *getSort(string name)
   }
 }
 
+Sort *getIntSort()
+{
+  return getSort("Int");
+}
+
 void createUninterpretedSort(string &sortName)
 {
 #ifndef NDEBUG
@@ -166,6 +171,15 @@ Function *getFunction(string name)
   } else {
     return 0;
   }
+}
+
+Function *getMinusFunction()
+{
+  return getFunction("mminus");
+}
+
+Term *getIntOneConstant() {
+  return getFunTerm(getFunction("mone"), vector<Term*>());
 }
 
 void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result, bool isDefined)

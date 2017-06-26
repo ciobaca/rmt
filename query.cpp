@@ -1,6 +1,7 @@
 #include "query.h"
 #include "parse.h"
 #include "queryimplies.h"
+#include "queryinstrument.h"
 #include "queryunify.h"
 #include "queryrun.h"
 #include "querysearch.h"
@@ -48,6 +49,11 @@ Query *createQueryImplies()
   return new QueryImplies();
 }
 
+Query *createQueryInstrument()
+{
+  return new QueryInstrument();
+}
+
 Query *createQueryProveReachability()
 {
   return new QueryProveReachability();
@@ -75,6 +81,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["search"] = createQuerySearch;
   (*map)["unify"] = createQueryUnify;
   (*map)["implies"] = createQueryImplies;
+  (*map)["instrument"] = createQueryInstrument;
   // TODO: after TACAS, change command "prove" to "prove-reachability"
   (*map)["prove"] = createQueryProveReachability;
   (*map)["show-equivalent"] = createQueryProveEquivalence;

@@ -129,10 +129,10 @@ void QueryInstrument::buildNewRewriteSystem() {
   CRewriteSystem &rs = getCRewriteSystem(rewriteSystemName);
   for (const auto &it : rs)
     addRuleFromOldRule(nrs, it.first.term, it.first.constraint, it.second);
-  {
+  /*{
     Term *newRuleTerm = getVarTerm(createFreshVariable(getSort(oldStateSortName)));
     addRuleFromOldRule(nrs, newRuleTerm, bTrue(), newRuleTerm);
-  }
+  }*/
 
   putCRewriteSystem(newSystemName, nrs);
 }

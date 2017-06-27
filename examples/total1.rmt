@@ -126,28 +126,26 @@ constrained-rewrite-system circularities
   loop(S,I) /\ mle(mzero,I) => done(mplus(S,mdiv(mtimes(I,mplus(I,mone)),mtwo)));
 
 
-constrained-rewrite-system circularities_protected
+constrained-rewrite-system cptest
 
   protect(init(mzero),mtwo) => protect(done(mzero), M);
 
+constrained-rewrite-system circularities_protected
 
-constrained-rewrite-system shsh
+  protect(init(N), mplus(N,mone)) /\ mle(mzero,N) => protect(done(mdiv(mtimes(N,mplus(N,mone)),mtwo)), M),
 
-  protect(init(N),X) /\ band(true,bnot(mle(X,mzero))) => protect(loop(mzero,N),mminus(X,mone)),
+  protect(loop(S,I), mplus(I,mone)) /\ mle(mzero,I) => protect(done(mplus(S,mdiv(mtimes(I,mplus(I,mone)),mtwo))), M);
 
-  protect(loop(S,N),X) /\ band(mle(mone,N),bnot(mle(X,mzero))) => protect(loop(mplus(S,N),mminus(N,mone)),mminus(X,mone)),
 
-  protect(loop(S,N),X) /\ band(bnot(mle(mone,N)),bnot(mle(X,mzero))) => protect(done(S),mminus(X,mone));
+constrained-rewrite-system sys2
+  init(N) /\ bnot(mle(N,mzero)) => init(mminus(N,mone)),
+  init(mzero) => done(mzero);
 
-constrained-rewrite-system test1
+constrained-rewrite-system circ2
+  init(N) /\ bnot(mle(N,mzero)) => done(mzero);
 
-  init(mzero) => done(mtwo),
-
-  init(mzero) => done(mthree);
-
-constrained-rewrite-system test2
-
-  init(mzero) => done(M);
+constrained-rewrite-system circ2_p
+  protect(init(N), mplus(N,mone)) /\ bnot(mle(N,mzero)) => protect(done(mzero), M);
 
 //  Protect(loop(S,I),mplus(I,mplus(mplus(mone,mone), mone))) /\ mle(mzero,I) => protect(done(mplus(S,mdiv(mtimes(I,mplus(I,mone)),mtwo))),mzero);
 
@@ -161,7 +159,12 @@ with the terms on the left-hand side. RMT does not establish
 termination -- you would need another tool, like CTRL, for that.
 
 */
-/*prove in sum : circularities;*/
-//instrument sum sum_protected State nState protect X
 
-prove in test1 : test2;
+/*instrument sum sum_protected State nState protect X
+prove in sum_protected : circularities_protected;*/
+
+instrument sys2 sys2_p State nState protect X
+prove in sys2_p : circ2_p;
+
+//prove in sys2 : circ2;
+

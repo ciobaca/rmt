@@ -47,7 +47,9 @@ Variable *getInternalVariable(std::string name, Sort *);
 
 Function *getFunction(std::string name);
 Function *getMinusFunction();
+Function *getLEFunction();
 Term *getIntOneConstant();
+Term *getIntZeroConstant();
 void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, bool isDefined);
 void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, std::string interpretation);
 

@@ -53,7 +53,7 @@ example3.rmt, but it illustrates a completely different query: the
 "prove" query.
 */
 
-sorts Int/"Int", Bool/"Bool", State;
+sorts Int/"Int", Bool/"Bool", State, nState;
 // subsort Int < State;
 
 signature mzero:->Int/"0", mone:->Int/"1", mtwo:->Int/"2",
@@ -65,9 +65,10 @@ signature mzero:->Int/"0", mone:->Int/"1", mtwo:->Int/"2",
   bimplies:Bool Bool->Bool/"=>", bor:Bool Bool->Bool/"or",
   bnot:Bool->Bool/"not", true:->Bool/"true", false:->Bool/"false",
 
-  init:Int->State, loop:Int Int->State, done:Int->State;
+  init:Int->State, loop:Int Int->State, done:Int->State,
+  protect:State Int->nState;
 
-variables B:Bool, S:Int, N:Int, I:Int;
+variables B:Bool, S:Int, N:Int, I:Int, X:Int;
 
 rewrite-system simplifications
   bnot(false)=>true, bnot(true)=>false, bnot(bnot(B))=>B,
@@ -124,6 +125,12 @@ constrained-rewrite-system circularities
 
   loop(S,I) /\ mle(mzero,I) => done(mplus(S,mdiv(mtimes(I,mplus(I,mone)),mtwo)));
 
+constrained-rewrite-system circularities_protected
+
+  protect(init(N),mplus(N,mplus(mplus(mone,mone), mone))) /\ mle(mzero,N) => protect(done(mdiv(mtimes(N,mplus(N,mone)),mtwo)),mzero),
+
+  protect(loop(S,I),mplus(I,mplus(mplus(mone,mone), mone))) /\ mle(mzero,I) => protect(done(mplus(S,mdiv(mtimes(I,mplus(I,mone)),mtwo))),mzero);
+
 /*
 
 Now that we have set up the rewrite system with circularities, we can
@@ -134,5 +141,6 @@ with the terms on the left-hand side. RMT does not establish
 termination -- you would need another tool, like CTRL, for that.
 
 */
-prove in sum : circularities;
-
+/*prove in sum : circularities;*/
+instrument sum sum_protected State nState protect X
+prove [100,4] in sum_protected : circularities_protected;

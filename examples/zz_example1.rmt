@@ -22,7 +22,7 @@ Any RMT file starts with the declaration of sorts. We declare three
 sorts here: Int, Bool and State. The first two sorts, Int and Bool are
 interpreted as "Int" and respectively "Bool".
 */
-sorts Int / "Int", Bool / "Bool", State;
+sorts Int / "Int", Bool / "Bool", State, nState;
 
 /*
 The next declarations are subsorting declarations. There is no need
@@ -54,13 +54,14 @@ The following function symbols are not built-in and therefore they are
 uninterpreted. "init", "loop" and "done" are therefore the only
 constructors for the sort "State".
 */
-  init : Int->State, loop : Int Int->State, done : Int->State;
+  init : Int->State, loop : Int Int->State, done : Int->State,
+  protect : State Int->nState;
 
 /*
 Up next, we have to declare all variables that we use throughout the
 rest of the file.
 */
-variables B : Bool, S : Int, N : Int, I : Int;
+variables B : Bool, S : Int, N : Int, I : Int, X : Int;
 
 /*
 The following declaration introduces a rewrite system called

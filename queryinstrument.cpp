@@ -36,32 +36,69 @@ void QueryInstrument::parse(std::string &s, int &w)
   protectVariableName = getIdentifier(s, w);
 }
 
-void QueryInstrument::execute()
-{
+bool QueryInstrument::initialize() {
   if (!existsCRewriteSystem(rewriteSystemName)) {
     Log(ERROR) << "Could not find constrained rewrite system " << rewriteSystemName << " (neigher regular or constrained)" << endl;
-    return;
+    return false;
   }
   if (existsCRewriteSystem(newSystemName) || existsRewriteSystem(newSystemName)) {
     Log(ERROR) << "There already exists a (constrained) rewrite system with name " << newSystemName << "." << endl;
+    return false;
   }
   if (!sortExists(oldStateSortName)) {
-    Log(ERROR) << "Sort of configurations " << newStateSortName << " does not exist." << endl;
-    return;
+    Log(ERROR) << "Sort of configurations " << oldStateSortName << " does not exist." << endl;
+    return false;
   }
-  if (sortExists(newStateSortName)) {
-    Log(ERROR) << "Sort " << newStateSortName << " already exists." << endl;
-    return;
+  if (!sortExists(newStateSortName)) {
+    Log(ERROR) << "Sort of new configurations " << newStateSortName << " does not exist." << endl;
+    return false;
   }
-  if (getFunction(protectFunctionName)) {
-    Log(ERROR) << "Function symbol" << protectFunctionName << " already exists." << endl;
-    return;
+  protectFunction = getFunction(protectFunctionName);
+  if (!protectFunction) {
+    Log(ERROR) << "Function symbol" << protectFunctionName << " does not exist." << endl;
+    return false;
   }
-  if (getVariable(protectVariableName)) {
-    Log(ERROR) << "Variable " << protectVariableName << " already exists." << endl;
-    return;
+  if (protectFunction->hasInterpretation) {
+    Log(ERROR) << "Function symbol" << protectFunctionName << " should be uninterpreted." << endl;
+    return false;
+  }
+  {
+    bool flag = true;
+    if (protectFunction->arguments.size() != 2) flag = false;
+    else if (protectFunction->arguments[0] != getSort(oldStateSortName)) flag = false;
+    else if (protectFunction->arguments[1] != getIntSort()) flag = false;
+    else if (protectFunction->result != getSort(newStateSortName)) flag = false;
+    if (!flag) {
+      Log(ERROR) << "Function symbol" << protectFunctionName << " is not of the appropriate arity." << endl;
+      return false;
+    }
+  }
+  Variable *protectVariable = getVariable(protectVariableName);
+  if (!protectVariable) {
+    Log(ERROR) << "Variable " << protectVariableName << " does not exist." << endl;
+    return false;
+  }
+  if (protectVariable->sort != getIntSort()) {
+    Log(ERROR) << "Variable " << protectVariableName << " is not of the appropriate (Int) Sort." << endl;
   }
 
+  leftSideProtection = getVarTerm(protectVariable);
+  {
+    vector<Term*> arguments;
+    arguments.push_back(leftSideProtection);
+    arguments.push_back(getIntOneConstant());
+    rightSideProtection = getFunTerm(getMinusFunction(), arguments);
+  }
+  {
+    vector<Term*> arguments;
+    arguments.push_back(leftSideProtection);
+    arguments.push_back(getIntZeroConstant());
+    naturalNumberConstraint = bNot(getFunTerm(getLEFunction(), arguments));
+  }
+  return true;
+}
+
+/*void QueryInstrument::createNewDependencies() {
   createUninterpretedSort(newStateSortName);
   {
     vector <Sort*> arguments;
@@ -70,35 +107,42 @@ void QueryInstrument::execute()
     createUninterpretedFunction(protectFunctionName, arguments, getSort(oldStateSortName), false);
   }
   createVariable(protectVariableName, getIntSort());
-  Term *leftSideProtection = getVarTerm(getVariable(protectVariableName));
-  Term *rightSideProtection;
-  {
-    vector<Term*> arguments;
-    arguments.push_back(leftSideProtection);
-    arguments.push_back(getIntOneConstant());
-    rightSideProtection = getFunTerm(getMinusFunction(), arguments);
-  }
-  Function *protectFuntion = getFunction(protectFunctionName);
+}*/
+
+void QueryInstrument::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm) {
+  vector<Term*> arguments;
+  arguments.push_back(leftTerm);
+  arguments.push_back(leftSideProtection);
+  leftTerm = getFunTerm(protectFunction, arguments);
+
+  arguments.clear();
+  arguments.push_back(rightTerm);
+  arguments.push_back(rightSideProtection);
+  rightTerm = getFunTerm(protectFunction, arguments);
+
+  nrs.addRule(ConstrainedTerm(leftTerm, bAnd(leftConstraint, naturalNumberConstraint)), rightTerm);
+}
+
+void QueryInstrument::buildNewRewriteSystem() {
+  CRewriteSystem nrs;
 
   CRewriteSystem &rs = getCRewriteSystem(rewriteSystemName);
-  CRewriteSystem nrs;
-  for (const auto &it : rs) {
-    Term *leftTerm = it.first.term, *leftConstraint = it.first.constraint, *rightTerm = it.second;
-
-    vector<Term*> arguments;
-    arguments.push_back(leftTerm);
-    arguments.push_back(leftSideProtection);
-    leftTerm = getFunTerm(protectFuntion, arguments);
-
-    arguments.clear();
-    arguments.push_back(rightTerm);
-    arguments.push_back(rightSideProtection);
-    rightTerm = getFunTerm(protectFuntion, arguments);
-
-    nrs.addRule(ConstrainedTerm(leftTerm, leftConstraint), rightTerm);
+  for (const auto &it : rs)
+    addRuleFromOldRule(nrs, it.first.term, it.first.constraint, it.second);
+  {
+    Term *newRuleTerm = getVarTerm(createFreshVariable(getSort(oldStateSortName)));
+    addRuleFromOldRule(nrs, newRuleTerm, bTrue(), newRuleTerm);
   }
 
   putCRewriteSystem(newSystemName, nrs);
+}
+
+void QueryInstrument::execute()
+{
+  if (!initialize())
+    return;
+
+  buildNewRewriteSystem();
 
   CRewriteSystem &testrs = getCRewriteSystem(newSystemName);
   for (const auto &it : testrs) {

@@ -178,8 +178,17 @@ Function *getMinusFunction()
   return getFunction("mminus");
 }
 
+Function *getLEFunction()
+{
+  return getFunction("mle");
+}
+
 Term *getIntOneConstant() {
   return getFunTerm(getFunction("mone"), vector<Term*>());
+}
+
+Term *getIntZeroConstant() {
+  return getFunTerm(getFunction("mzero"), vector<Term*>());
 }
 
 void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result, bool isDefined)

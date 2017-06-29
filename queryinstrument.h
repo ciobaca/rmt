@@ -9,9 +9,6 @@
 
 struct QueryInstrument : public Query
 {
-  std::string rewriteSystemName, newSystemName, oldStateSortName, newStateSortName,
-    protectFunctionName;
-
   QueryInstrument();
   
   virtual Query *create();
@@ -21,6 +18,8 @@ struct QueryInstrument : public Query
   virtual void execute();
 
 private:
+  std::string rewriteSystemName, newSystemName, oldStateSortName, newStateSortName,
+    protectFunctionName;
   Term *leftSideProtection, *rightSideProtection, *naturalNumberConstraint;
   Function *protectFunction;
   bool initialize();

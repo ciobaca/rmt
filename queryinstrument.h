@@ -10,7 +10,7 @@
 struct QueryInstrument : public Query
 {
   std::string rewriteSystemName, newSystemName, oldStateSortName, newStateSortName,
-    protectFunctionName, protectVariableName;
+    protectFunctionName;
 
   QueryInstrument();
   

@@ -109,6 +109,10 @@ bool QueryInstrument_C::initialize() {
 }
 
 void QueryInstrument_C::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm, Term *variant) {
+  if (leftTerm->getSort() != getSort(oldStateSortName)) {
+    nrs.addRule(ConstrainedTerm(leftTerm, leftConstraint), rightTerm);
+    return;
+  }
   vector<Term*> arguments;
   arguments.push_back(leftTerm);
   arguments.push_back(leftSideProtection);

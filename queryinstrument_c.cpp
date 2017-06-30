@@ -1,4 +1,4 @@
-#include "queryinstrument.h"
+#include "queryinstrument_c.h"
 #include "parse.h"
 #include "factories.h"
 #include "z3driver.h"
@@ -10,18 +10,18 @@
 
 using namespace std;
 
-QueryInstrument::QueryInstrument()
+QueryInstrument_C::QueryInstrument_C()
 {
 }
 
-Query *QueryInstrument::create()
+Query *QueryInstrument_C::create()
 {
-  return new QueryInstrument();
+  return new QueryInstrument_C();
 }
 
-void QueryInstrument::parse(std::string &s, int &w)
+void QueryInstrument_C::parse(std::string &s, int &w)
 {
-  matchString(s, w, "instrument");
+  matchString(s, w, "cinstrument");
   skipWhiteSpace(s, w);
   rewriteSystemName = getIdentifier(s, w);
   skipWhiteSpace(s, w);
@@ -33,14 +33,22 @@ void QueryInstrument::parse(std::string &s, int &w)
   skipWhiteSpace(s, w);
   protectFunctionName = getIdentifier(s, w);
   skipWhiteSpace(s, w);
+
+  if (!existsCRewriteSystem(rewriteSystemName)) {
+    Log(ERROR) << "Could not find constrained rewrite system " << rewriteSystemName << " (neigher regular or constrained)" << endl;
+    return;
+  }
+
+  variants.resize(getCRewriteSystem(rewriteSystemName).size());
+  for (int i = 0; i < (int)variants.size(); ++i) {
+    variants[i] = parseTerm(s, w);
+    skipWhiteSpace(s, w);
+  }
+
   matchString(s, w, ";");
 }
 
-bool QueryInstrument::initialize() {
-  if (!existsCRewriteSystem(rewriteSystemName)) {
-    Log(ERROR) << "Could not find constrained rewrite system " << rewriteSystemName << " (neigher regular or constrained)" << endl;
-    return false;
-  }
+bool QueryInstrument_C::initialize() {
   if (existsCRewriteSystem(newSystemName) || existsRewriteSystem(newSystemName)) {
     Log(ERROR) << "There already exists a (constrained) rewrite system with name " << newSystemName << "." << endl;
     return false;
@@ -73,25 +81,34 @@ bool QueryInstrument::initialize() {
       return false;
     }
   }
-  Variable *protectVariable = createFreshVariable(getIntSort());
+  {
+    Sort *intSort = getIntSort();
+    leftSideProtection = getVarTerm(createFreshVariable(intSort)), rightSideProtection = getVarTerm(createFreshVariable(intSort));
+    Function *mle = getLEFunction();
+    vector<Term*> arguments;
+    for (int i = 0; i < (int)variants.size(); ++i) {
+      if (variants[i]->getSort() != intSort) {
+        Log(ERROR) << "Variant number" << i + 1 << " is not of the appropriate (Int) sort." << endl;
+        return false;
+      }
+      arguments.clear();
+      arguments.push_back(variants[i]);
+      arguments.push_back(leftSideProtection);
+      variants[i] = getFunTerm(mle, arguments);
+    }
+  }
 
-  leftSideProtection = getVarTerm(protectVariable);
   {
     vector<Term*> arguments;
-    arguments.push_back(leftSideProtection);
-    arguments.push_back(getIntOneConstant());
-    rightSideProtection = getFunTerm(getMinusFunction(), arguments);
-  }
-  {
-    vector<Term*> arguments;
-    arguments.push_back(leftSideProtection);
     arguments.push_back(getIntZeroConstant());
-    naturalNumberConstraint = bNot(getFunTerm(getLEFunction(), arguments));
+    arguments.push_back(leftSideProtection);
+    naturalNumberConstraint = getFunTerm(getLEFunction(), arguments);
   }
+
   return true;
 }
 
-void QueryInstrument::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm) {
+void QueryInstrument_C::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm, Term *variant) {
   vector<Term*> arguments;
   arguments.push_back(leftTerm);
   arguments.push_back(leftSideProtection);
@@ -102,20 +119,20 @@ void QueryInstrument::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Te
   arguments.push_back(rightSideProtection);
   rightTerm = getFunTerm(protectFunction, arguments);
 
-  nrs.addRule(ConstrainedTerm(leftTerm, bAnd(leftConstraint, naturalNumberConstraint)), rightTerm);
+  nrs.addRule(ConstrainedTerm(leftTerm, bAnd(bAnd(leftConstraint, naturalNumberConstraint), variant)), rightTerm);
 }
 
-void QueryInstrument::buildNewRewriteSystem() {
+void QueryInstrument_C::buildNewRewriteSystem() {
   CRewriteSystem nrs;
 
   CRewriteSystem &rs = getCRewriteSystem(rewriteSystemName);
-  for (const auto &it : rs)
-    addRuleFromOldRule(nrs, it.first.term, it.first.constraint, it.second);
+  for (int i = 0; i < (int)rs.size(); ++i)
+    addRuleFromOldRule(nrs, rs[i].first.term, rs[i].first.constraint, rs[i].second, variants[i]);
 
   putCRewriteSystem(newSystemName, nrs);
 }
 
-void QueryInstrument::execute()
+void QueryInstrument_C::execute()
 {
   if (!initialize())
     return;

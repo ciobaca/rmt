@@ -39,9 +39,14 @@ void QueryInstrument_C::parse(std::string &s, int &w)
     return;
   }
 
-  variants.resize(getCRewriteSystem(rewriteSystemName).size());
-  for (int i = 0; i < (int)variants.size(); ++i) {
-    variants[i] = parseTerm(s, w);
+  if (!sortExists(oldStateSortName)) {
+    Log(ERROR) << "Sort of configurations " << oldStateSortName << " does not exist." << endl;
+    return;
+  }
+
+  for (const auto &it : getCRewriteSystem(rewriteSystemName)) {
+    if (it.first.term->getSort() != getSort(oldStateSortName)) continue;
+    variants.push_back(parseTerm(s, w));
     skipWhiteSpace(s, w);
   }
 
@@ -51,10 +56,6 @@ void QueryInstrument_C::parse(std::string &s, int &w)
 bool QueryInstrument_C::initialize() {
   if (existsCRewriteSystem(newSystemName) || existsRewriteSystem(newSystemName)) {
     Log(ERROR) << "There already exists a (constrained) rewrite system with name " << newSystemName << "." << endl;
-    return false;
-  }
-  if (!sortExists(oldStateSortName)) {
-    Log(ERROR) << "Sort of configurations " << oldStateSortName << " does not exist." << endl;
     return false;
   }
   if (!sortExists(newStateSortName)) {
@@ -108,30 +109,38 @@ bool QueryInstrument_C::initialize() {
   return true;
 }
 
-void QueryInstrument_C::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm, Term *variant) {
+void QueryInstrument_C::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm, int &variantIndex) {
   if (leftTerm->getSort() != getSort(oldStateSortName)) {
     nrs.addRule(ConstrainedTerm(leftTerm, leftConstraint), rightTerm);
     return;
   }
   vector<Term*> arguments;
-  arguments.push_back(leftTerm);
-  arguments.push_back(leftSideProtection);
-  leftTerm = getFunTerm(protectFunction, arguments);
 
-  arguments.clear();
-  arguments.push_back(rightTerm);
-  arguments.push_back(rightSideProtection);
-  rightTerm = getFunTerm(protectFunction, arguments);
+  if (leftTerm->getSort() == getSort(oldStateSortName)) {
+    arguments.push_back(leftTerm);
+    arguments.push_back(leftSideProtection);
+    leftTerm = getFunTerm(protectFunction, arguments);
+    leftConstraint = bAnd(bAnd(leftConstraint, naturalNumberConstraint), variants[variantIndex]);
+    ++variantIndex;
+  }
 
-  nrs.addRule(ConstrainedTerm(leftTerm, bAnd(bAnd(leftConstraint, naturalNumberConstraint), variant)), rightTerm);
+  if (rightTerm->getSort() == getSort(oldStateSortName)) {
+    arguments.clear();
+    arguments.push_back(rightTerm);
+    arguments.push_back(rightSideProtection);
+    rightTerm = getFunTerm(protectFunction, arguments);
+  }
+
+  nrs.addRule(ConstrainedTerm(leftTerm, leftConstraint), rightTerm);
 }
 
 void QueryInstrument_C::buildNewRewriteSystem() {
   CRewriteSystem nrs;
 
   CRewriteSystem &rs = getCRewriteSystem(rewriteSystemName);
+  int variantIndex = 0;
   for (int i = 0; i < (int)rs.size(); ++i)
-    addRuleFromOldRule(nrs, rs[i].first.term, rs[i].first.constraint, rs[i].second, variants[i]);
+    addRuleFromOldRule(nrs, rs[i].first.term, rs[i].first.constraint, rs[i].second, variantIndex);
 
   putCRewriteSystem(newSystemName, nrs);
 }

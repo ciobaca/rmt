@@ -92,21 +92,23 @@ bool QueryInstrument::initialize() {
 }
 
 void QueryInstrument::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm) {
-  if (leftTerm->getSort() != getSort(oldStateSortName)) {
-    nrs.addRule(ConstrainedTerm(leftTerm, leftConstraint), rightTerm);
-    return;
-  }
   vector<Term*> arguments;
-  arguments.push_back(leftTerm);
-  arguments.push_back(leftSideProtection);
-  leftTerm = getFunTerm(protectFunction, arguments);
 
-  arguments.clear();
-  arguments.push_back(rightTerm);
-  arguments.push_back(rightSideProtection);
-  rightTerm = getFunTerm(protectFunction, arguments);
+  if (leftTerm->getSort() == getSort(oldStateSortName)) {
+    arguments.push_back(leftTerm);
+    arguments.push_back(leftSideProtection);
+    leftTerm = getFunTerm(protectFunction, arguments);
+    bAnd(leftConstraint, naturalNumberConstraint);
+  }
 
-  nrs.addRule(ConstrainedTerm(leftTerm, bAnd(leftConstraint, naturalNumberConstraint)), rightTerm);
+  if (rightTerm->getSort() == getSort(oldStateSortName)) {
+    arguments.clear();
+    arguments.push_back(rightTerm);
+    arguments.push_back(rightSideProtection);
+    rightTerm = getFunTerm(protectFunction, arguments);
+  }
+
+  nrs.addRule(ConstrainedTerm(leftTerm, leftConstraint), rightTerm);
 }
 
 void QueryInstrument::buildNewRewriteSystem() {

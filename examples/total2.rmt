@@ -465,4 +465,4 @@ I(done,
 //assign(y,plus(y,mone))))),done)))),emp);
 
 instrument language lang_protected CfgI pCfg pI;
-prove [300,5] in lang_protected : circularities_protected;
+//prove [300,5] in lang_protected : circularities_protected;

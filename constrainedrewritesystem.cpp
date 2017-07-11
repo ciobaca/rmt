@@ -13,12 +13,8 @@ using namespace std;
 
 void ConstrainedRewriteSystem::addRule(ConstrainedTerm l, Term *r)
 {
-  //  assert(subseteq(r->vars(), l->vars()));
   this->push_back(make_pair(l, r));
 }
-
-// .vars
-// .substitute
 
 ConstrainedRewriteSystem ConstrainedRewriteSystem::rename(string s)
 {

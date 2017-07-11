@@ -11,7 +11,7 @@
 using namespace std;
 
 map<string, RewriteSystem> rewriteSystems;
-map<string, CRewriteSystem> cRewriteSystems;
+map<string, ConstrainedRewriteSystem> cRewriteSystems;
 map<string, Variable *> variables;
 map<string, Sort *> sorts;
 map<string, Function *> functions;
@@ -64,17 +64,17 @@ void putRewriteSystem(string name, RewriteSystem rewrite)
   rewriteSystems[name] = rewrite;
 }
 
-CRewriteSystem &getCRewriteSystem(string name)
+ConstrainedRewriteSystem &getConstrainedRewriteSystem(string name)
 {
   return cRewriteSystems[name];
 }
 
-bool existsCRewriteSystem(string name)
+bool existsConstrainedRewriteSystem(string name)
 {
   return cRewriteSystems.find(name) != cRewriteSystems.end();
 }
 
-void putCRewriteSystem(string name, CRewriteSystem crewrite)
+void putConstrainedRewriteSystem(string name, ConstrainedRewriteSystem crewrite)
 {
   cRewriteSystems[name] = crewrite;
 }

@@ -438,7 +438,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
 }
 
 // caller needs to ensure freshness of rewrite system
-vector<ConstrainedSolution> FunTerm::narrowSearch(CRewriteSystem &crs)
+vector<ConstrainedSolution> FunTerm::narrowSearch(ConstrainedRewriteSystem &crs)
 {
   Log(DEBUG7) << "FunTerm::narrowSearch (crs) " << this->toString() << endl;
   vector<ConstrainedSolution> solutions;

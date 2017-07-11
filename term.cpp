@@ -249,7 +249,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(RewriteSystem &rsInit, Te
   Substitution abstractingSubstitution;
 
   // STEP 1: compute abstracted term (and constraining substitution)
-  Log(DEBUG5) << "Term::smtNarrowSearchBasic(CRewriteSystem &, Term *) " <<
+  Log(DEBUG5) << "Term::smtNarrowSearchBasic(ConstrainedRewriteSystem &, Term *) " <<
     this->toString() << " /\\ " << initialConstraint->toString() << endl;
 
   Term *abstractTerm = this->abstract(abstractingSubstitution);
@@ -283,14 +283,14 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(RewriteSystem &rsInit, Te
   return finalResult;
 }
 
-vector<ConstrainedSolution> Term::smtNarrowSearchBasic(CRewriteSystem &crsInit, Term *initialConstraint)
+vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem &crsInit, Term *initialConstraint)
 {
   vector<ConstrainedSolution> finalResult;
 
   Substitution abstractingSubstitution;
 
   // STEP 1: compute abstracted term (and constraining substitution)
-  Log(DEBUG) << "Term::smtNarrowSearchBasic(CRewriteSystem &, Term *) " <<
+  Log(DEBUG) << "Term::smtNarrowSearchBasic(ConstrainedRewriteSystem &, Term *) " <<
     this->toString() << " /\\ " << initialConstraint->toString() << endl;
 
   Term *abstractTerm = this->abstract(abstractingSubstitution);
@@ -300,7 +300,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(CRewriteSystem &crsInit, 
 
   // STEP 2: perform one-step narrowing from the abstract term
   Log(DEBUG9) << "Conditional system: " << crsInit.toString() << endl;
-  CRewriteSystem crs = crsInit.fresh(abstractTerm->vars());
+  ConstrainedRewriteSystem crs = crsInit.fresh(abstractTerm->vars());
   Log(DEBUG9) << "Fresh rewrite system: " << crs.toString() << endl;
   vector<ConstrainedSolution> solutions = abstractTerm->narrowSearch(crs);
 
@@ -336,7 +336,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearchWdf(RewriteSystem &rsInit, Term
   return searchStart->smtNarrowSearchBasic(rsInit, initialConstraint);
 }
 
-vector<ConstrainedSolution> Term::smtNarrowSearchWdf(CRewriteSystem &crsInit, Term *initialConstraint)
+vector<ConstrainedSolution> Term::smtNarrowSearchWdf(ConstrainedRewriteSystem &crsInit, Term *initialConstraint)
 {
   Log(DEBUG7) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
   Term *searchStart = this;

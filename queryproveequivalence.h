@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 #include "constrainedterm.h"
-#include "constrainedrewrite.h"
+#include "constrainedrewritesystem.h"
 #include "function.h"
 
 struct QueryProveEquivalence : public Query
@@ -20,8 +20,8 @@ struct QueryProveEquivalence : public Query
   Term *pair(Term *, Term *);
   ConstrainedTerm pairC(Term *, Term *, Term *);
 
-  CRewriteSystem crsLeft;
-  CRewriteSystem crsRight;
+  ConstrainedRewriteSystem crsLeft;
+  ConstrainedRewriteSystem crsRight;
 
   int maxDepth;
   int maxBranchingDepth;

@@ -80,7 +80,7 @@ void QueryProveReachability::execute()
 {
   if (existsRewriteSystem(rewriteSystemName)) {
     RewriteSystem &rs = getRewriteSystem(rewriteSystemName);
-    CRewriteSystem &circ = getCRewriteSystem(circularitiesRewriteSystemName);
+    ConstrainedRewriteSystem &circ = getConstrainedRewriteSystem(circularitiesRewriteSystemName);
 
     for (int i = 0; i < (int)circ.size(); ++i) {
       ConstrainedTerm lhs = circ[i].first;
@@ -96,9 +96,9 @@ void QueryProveReachability::execute()
 	  unproven[i].lhs.toPrettyString() << " => " << unproven[i].rhs->toPrettyString() << endl;
       }
     }
-  } else if (existsCRewriteSystem(rewriteSystemName)) {
-    CRewriteSystem &crs = getCRewriteSystem(rewriteSystemName);
-    CRewriteSystem &circ = getCRewriteSystem(circularitiesRewriteSystemName);
+  } else if (existsConstrainedRewriteSystem(rewriteSystemName)) {
+    ConstrainedRewriteSystem &crs = getConstrainedRewriteSystem(rewriteSystemName);
+    ConstrainedRewriteSystem &circ = getConstrainedRewriteSystem(circularitiesRewriteSystemName);
 
     for (int i = 0; i < (int)circ.size(); ++i) {
       ConstrainedTerm lhs = circ[i].first;
@@ -122,7 +122,7 @@ void QueryProveReachability::execute()
 // returns a constraint that describes when
 // lhs implies rhs
 Term *QueryProveReachability::proveByImplication(ConstrainedTerm lhs, Term *rhs,
-			 RewriteSystem &rs, CRewriteSystem &circ, int depth)
+			 RewriteSystem &rs, ConstrainedRewriteSystem &circ, int depth)
 {
   Term *unificationConstraint;
   Substitution subst;
@@ -159,7 +159,7 @@ Term *QueryProveReachability::proveByImplication(ConstrainedTerm lhs, Term *rhs,
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
 Term *QueryProveReachability::proveByCircularities(ConstrainedTerm lhs, Term *rhs,
-			   RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress,
+			   RewriteSystem &rs, ConstrainedRewriteSystem &circ, int depth, bool hadProgress,
 			   int branchingDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 2. Does lhs rewrite using circularities?" << endl;
@@ -196,7 +196,7 @@ Term *QueryProveReachability::proveByCircularities(ConstrainedTerm lhs, Term *rh
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
 Term *QueryProveReachability::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
-		     RewriteSystem &rs, CRewriteSystem &circ, int depth, bool hadProgress, int branchingDepth)
+		     RewriteSystem &rs, ConstrainedRewriteSystem &circ, int depth, bool hadProgress, int branchingDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?" << endl;
   Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
@@ -229,7 +229,7 @@ Term *QueryProveReachability::proveByRewrite(ConstrainedTerm lhs, Term *rhs,
 }
 
 void QueryProveReachability::prove(ConstrainedTerm lhs, Term *rhs,
-	   RewriteSystem &rs, CRewriteSystem &circ, bool hadProgress, int depth, int branchingDepth)
+	   RewriteSystem &rs, ConstrainedRewriteSystem &circ, bool hadProgress, int depth, int branchingDepth)
 {
   if (depth > maxDepth) {
     unproven.push_back(ProofObligation(simplifyConstrainedTerm(lhs), rhs, DepthLimit));
@@ -291,7 +291,7 @@ void QueryProveReachability::prove(ConstrainedTerm lhs, Term *rhs,
 // returns a constraint that describes when
 // lhs implies rhs
 Term *QueryProveReachability::proveByImplicationCRS(ConstrainedTerm lhs, Term *rhs,
-			 CRewriteSystem &crs, CRewriteSystem &circ, int depth)
+			 ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth)
 {
   Term *unificationConstraint;
   Substitution subst;
@@ -328,7 +328,7 @@ Term *QueryProveReachability::proveByImplicationCRS(ConstrainedTerm lhs, Term *r
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
 Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term *rhs,
-			   CRewriteSystem &crs, CRewriteSystem &circ, int depth, bool hadProgress,
+			   ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth, bool hadProgress,
 			   int branchingDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 2. Does lhs rewrite using circularities?" << endl;
@@ -364,7 +364,7 @@ Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
 Term *QueryProveReachability::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
-		     CRewriteSystem &crs, CRewriteSystem &circ, int depth, bool hadProgress, int branchingDepth)
+		     ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth, bool hadProgress, int branchingDepth)
 {
   Log(DEBUG) << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?" << endl;
   Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
@@ -395,7 +395,7 @@ Term *QueryProveReachability::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
 }
 
 void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
-			  CRewriteSystem &crs, CRewriteSystem &circ, bool hadProgress, int depth, int branchingDepth
+			  ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, bool hadProgress, int depth, int branchingDepth
 			  )
 {
   if (depth > maxDepth) {

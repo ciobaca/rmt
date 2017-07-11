@@ -37,9 +37,9 @@ vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs)
   return sols;
 }
 
-vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs)
+vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs)
 {
-  Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs) " << this->toString();
+  Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) " << this->toString();
   vector<ConstrainedSolution> sols = term->smtNarrowSearchWdf(crs, constraint);
   return sols;
 }
@@ -60,7 +60,7 @@ void ConstrainedTerm::smtNarrowSearchHelper(RewriteSystem &rs,
   }
 }
 
-void ConstrainedTerm::smtNarrowSearchHelper(CRewriteSystem &crs,
+void ConstrainedTerm::smtNarrowSearchHelper(ConstrainedRewriteSystem &crs,
 							       int minDepth, int maxDepth, int depth,
 							       vector<ConstrainedTerm> &result)
 {
@@ -87,7 +87,7 @@ vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs, int 
   return result;
 }
 
-vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(CRewriteSystem &crs, int minDepth, int maxDepth)
+vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs, int minDepth, int maxDepth)
 {
   assert(0 <= minDepth);
   assert(minDepth <= maxDepth);

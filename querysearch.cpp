@@ -59,8 +59,8 @@ void QuerySearch::execute()
       cout << "Solution #" << i + 1 << ":" << endl;
       cout << simplifyConstrainedTerm(solutions[i]).toString() << endl;
     }
-  } else if (existsCRewriteSystem(rewriteSystemName)) {
-    CRewriteSystem &crs = getCRewriteSystem(rewriteSystemName);
+  } else if (existsConstrainedRewriteSystem(rewriteSystemName)) {
+    ConstrainedRewriteSystem &crs = getConstrainedRewriteSystem(rewriteSystemName);
 
     vector<ConstrainedTerm> solutions = ct.smtNarrowSearch(crs, minDepth, maxDepth);
     cout << solutions.size() << " solutions." << endl;

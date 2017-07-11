@@ -37,11 +37,11 @@ void QueryInstrument::parse(std::string &s, int &w)
 }
 
 bool QueryInstrument::initialize() {
-  if (!existsCRewriteSystem(rewriteSystemName)) {
+  if (!existsConstrainedRewriteSystem(rewriteSystemName)) {
     Log(ERROR) << "Could not find constrained rewrite system " << rewriteSystemName << " (neigher regular or constrained)" << endl;
     return false;
   }
-  if (existsCRewriteSystem(newSystemName) || existsRewriteSystem(newSystemName)) {
+  if (existsConstrainedRewriteSystem(newSystemName) || existsRewriteSystem(newSystemName)) {
     Log(ERROR) << "There already exists a (constrained) rewrite system with name " << newSystemName << "." << endl;
     return false;
   }
@@ -91,7 +91,7 @@ bool QueryInstrument::initialize() {
   return true;
 }
 
-void QueryInstrument::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm) {
+void QueryInstrument::addRuleFromOldRule(ConstrainedRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm) {
   vector<Term*> arguments;
 
   if (leftTerm->getSort() == getSort(oldStateSortName)) {
@@ -112,13 +112,13 @@ void QueryInstrument::addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Te
 }
 
 void QueryInstrument::buildNewRewriteSystem() {
-  CRewriteSystem nrs;
+  ConstrainedRewriteSystem nrs;
 
-  CRewriteSystem &rs = getCRewriteSystem(rewriteSystemName);
+  ConstrainedRewriteSystem &rs = getConstrainedRewriteSystem(rewriteSystemName);
   for (const auto &it : rs)
     addRuleFromOldRule(nrs, it.first.term, it.first.constraint, it.second);
 
-  putCRewriteSystem(newSystemName, nrs);
+  putConstrainedRewriteSystem(newSystemName, nrs);
 }
 
 void QueryInstrument::execute()
@@ -128,7 +128,7 @@ void QueryInstrument::execute()
 
   buildNewRewriteSystem();
 
-  CRewriteSystem &testrs = getCRewriteSystem(newSystemName);
+  ConstrainedRewriteSystem &testrs = getConstrainedRewriteSystem(newSystemName);
   for (const auto &it : testrs) {
     cout << it.first.term->toString() << " /\\ " << it.first.constraint->toString() << " => " <<
       it.second->toString() << endl;

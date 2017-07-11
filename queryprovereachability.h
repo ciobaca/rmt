@@ -3,7 +3,7 @@
 
 #include "query.h"
 #include "constrainedterm.h"
-#include "constrainedrewrite.h"
+#include "constrainedrewritesystem.h"
 #include <string>
 #include <map>
 #include <vector>
@@ -50,15 +50,15 @@ struct QueryProveReachability : public Query
   
   virtual void execute();
 
-  Term *proveByImplication(ConstrainedTerm, Term *, RewriteSystem &, CRewriteSystem &, int);
-  Term *proveByCircularities(ConstrainedTerm, Term *, RewriteSystem &, CRewriteSystem &, int, bool, int);
-  Term *proveByRewrite(ConstrainedTerm, Term *, RewriteSystem &, CRewriteSystem &, int, bool, int);
-  void prove(ConstrainedTerm, Term *, RewriteSystem &, CRewriteSystem &, bool, int = 0, int = 0);
+  Term *proveByImplication(ConstrainedTerm, Term *, RewriteSystem &, ConstrainedRewriteSystem &, int);
+  Term *proveByCircularities(ConstrainedTerm, Term *, RewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);
+  Term *proveByRewrite(ConstrainedTerm, Term *, RewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);
+  void prove(ConstrainedTerm, Term *, RewriteSystem &, ConstrainedRewriteSystem &, bool, int = 0, int = 0);
 
-  Term *proveByImplicationCRS(ConstrainedTerm, Term *, CRewriteSystem &, CRewriteSystem &, int);
-  Term *proveByCircularitiesCRS(ConstrainedTerm, Term *, CRewriteSystem &, CRewriteSystem &, int, bool, int);
-  Term *proveByRewriteCRS(ConstrainedTerm, Term *, CRewriteSystem &, CRewriteSystem &, int, bool, int);
-  void proveCRS(ConstrainedTerm, Term *, CRewriteSystem &, CRewriteSystem &, bool, int = 0, int = 0);
+  Term *proveByImplicationCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int);
+  Term *proveByCircularitiesCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);
+  Term *proveByRewriteCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);
+  void proveCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, bool, int = 0, int = 0);
 };
 
 #endif

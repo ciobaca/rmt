@@ -317,8 +317,8 @@ ConstrainedTerm QueryProveEquivalence::pairC(Term *left, Term *right, Term *cons
 
 void QueryProveEquivalence::execute()
 {
-  crsLeft = getCRewriteSystem(lrsName);
-  crsRight = getCRewriteSystem(rrsName);
+  crsLeft = getConstrainedRewriteSystem(lrsName);
+  crsRight = getConstrainedRewriteSystem(rrsName);
 
   Log(DEBUG9) << "Proving equivalence" << endl;
   Log(DEBUG9) << "Left constrained rewrite sytem:" << endl;

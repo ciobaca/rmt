@@ -49,7 +49,7 @@ struct FunTerm : public Term
 
   virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
   virtual vector<ConstrainedSolution> narrowSearch(RewriteSystem &);
-  virtual vector<ConstrainedSolution> narrowSearch(CRewriteSystem &);
+  virtual vector<ConstrainedSolution> narrowSearch(ConstrainedRewriteSystem &);
 };
 
 #endif

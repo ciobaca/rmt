@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 #include "term.h"
-#include "constrainedrewrite.h"
+#include "constrainedrewritesystem.h"
 
 struct Function;
 struct Variable;
@@ -31,9 +31,9 @@ RewriteSystem &getRewriteSystem(std::string name);
 bool existsRewriteSystem(std::string name);
 void putRewriteSystem(std::string name, RewriteSystem rewrite);
 
-CRewriteSystem &getCRewriteSystem(std::string name);
-bool existsCRewriteSystem(std::string name);
-void putCRewriteSystem(std::string name, CRewriteSystem crewrite);
+ConstrainedRewriteSystem &getConstrainedRewriteSystem(std::string name);
+bool existsConstrainedRewriteSystem(std::string name);
+void putConstrainedRewriteSystem(std::string name, ConstrainedRewriteSystem crewrite);
 
 Variable *getVariable(std::string name);
 void createVariable(std::string name, Sort *sort);

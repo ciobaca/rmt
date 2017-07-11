@@ -30,7 +30,7 @@ http:://profs.info.uaic.ro/~stefan.ciobaca/rmt/
 #include "query.h"
 #include "funterm.h"
 #include "query.h"
-#include "constrainedrewrite.h"
+#include "constrainedrewritesystem.h"
 //#include <getopt.h>
 
 using namespace std;
@@ -288,7 +288,7 @@ string parseRewriteSystem(string &s, int &w, RewriteSystem &rewrite)
   return name;
 }
 
-string parseCRewriteSystem(string &s, int &w, CRewriteSystem &crewrite)
+string parseConstrainedRewriteSystem(string &s, int &w, ConstrainedRewriteSystem &crewrite)
 {
   skipWhiteSpace(s, w);
   matchString(s, w, "constrained-rewrite-system");
@@ -376,9 +376,9 @@ int main(int argc, char **argv)
 	skipWhiteSpace(s, w);
       } else {
 	assert(lookAhead(s, w, "constrained-rewrite-system"));
-	CRewriteSystem crewrite;
-	string name = parseCRewriteSystem(s, w, crewrite);
-	putCRewriteSystem(name, crewrite);
+	ConstrainedRewriteSystem crewrite;
+	string name = parseConstrainedRewriteSystem(s, w, crewrite);
+	putConstrainedRewriteSystem(name, crewrite);
 	skipWhiteSpace(s, w);
       }
     }

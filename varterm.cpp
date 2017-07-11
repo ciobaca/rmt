@@ -247,7 +247,7 @@ vector<ConstrainedSolution> VarTerm::narrowSearch(RewriteSystem &rs)
   return result;
 }
 
-vector<ConstrainedSolution> VarTerm::narrowSearch(CRewriteSystem &crs)
+vector<ConstrainedSolution> VarTerm::narrowSearch(ConstrainedRewriteSystem &crs)
 {
   Log(DEBUG7) << "VarTerm::narrowSearch (crs) " << this->toString() << endl;
   vector<ConstrainedSolution> result;

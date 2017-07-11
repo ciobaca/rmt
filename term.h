@@ -19,7 +19,7 @@ struct VarTerm;
 //struct NamTerm;
 struct KnowledgeBase;
 struct ConstrainedTerm;
-struct CRewriteSystem;
+struct ConstrainedRewriteSystem;
 
 struct Term
 {
@@ -200,7 +200,6 @@ struct Term
   // Fill in substitution with the witness to the rewrite.
   virtual Term *rewriteOneStep(pair<Term *, Term *>, Substitution &how) = 0;
 
-
   // Performs a one-step rewrite search, i.e. finds all terms to which
   // this reduces in one step.
   virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &) = 0;
@@ -211,7 +210,7 @@ struct Term
 
   // Performs a one-step narrowing search, i.e. finds all terms to which
   // this term narrows in one step.
-  virtual vector<ConstrainedSolution> narrowSearch(CRewriteSystem &) = 0;
+  virtual vector<ConstrainedSolution> narrowSearch(ConstrainedRewriteSystem &) = 0;
 
   // Performs a one-step narrowing search, offloading interpreted terms
   // to the SMT solver.
@@ -219,7 +218,7 @@ struct Term
 
   // Performs a one-step narrowing search, offloading interpreted terms
   // to the SMT solver.
-  virtual vector<ConstrainedSolution> smtNarrowSearchBasic(CRewriteSystem &, Term *initialConstraint);
+  virtual vector<ConstrainedSolution> smtNarrowSearchBasic(ConstrainedRewriteSystem &, Term *initialConstraint);
 
   // Performs a one-step narrowing search, offloading interpreted terms
   // to the SMT solver. If the term contains defined functions, it
@@ -229,7 +228,7 @@ struct Term
   // Performs a one-step narrowing search, offloading interpreted terms
   // to the SMT solver. If the term contains defined functions, it
   // solves them using the "functions" rewrite system first.
-  virtual vector<ConstrainedSolution> smtNarrowSearchWdf(CRewriteSystem &, Term *initialConstraint);
+  virtual vector<ConstrainedSolution> smtNarrowSearchWdf(ConstrainedRewriteSystem &, Term *initialConstraint);
 
   // Perform a unification modulo theories between *this and *other.
   // Assume t1 = *this and t2 = *other.

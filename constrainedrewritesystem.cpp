@@ -1,4 +1,4 @@
-#include "constrainedrewrite.h"
+#include "constrainedrewritesystem.h"
 #include "term.h"
 #include "substitution.h"
 #include "log.h"
@@ -11,7 +11,7 @@
 
 using namespace std;
 
-void CRewriteSystem::addRule(ConstrainedTerm l, Term *r)
+void ConstrainedRewriteSystem::addRule(ConstrainedTerm l, Term *r)
 {
   //  assert(subseteq(r->vars(), l->vars()));
   this->push_back(make_pair(l, r));
@@ -20,7 +20,7 @@ void CRewriteSystem::addRule(ConstrainedTerm l, Term *r)
 // .vars
 // .substitute
 
-CRewriteSystem CRewriteSystem::rename(string s)
+ConstrainedRewriteSystem ConstrainedRewriteSystem::rename(string s)
 {
   vector<Variable *> vars;
   for (int i = 0; i < (int)this->size(); ++i) {
@@ -31,7 +31,7 @@ CRewriteSystem CRewriteSystem::rename(string s)
   map<Variable *, Variable *> r = createRenaming(vars, s);
   Substitution subst = createSubstitution(r);
 
-  CRewriteSystem result;
+  ConstrainedRewriteSystem result;
   for (int i = 0; i < (int)this->size(); ++i) {
     ConstrainedTerm l = (*this)[i].first;
     Term *r = (*this)[i].second;
@@ -41,7 +41,7 @@ CRewriteSystem CRewriteSystem::rename(string s)
   return result;
 }
 
-CRewriteSystem CRewriteSystem::fresh(vector<Variable *> vars)
+ConstrainedRewriteSystem ConstrainedRewriteSystem::fresh(vector<Variable *> vars)
 {
   Log(DEBUG8) << "Creating fresh rewrite system" << endl;
   static int counter = 0;
@@ -68,7 +68,7 @@ CRewriteSystem CRewriteSystem::fresh(vector<Variable *> vars)
 
   Substitution subst = createSubstitution(renaming);
 
-  CRewriteSystem result;
+  ConstrainedRewriteSystem result;
   for (int i = 0; i < (int)this->size(); ++i) {
     ConstrainedTerm l = (*this)[i].first;
     Term *r = (*this)[i].second;
@@ -78,7 +78,7 @@ CRewriteSystem CRewriteSystem::fresh(vector<Variable *> vars)
   return result;
 }
 
-string CRewriteSystem::toString()
+string ConstrainedRewriteSystem::toString()
 {
   ostringstream oss;
   for (int i = 0; i < (int)this->size(); ++i) {

@@ -5,11 +5,11 @@
 #include <string>
 #include "constrainedterm.h"
 
-struct CRewriteSystem : public vector<pair<ConstrainedTerm, Term *> >
+struct ConstrainedRewriteSystem : public vector<pair<ConstrainedTerm, Term *> >
 {
   void addRule(ConstrainedTerm l, Term *r);
-  CRewriteSystem rename(string);
-  CRewriteSystem fresh(vector<Variable *>);
+  ConstrainedRewriteSystem rename(string);
+  ConstrainedRewriteSystem fresh(vector<Variable *>);
   std::string toString();
 };
 

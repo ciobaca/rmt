@@ -24,7 +24,7 @@ private:
   Term *leftSideProtection, *rightSideProtection, *naturalNumberConstraint;
   Function *protectFunction;
   bool initialize();
-  void addRuleFromOldRule(CRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm, int &variantIndex);
+  void addRuleFromOldRule(ConstrainedRewriteSystem &nrs, Term *leftTerm, Term *leftConstraint, Term *rightTerm, int &variantIndex);
   void buildNewRewriteSystem();
 };
 

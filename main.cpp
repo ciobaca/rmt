@@ -31,7 +31,6 @@ http:://profs.info.uaic.ro/~stefan.ciobaca/rmt/
 #include "funterm.h"
 #include "query.h"
 #include "constrainedrewritesystem.h"
-//#include <getopt.h>
 
 using namespace std;
 
@@ -177,7 +176,7 @@ void parseFunctions(string &s, int &w)
     while (lookAheadIdentifier(s, w)) {
       string id = getIdentifier(s, w);
       if (!sortExists(id)) {
-	parseError("(while parsing function symbol arguments) sort does not exist", w, s);
+        parseError("(while parsing function symbol arguments) sort does not exist", w, s);
       }
       skipWhiteSpace(s, w);
       arguments.push_back(getSort(id));
@@ -198,11 +197,11 @@ void parseFunctions(string &s, int &w)
       matchString(s, w, "/");
       skipWhiteSpace(s, w);
       if (lookAhead(s, w, "\"")) {
-	interpretation = getQuotedString(s, w);
-	hasInterpretation = true;
+        interpretation = getQuotedString(s, w);
+        hasInterpretation = true;
       } else {
-	matchString(s, w, "defined");
-	isDefined = true;
+        matchString(s, w, "defined");
+        isDefined = true;
       }
     }
     skipWhiteSpace(s, w);
@@ -330,11 +329,6 @@ entry point to the RMT tool
  */
 int main(int argc, char **argv)
 {
-//  static struct option long_options[] = {
-//    {"verbosity",  required_argument, 0,           'v'},
-//    {0, 0, 0, 0}
-//  };
-
   if (argc != 1) {
 	  if (argc != 3) {
 		  if (strcmp(argv[1], "-v") != 0) {
@@ -370,16 +364,16 @@ int main(int argc, char **argv)
   if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
     while (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
       if (lookAhead(s, w, "rewrite-system")) {
-	RewriteSystem rewrite;
-	string name = parseRewriteSystem(s, w, rewrite);
-	putRewriteSystem(name, rewrite);
-	skipWhiteSpace(s, w);
+	      RewriteSystem rewrite;
+	      string name = parseRewriteSystem(s, w, rewrite);
+	      putRewriteSystem(name, rewrite);
+	      skipWhiteSpace(s, w);
       } else {
-	assert(lookAhead(s, w, "constrained-rewrite-system"));
-	ConstrainedRewriteSystem crewrite;
-	string name = parseConstrainedRewriteSystem(s, w, crewrite);
-	putConstrainedRewriteSystem(name, crewrite);
-	skipWhiteSpace(s, w);
+	      assert(lookAhead(s, w, "constrained-rewrite-system"));
+	      ConstrainedRewriteSystem crewrite;
+	      string name = parseConstrainedRewriteSystem(s, w, crewrite);
+	      putConstrainedRewriteSystem(name, crewrite);
+	      skipWhiteSpace(s, w);
       }
     }
   } else {

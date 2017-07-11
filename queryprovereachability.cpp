@@ -92,8 +92,8 @@ void QueryProveReachability::execute()
       cout << "--------" << endl;
       cout << "Circularity #" << i + 1 << (unproven.size() ? " not proved. The following proof obligations failed:" : " proved.") << endl;
       for (int i = 0; i < (int)unproven.size(); ++i) {
-	cout << "Remaining proof obligation #" << i + 1 << " (reason: " << stringFromReason(unproven[i].reason) << "): " <<
-	  unproven[i].lhs.toPrettyString() << " => " << unproven[i].rhs->toPrettyString() << endl;
+	      cout << "Remaining proof obligation #" << i + 1 << " (reason: " << stringFromReason(unproven[i].reason) << "): " <<
+	        unproven[i].lhs.toPrettyString() << " => " << unproven[i].rhs->toPrettyString() << endl;
       }
     }
   } else if (existsConstrainedRewriteSystem(rewriteSystemName)) {
@@ -141,13 +141,13 @@ Term *QueryProveReachability::proveByImplication(ConstrainedTerm lhs, Term *rhs,
     } else {
       Log(DEBUG2) << spaces(depth + 1) << "Constraint " << constraint->toString() << " is not valid." << endl;
       if (isSatisfiable(constraint) == sat) {
-	Log(INFO) << spaces(depth + 1) << "RHS is an instance of LHS in case " <<
-	  constraint->toString() << endl;
-	return constraint;
+	      Log(INFO) << spaces(depth + 1) << "RHS is an instance of LHS in case " <<
+	        constraint->toString() << endl;
+	      return constraint;
       } else {
-	Log(INFO) << spaces(depth + 1) << "RHS is not an instance of LHS in any case (constraint not satisfiable) " <<
-	  constraint->toString() << endl;
-	return bFalse();
+	      Log(INFO) << spaces(depth + 1) << "RHS is not an instance of LHS in any case (constraint not satisfiable) " <<
+	        constraint->toString() << endl;
+	      return bFalse();
       }
     }
   } else {
@@ -277,11 +277,8 @@ void QueryProveReachability::prove(ConstrainedTerm lhs, Term *rhs,
     unproven.push_back(ProofObligation(simplifyConstrainedTerm(lhs), rhs, Completeness));
 
     cout << spaces(depth) << "* Assuming that " << initialLhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;
-    //    Log(INFO) << spaces(depth + 1) << "(*****) Did not finish proof (there are cases remaining)." << endl;
-    //    Log(INFO) << spaces(depth + 1) << "Remaining LHS: " << simplifyConstrainedTerm(lhs).toString() << endl;
   } else {
     cout << spaces(depth) << "* Proved that " << initialLhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;
-    //    Log(INFO) << spaces(depth + 1) << "(*****) Finished all cases." << endl;
   }
 }
 
@@ -310,13 +307,13 @@ Term *QueryProveReachability::proveByImplicationCRS(ConstrainedTerm lhs, Term *r
     } else {
       Log(DEBUG2) << spaces(depth + 1) << "Constraint " << constraint->toString() << " is not valid." << endl;
       if (isSatisfiable(constraint) == sat) {
-	Log(INFO) << spaces(depth + 1) << "RHS is an instance of LHS in case " <<
-	  constraint->toString() << endl;
-	return constraint;
+	      Log(INFO) << spaces(depth + 1) << "RHS is an instance of LHS in case " <<
+	        constraint->toString() << endl;
+	      return constraint;
       } else {
-	Log(INFO) << spaces(depth + 1) << "RHS is not an instance of LHS in any case (constraint not satisfiable) " <<
-	  constraint->toString() << endl;
-	return bFalse();
+	      Log(INFO) << spaces(depth + 1) << "RHS is not an instance of LHS in any case (constraint not satisfiable) " <<
+	        constraint->toString() << endl;
+	      return bFalse();
       }
     }
   } else {

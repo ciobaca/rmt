@@ -47,7 +47,6 @@ struct VarTerm : public Term
   virtual string toString();
   virtual string toSmtString();
   virtual string toPrettyString();
-
 };
 
 #endif

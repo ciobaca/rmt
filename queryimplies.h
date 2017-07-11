@@ -20,5 +20,4 @@ struct QueryImplies : public Query
   virtual void execute();
 };
 
-
 #endif

@@ -16,7 +16,7 @@ struct ConstrainedTerm
   Term *term;
   Term *constraint;
 
-ConstrainedTerm(Term *term, Term *constraint) : term(term), constraint(constraint)
+  ConstrainedTerm(Term *term, Term *constraint) : term(term), constraint(constraint)
   {
   }
 

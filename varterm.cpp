@@ -69,12 +69,12 @@ bool VarTerm::unifyWithVarTerm(VarTerm *t, Substitution &subst)
       return subst.image(t->variable)->unifyWithVarTerm(this, subst);
     } else {
       if (this->variable->sort->hasSubSortTR(t->variable->sort)){
-	subst.force(this->variable, t);
+	      subst.force(this->variable, t);
       } else if (t->variable->sort->hasSubSortTR(this->variable->sort)){
-	subst.force(t->variable, this);
+	      subst.force(t->variable, this);
       } else {
-	// trying to unify two variables of incompatible sorts
-	return false;
+	      // trying to unify two variables of incompatible sorts
+	      return false;
       }
     }
     return true;
@@ -150,10 +150,10 @@ bool VarTerm::computeIsGeneralizationOf(VarTerm *t, Substitution &s, map<pair<Te
       cache[make_pair(t, this)] = s.image(this->variable) == t;
     } else {
       if (this->variable->sort->hasSubSortTR(t->variable->sort)) {
-	s.add(this->variable, t);
-	cache[make_pair(t, this)] = true;
+	      s.add(this->variable, t);
+	      cache[make_pair(t, this)] = true;
       } else {
-	cache[make_pair(t, this)] = false;
+	      cache[make_pair(t, this)] = false;
       }
     }
   }
@@ -167,10 +167,10 @@ bool VarTerm::computeIsGeneralizationOf(FunTerm *t, Substitution &s, map<pair<Te
       cache[make_pair(t, this)] = s.image(this->variable) == t;
     } else {
       if (this->variable->sort->hasSubSortTR(t->function->result)) {
-	s.add(this->variable, t);
-	cache[make_pair(t, this)] = true;
+	      s.add(this->variable, t);
+	      cache[make_pair(t, this)] = true;
       } else {
-	cache[make_pair(t, this)] = false;
+	      cache[make_pair(t, this)] = false;
       }
     }
   }

@@ -15,7 +15,6 @@ map<string, ConstrainedRewriteSystem> cRewriteSystems;
 map<string, Variable *> variables;
 map<string, Sort *> sorts;
 map<string, Function *> functions;
-//map<string, Name *> names;
 map<pair<Function *, vector<Term *> >, Term *> funTerms;
 map<Variable *, Term *> varTerms;
 
@@ -96,7 +95,6 @@ void createVariable(string name, Sort *sort)
 #endif
 
   variables[name] = new Variable(name, sort);
-  //  fprintf(stderr, "Creating variable %s of sort %s.\n", name.c_str(), sort->name.c_str());
 }
 
 bool variableExists(string name)

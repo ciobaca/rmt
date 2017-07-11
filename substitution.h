@@ -7,8 +7,6 @@
 struct Term;
 struct Variable;
 
-//using namespace std;
-
 struct Substitution : public std::map<Variable *, Term *>
 {
   Substitution();

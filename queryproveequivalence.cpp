@@ -167,6 +167,7 @@ bool QueryProveEquivalence::possibleLhsCircularity(Term *lhs)
 
 bool QueryProveEquivalence::possibleRhsCircularity(Term *rhs)
 {
+  // TODO: check why this code is commented out
   // //  Term *lhs, *rhs;
   // //  decomposeConstrainedTermEq(ct, lhs, rhs);
   // for (int i = 0; i < (int)circularities.size(); ++i) {
@@ -281,8 +282,8 @@ bool QueryProveEquivalence::proveBaseCase(ConstrainedTerm ct, bool progressLeft,
       Log(DEBUG5) << spaces(depth) << "Testing for circularity" << endl;
       constraint = simplifyConstraint(whenImpliesCircularity(ct));
       if (constraint == bTrue()) {
-	cout << spaces(depth) << "Proof succeeded: reached a circularity." << endl; 
-	return true;
+	      cout << spaces(depth) << "Proof succeeded: reached a circularity." << endl; 
+	      return true;
       }
       Log(DEBUG5) << spaces(depth) << "Instance of circularity only when " + constraint->toString() << endl;
       Log(DEBUG5) << spaces(depth) << "Instance of circularity only when (SMT) " + constraint->toSmtString() << endl;

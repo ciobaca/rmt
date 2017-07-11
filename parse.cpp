@@ -129,10 +129,10 @@ void skipWhiteSpace(string &s, int &pos)
       match(s, pos, '/');
       match(s, pos, '*');
       while (pos + 1 < len(s) && !(s[pos] == '*' && s[pos + 1] == '/')) {
-	pos++;
+	      pos++;
       }
       if (pos + 1 >= len(s)) {
-	expected("end of comment", pos, s);
+	      expected("end of comment", pos, s);
       }
       match(s, pos, '*');
       match(s, pos, '/');
@@ -142,16 +142,16 @@ void skipWhiteSpace(string &s, int &pos)
       match(s, pos, '/');
       match(s, pos, '/');
       while (pos < len(s) && s[pos] != '\n' && s[pos] != '\r') {
-	pos++;
+	      pos++;
       }
       if (pos < len(s)) {
-	if (s[pos] == '\n') {
-	  match(s, pos, '\n');
-	}
-	if (s[pos] == '\r') {
-	  match(s, pos, '\r');
-	}
-	assert(0);
+	      if (s[pos] == '\n') {
+	        match(s, pos, '\n');
+	      }
+	      if (s[pos] == '\r') {
+	        match(s, pos, '\r');
+	      }
+	      assert(0);
       }
       progress = true;
     }
@@ -197,7 +197,6 @@ Term *parseTerm(string &s, int &pos)
   string id = getIdentifier(s, pos);
   Function *f = getFunction(id);
   Variable *v = getVariable(id);
-  //  Name *n = getName(id);
 
   if (f) {
     skipWhiteSpace(s, pos);
@@ -205,22 +204,20 @@ Term *parseTerm(string &s, int &pos)
     if (len(f->arguments)) {
       match(s, pos, '(');
       for (int i = 0; i < len(f->arguments); ++i) {
-	Term *t = parseTerm(s, pos);
-	skipWhiteSpace(s, pos);
-	if (i == len(f->arguments) - 1) {
-	  match(s, pos, ')');
-	} else {
-	  match(s, pos, ',');
-	}
-	arguments.push_back(t);
+	      Term *t = parseTerm(s, pos);
+	      skipWhiteSpace(s, pos);
+	      if (i == len(f->arguments) - 1) {
+	        match(s, pos, ')');
+	      } else {
+	        match(s, pos, ',');
+	      }
+	      arguments.push_back(t);
       }
     }
     return getFunTerm(f, arguments);
   } else if (v) {
     return getVarTerm(v);
-  }//  else if (n) {
-  //   return getNamTerm(n);
-  // }
+  }
   cout << "this id: " << id << " is not a name, not a var, not a function " << endl;
   assert(0);
   return 0;

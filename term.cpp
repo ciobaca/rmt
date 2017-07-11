@@ -197,46 +197,12 @@ bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Te
       resultSubstitution = sol.subst; // TODO: compus cu simplifyingSubst?;
       resultConstraint = sol.constraint->substitute(sol.simplifyingSubst);
       for (Substitution::iterator it = sol.simplifyingSubst.begin(); it != sol.simplifyingSubst.end(); ++it) {
-	resultSubstitution.force(it->first, it->second);
+	      resultSubstitution.force(it->first, it->second);
       }
       return true;
     } else {
       return false;
     }
-    // Z3Theory theory;
-    // vector<Variable *> interpretedVariables = getInterpretedVariables();
-    // for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
-    //   theory.addVariable(interpretedVariables[i]);
-    // }
-
-    // resultConstraint = bTrue();
-    // for (Substitution::iterator it = abstractingSubstitution.begin();
-    // 	 it != abstractingSubstitution.end(); ++it) {
-    //   Term *lhsTerm = getVarTerm(it->first)->substitute(unifyingSubstitution);
-    //   Term *rhsTerm = it->second->substitute(unifyingSubstitution);
-    //   theory.addEqualityConstraint(lhsTerm, rhsTerm);
-    //   if (lhsTerm != rhsTerm) {
-    // 	if (lhsTerm->isVariable()) {
-    // 	  Variable *var = ((VarTerm *)lhsTerm)->variable;
-    // 	  resultSubstitution.force(var, rhsTerm);
-
-    // 	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
-    // 	} else if (rhsTerm->isVariable()){
-    // 	  Variable *var = ((VarTerm *)rhsTerm)->variable;
-    // 	  resultSubstitution.force(var, lhsTerm);
-
-    // 	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
-    // 	} else {
-    // 	  resultConstraint = bAnd(resultConstraint, createEqualityConstraint(lhsTerm, rhsTerm));
-    // 	}
-    //   }
-    // }
-
-    // if (theory.isSatisfiable() != unsat) {
-    //   return true;
-    // } else {
-    //   return false;
-    // }
   } else {
     return false;
   }
@@ -259,7 +225,6 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(RewriteSystem &rsInit, Te
 
   // STEP 2: perform one-step narrowing from the abstract term
   Log(DEBUG7) << "Rewrite system: " << rsInit.toString() << endl;
-  //  RewriteSystem rs = rsInit.fresh(abstractTerm->vars()); -- no more need to state fresh w.r.t whom
   RewriteSystem rs = rsInit.fresh();
   Log(DEBUG7) << "Fresh rewrite system: " << rs.toString() << endl;
   vector<ConstrainedSolution> solutions = abstractTerm->narrowSearch(rs);

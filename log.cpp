@@ -1,4 +1,3 @@
-// Fisierul contine codul pentru logging.
 #include "log.h"
 #include <iostream>
 #include <string>

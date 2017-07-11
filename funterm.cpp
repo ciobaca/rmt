@@ -13,15 +13,14 @@ using namespace std;
 FunTerm::FunTerm(Function *function, vector<Term *> arguments) :
   function(function),
   arguments(arguments)
-  //  hasDefinedFunctions(function->isDefined)
 {
   hasDefinedFunctions = function->isDefined;
   assert(this->arguments->size() == function->arguments.size());
   if (!hasDefinedFunctions) {
     for (vector<Term *>::iterator it = arguments.begin(); it != arguments.end(); ++it) {
       if ((*it)->hasDefinedFunctions) {
-	hasDefinedFunctions = true;
-	break;
+        hasDefinedFunctions = true;
+        break;
       }
     }
   }
@@ -338,25 +337,18 @@ Term *FunTerm::rewriteOneStep(pair<Term *, Term *> rewriteRule, Substitution &ho
 
 Term *FunTerm::abstract(Substitution &substitution)
 {
-  // fprintf(stderr, "abstracting %s.\n", this->toString().c_str());
   if (this->function->hasInterpretation) {
     Variable *var = createFreshVariable(this->function->result);
     assert(!substitution.inDomain(var));
-    //    fprintf(stderr, "Successfully created abstraction variable.\n");
     substitution.add(var, this);
-    //    fprintf(stderr, "Successfully updated substitution.\n");
     Term *result = getVarTerm(var);
-    //    fprintf(stderr, "Successfully created abstracted term.\n");
     return result;
   } else {
     vector<Term *> abstractedArguments;
     for (int i = 0; i < (int)arguments.size(); ++i) {
-      //      fprintf(stderr, "abstracting argument %d.n\n", i);
       abstractedArguments.push_back(arguments[i]->abstract(substitution));
-      //      fprintf(stderr, "finished abstracting argument %d.n\n", i);
     }
     Term *result = getFunTerm(this->function, abstractedArguments);
-    //    fprintf(stderr, "finished abstracting %s.n\n", this->toString().c_str());
     return result;
   }
 }
@@ -414,7 +406,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
       Term *term = r;
       solutions.push_back(ConstrainedSolution(term, subst, l));
     } else {
-      //      cerr << "Unification failed." << endl;
+      // no code
     }
   }
 
@@ -425,7 +417,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
     for (int j = 0; j < (int)innerSolutions.size(); ++j) {
       vector<Term *> newArguments;
       for (int k = 0; k < len(function->arguments); ++k) {
-	newArguments.push_back(arguments[k]);
+        newArguments.push_back(arguments[k]);
       }
       newArguments[i] = innerSolutions[j].term;
       solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),

@@ -24,5 +24,4 @@ private:
   friend void createVariable(string, Sort *);
 };
 
-
 #endif

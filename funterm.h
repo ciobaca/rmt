@@ -15,7 +15,6 @@ struct FunTerm : public Term
 
   virtual Sort *getSort();
 
-
   virtual Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
 
   virtual bool unifyWith(Term *, Substitution &);

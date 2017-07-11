@@ -20,7 +20,6 @@ Query *QueryRun::create()
   
 void QueryRun::parse(std::string &s, int &w)
 {
-  //  cerr << "here parse" << endl;
   matchString(s, w, "run");
   skipWhiteSpace(s, w);
   matchString(s, w, "in");
@@ -36,8 +35,6 @@ void QueryRun::parse(std::string &s, int &w)
 
 void QueryRun::execute()
 {
-  //  cerr << "here execute" << endl;
-  //  virtual Term *rewriteOneStep(RewriteSystem &, Substitution &how) = 0;
   RewriteSystem &rs = getRewriteSystem(rewriteSystemName);
   Term *oldTerm;
   Term *newTerm = term;

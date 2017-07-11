@@ -20,5 +20,4 @@ struct QueryRun : public Query
   virtual void execute();
 };
 
-
 #endif

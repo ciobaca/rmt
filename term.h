@@ -16,7 +16,6 @@ using namespace std;
 struct Substitution;
 struct FunTerm;
 struct VarTerm;
-//struct NamTerm;
 struct KnowledgeBase;
 struct ConstrainedTerm;
 struct ConstrainedRewriteSystem;

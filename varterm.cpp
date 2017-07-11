@@ -269,4 +269,3 @@ Sort *VarTerm::getSort()
 {
   return this->variable->sort;
 }
-

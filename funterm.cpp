@@ -233,11 +233,11 @@ vector<pair<Term *, Term *> > FunTerm::split()
 
       vector<Term *> newArguments;
       for (int k = 0; k < i; ++k) {
-	newArguments.push_back(arguments[k]);
+	      newArguments.push_back(arguments[k]);
       }
       newArguments.push_back(context);
       for (int k = i + 1; k < len(arguments); ++k) {
-	newArguments.push_back(arguments[k]);
+	      newArguments.push_back(arguments[k]);
       }
       result.push_back(make_pair(getFunTerm(function, newArguments), hole));
     }

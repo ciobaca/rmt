@@ -52,9 +52,6 @@ struct Term
   // Returns whether the term contains the variable given as argument
   virtual bool hasVariable(Variable *);
 
-  // Compute the set of names that appear in the term.  virtual
-  //  vector<Name *> names() = 0;
-
   // Apply the substitution given as a parameter to this term.
   virtual Term *substitute(Substitution &);
 
@@ -100,11 +97,6 @@ struct Term
   // for multiple dispatch.  The substitution is the substitution
   // compute so far.
   virtual bool unifyWithVarTerm(VarTerm *, Substitution &) = 0;
-
-  // Unifies this term with the parameter. Implements visitor pattern
-  // for multiple dispatch.  The substitution is the substitution
-  // compute so far.  virtual bool unifyWithNamTerm(NamTerm *,
-  // Substitution &) = 0;
 
   // Deprecated. Used in the "kiss" tool to generate the initial
   // knowledge base.

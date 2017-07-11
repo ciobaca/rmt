@@ -112,12 +112,12 @@ bool FunTerm::computeIsNormalized(RewriteSystem &rewriteSystem, map<Term *, bool
       Term *l = rewriteSystem[i].first;
       Substitution subst;
       if (this->isInstanceOf(l, subst)) {
-	return cache[this] = false;
+	      return cache[this] = false;
       }
     }
     for (int i = 0; i < len(arguments); ++i) {
       if (!arguments[i]->isNormalized(rewriteSystem)) {
-	return cache[this] = false;
+	      return cache[this] = false;
       }
     }
     cache[this] = true;
@@ -150,20 +150,20 @@ Term *FunTerm::computeNormalize(RewriteSystem &rewriteSystem, map<Term *, Term *
     while (!done) {
       done = true;
       for (int i = 0; i < len(rewriteSystem); ++i) {
-	pair<Term *, Term *> rewriteRule = rewriteSystem[i];
-	Term *l = rewriteRule.first;
-	Term *r = rewriteRule.second;
-	Log(DEBUG9) << "Testing " << result->toString() << " with rewrite rule " << l->toString() << " ==> " << r->toString() << endl;
+	      pair<Term *, Term *> rewriteRule = rewriteSystem[i];
+	      Term *l = rewriteRule.first;
+	      Term *r = rewriteRule.second;
+	      Log(DEBUG9) << "Testing " << result->toString() << " with rewrite rule " << l->toString() << " ==> " << r->toString() << endl;
 
-	Substitution subst;
-	if (result->isInstanceOf(l, subst)) {
-	  Log(DEBUG9) << "Is instance " << result->toString() << " of " << l->toString() << endl;
-	  result = r->substitute(subst);
-	  if (!optimallyReducing) {
-	    result = result->computeNormalize(rewriteSystem, cache, optimallyReducing);
-	  }
-	  done = false;
-	}
+	      Substitution subst;
+	      if (result->isInstanceOf(l, subst)) {
+	        Log(DEBUG9) << "Is instance " << result->toString() << " of " << l->toString() << endl;
+	        result = r->substitute(subst);
+	        if (!optimallyReducing) {
+	          result = result->computeNormalize(rewriteSystem, cache, optimallyReducing);
+	        }
+	        done = false;
+	      }
       }
     }
     cache[this] = result;
@@ -190,7 +190,7 @@ bool FunTerm::unifyWithFunTerm(FunTerm *t, Substitution &subst)
   if (this->function == t->function) {
     for (int i = 0; i < len(arguments); ++i) {
       if (!this->arguments[i]->unifyWith(t->arguments[i], subst)) {
-	return false;
+	      return false;
       }
     }
     return true;
@@ -240,16 +240,16 @@ bool FunTerm::computeIsGeneralizationOf(FunTerm *t, Substitution &s, map<pair<Te
     } else {
       bool result = true;
       for (int i = 0; i < len(t->arguments); ++i) {
-	if (!t->arguments[i]->computeIsInstanceOf(arguments[i], s, cache)) {
-	  result = false;
-	  Log(DEBUG9) << "Nope, argument " << i << " failed." << endl;
-	  break;
-	}
+	      if (!t->arguments[i]->computeIsInstanceOf(arguments[i], s, cache)) {
+	        result = false;
+	        Log(DEBUG9) << "Nope, argument " << i << " failed." << endl;
+	        break;
+	      }
       }
       Log(DEBUG9) << "Yeap it is." << endl;
       cache[make_pair(t, this)] = result;
       if (result) {
-	assert(this->substitute(s) == t);
+	      assert(this->substitute(s) == t);
       }
     }
   }
@@ -351,7 +351,7 @@ vector<ConstrainedSolution> FunTerm::rewriteSearch(RewriteSystem &rs)
     for (int j = 0; j < (int)innerSolutions.size(); ++j) {
       vector<Term *> newArguments;
       for (int k = 0; k < len(function->arguments); ++k) {
-	newArguments.push_back(arguments[k]);
+	      newArguments.push_back(arguments[k]);
       }
       newArguments[i] = innerSolutions[j].term;
       solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
@@ -433,7 +433,7 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(ConstrainedRewriteSystem &crs)
     for (int j = 0; j < (int)innerSolutions.size(); ++j) {
       vector<Term *> newArguments;
       for (int k = 0; k < len(function->arguments); ++k) {
-	newArguments.push_back(arguments[k]);
+	      newArguments.push_back(arguments[k]);
       }
       newArguments[i] = innerSolutions[j].term;
       solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),

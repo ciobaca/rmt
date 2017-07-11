@@ -56,7 +56,6 @@ Term *Term::normalize(RewriteSystem &rewriteSystem, bool optimallyReducing)
   Log(DEBUG9) << "Normalizing " << this->toString() << endl;
   map<Term *, Term *> cache;
   Term *result = computeNormalize(rewriteSystem, cache, optimallyReducing);
-  //  Log(DEBUG) << "normalize " << this->toString() << " is " << result->toString() << endl;
   return result;
 }
 
@@ -124,13 +123,13 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
       Log(DEBUG7) << "Term " << rhsTerm->toString() << " has variable " << var->name << ": " << rhsTerm->hasVariable(var) << endl;
       Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
       if ((!(simplifyingSubst.inDomain(var)))) {
-	if ((!(rhsTerm->hasVariable(var)))) {
-	  if ((!(abstractingSubstitution.inRange(var)))) {
-	    Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << rhsTerm->toString() << "." << endl;
-	    simplifiedConstraint = true;
-	    simplifyingSubst.add(var, rhsTerm);
-	  }
-	}
+	      if ((!(rhsTerm->hasVariable(var)))) {
+	        if ((!(abstractingSubstitution.inRange(var)))) {
+	          Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << rhsTerm->toString() << "." << endl;
+	          simplifiedConstraint = true;
+	          simplifyingSubst.add(var, rhsTerm);
+	        }
+	      }
       }
     }
     if (!simplifiedConstraint && rhsTerm->isVarTerm()) {
@@ -140,9 +139,9 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
       Log(DEBUG7) << "Term " << lhsTerm->toString() << " has variable " << var->name << ": " << lhsTerm->hasVariable(var) << endl;
       Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
       if (!simplifyingSubst.inDomain(var) && !lhsTerm->hasVariable(var) && !abstractingSubstitution.inRange(var)) {
-	Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << lhsTerm->toString() << "." << endl;
-	simplifiedConstraint = true;
-	simplifyingSubst.add(var, lhsTerm);
+	      Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << lhsTerm->toString() << "." << endl;
+	      simplifiedConstraint = true;
+	      simplifyingSubst.add(var, lhsTerm);
       }
     }
     if (!simplifiedConstraint) {

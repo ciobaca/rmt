@@ -39,7 +39,6 @@ RewriteSystem RewriteSystem::rename(string s)
 
 RewriteSystem RewriteSystem::fresh()
 {
-  //  static int counter = 0;
   vector<Variable *> myvars;
   for (int i = 0; i < (int)this->size(); ++i) {
     append(myvars, (*this)[i].first->vars());

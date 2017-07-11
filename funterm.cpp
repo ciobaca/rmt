@@ -220,31 +220,6 @@ FunTerm *FunTerm::getAsFunTerm()
   return (FunTerm *)this;
 }
 
-vector<pair<Term *, Term *> > FunTerm::split()
-{
-  vector<pair<Term *, Term *> > result;
-
-  result.push_back(make_pair(getVarTerm(getVariable("\\_")), this));
-  for (int i = 0; i < len(arguments); ++i) {
-    vector<pair<Term *, Term *> > temp = arguments[i]->split();
-    for (int j = 0; j < len(temp); ++j) {
-      Term *context = temp[j].first;
-      Term *hole = temp[j].second;
-
-      vector<Term *> newArguments;
-      for (int k = 0; k < i; ++k) {
-	      newArguments.push_back(arguments[k]);
-      }
-      newArguments.push_back(context);
-      for (int k = i + 1; k < len(arguments); ++k) {
-	      newArguments.push_back(arguments[k]);
-      }
-      result.push_back(make_pair(getFunTerm(function, newArguments), hole));
-    }
-  }
-  return result;
-}
-
 bool FunTerm::computeIsInstanceOf(Term *t, Substitution &s, map<pair<Term *, Term *>, bool> &cache)
 {
   return t->computeIsGeneralizationOf(this, s, cache);

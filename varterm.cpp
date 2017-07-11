@@ -121,13 +121,6 @@ FunTerm *VarTerm::getAsFunTerm()
   return 0;
 }
 
-vector<pair<Term *, Term *> > VarTerm::split()
-{
-  vector<pair<Term *, Term *> > result;
-  result.push_back(make_pair(getVarTerm(getVariable("\\_")), this));
-  return result;
-}
-
 bool VarTerm::computeIsNormalized(RewriteSystem &, map<Term *, bool> &)
 {
   return true;

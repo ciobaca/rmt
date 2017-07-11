@@ -24,8 +24,6 @@ struct VarTerm : public Term
   virtual VarTerm *getAsVarTerm();
   virtual FunTerm *getAsFunTerm();
 
-  virtual vector<pair<Term *, Term *> > split();
-
   virtual bool computeIsNormalized(RewriteSystem &rewriteSystem, map<Term *, bool> &);
   virtual Term *computeNormalize(RewriteSystem &, map<Term *, Term *> &, bool);
 

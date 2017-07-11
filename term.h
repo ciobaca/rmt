@@ -98,10 +98,6 @@ struct Term
   // compute so far.
   virtual bool unifyWithVarTerm(VarTerm *, Substitution &) = 0;
 
-  // Deprecated. Used in the "kiss" tool to generate the initial
-  // knowledge base.
-  virtual vector<pair<Term *, Term *> > split() = 0;
-
   // Checks whethere the current term is an instance of the parameter
   // (i.e. if there exists a substitution sigma such that *this =
   // \sigma(parameter)). If the result is true, then the second

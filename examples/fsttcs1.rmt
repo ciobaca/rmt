@@ -116,16 +116,18 @@ constrained-rewrite-system composability
 
   loop(N, I) /\ bnot(mless(I, N)) => done(mone);
 
-// constrained-rewrite-system circularities
+constrained-rewrite-system circularities
 
-//   init(N) /\ band(mle(mzero, N), mprime(N)) => done(mone),
-
+  init(N) /\ band(mle(mzero, N), mprime(N)) => done(mone),
 //   init(N) /\ band(mle(mzero, N), bnot(mprime(N))) => done(mzero),
 
-//   loop(N)   
+  loop(N, I) /\ band(mle(mzero, N),
+                 band(mle(mone, I),
+		 band(mle(mplus(I, mone), N),
+		      bnot(mhasdiv(N, I, mminus(N, mone)))))) => done(mone);
 
 /*
 */
-search [3,3] in composability : init(mnine);
+//search [3,3] in composability : init(mnine);
 
-//prove in composability : circularities;
+prove in composability : circularities;

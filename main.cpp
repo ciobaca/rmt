@@ -128,7 +128,7 @@ void parseSubsort(string &s, int &w)
     do {
       string id = getIdentifier(s, w);
       if (!sortExists(id)) {
-	parseError("sort does not exist", w, s);
+	      parseError("sort does not exist", w, s);
       }
       identifiersLeft.push_back(id);
       skipWhiteSpace(s, w);
@@ -143,7 +143,7 @@ void parseSubsort(string &s, int &w)
     do {
       string id = getIdentifier(s, w);
       if (!sortExists(id)) {
-	parseError("sort does not exist", w, s);
+	      parseError("sort does not exist", w, s);
       }
       identifiersRight.push_back(id);
       skipWhiteSpace(s, w);

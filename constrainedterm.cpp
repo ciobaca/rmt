@@ -98,16 +98,9 @@ vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSyste
   return result;
 }
 
-
 ConstrainedTerm ConstrainedTerm::normalize(RewriteSystem &rs)
 {
   ConstrainedTerm ct(this->term->normalize(rs), this->constraint->normalize(rs));
-  // ct.term = this->term->normalize(rs);
-  // if (this->constraint) {
-  //   ct.constraint = this->constraint->normalize(rs);
-  // } else {
-  //   ct.constraint = 0;
-  // }
   return ct;
 }
 

@@ -50,11 +50,6 @@ struct QueryProveReachability : public Query
   
   virtual void execute();
 
-  Term *proveByImplication(ConstrainedTerm, Term *, RewriteSystem &, ConstrainedRewriteSystem &, int);
-  Term *proveByCircularities(ConstrainedTerm, Term *, RewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);
-  Term *proveByRewrite(ConstrainedTerm, Term *, RewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);
-  void prove(ConstrainedTerm, Term *, RewriteSystem &, ConstrainedRewriteSystem &, bool, int = 0, int = 0);
-
   Term *proveByImplicationCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int);
   Term *proveByCircularitiesCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);
   Term *proveByRewriteCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);

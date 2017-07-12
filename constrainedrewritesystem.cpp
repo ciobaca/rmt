@@ -5,11 +5,19 @@
 #include "variable.h"
 #include "factories.h"
 #include "helper.h"
+#include "rewritesystem.h"
 #include <cassert>
 #include <string>
 #include <sstream>
 
 using namespace std;
+
+ConstrainedRewriteSystem::ConstrainedRewriteSystem(RewriteSystem &rs)
+{
+  for (RewriteSystem::iterator it = rs.begin(); it != rs.end(); ++it) {
+    addRule(ConstrainedTerm(it->first, bTrue()), it->second);
+  }
+}
 
 void ConstrainedRewriteSystem::addRule(ConstrainedTerm l, Term *r)
 {

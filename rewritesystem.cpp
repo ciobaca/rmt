@@ -1,4 +1,4 @@
-#include "rewrite.h"
+#include "rewritesystem.h"
 #include "term.h"
 #include "substitution.h"
 #include "variable.h"

@@ -1,5 +1,5 @@
-#ifndef REWRITE_H__
-#define REWRITE_H__
+#ifndef REWRITESYSTEM_H__
+#define REWRITESYSTEM_H__
 
 #include <vector>
 #include <string>

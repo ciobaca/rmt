@@ -6,7 +6,7 @@
 
 #include "variable.h"
 #include "function.h"
-#include "rewrite.h"
+#include "rewritesystem.h"
 #include "constrainedsolution.h"
 #include "substitution.h"
 #include "helper.h"

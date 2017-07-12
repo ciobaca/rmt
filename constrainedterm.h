@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include "substitution.h"
-#include "rewrite.h"
+#include "rewritesystem.h"
 #include "constrainedsolution.h"
 
 struct Term;

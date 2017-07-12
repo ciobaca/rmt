@@ -34,7 +34,7 @@ void QueryInstrument_C::parse(std::string &s, int &w)
   protectFunctionName = getIdentifier(s, w);
   skipWhiteSpace(s, w);
 
-  if (!existsConstrainedRewriteSystem(rewriteSystemName)) {
+  if (!existsConstrainedRewriteSystem(rewriteSystemName) && !existsRewriteSystem(rewriteSystemName)) {
     Log(ERROR) << "Could not find constrained rewrite system " << rewriteSystemName << " (neigher regular or constrained)" << endl;
     return;
   }
@@ -44,7 +44,12 @@ void QueryInstrument_C::parse(std::string &s, int &w)
     return;
   }
 
-  for (const auto &it : getConstrainedRewriteSystem(rewriteSystemName)) {
+  originalSystem.push_back(
+    existsConstrainedRewriteSystem(rewriteSystemName) ?
+    getConstrainedRewriteSystem(rewriteSystemName) :
+    ConstrainedRewriteSystem(getRewriteSystem(rewriteSystemName)));
+
+  for (const auto &it : originalSystem[0]) {
     if (it.first.term->getSort() != getSort(oldStateSortName)) continue;
     variants.push_back(parseTerm(s, w));
     skipWhiteSpace(s, w);
@@ -137,8 +142,8 @@ void QueryInstrument_C::addRuleFromOldRule(ConstrainedRewriteSystem &nrs, Term *
 void QueryInstrument_C::buildNewRewriteSystem() {
   ConstrainedRewriteSystem nrs;
 
-  ConstrainedRewriteSystem &rs = getConstrainedRewriteSystem(rewriteSystemName);
   int variantIndex = 0;
+  ConstrainedRewriteSystem &rs = originalSystem[0];
   for (int i = 0; i < (int)rs.size(); ++i)
     addRuleFromOldRule(nrs, rs[i].first.term, rs[i].first.constraint, rs[i].second, variantIndex);
 

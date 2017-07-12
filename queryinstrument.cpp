@@ -37,7 +37,7 @@ void QueryInstrument::parse(std::string &s, int &w)
 }
 
 bool QueryInstrument::initialize() {
-  if (!existsConstrainedRewriteSystem(rewriteSystemName)) {
+  if (!existsConstrainedRewriteSystem(rewriteSystemName) && !existsRewriteSystem(rewriteSystemName)) {
     Log(ERROR) << "Could not find constrained rewrite system " << rewriteSystemName << " (neigher regular or constrained)" << endl;
     return false;
   }
@@ -114,7 +114,10 @@ void QueryInstrument::addRuleFromOldRule(ConstrainedRewriteSystem &nrs, Term *le
 void QueryInstrument::buildNewRewriteSystem() {
   ConstrainedRewriteSystem nrs;
 
-  ConstrainedRewriteSystem &rs = getConstrainedRewriteSystem(rewriteSystemName);
+  ConstrainedRewriteSystem rs =
+    existsConstrainedRewriteSystem(rewriteSystemName) ?
+    getConstrainedRewriteSystem(rewriteSystemName) :
+    ConstrainedRewriteSystem(getRewriteSystem(rewriteSystemName));
   for (const auto &it : rs)
     addRuleFromOldRule(nrs, it.first.term, it.first.constraint, it.second);
 

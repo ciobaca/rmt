@@ -39,7 +39,6 @@ struct VarTerm : public Term
   virtual Term *abstract(Substitution &);
 
   virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
-  virtual vector<ConstrainedSolution> narrowSearch(RewriteSystem &);
   virtual vector<ConstrainedSolution> narrowSearch(ConstrainedRewriteSystem &);
 
   virtual string toString();

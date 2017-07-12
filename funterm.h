@@ -45,7 +45,6 @@ struct FunTerm : public Term
   virtual string toPrettyString();
 
   virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
-  virtual vector<ConstrainedSolution> narrowSearch(RewriteSystem &);
   virtual vector<ConstrainedSolution> narrowSearch(ConstrainedRewriteSystem &);
 };
 

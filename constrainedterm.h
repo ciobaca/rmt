@@ -23,13 +23,10 @@ struct ConstrainedTerm
   std::string toString();
   std::string toPrettyString();
 
-  std::vector<ConstrainedSolution> smtNarrowSearch(RewriteSystem &rs);
   std::vector<ConstrainedSolution> smtNarrowSearch(ConstrainedRewriteSystem &crs);
 
-  std::vector<ConstrainedTerm> smtNarrowSearch(RewriteSystem &rs, int minDepth, int maxDepth);
   std::vector<ConstrainedTerm> smtNarrowSearch(ConstrainedRewriteSystem &crs, int minDepth, int maxDepth);
 
-  void smtNarrowSearchHelper(RewriteSystem &rs, int minDepth, int maxDepth, int depth, vector<ConstrainedTerm> &result);
   void smtNarrowSearchHelper(ConstrainedRewriteSystem &crs, int minDepth, int maxDepth, int depth, vector<ConstrainedTerm> &result);
 
   ConstrainedTerm normalize(RewriteSystem &rs);

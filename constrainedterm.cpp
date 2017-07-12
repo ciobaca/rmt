@@ -30,34 +30,11 @@ string ConstrainedTerm::toPrettyString()
   return oss.str();
 }
 
-vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs)
-{
-  Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs) " << this->toString();
-  vector<ConstrainedSolution> sols = term->smtNarrowSearchWdf(rs, constraint);
-  return sols;
-}
-
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs)
 {
   Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) " << this->toString();
   vector<ConstrainedSolution> sols = term->smtNarrowSearchWdf(crs, constraint);
   return sols;
-}
-
-void ConstrainedTerm::smtNarrowSearchHelper(RewriteSystem &rs,
-							       int minDepth, int maxDepth, int depth,
-							       vector<ConstrainedTerm> &result)
-{
-  if (minDepth <= depth && depth <= maxDepth) {
-    result.push_back(*this);
-  }
-  if (depth < maxDepth) {
-    vector<ConstrainedSolution> sols = this->smtNarrowSearch(rs);
-    for (int i = 0; i < (int)sols.size(); ++i) {
-      ConstrainedTerm(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst),
-		      sols[i].getFullConstraint(*this)->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)).smtNarrowSearchHelper(rs, minDepth, maxDepth, depth + 1, result);
-    }
-  }
 }
 
 void ConstrainedTerm::smtNarrowSearchHelper(ConstrainedRewriteSystem &crs,
@@ -74,17 +51,6 @@ void ConstrainedTerm::smtNarrowSearchHelper(ConstrainedRewriteSystem &crs,
 		      sols[i].getFullConstraint(*this)->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)).smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
     }
   }
-}
-
-vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(RewriteSystem &rs, int minDepth, int maxDepth)
-{
-  assert(0 <= minDepth);
-  assert(minDepth <= maxDepth);
-  assert(maxDepth <= 99999999);
-
-  vector<ConstrainedTerm> result;
-  smtNarrowSearchHelper(rs, minDepth, maxDepth, 0, result);
-  return result;
 }
 
 vector<ConstrainedTerm> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs, int minDepth, int maxDepth)

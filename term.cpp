@@ -207,46 +207,6 @@ bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Te
   }
 }
 
-vector<ConstrainedSolution> Term::smtNarrowSearchBasic(RewriteSystem &rsInit, Term *initialConstraint)
-{
-  vector<ConstrainedSolution> finalResult;
-
-  Substitution abstractingSubstitution;
-
-  // STEP 1: compute abstracted term (and constraining substitution)
-  Log(DEBUG5) << "Term::smtNarrowSearchBasic(ConstrainedRewriteSystem &, Term *) " <<
-    this->toString() << " /\\ " << initialConstraint->toString() << endl;
-
-  Term *abstractTerm = this->abstract(abstractingSubstitution);
-
-  Log(DEBUG6) << "Abstract term: " << abstractTerm->toString() << endl;
-  Log(DEBUG6) << "Abstracting substitution: " << abstractingSubstitution.toString() << endl;
-
-  // STEP 2: perform one-step narrowing from the abstract term
-  Log(DEBUG7) << "Rewrite system: " << rsInit.toString() << endl;
-  RewriteSystem rs = rsInit.fresh();
-  Log(DEBUG7) << "Fresh rewrite system: " << rs.toString() << endl;
-  vector<ConstrainedSolution> solutions = abstractTerm->narrowSearch(rs);
-
-  Log(DEBUG6) << "Narrowing abstract term resulted in " << solutions.size() << " solutions" << endl;
-  
-  if (initialConstraint == 0) {
-    initialConstraint = bTrue();
-  }
-
-  // STEP 3.2: check that the constraints are satisfiable
-  for (int i = 0; i < (int)solutions.size(); ++i) {
-    ConstrainedSolution sol = solutions[i];
-    sol.constraint = bAnd(initialConstraint, sol.constraint);
-
-    if (unabstractSolution(abstractingSubstitution, sol)) {
-      finalResult.push_back(sol);
-    }
-  }
-
-  return finalResult;
-}
-
 vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem &crsInit, Term *initialConstraint)
 {
   vector<ConstrainedSolution> finalResult;
@@ -287,17 +247,6 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem 
   }
 
   return finalResult;
-}
-
-vector<ConstrainedSolution> Term::smtNarrowSearchWdf(RewriteSystem &rsInit, Term *initialConstraint)
-{
-  Log(DEBUG7) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
-  Term *searchStart = this;
-  if (hasDefinedFunctions) {
-    RewriteSystem functionsRS = getRewriteSystem("functions");
-    searchStart = this->normalize(functionsRS, false);
-  }
-  return searchStart->smtNarrowSearchBasic(rsInit, initialConstraint);
 }
 
 vector<ConstrainedSolution> Term::smtNarrowSearchWdf(ConstrainedRewriteSystem &crsInit, Term *initialConstraint)

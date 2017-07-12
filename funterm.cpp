@@ -364,47 +364,6 @@ vector<ConstrainedSolution> FunTerm::rewriteSearch(RewriteSystem &rs)
 }
 
 // caller needs to ensure freshness of rewrite system
-vector<ConstrainedSolution> FunTerm::narrowSearch(RewriteSystem &rs)
-{
-  Log(DEBUG9) << "FunTerm::narrowSearch(RewriteSystem &rs)" << this->toString() << endl;
-  vector<ConstrainedSolution> solutions;
-
-  // top-most narrowing search
-  for (int i = 0; i < len(rs); ++i) {
-    pair<Term *, Term *> rewriteRule = rs[i];
-    Term *l = rewriteRule.first;
-    Term *r = rewriteRule.second;
-    Log(DEBUG7) << "Top-mosting with " << l->toString() << " => " << r->toString() << endl;
-
-    Substitution subst;
-    if (this->unifyWith(l, subst)) {
-      Term *term = r;
-      solutions.push_back(ConstrainedSolution(term, subst, l));
-    } else {
-      // no code
-    }
-  }
-
-  // inner narrowing search
-  for (int i = 0; i < len(function->arguments); ++i) {
-    Log(DEBUG7) << "Innering with " << arguments[i]->toString() << endl;
-    vector<ConstrainedSolution> innerSolutions = arguments[i]->narrowSearch(rs);
-    for (int j = 0; j < (int)innerSolutions.size(); ++j) {
-      vector<Term *> newArguments;
-      for (int k = 0; k < len(function->arguments); ++k) {
-        newArguments.push_back(arguments[k]);
-      }
-      newArguments[i] = innerSolutions[j].term;
-      solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
-				   innerSolutions[j].subst,
-				   innerSolutions[j].lhsTerm));
-    }
-  }
-  Log(DEBUG9) << "Done FunTerm::narrowSearch(RewriteSystem &rs) " << this->toString() << endl;
-  return solutions;
-}
-
-// caller needs to ensure freshness of rewrite system
 vector<ConstrainedSolution> FunTerm::narrowSearch(ConstrainedRewriteSystem &crs)
 {
   Log(DEBUG7) << "FunTerm::narrowSearch (crs) " << this->toString() << endl;

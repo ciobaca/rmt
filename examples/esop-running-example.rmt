@@ -1,0 +1,69 @@
+smt-prelude "
+(define-fun hasdiv ((x Int) (y Int) (z Int)) Bool
+   (exists ((u Int))
+        (and (>= u y) (<= u z) (= 0 (mod x u))))
+)
+(define-fun composite ((x Int)) Bool
+   (exists ((u Int))
+        (and (> u 1) (< u x) (= 0 (mod x u))))
+;;  (hasdiv x 2 (- x 1))
+)
+(define-fun bpredicate ((n Int) (i Int)) Bool
+   (exists ((k Int))
+     (and (> k 1)
+          (= n (* i k)))
+   )
+)
+" 
+
+sorts Int / "Int", Bool / "Bool", Cfg;
+
+// subsort Int < Cfg;
+
+signature
+  // math built-in function symbols
+  mzero : -> Int / "0", mone : -> Int / "1", mtwo : -> Int / "2",
+  mfour : -> Int / "4", 
+  mnine: -> Int / "9", 
+  mplus : Int Int->Int / "+", mminus : Int Int->Int / "-",
+  mtimes : Int Int->Int / "*", mdiv : Int Int->Int / "div",
+  mmod : Int Int->Int / "mod",
+  mless : Int Int -> Bool / "<",
+  mle : Int Int->Bool / "<=", mequals : Int Int->Bool / "=",
+  mhasdiv : Int Int Int -> Bool / "hasdiv",
+  mcomposite : Int -> Bool / "composite",
+  bpredicate : Int Int -> Bool / "bpredicate",
+
+  // bool built-in function symbols
+  bequals : Bool Bool->Bool / "=", band : Bool Bool->Bool / "and",
+  bimplies : Bool Bool->Bool / "=>", bor : Bool Bool->Bool / "or",
+  bnot : Bool->Bool / "not", true : ->Bool / "true", false : ->Bool / "false",
+
+  init : Int -> Cfg, loop : Int Int -> Cfg, composite : -> Cfg;
+
+variables B : Bool, S : Int, N : Int, I : Int;
+
+rewrite-system simplifications
+  bnot(false) => true, bnot(true) => false, bnot(bnot(B)) => B,
+  band(false, B) => false, band(true, B) => B, band(B, false) => false,
+  band(B, true) => B, bimplies(true, B) => B, bimplies(false, B) => true,
+  bor(false, B) => B, bor(true, B) => true, bor(B, false) => B,
+  bor(B, true) => true, mequals(N, N) => true, bequals(B, B) => true,
+  bequals(true, B) => B,bequals(false, B) => bnot(B), bequals(B, true) => B,
+  bequals(B, false) => bnot(B), band(B, B) => B, bor(B, B) => B;
+
+constrained-rewrite-system composability
+
+  init(N) => loop(N, mtwo),
+
+  loop(N, I) /\ bpredicate(N, I) => composite, //    bpredicate(n, i) = (exists ((k Int)) (and (> k 1) (= n (* i k))))
+
+  loop(N, I) /\ bnot(bpredicate(N, I)) => loop(N, mplus(I, mone));
+
+constrained-rewrite-system circularitiesComposite
+
+  init(N) /\ mcomposite(N) => composite,
+
+  loop(N, I) /\ band(mle(mtwo, I), mhasdiv(N, I, mminus(N, mone))) => composite;
+
+prove in composability : circularitiesComposite;

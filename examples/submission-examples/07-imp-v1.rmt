@@ -1,5 +1,5 @@
 /*
-
+ 
 This file contains the operational semantics of topmost IMP, a simple
 imperative language used to illustrate our approach to proving
 reachability properties.

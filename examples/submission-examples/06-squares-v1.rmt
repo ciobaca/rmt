@@ -1,4 +1,5 @@
 /*
+
 This example illustrates a rewrite system that computes the
 of the squares of the first n non-zero natural numbers without
 performing multiplication.

@@ -1,5 +1,0 @@
-
-D:\facultate\licenta\gitrepo_rmt\rmt\examples>"C:\Users\sburuiana\Documents\Visual Studio 2013\Projects\rmt\Debug\rmt.exe" -v 0  
-protect(init(N),X) /\ true => protect(loop(mzero,N),mminus(X,mone))
-protect(loop(S,N),X) /\ mle(mone,N) => protect(loop(mplus(S,N),mminus(N,mone)),mminus(X,mone))
-protect(loop(S,N),X) /\ bnot(mle(mone,N)) => protect(done(S),mminus(X,mone))

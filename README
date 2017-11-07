@@ -33,7 +33,7 @@ C++ project and compile the project.
 
 4) Test RMT:
 
-> ./rmt -v 0 < examples/01-sum-v1.rmt
+> ./rmt -v 0 < examples/submission-examples/01-sum-v1.rmt
 
 5) (optional) Install Emacs support for RMT. Add the file
 "rmt-mode.el" to your ".emacs" file.

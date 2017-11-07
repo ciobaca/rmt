@@ -15,7 +15,7 @@ successors of a constrained term w.r.t. the rewrite system above.
 
 Run this example with
 
-./rmt -v 0 < 01-example-sum-v1.rmt
+./rmt -v 0 < 01-sum-v1.rmt
 
 The output should be:
 

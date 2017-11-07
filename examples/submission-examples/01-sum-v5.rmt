@@ -15,7 +15,7 @@ This example shows what happens when you try to prove something false
 
 Run this example with
 
-./rmt -v 0 < 01-example-sum-v5.rmt
+./rmt -v 0 < 01-sum-v5.rmt
 
 The output should be:
 

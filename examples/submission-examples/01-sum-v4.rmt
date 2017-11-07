@@ -16,7 +16,7 @@ compute N(N+1)/2.
 
 Run this example with
 
-./rmt -v 0 < 01-example-sum-v4.rmt
+./rmt -v 0 < 01-sum-v4.rmt
 
 The output should be:
 

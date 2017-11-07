@@ -1,12 +1,21 @@
 /*
-This is the running example in the RMT paper submission.
 
-It contains a rewrite system that computes the sub of the first
-N positive natural numbers.
+This is an example accompanying the RMT paper submission.
+
+The example proves the formal correctness of a rewrite system
+computing 1 + 2 + ... + N.
+
+The example comes as 5 files and this is the fifth (the last) one.
+
+We have a rewrite system that computes the sum of the first N positive
+natural numbers.
+
+This example shows what happens when you try to prove something false
+-- the proof will fail.
 
 Run this example with
 
-./main -v 0 < example5.rmt
+./rmt -v 0 < 01-example-sum-v5.rmt
 
 The output should be:
 
@@ -50,8 +59,9 @@ Proving circularity #2:
 Circularity #2 not proved. The following proof obligations failed:
 Remaining proof obligation #1 (reason: could not prove completeness): done(S) if (and (not (<= 1 I)) (not (=> (not (<= 1 I)) (= (+ S (div (* I (+ I 1)) 2)) S)))) => done((+ S (div (* I (+ I 1)) 2)))
 
-This example is identical to example4.rmt, but it illustrates a
-"prove" query where the proof does not go through.
+This example is identical to 01-examples-sum-v4.rmt, but it
+illustrates a "prove" query where the proof does not go through.
+
 */
 
 sorts Int/"Int",

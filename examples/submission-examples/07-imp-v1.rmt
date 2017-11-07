@@ -4,9 +4,12 @@ This file contains the operational semantics of topmost IMP, a simple
 imperative language used to illustrate our approach to proving
 reachability properties.
 
+The example illustrates a program that computes the sum of the first n
+positive naturals and a proof of its correctness.
+
 Run this example with
 
-./main -v 0 < example6.rmt
+./rmt -v 0 < 07-imp-v1.rmt
 
 The expected output is huge, but you should see
 
@@ -16,7 +19,9 @@ Circularity #1 proved.
 Circularity #2 proved.
 
 The running time on my machine is around 30 seconds.
+
 */
+
 // we need several sorts now
 sorts Int / "Int", // the usual interpreted sorts for integers
       Bool / "Bool", // and boolean

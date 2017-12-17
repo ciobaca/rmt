@@ -190,6 +190,16 @@ Term *VarTerm::rewriteOneStep(pair<Term *, Term *> rewriteRule, Substitution &ho
   return this->rewriteTopMost(rewriteRule, how);
 }
 
+Term *VarTerm::rewriteOneStep(ConstrainedRewriteSystem &crs, Substitution &how)
+{
+  return this->rewriteTopMost(crs, how);
+}
+
+Term *VarTerm::rewriteOneStep(pair<ConstrainedTerm, Term *> crewriteRule, Substitution &how)
+{
+  return this->rewriteTopMost(crewriteRule, how);
+}
+
 Term *VarTerm::abstract(Substitution &substitution)
 {
   if (variable->sort->hasInterpretation) {

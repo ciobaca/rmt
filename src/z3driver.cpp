@@ -67,18 +67,18 @@ Z3Result Z3Theory::isSatisfiable()
   Log(LOGSAT) << "Sending the following to Z3:" << endl << z3string;
   string result = callz3(z3string);
   if (result == "sat") {
-    Log(LOGSAT) << "Result is SAT" << endl << z3string;
+    Log(LOGSAT) << "Result is SAT" << endl;
     return sat;
   } else if (result == "unsat") {
-    Log(LOGSAT) << "Result is UNSAT" << endl << z3string;
+    Log(LOGSAT) << "Result is UNSAT" << endl;
     return unsat;
   } else if (result == "unknown") {
-    Log(LOGSAT) << "Result is UNKNOWN" << endl << z3string;
-    Log(WARNING) << "Result is UNKNOWN" << endl << z3string;
+    Log(LOGSAT) << "Result is UNKNOWN" << endl;
+    Log(WARNING) << "Result is UNKNOWN" << endl;
     return unknown;
   } else if (result == "timeout") {
-    Log(LOGSAT) << "Result is timeout" << endl << z3string;
-    Log(WARNING) << "Result is timeout" << endl << z3string;
+    Log(LOGSAT) << "Result is timeout" << endl;
+    Log(WARNING) << "Result is timeout" << endl;
     return unknown;
   } else {
     Log(ERROR) << "Internal error - Z3 did not return an expected satisfiability value." << endl << z3string;

@@ -37,6 +37,8 @@ struct FunTerm : public Term
 
   virtual Term *rewriteOneStep(RewriteSystem &, Substitution &how);
   virtual Term *rewriteOneStep(pair<Term *, Term *>, Substitution &how);
+  virtual Term *rewriteOneStep(ConstrainedRewriteSystem &, Substitution &how);
+  virtual Term *rewriteOneStep(pair<ConstrainedTerm, Term *>, Substitution &how);
 
   virtual Term *abstract(Substitution &);
 

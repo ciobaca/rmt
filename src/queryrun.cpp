@@ -2,6 +2,7 @@
 #include "parse.h"
 #include "factories.h"
 #include "z3driver.h"
+#include "log.h"
 #include <iostream>
 #include <string>
 #include <map>
@@ -35,20 +36,30 @@ void QueryRun::parse(std::string &s, int &w)
 
 void QueryRun::execute()
 {
-  RewriteSystem &rs = getRewriteSystem(rewriteSystemName);
+  Log(DEBUG1) << "Trying" << endl;
+  ConstrainedRewriteSystem crs;
+  if (existsRewriteSystem(rewriteSystemName)) {
+    crs = ConstrainedRewriteSystem(getRewriteSystem(rewriteSystemName));
+  }
+  else if (existsConstrainedRewriteSystem(rewriteSystemName)) {
+    crs = getConstrainedRewriteSystem(rewriteSystemName);
+  } else {
+    Log(ERROR) << "Cannot find (constrained) rewrite system " << rewriteSystemName << endl;
+    return;
+  }
   Term *oldTerm;
   Term *newTerm = term;
   Substitution subst;
-  const int maxSteps = 10;
+  const int maxSteps = 9999;
   int steps = 0;
 
   do {
     oldTerm = newTerm;
-    cout << "Step " << steps << ": " << oldTerm->toString() << endl;
+    cout << "STEP " << steps << ": " << oldTerm->toString() << endl;
     if (steps == maxSteps) {
       break;
     }
-    newTerm = oldTerm->rewriteOneStep(rs, subst);
+    newTerm = oldTerm->rewriteOneStep(crs, subst);
     steps++;
   } while (newTerm != oldTerm);
   if (newTerm == oldTerm) {

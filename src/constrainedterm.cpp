@@ -33,7 +33,7 @@ string ConstrainedTerm::toPrettyString()
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs)
 {
   Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) " << this->toString();
-  vector<ConstrainedSolution> sols = term->smtNarrowSearchWdf(crs, constraint);
+  vector<ConstrainedSolution> sols = term->normalizeFunctions()->smtNarrowSearchWdf(crs, constraint->normalizeFunctions());
   return sols;
 }
 
@@ -47,8 +47,8 @@ void ConstrainedTerm::smtNarrowSearchHelper(ConstrainedRewriteSystem &crs,
   if (depth < maxDepth) {
     vector<ConstrainedSolution> sols = this->smtNarrowSearch(crs);
     for (int i = 0; i < (int)sols.size(); ++i) {
-      ConstrainedTerm(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst),
-		      sols[i].getFullConstraint(*this)->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)).smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
+      ConstrainedTerm(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions(),
+		      sols[i].getFullConstraint(*this)->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions()).smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
     }
   }
 }

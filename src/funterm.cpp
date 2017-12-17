@@ -4,6 +4,7 @@
 #include "factories.h"
 #include "helper.h"
 #include "sort.h"
+#include "z3driver.h"
 #include <sstream>
 #include <cassert>
 #include <iostream>
@@ -303,6 +304,50 @@ Term *FunTerm::rewriteOneStep(pair<Term *, Term *> rewriteRule, Substitution &ho
   bool done = false;
   for (int i = 0; i < len(function->arguments); ++i) {
     Term *t = arguments[i]->rewriteOneStep(rewriteRule, how);
+    subterms.push_back(done ? arguments[i] : t);
+    done = t != arguments[i];
+  }
+  Term *result = getFunTerm(function, subterms);
+  return result;
+}
+
+Term *FunTerm::rewriteOneStep(ConstrainedRewriteSystem &crs, Substitution &how)
+{
+  Log(DEBUG8) << "Term *FunTerm::rewriteOneStep(ConstrainedRewriteSystem &crs, Substitution &how)" << endl;
+  
+  // try a topmost rewrite
+  Term *t = this->rewriteTopMost(crs, how);
+  if (t != this) {
+    return t;
+  }
+
+  // now try inner terms
+  vector<Term *> subterms;
+  bool done = false;
+  for (int i = 0; i < len(function->arguments); ++i) {
+    Term *t = arguments[i]->rewriteOneStep(crs, how);
+    subterms.push_back(done ? arguments[i] : t);
+    done = t != arguments[i];
+  }
+  Term *result = getFunTerm(function, subterms);
+  return result;
+}
+
+Term *FunTerm::rewriteOneStep(pair<ConstrainedTerm, Term *> crewriteRule, Substitution &how)
+{
+  // try a topmost rewrite
+  Term *t = this->rewriteTopMost(crewriteRule, how);
+  if (t != this && isSatisfiable(crewriteRule.first.constraint->substitute(how)) == sat) {
+    // TODO does not work when constraint has variables not in the lhs of the rewrite rule
+    // to solve this issue, should add to "how" the variables occuring in the constraint but not the rule
+    return t;
+  }
+
+  // now try inner terms
+  vector<Term *> subterms;
+  bool done = false;
+  for (int i = 0; i < len(function->arguments); ++i) {
+    Term *t = arguments[i]->rewriteOneStep(crewriteRule, how);
     subterms.push_back(done ? arguments[i] : t);
     done = t != arguments[i];
   }

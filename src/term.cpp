@@ -83,6 +83,18 @@ Term *Term::rewriteTopMost(RewriteSystem &rewrite, Substitution &how)
   return this;
 }
 
+Term *Term::rewriteTopMost(ConstrainedRewriteSystem &crs, Substitution &how)
+{
+  for (int i = 0; i < len(crs); ++i) {
+    pair<ConstrainedTerm, Term *> crewriteRule = crs[i];
+    Term *result = rewriteTopMost(crewriteRule, how);
+    if (this != result) {
+      return result;
+    }
+  }
+  return this;
+}
+
 Term *Term::rewriteTopMost(pair<Term *, Term *> rewriteRule, Substitution &how)
 {
   Term *l = rewriteRule.first;
@@ -93,6 +105,31 @@ Term *Term::rewriteTopMost(pair<Term *, Term *> rewriteRule, Substitution &how)
     how = subst;
     return r->substitute(subst);
   }
+  return this;
+}
+
+Term *Term::rewriteTopMost(pair<ConstrainedTerm, Term *> crewriteRule, Substitution &how)
+{
+  Log(DEBUG8) << "Term *Term::rewriteTopMost(pair<ConstrainedTerm, Term *> crewriteRule, Substitution &how)" << endl;
+  Term *l = crewriteRule.first.term;
+  Term *r = crewriteRule.second;
+  Term *c = crewriteRule.first.constraint;
+
+  assert(!l->hasDefinedFunctions);
+  Substitution subst;
+  if (this->isInstanceOf(l, subst)) {
+    Log(DEBUG7) << "instance of " << l->toString() << endl;
+    if (isSatisfiable(c->substitute(subst)->normalizeFunctions()) == sat) {
+      Log(DEBUG7) << "    and satisfiable" << endl;
+      // TODO does not work when constraint has variables not in the lhs of the rewrite rule
+      // to solve this issue, should add to "how" the variables occuring in the constraint but not the rule
+      how = subst;
+      return r->substitute(subst)->normalizeFunctions();
+    } else {
+      Log(DEBUG7) << "    but not satisfiable (" << c->substitute(subst)->toString() << ")" << endl;
+    }
+  }
+  Log(DEBUG8) << "not an instance of " << l->toString() << endl;
   return this;
 }
 
@@ -160,13 +197,14 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
   Log(DEBUG7) << "Solution.subst = " << solution.subst.toString() << endl;
   Log(DEBUG7) << "Solution.simplifyingSubst = " << solution.simplifyingSubst.toString() << endl;
 
-  Log(DEBUG7) << "Checking satisfiability of " << solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst)->toString() << "." << endl;
+  Term *toCheck = simplifyConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst))->normalizeFunctions();
+  Log(DEBUG7) << "Checking satisfiability of " << toCheck->toString() << "." << endl;
   Z3Theory theory;
   vector<Variable *> interpretedVariables = getInterpretedVariables();
   for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
   }
-  theory.addConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst));
+  theory.addConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst)->normalizeFunctions());
   if (theory.isSatisfiable() != unsat) {
     Log(DEBUG7) << "Possibly satisfiable." << endl;
     return true;
@@ -217,6 +255,9 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem 
   Log(DEBUG) << "Term::smtNarrowSearchBasic(ConstrainedRewriteSystem &, Term *) " <<
     this->toString() << " /\\ " << initialConstraint->toString() << endl;
 
+  if (initialConstraint == bFalse()) {
+    return vector<ConstrainedSolution>();
+  }
   Term *abstractTerm = this->abstract(abstractingSubstitution);
 
   Log(DEBUG) << "Abstract term: " << abstractTerm->toString() << endl;
@@ -252,12 +293,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem 
 vector<ConstrainedSolution> Term::smtNarrowSearchWdf(ConstrainedRewriteSystem &crsInit, Term *initialConstraint)
 {
   Log(DEBUG7) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
-  Term *searchStart = this;
-  if (hasDefinedFunctions) {
-    RewriteSystem functionsRS = getRewriteSystem("functions");
-    searchStart = this->normalize(functionsRS, false);
-  }
-  return searchStart->smtNarrowSearchBasic(crsInit, initialConstraint);
+  return this->normalizeFunctions()->smtNarrowSearchBasic(crsInit, initialConstraint->normalizeFunctions());
 }
 
 bool Term::hasVariable(Variable *var)
@@ -269,4 +305,18 @@ bool Term::hasVariable(Variable *var)
     }
   }
   return false;
+}
+
+Term *Term::normalizeFunctions()
+{
+  //  Log(DEBUG6) << "Term *Term::normalizeFunctions() (" << this->toString() << ")" << endl;
+  if (hasDefinedFunctions) {
+    RewriteSystem functionsRS = getRewriteSystem("functions");
+    Term *result = this->normalize(functionsRS, false);
+    //    Log(DEBUG6) << "result (" << result->toString() << ")" << endl;
+    assert(!result->hasDefinedFunctions);
+    return result;
+  } else {
+    return this;
+  }
 }

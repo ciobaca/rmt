@@ -7,6 +7,7 @@
 #include "variable.h"
 #include "function.h"
 #include "rewritesystem.h"
+#include "constrainedrewritesystem.h"
 #include "constrainedsolution.h"
 #include "substitution.h"
 #include "helper.h"
@@ -82,6 +83,9 @@ struct Term
   // normalized form.
   // The boolean parameter should be set to false if the rs is not optimally reducing.
   virtual Term *normalize(RewriteSystem &rewriteSystem, bool = true);
+
+  // Computes a term where all defined functions have been normalized
+  virtual Term *normalizeFunctions();
 
   // Unifies this term with the parameter. Implements visitor pattern
   // for multiple dispatch.  The substitution is the substitution
@@ -177,15 +181,35 @@ struct Term
   // Fill in substitution with the witness to the rewrite.
   virtual Term *rewriteTopMost(pair<Term *, Term *>, Substitution &how);
 
+  // Performs one top-most rewrite w.r.t. the given constrained rewrite system.
+  // Returns this if no rewrite is possible.
+  // Fill in substitution with the witness to the rewrite.
+  virtual Term *rewriteTopMost(ConstrainedRewriteSystem &, Substitution &how);
+
+  // Performs one top-most rewrite w.r.t. the given constrained rewrite rule.
+  // Returns this if not possible.
+  // Fill in substitution with the witness to the rewrite.
+  virtual Term *rewriteTopMost(pair<ConstrainedTerm, Term *>, Substitution &how);
+
   // Performs one rewrite step w.r.t. the given rewrite system (not
   // necessarily top-most).  Returns this if no rewrite is possible.
   // Fill in substitution with the witness to the rewrite.
   virtual Term *rewriteOneStep(RewriteSystem &, Substitution &how) = 0;
 
-  // Performs one rewrite step w.r.t. the given rewrite system (not
+  // Performs one rewrite step w.r.t. the given rewrite rule (not
   // necessarily top-most).  Returns this if no rewrite is possible.
   // Fill in substitution with the witness to the rewrite.
   virtual Term *rewriteOneStep(pair<Term *, Term *>, Substitution &how) = 0;
+
+  // Performs one rewrite step w.r.t. the given constrained rewrite system (not
+  // necessarily top-most).  Returns this if no rewrite is possible.
+  // Fill in substitution with the witness to the rewrite.
+  virtual Term *rewriteOneStep(ConstrainedRewriteSystem &, Substitution &how) = 0;
+
+  // Performs one rewrite step w.r.t. the given constrained rewrite rule (not
+  // necessarily top-most).  Returns this if no rewrite is possible.
+  // Fill in substitution with the witness to the rewrite.
+  virtual Term *rewriteOneStep(pair<ConstrainedTerm, Term *>, Substitution &how) = 0;
 
   // Performs a one-step rewrite search, i.e. finds all terms to which
   // this reduces in one step.

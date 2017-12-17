@@ -330,15 +330,18 @@ entry point to the RMT tool
 int main(int argc, char **argv)
 {
   if (argc != 1) {
-	  if (argc != 3) {
+	  if (argc == 3) {
 		  if (strcmp(argv[1], "-v") != 0) {
 			  abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (-v not found)");
 		  }
 		  char *end;
+		  printf("got verbosity <%s>\n", argv[2]);
 		  Log::debug_level = strtol(argv[2], &end, 10);
-		  if (!*end) {
+		  if (*end) {
 			  abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (verbosity level not specified)");
 		  }
+	  } else {
+	    abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (-v not found)");
 	  }
   } 
 

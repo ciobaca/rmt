@@ -309,9 +309,9 @@ constrained-rewrite-system language
 constrained-rewrite-system circularities
 IC(
 	push(
-		while(lte(id(y),i(N)),
-		      seq(assign(z,plus(id(z),id(y))),
-                          assign(y,plus(id(y),mone)))),
+		lifts(while(lte(id(y),i(N)),
+		        seq(assign(z,plus(id(z),id(y))),
+                            assign(y,plus(id(y),i(mone)))))),
 		REST),
         ENV) /\ band(mlte(mzero, N),
 	             mlte(lookup(ENV, y), N))
@@ -321,13 +321,13 @@ IC(
 	update(update(ENV, y, mplus(N, mone)), z, mplus(lookup(ENV, z), sum(lookup(ENV, y), N))))
 ;
 
-run in language : IC(push(
-	lifts(seq(seq(assign(y,i(mzero)), assign(z,i(mzero))),
-	        while(lte(id(y),i(mtwo)),
-	        seq(assign(z,plus(id(z),id(y))),
-                    assign(y,plus(id(y),i(mone))))))),
-	done),
-        emptydict)
-;
+// run in language : IC(push(
+// 	lifts(seq(seq(assign(y,i(mzero)), assign(z,i(mzero))),
+// 	        while(lte(id(y),i(mtwo)),
+// 	        seq(assign(z,plus(id(z),id(y))),
+//                     assign(y,plus(id(y),i(mone))))))),
+// 	done),
+//         emptydict)
+// ;
 
-//prove in language : circularities;
+prove in language : circularities;

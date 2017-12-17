@@ -197,13 +197,14 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
   Log(DEBUG7) << "Solution.subst = " << solution.subst.toString() << endl;
   Log(DEBUG7) << "Solution.simplifyingSubst = " << solution.simplifyingSubst.toString() << endl;
 
-  Log(DEBUG7) << "Checking satisfiability of " << solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst)->toString() << "." << endl;
+  Term *toCheck = simplifyConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst))->normalizeFunctions();
+  Log(DEBUG7) << "Checking satisfiability of " << toCheck->toString() << "." << endl;
   Z3Theory theory;
   vector<Variable *> interpretedVariables = getInterpretedVariables();
   for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
   }
-  theory.addConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst));
+  theory.addConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst)->normalizeFunctions());
   if (theory.isSatisfiable() != unsat) {
     Log(DEBUG7) << "Possibly satisfiable." << endl;
     return true;
@@ -254,6 +255,9 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem 
   Log(DEBUG) << "Term::smtNarrowSearchBasic(ConstrainedRewriteSystem &, Term *) " <<
     this->toString() << " /\\ " << initialConstraint->toString() << endl;
 
+  if (initialConstraint == bFalse()) {
+    return vector<ConstrainedSolution>();
+  }
   Term *abstractTerm = this->abstract(abstractingSubstitution);
 
   Log(DEBUG) << "Abstract term: " << abstractTerm->toString() << endl;
@@ -289,12 +293,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem 
 vector<ConstrainedSolution> Term::smtNarrowSearchWdf(ConstrainedRewriteSystem &crsInit, Term *initialConstraint)
 {
   Log(DEBUG7) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
-  Term *searchStart = this;
-  if (hasDefinedFunctions) {
-    RewriteSystem functionsRS = getRewriteSystem("functions");
-    searchStart = this->normalize(functionsRS, false);
-  }
-  return searchStart->smtNarrowSearchBasic(crsInit, initialConstraint);
+  return this->normalizeFunctions()->smtNarrowSearchBasic(crsInit, initialConstraint->normalizeFunctions());
 }
 
 bool Term::hasVariable(Variable *var)

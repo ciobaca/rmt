@@ -252,10 +252,11 @@ void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
 
   Log(INFO) << spaces(depth) << "Trying to prove " << lhs.toString() << " => " << rhs->toString() << endl;
 
+  cout << spaces(depth) << "PROVING " << lhs.toString()  << " => " << rhs->toString() << endl;
   Term *implicationConstraint = proveByImplicationCRS(lhs, rhs, crs, circ, depth);
   ConstrainedTerm implLhs = lhs;
   implLhs.constraint = simplifyConstraint(bAnd(implLhs.constraint, implicationConstraint));
-  cout << spaces(depth + 1) << "- " << implLhs.toPrettyString() << " -----> " << rhs->toPrettyString() << endl;
+  cout << spaces(depth) << "  IMPL if " << implicationConstraint->toPrettyString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(implicationConstraint));
   lhs = simplifyConstrainedTerm(lhs);
   lhs.term = lhs.term->normalizeFunctions();
@@ -265,7 +266,7 @@ void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
   Term *circularityConstraint = proveByCircularitiesCRS(lhs, rhs, crs, circ, depth, hadProgress, branchingDepth);
   ConstrainedTerm circLhs = lhs;
   circLhs.constraint = simplifyConstraint(bAnd(circLhs.constraint, circularityConstraint));
-  cout << spaces(depth + 1) << "- " << circLhs.toPrettyString() << " =(C)=> " << rhs->toPrettyString() << endl;
+  cout << spaces(depth) << "  CIRC if " << circularityConstraint->toPrettyString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(circularityConstraint));
   lhs = simplifyConstrainedTerm(lhs);
   lhs.term = lhs.term->normalizeFunctions();
@@ -275,7 +276,7 @@ void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
   Term *rewriteConstraint = proveByRewriteCRS(lhs, rhs, crs, circ, depth, hadProgress, branchingDepth);
   ConstrainedTerm rewrLhs = lhs;
   rewrLhs.constraint = simplifyConstraint(bAnd(rewrLhs.constraint, circularityConstraint));
-  cout << spaces(depth + 1) << "- " << lhs.toPrettyString() << " =(R)=> " << rhs->toPrettyString() << endl;
+  cout << spaces(depth) << "  REWR if " << rewriteConstraint->toPrettyString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(rewriteConstraint));
   lhs = simplifyConstrainedTerm(lhs);
   lhs.term = lhs.term->normalizeFunctions();
@@ -288,6 +289,6 @@ void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
 
     cout << spaces(depth) << "* Assuming that " << initialLhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;
   } else {
-    cout << spaces(depth) << "* Proved that " << initialLhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;
+    cout << spaces(depth) << "OKAY" << endl;
   }
 }

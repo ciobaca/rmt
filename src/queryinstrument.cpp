@@ -98,7 +98,7 @@ void QueryInstrument::addRuleFromOldRule(ConstrainedRewriteSystem &nrs, Term *le
     arguments.push_back(leftTerm);
     arguments.push_back(leftSideProtection);
     leftTerm = getFunTerm(protectFunction, arguments);
-    bAnd(leftConstraint, naturalNumberConstraint);
+    leftConstraint = bAnd(leftConstraint, naturalNumberConstraint);
   }
 
   if (rightTerm->getSort() == getSort(oldStateSortName)) {

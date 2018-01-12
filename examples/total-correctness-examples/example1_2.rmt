@@ -159,7 +159,9 @@ variables
 	ENV : Dict,
 	ENVP : Dict,
 	ENV1 : Dict,
-	ENV2 : Dict;
+	ENV2 : Dict,
+
+	M_1 : Int, M_2 : Int;
 
 rewrite-system simplifications
   bnot(false) => true, bnot(true) => false, bnot(bnot(B)) => B,
@@ -307,6 +309,7 @@ constrained-rewrite-system language
  	IC(push(liftb(lt(i(N), AE2)),               REST) , ENV),
 
  	IC(push(liftb(lt(i(N), AE2)),        REST) , ENV) /\ bnot(isIntVal(AE2)) =>
+
  	IC(push(lifta(AE2), push(liftb(lthr(i(N))), REST)), ENV),
   
  	IC(push(lifta(i(M)), push(liftb(lthr(i(N))), REST)), ENV) =>
@@ -337,6 +340,19 @@ IC(
 //         emptydict)
 // ;
 
+//prove [300,5] in language : circularities;
+
+constrained-rewrite-system circ1
+
+protect(IC(push(lifts(while(lte(id(y),i(N)),seq(assign(z,plus(id(z),id(y))),assign(y,plus(id(y),i(mone)))))),done),ENV),M_1)
+
+/\ band(band(band(mle(mzero,N),mle(lookup(ENV,y),N)),true),mle(mplus(mconst,mtimes(mminus(N, lookup(ENV,y)),mconst)),M_1)) =>
+
+protect(IC(done,update(update(ENV,y,mplus(N,mone)),z,mplus(lookup(ENV,z),sum(lookup(ENV,y),N)))),M_2);
+
+
 instrument language lang_protected Cfg nCfg protect;
-cinstrument circularities circularities_protected Cfg nCfg protect mplus(mconst,mtimes(N,mconst));
-prove [300,5] in lang_protected : circularities_protected;
+
+//cinstrument circularities circularities_protected Cfg nCfg protect mplus(mconst,mtimes(N,mconst));
+
+prove [300,5] in lang_protected : circ1;

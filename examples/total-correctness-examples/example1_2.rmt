@@ -331,28 +331,9 @@ IC(
 	update(update(ENV, y, mplus(N, mone)), z, mplus(lookup(ENV, z), sum(lookup(ENV, y), N))))
 ;
 
-// run in language : IC(push(
-// 	lifts(seq(seq(assign(y,i(mzero)), assign(z,i(mzero))),
-// 	        while(lte(id(y),i(mtwo)),
-// 	        seq(assign(z,plus(id(z),id(y))),
-//                     assign(y,plus(id(y),i(mone))))))),
-// 	done),
-//         emptydict)
-// ;
-
-//prove [300,5] in language : circularities;
-
-constrained-rewrite-system circ1
-
-protect(IC(push(lifts(while(lte(id(y),i(N)),seq(assign(z,plus(id(z),id(y))),assign(y,plus(id(y),i(mone)))))),done),ENV),M_1)
-
-/\ band(band(band(mle(mzero,N),mle(lookup(ENV,y),N)),true),mle(mplus(mconst,mtimes(mminus(N, lookup(ENV,y)),mconst)),M_1)) =>
-
-protect(IC(done,update(update(ENV,y,mplus(N,mone)),z,mplus(lookup(ENV,z),sum(lookup(ENV,y),N)))),M_2);
-
 
 instrument language lang_protected Cfg nCfg protect;
 
-//cinstrument circularities circularities_protected Cfg nCfg protect mplus(mconst,mtimes(N,mconst));
+cinstrument circularities circularities_protected Cfg nCfg protect mplus(mconst,mtimes(mminus(N, lookup(ENV,y)),mconst));
 
-prove [300,5] in lang_protected : circ1;
+prove [300,5] in lang_protected : circularities_protected;

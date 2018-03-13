@@ -1,11 +1,18 @@
 /*
-  This example describes an imperative programming language
-    and a simple program which loops forever.
-  The example is meant to illustrate how proofs of partial correctness can be irrelevant incertain cases.
-  
-  In the file, we try to prove that the program terminates (which it obviously does not).
-    We have a prove command for partial correctness, which succeeds (although it should not) and
-       a proof of total correctness that will (correctly) fail no matter the variant.
+
+This example describes the imperative programming language IMP
+presented in the paper submission and a simple program which loops
+forever:
+
+while 0 <= 0 do
+    skip;
+
+The prove command for partial correctness suceeeds, as expected.
+
+The prove command for total correctness fails, as expected (for any variant).
+
+Note that this example will take a lot of time (> 10 minutes).
+       
 */
 smt-prelude
 "(declare-fun uifun (Int Int) Int)

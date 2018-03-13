@@ -1,10 +1,35 @@
 /*
-  Example for Zune Bug
-  Zune Bug is decribed in detail here: https://techcrunch.com/2008/12/31/zune-bug-explained-in-detail/
-  Note that we have simplified the leap year condition (reduced it to divisinility by 4), since the extra conditions
-   do not add anything to the idea illustrated.
-  The program in this example is partially correct but does not terminate in the last day of a leap year.
-  This particular program illustrates a fix for the bug presented and manages to correctly prove its termination.
+  Example for the Zune Bug
+
+  This file contains a proposed fix for the Zune bug:
+
+year = ORIGINYEAR; // = 1980 
+
+while (days > 365)
+{
+    if (IsLeapYear(year))
+    {
+        if (days > 366)
+        {
+            days -= 366;
+            year += 1;
+        } else {
+	  break;
+	}
+    }
+    else
+    {
+        days -= 365;
+        year += 1;
+    }
+}
+
+  We show that the fix makes the system totally correct.
+
+Run with:
+> rmt[.exe] < 2.3_zune_fixed.rmt
+Expected output:
+... Circularity #1 proved. ...
 */
 sorts Int/"Int", Bool/"Bool", State, nState;
 
@@ -31,23 +56,17 @@ rewrite-system simplifications
   bequals(true, B)=>B,bequals(false, B)=>bnot(B), bequals(B, true)=>B,
   bequals(B, false)=>bnot(B), band(B, B)=>B, bor(B, B)=>B;
 
-constrained-rewrite-system zune
-  loop(D,Y) /\ mle(D,mtsf) => done(Y),
-  //simplified condition for leap year
-  loop(D,Y) /\ band(bnot(mle(D,mtsf)),band(mequals(mmod(Y,mfour),mzero),bnot(mle(D,mtss)))) => loop(mminus(D,mtss),mplus(Y,mone)),
-  loop(D,Y) /\ band(bnot(mle(D,mtsf)),band(mequals(mmod(Y,mfour),mzero),mle(D, mtss))) => loop(D,Y),
-  loop(D,Y) /\ band(bnot(mle(D,mtsf)),bnot(mequals(mmod(Y,mfour),mzero))) => loop(mminus(D,mtsf),mplus(Y,mone));
-
 constrained-rewrite-system zune_fixed
   loop(D,Y) /\ mle(D,mtsf) => done(Y),
   loop(D,Y) /\ band(bnot(mle(D,mtsf)),band(mequals(mmod(Y,mfour),mzero),bnot(mle(D,mtss)))) => loop(mminus(D,mtss),mplus(Y,mone)),
   loop(D,Y) /\ band(bnot(mle(D,mtsf)),band(mequals(mmod(Y,mfour),mzero),mle(D, mtss))) => done(Y),
   loop(D,Y) /\ band(bnot(mle(D,mtsf)),bnot(mequals(mmod(Y,mfour),mzero))) => loop(mminus(D,mtsf),mplus(Y,mone));
 
-constrained-rewrite-system termination
+constrained-rewrite-system proof_obligation
   loop(D,Y) /\ mle(mzero,D) => done(N);
-                              
-instrument zune_fixed zune_fprotected State nState protect;
-cinstrument termination termination_protected State nState protect mplus(D,mtwo);
-/* this proof will correctly work */
-prove [20,2] in zune_fprotected : termination_protected;
+
+instrument zune_fixed zune_protected State nState protect;
+cinstrument proof_obligation proof_obligation_protected State nState protect mplus(D,mtwo);
+prove [20,2] in zune_protected : proof_obligation_protected;
+
+// succeeds

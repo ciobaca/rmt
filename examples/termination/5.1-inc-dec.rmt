@@ -75,7 +75,3 @@ cinstrument circularities circularities_protected State nState protect /* challe
 // // the following proves the partial correctness of the proof obligations
 // // "circularities_protected" in the rewrite system "sum_protected"
 prove in whileloop_protected : circularities_protected;
-
-// // the proof suceeds (the output is "... Circularity #1 proved.")
-
-// // by the soundness theorem, it means that "circularities" is totally correct w.r.t. to "sum"

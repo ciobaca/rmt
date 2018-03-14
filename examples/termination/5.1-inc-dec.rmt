@@ -63,15 +63,9 @@ constrained-rewrite-system circularities
 // the following command proves partial correctness
 //prove in whileloop : circularities;
 
-// // the following commands transform
-// // 1. the initial rewrite system "sum", generating "sum_protected" and
+// the following commands are for proving total correctness
 instrument whileloop whileloop_protected State nState protect;
 
-// // 2. the proof obligations "circularities", generating "circularities_protected"
-// // note the upper bound "y + 2" (mplus(y,mtwo))
-// // "State" and "nState" denote the sorts of the old configuration and resp. new configuration
 cinstrument circularities circularities_protected State nState protect /* challenge */  /* challenge */;
 
-// // the following proves the partial correctness of the proof obligations
-// // "circularities_protected" in the rewrite system "sum_protected"
 prove in whileloop_protected : circularities_protected;

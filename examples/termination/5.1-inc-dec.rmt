@@ -17,8 +17,6 @@
 
   init(x) => done(z)
 
-  The variant used is "x".
-
 */
 sorts Int/"Int", Bool/"Bool", State, nState;
 

@@ -1,10 +1,14 @@
 /*
-  Example for Zune Bug
-  Zune Bug is decribed in detail here: https://techcrunch.com/2008/12/31/zune-bug-explained-in-detail/
-  Note that we have simplified the leap year condition (reduced it to divisinility by 4), since the extra conditions
-   do not add anything to the idea illustrated.
-  The program in this example is partially correct but does not terminate in the last day of a leap year.
-  This particular program illustrates a fix for the bug presented and manages to correctly prove its termination.
+  Example for the Zune Bug
+
+  This file shows that the Zune system fails to be shown totally
+  correct (as it can loop forever).
+
+Run with:
+> rmt[.exe] < 2.2_zune_total.rmt
+[it will take a few minutes]
+Expected output:
+... Circularity #1 not proved. ...
 */
 sorts Int/"Int", Bool/"Bool", State, nState;
 
@@ -44,10 +48,11 @@ constrained-rewrite-system zune_fixed
   loop(D,Y) /\ band(bnot(mle(D,mtsf)),band(mequals(mmod(Y,mfour),mzero),mle(D, mtss))) => done(Y),
   loop(D,Y) /\ band(bnot(mle(D,mtsf)),bnot(mequals(mmod(Y,mfour),mzero))) => loop(mminus(D,mtsf),mplus(Y,mone));
 
-constrained-rewrite-system termination
+constrained-rewrite-system proof_obligation
   loop(D,Y) /\ mle(mzero,D) => done(N);
-                              
-instrument zune_fixed zune_fprotected State nState protect;
-cinstrument termination termination_protected State nState protect mplus(D,mtwo);
-/* this proof will correctly work */
-prove [20,2] in zune_fprotected : termination_protected;
+
+instrument zune zune_protected State nState protect;
+cinstrument proof_obligation proof_obligation_protected State nState protect mplus(D,mtwo);
+prove [20,2] in zune_protected : proof_obligation_protected;
+
+// fails, as expected

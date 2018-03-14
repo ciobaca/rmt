@@ -1,8 +1,18 @@
 /*
-  This example describes an imperative programming language
-    and a program in this language which iterratively computes the sum of the first natural numbers.
-  The command for proving partial correctness is included in this file, on the last few lines, commented out.
-  Whe the RMT tool is run on this file, it will attempt and succeed in proving the total correctness of the program.
+
+This example describes the imperative programming language IMP
+presented in the paper submission and a simple program which loops
+forever:
+
+while 0 <= 0 do
+    skip;
+
+The prove command for partial correctness suceeeds, as expected.
+
+The prove command for total correctness fails, as expected (for any variant).
+
+Note that this example will take a lot of time (> 10 minutes).
+       
 */
 smt-prelude
 "(declare-fun uifun (Int Int) Int)
@@ -165,6 +175,7 @@ variables
 	ENVP : Dict,
 	ENV1 : Dict,
 	ENV2 : Dict,
+	ENW  : Dict,
 
 	M_1 : Int, M_2 : Int;
 
@@ -324,25 +335,23 @@ constrained-rewrite-system language
 constrained-rewrite-system circularities
 IC(
 	push(
-		lifts(while(lte(id(y),i(N)),
-		        seq(assign(z,plus(id(z),id(y))),
-                            assign(y,plus(id(y),i(mone)))))),
+		lifts(while(lte(i(mzero), i(mzero)),
+		        skip)),
 		REST),
-        ENV) /\ band(mle(mzero, N),
-	             mle(lookup(ENV, y), N))
+        ENV)
 =>
 IC(
 	REST,
-	update(update(ENV, y, mplus(N, mone)), z, mplus(lookup(ENV, z), sum(lookup(ENV, y), N))))
+	ENW)
 ;
 
 
 /* command for proof of partial correctness; this succeeds */
-//prove [300,5] in language : circularities;
+prove [300,5] in language : circularities;
 
 /* series of commands for proving total corretness; this also succeeds */
 instrument language lang_protected Cfg nCfg protect;
 
-cinstrument circularities circularities_protected Cfg nCfg protect mplus(mconst,mtimes(mminus(N, lookup(ENV,y)),mconst));
+cinstrument circularities circularities_protected Cfg nCfg protect mconst;
 
 prove [300,5] in lang_protected : circularities_protected;

@@ -1,10 +1,57 @@
 /*
-  Example for Zune Bug
-  Zune Bug is decribed in detail here: https://techcrunch.com/2008/12/31/zune-bug-explained-in-detail/
-  Note that we have simplified the leap year condition (reduced it to divisinility by 4), since the extra conditions
-   do not add anything to the idea illustrated.
-  The program in this example is partially correct but does not terminate in the last day of a leap year.
-  This particular program uses the command for total correctness and fails to prove termination, as expected.
+  Example for the Zune Bug
+
+  The Zune Bug is a famous termination bug in Microsoft's MP3 player Zune.
+
+  It manifested itself on December 31st, 2008, when the Zune devices
+  went into an infinite loop at boot time.
+
+  The code that was responsible for the infinite loop is:
+
+year = ORIGINYEAR; // = 1980 
+
+while (days > 365)
+{
+    if (IsLeapYear(year))
+    {
+        if (days > 366)
+        {
+            days -= 366;
+            year += 1;
+        }
+    }
+    else
+    {
+        days -= 365;
+        year += 1;
+    }
+}
+
+  The Zune Bug is decribed in detail here:
+  https://techcrunch.com/2008/12/31/zune-bug-explained-in-detail/
+
+  The program in this example is partially correct but does not
+terminate *** in the last day of a leap year ***.
+
+   We analyze a simplified version of the program, using a
+configuration of the form loop(D,Y), where D stores the value of the
+program variable "days" and Y the value of the program variable
+"year".
+
+  We manually create a rewrite system that simulates the above program
+(but note that it could be automatically obtained using a tool such as
+C2LCTRS). Note that we have simplified the leap year condition
+(reduced it to divisinility by 4), since the extra conditions do not
+add anything to the idea illustrated.
+
+  This file shows that the system is okay in the sense of partial
+  correctness.
+
+Run with:
+> rmt[.exe] < 2.1_zune_partial.rmt
+Expected output:
+... Circularity #1 proved. ...
+
 */
 sorts Int/"Int", Bool/"Bool", State, nState;
 
@@ -38,16 +85,8 @@ constrained-rewrite-system zune
   loop(D,Y) /\ band(bnot(mle(D,mtsf)),band(mequals(mmod(Y,mfour),mzero),mle(D, mtss))) => loop(D,Y),
   loop(D,Y) /\ band(bnot(mle(D,mtsf)),bnot(mequals(mmod(Y,mfour),mzero))) => loop(mminus(D,mtsf),mplus(Y,mone));
 
-constrained-rewrite-system zune_fixed
-  loop(D,Y) /\ mle(D,mtsf) => done(Y),
-  loop(D,Y) /\ band(bnot(mle(D,mtsf)),band(mequals(mmod(Y,mfour),mzero),bnot(mle(D,mtss)))) => loop(mminus(D,mtss),mplus(Y,mone)),
-  loop(D,Y) /\ band(bnot(mle(D,mtsf)),band(mequals(mmod(Y,mfour),mzero),mle(D, mtss))) => done(Y),
-  loop(D,Y) /\ band(bnot(mle(D,mtsf)),bnot(mequals(mmod(Y,mfour),mzero))) => loop(mminus(D,mtsf),mplus(Y,mone));
-
-constrained-rewrite-system termination
+constrained-rewrite-system proof_obligation
   loop(D,Y) /\ mle(mzero,D) => done(N);
 
-instrument zune zune_protected State nState protect;
-cinstrument termination termination_protected State nState protect mplus(D,mtwo);
-/* this proof, however, will correctly be unsuccessful */
-prove [20,2] in zune_protected : termination_protected;
+prove in zune : proof_obligation;
+// succeeds, as expected (in the sense of partial correctness)

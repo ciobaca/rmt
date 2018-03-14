@@ -1,11 +1,33 @@
 /*
-  This example describes an imperative programming language
-    and a simple program which loops forever.
-  The example is meant to illustrate how proofs of partial correctness can be irrelevant incertain cases.
-  
-  In the file, we try to prove that the program terminates (which it obviously does not).
-    We have a prove command for partial correctness, which succeeds (although it should not) and
-       a proof of total correctness that will (correctly) fail no matter the variant.
+
+This example describes an imperative programming language and a
+program in this language which iteratively computes the sum of the
+first natural numbers.
+
+The rewrite system "language" defined below models the IMP language,
+as discussed in the submission.
+
+The proof obligation "circularities" states the correctness of the
+program:
+
+while y < N do
+  z := z + y;
+  y := y + 1;
+
+The proof obligation succeeds, in both the sense of partial
+correctness and total correctness.
+
+Run with:
+> time ../../build/rmt -v 0 < 3.2_IMP_sum.rmt
+
+This takes a lot of time (almost 5 minutes on a last generation laptop
+computer). The majority of the time is spent in the interaction with
+the Z3 solver (which currently happens via system calls instead of the
+faster Z3 api; optimizing this is planned for future work).
+
+The result is:
+... Circularity #1 proved. ...
+
 */
 smt-prelude
 "(declare-fun uifun (Int Int) Int)
@@ -168,7 +190,6 @@ variables
 	ENVP : Dict,
 	ENV1 : Dict,
 	ENV2 : Dict,
-	ENW  : Dict,
 
 	M_1 : Int, M_2 : Int;
 
@@ -328,23 +349,27 @@ constrained-rewrite-system language
 constrained-rewrite-system circularities
 IC(
 	push(
-		lifts(while(lte(i(mzero), i(mzero)),
-		        skip)),
+		lifts(while(lte(id(y),i(N)),
+		        seq(assign(z,plus(id(z),id(y))),
+                            assign(y,plus(id(y),i(mone)))))),
 		REST),
-        ENV)
+        ENV) /\ band(mle(mzero, N),
+	             mle(lookup(ENV, y), N))
 =>
 IC(
 	REST,
-	ENW)
+	update(update(ENV, y, mplus(N, mone)), z, mplus(lookup(ENV, z), sum(lookup(ENV, y), N))))
 ;
 
 
-/* command for proof of partial correctness; this succeeds */
+/* Check partial correctness of the proof obligations. */
 prove [300,5] in language : circularities;
+// succeeds
 
-/* series of commands for proving total corretness; this also succeeds */
+/* Instrument the semantics and the proof obligation */
 instrument language lang_protected Cfg nCfg protect;
+cinstrument circularities circularities_protected Cfg nCfg protect mplus(mconst,mtimes(mminus(N, lookup(ENV,y)),mconst));
 
-cinstrument circularities circularities_protected Cfg nCfg protect mconst;
-
+/* Check total correctness of the proof obligation */
 prove [300,5] in lang_protected : circularities_protected;
+// succeeds

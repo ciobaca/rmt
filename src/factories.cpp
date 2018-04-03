@@ -116,7 +116,7 @@ Sort *getIntSort()
   return getSort("Int");
 }
 
-void createUninterpretedSort(string &sortName)
+void createUninterpretedSort(const string &sortName)
 {
 #ifndef NDEBUG
   Sort *s = getSort(sortName);
@@ -127,7 +127,7 @@ void createUninterpretedSort(string &sortName)
   Log(INFO) << "Creating uninterpreted sort " << sortName << "." << endl;
 }
 
-void createInterpretedSort(string &sortName, string &interpretation)
+void createInterpretedSort(const string &sortName, const string &interpretation)
 {
 #ifndef NDEBUG
   Sort *s = getSort(sortName);

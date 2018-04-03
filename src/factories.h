@@ -40,8 +40,8 @@ void createVariable(std::string name, Sort *sort);
 
 Sort *getSort(std::string name);
 Sort *getIntSort();
-void createUninterpretedSort(std::string &sortName);
-void createInterpretedSort(std::string &sortName, std::string &interpretation);
+void createUninterpretedSort(const std::string &sortName);
+void createInterpretedSort(const std::string &sortName, const std::string &interpretation);
 
 Variable *getInternalVariable(std::string name, Sort *);
 

@@ -194,31 +194,39 @@ void match(string &s, int &pos, char c)
 Term *parseTerm(string &s, int &pos)
 {
   skipWhiteSpace(s, pos);
-  string id = getIdentifier(s, pos);
-  Function *f = getFunction(id);
-  Variable *v = getVariable(id);
-
-  if (f) {
+  string id;
+  if (lookAhead(s, pos, "(")) {
+    match(s, pos, '(');
     skipWhiteSpace(s, pos);
-    vector<Term *> arguments;
-    if (len(f->arguments)) {
-      match(s, pos, '(');
+    id = getIdentifier(s, pos);
+    Function *f = getFunction(id);
+
+    if (f && len(f->arguments)) {
+      vector<Term *> arguments;
       for (int i = 0; i < len(f->arguments); ++i) {
-	      Term *t = parseTerm(s, pos);
-	      skipWhiteSpace(s, pos);
-	      if (i == len(f->arguments) - 1) {
-	        match(s, pos, ')');
-	      } else {
-	        match(s, pos, ',');
-	      }
-	      arguments.push_back(t);
+	Term *t = parseTerm(s, pos);
+	skipWhiteSpace(s, pos);
+	arguments.push_back(t);
       }
+      match(s, pos, ')');
+      return getFunTerm(f, arguments);
     }
-    return getFunTerm(f, arguments);
-  } else if (v) {
-    return getVarTerm(v);
+  } else {
+    id = getIdentifier(s, pos);
+    Function *f = getFunction(id);
+    Variable *v = getVariable(id);
+    skipWhiteSpace(s, pos);
+
+    if (f) {
+      vector<Term *> arguments;
+      if (len(f->arguments) == 0) {
+	return getFunTerm(f, arguments);
+      }
+    } else if (v) {
+      return getVarTerm(v);
+    }
   }
-  cout << "this id: " << id << " is not a name, not a var, not a function " << endl;
+  cout << "Identifier " << id << " is neither a function nor a variable." << endl;
   assert(0);
   return 0;
 }

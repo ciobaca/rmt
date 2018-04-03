@@ -18,11 +18,9 @@ done(S) if bnot(mle(mone,N))
 */
 
 /*
-Any RMT file starts with the declaration of sorts. We declare three
-sorts here: Int, Bool and State. The first two sorts, Int and Bool are
-interpreted as "Int" and respectively "Bool".
+Any RMT file starts with the declaration of sorts.
 */
-sorts Int / "Int", Bool / "Bool", State;
+sorts State;
 
 /*
 The next declarations are subsorting declarations. There is no need
@@ -32,28 +30,13 @@ out.
 // subsort Int < State;
 
 /*
-The next declaration introduces all functional symbols. The first two
-chunks define the symbols operating on Int's and respectively
-Bool's. Note that we have to define even the constant symbols and
-their interpretation.
-*/
-signature
-  // math built-in function symbols
-  mzero : -> Int / "0", mone : -> Int / "1", mtwo : -> Int / "2",
-  mplus : Int Int->Int / "+", mminus : Int Int->Int / "-",
-  mtimes : Int Int->Int / "*", mdiv : Int Int->Int / "div",
-  mle : Int Int->Bool / "<=", mequals : Int Int->Bool / "=",
+The next declaration introduces all functional symbols.
 
-  // bool built-in function symbols
-  bequals : Bool Bool->Bool / "=", band : Bool Bool->Bool / "and",
-  bimplies : Bool Bool->Bool / "=>", bor : Bool Bool->Bool / "or",
-  bnot : Bool->Bool / "not", true : ->Bool / "true", false : ->Bool / "false",
-
-/*
 The following function symbols are not built-in and therefore they are
 uninterpreted. "init", "loop" and "done" are therefore the only
 constructors for the sort "State".
 */
+signature
   init : Int->State, loop : Int Int->State, done : Int->State;
 
 /*
@@ -77,13 +60,13 @@ RMT. This might seem annoying at times, but it helps by removing
 sources of ambiguities that are difficult to debug.
 */
 rewrite-system simplifications
-  bnot(false) => true, bnot(true) => false, bnot(bnot(B)) => B,
-  band(false, B) => false, band(true, B) => B, band(B, false) => false,
-  band(B, true) => B, bimplies(true, B) => B, bimplies(false, B) => true,
-  bor(false, B) => B, bor(true, B) => true, bor(B, false) => B,
-  bor(B, true) => true, mequals(N, N) => true, bequals(B, B) => true,
-  bequals(true, B) => B,bequals(false, B) => bnot(B), bequals(B, true) => B,
-  bequals(B, false) => bnot(B), band(B, B) => B, bor(B, B) => B;
+  (bnot false) => true, (bnot true) => false, (bnot (bnot B)) => B,
+  (band false B) => false, (band true B) => B, (band B false) => false,
+  (band B true) => B, (bimplies true B) => B, (bimplies false B) => true,
+  (bor false B) => B, (bor true B) => true, (bor B false) => B,
+  (bor B true) => true, (mequals N N) => true, (bequals B B) => true,
+  (bequals true B) => B, (bequals false B) => (bnot B), (bequals B true) => B,
+  (bequals B false) => (bnot B), (band B B) => B, (bor B B) => B;
 
 /*
 Now follows the most important part of the file, the declaration of a
@@ -109,11 +92,11 @@ where S is the sum accumulated so far.
 */
 constrained-rewrite-system sum
 
-  init(N) => loop(mzero, N),
+  (init N) => (loop 0 N),
 
-  loop(S, N) /\ mle(mone, N) => loop(mplus(S, N), mminus(N, mone)),
+  (loop S N) /\ (mle 1 N) => (loop (mplus S N) (mminus N 1)),
 
-  loop(S, N) /\ bnot(mle(mone, N)) => done(S);
+  (loop S N) /\ (bnot (mle 1 N)) => (done S);
 
 /*
 Finally, this example illustrates the "search" query/command. The
@@ -136,4 +119,4 @@ is not less-or-equal to N, then done(S) is reachable from loop(S, N)
 in one step. This corresponds to the application of the third rewrite
 rule in the "sum" CTRS defined above.
 */
-search in sum : loop(S, N);
+search in sum : (loop S N);

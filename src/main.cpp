@@ -78,6 +78,12 @@ void parseSmtPrelude(string &s, int &w)
   }
 }
 
+void addPredefinedSorts()
+{
+  createInterpretedSort("Bool", "Bool");
+  createInterpretedSort("Int", "Int");
+ }
+
 void parseSorts(string &s, int &w)
 {
   skipWhiteSpace(s, w);
@@ -159,6 +165,58 @@ void parseSubsorts(string &s, int &w)
   while (lookAhead(s, w, "subsort")) {
     parseSubsort(s, w);
     skipWhiteSpace(s, w);
+  }
+}
+
+void addPredefinedFunctions()
+{
+  Sort *intSort = getSort("Int");
+  Sort *boolSort = getSort("Bool");
+  assert(intSort);
+  assert(boolSort);
+
+  {
+    vector<Sort *> arguments;
+    createInterpretedFunction("0", arguments, intSort, "0");
+    createInterpretedFunction("1", arguments, intSort, "1");
+    createInterpretedFunction("2", arguments, intSort, "2");
+    createInterpretedFunction("3", arguments, intSort, "3");
+    createInterpretedFunction("4", arguments, intSort, "4");
+    createInterpretedFunction("5", arguments, intSort, "5");
+    createInterpretedFunction("6", arguments, intSort, "6");
+    createInterpretedFunction("7", arguments, intSort, "7");
+    createInterpretedFunction("8", arguments, intSort, "8");
+    createInterpretedFunction("9", arguments, intSort, "9");
+    createInterpretedFunction("10", arguments, intSort, "10");
+    createInterpretedFunction("11", arguments, intSort, "11");
+    createInterpretedFunction("12", arguments, intSort, "12");
+    createInterpretedFunction("13", arguments, intSort, "13");
+    createInterpretedFunction("14", arguments, intSort, "14");
+    createInterpretedFunction("15", arguments, intSort, "15");
+    
+    arguments.push_back(intSort);
+    arguments.push_back(intSort);
+    createInterpretedFunction("mplus", arguments, intSort, "+");
+    createInterpretedFunction("mminus", arguments, intSort, "-");
+    createInterpretedFunction("mtimes", arguments, intSort, "*");
+    createInterpretedFunction("mdiv", arguments, intSort, "div");
+    createInterpretedFunction("mle", arguments, intSort, "<=");
+    createInterpretedFunction("mequals", arguments, intSort, "=");
+  }
+
+  {
+    vector<Sort *> arguments;
+    createInterpretedFunction("true", arguments, boolSort, "true");
+    createInterpretedFunction("false", arguments, boolSort, "false");
+
+    arguments.push_back(boolSort);
+    createInterpretedFunction("bnot", arguments, boolSort, "not");
+
+    arguments.push_back(boolSort);
+    createInterpretedFunction("band", arguments, boolSort, "and");
+    createInterpretedFunction("bor", arguments, boolSort, "or");
+    createInterpretedFunction("bimplies", arguments, boolSort, "=>");
+    createInterpretedFunction("bequals", arguments, boolSort, "=");
   }
 }
 
@@ -356,8 +414,10 @@ int main(int argc, char **argv)
   }
 
   parseSmtPrelude(s, w);
+  addPredefinedSorts();
   parseSorts(s, w);
   parseSubsorts(s, w);
+  addPredefinedFunctions();
   parseFunctions(s, w);
   parseVariables(s, w);
   skipWhiteSpace(s, w);

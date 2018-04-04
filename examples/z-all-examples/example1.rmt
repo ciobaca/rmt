@@ -46,29 +46,6 @@ rest of the file.
 variables B : Bool, S : Int, N : Int, I : Int;
 
 /*
-The following declaration introduces a rewrite system called
-"simplifications". This is a special rewrite system, because the
-system will use it to simplify constraints and other terms. It is the
-responsability of the user to ensure that the rewrite rules are sound,
-in the sense that the interpretation of the left-hand side is the same
-as the interpretation of the right-hand side. Moreover, the rules need
-to be terminating. You can add other rules here, depending on what you
-need. For example, it might help to add mplus(N, mzero) => N, which
-will make sure that RMT simplifies all additions by zero. Note that
-the syntax is infix. All terms are written using infix syntax in
-RMT. This might seem annoying at times, but it helps by removing
-sources of ambiguities that are difficult to debug.
-*/
-rewrite-system simplifications
-  (bnot false) => true, (bnot true) => false, (bnot (bnot B)) => B,
-  (band false B) => false, (band true B) => B, (band B false) => false,
-  (band B true) => B, (bimplies true B) => B, (bimplies false B) => true,
-  (bor false B) => B, (bor true B) => true, (bor B false) => B,
-  (bor B true) => true, (mequals N N) => true, (bequals B B) => true,
-  (bequals true B) => B, (bequals false B) => (bnot B), (bequals B true) => B,
-  (bequals B false) => (bnot B), (band B B) => B, (bor B B) => B;
-
-/*
 Now follows the most important part of the file, the declaration of a
 constrained term rewriting system (CTRS) called "sum". There are three
 constrained rewrite rules. The idea of the "sum" CTRS is to compute

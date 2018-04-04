@@ -24,15 +24,6 @@ signature
 
 variables B:Bool, S:Int, N:Int, I:Int;
 
-rewrite-system simplifications
-  (bnot false) => true, (bnot true) => false, (bnot (bnot B)) => B,
-  (band false B) => false, (band true B) => B, (band B false) => false,
-  (band B true) => B, (bimplies true B) => B, (bimplies false B) => true,
-  (bor false B) => B, (bor true B) => true, (bor B false) => B,
-  (bor B true) => true, (mequals N N) => true, (bequals B B) => true,
-  (bequals true B) => B, (bequals false B) => (bnot B), (bequals B true) => B,
-  (bequals B false) => (bnot B), (band B B) => B, (bor B B) => B;
-
 constrained-rewrite-system sum
 
   (init N) => (loop 0 N),

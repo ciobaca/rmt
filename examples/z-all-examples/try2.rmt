@@ -8,59 +8,33 @@ smt-prelude "
 )
 " 
 
-sorts Int / "Int", Bool / "Bool", State;
-
-// subsort Int < State;
+sorts State;
 
 signature
-  // math built-in function symbols
-  mzero : -> Int / "0", mone : -> Int / "1", mtwo : -> Int / "2",
-  mfour : -> Int / "4", 
-  mnine: -> Int / "9", 
-  mplus : Int Int->Int / "+", mminus : Int Int->Int / "-",
-  mtimes : Int Int->Int / "*", mdiv : Int Int->Int / "div",
-  mmod : Int Int->Int / "mod",
-  mless : Int Int -> Bool / "<",
-  mle : Int Int->Bool / "<=", mequals : Int Int->Bool / "=",
   mhasdiv : Int Int Int -> Bool / "hasdivisors",
   mprime : Int -> Bool / "prime",
-
-  // bool built-in function symbols
-  bequals : Bool Bool->Bool / "=", band : Bool Bool->Bool / "and",
-  bimplies : Bool Bool->Bool / "=>", bor : Bool Bool->Bool / "or",
-  bnot : Bool->Bool / "not", true : ->Bool / "true", false : ->Bool / "false",
-
   init : Int -> State, loop : Int Int -> State, done : Int -> State;
 
 variables B : Bool, S : Int, N : Int, I : Int;
 
-rewrite-system simplifications
-  bnot(false) => true, bnot(true) => false, bnot(bnot(B)) => B,
-  band(false, B) => false, band(true, B) => B, band(B, false) => false,
-  band(B, true) => B, bimplies(true, B) => B, bimplies(false, B) => true,
-  bor(false, B) => B, bor(true, B) => true, bor(B, false) => B,
-  bor(B, true) => true, mequals(N, N) => true, bequals(B, B) => true,
-  bequals(true, B) => B,bequals(false, B) => bnot(B), bequals(B, true) => B,
-  bequals(B, false) => bnot(B), band(B, B) => B, bor(B, B) => B;
-
 constrained-rewrite-system composability
 
-  init(N) => loop(N, mtwo),
+  (init N) => (loop N 2),
 
-  loop(N, I) /\ band(mless(I, N), mequals(mmod(N, I), mzero)) => done(mzero),
+  (loop N I) /\ (band (mless I N) (mequals (mmod N I) 0)) => (done 0),
 
-  loop(N, I) /\ band(mless(I, N), bnot(mequals(mmod(N, I), mzero))) =>
-    loop(N, mplus(I, mone)),
+  (loop N I) /\ (band (mless I N) (bnot (mequals (mmod N I) 0))) =>
+    (loop N (mplus I 1)),
 
-  loop(N, I) /\ bnot(mless(I, N)) => done(mone);
+  (loop N I) /\ (bnot (mless I N)) => (done 1);
 
 constrained-rewrite-system circularities
 
-  init(N) /\ band(mle(mzero, N), bnot(mprime(N))) => done(mzero),
+  (init N) /\ (band (mle 0 N) (bnot (mprime N))) => (done 0),
 
-  loop(N, I) /\ band(mle(mzero, N),
-                 band(mle(mone, I),
-		 band(mle(mplus(I, mone), N),
-		      bnot(mhasdiv(N, I, mminus(N, mone)))))) => done(mzero);
+  (loop N I) /\ (band (mle 0 N)
+                 (band (mle 1 I)
+		 (band (mle (mplus I 1) N)
+		      (bnot (mhasdiv N I (mminus N 1)))))) => (done 0);
 
 prove in composability : circularities;

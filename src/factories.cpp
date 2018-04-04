@@ -281,6 +281,8 @@ Function *ImpliesFun;
 Function *OrFun;
 Function *EqualsFun;
 
+Function *MEqualsFun;
+
 map<Sort *, Function *> ExistsFun;
 
 void createBuiltIns()
@@ -299,8 +301,11 @@ void createBuiltIns()
   assert(OrFun);
   EqualsFun = getFunction("bequals");
   assert(EqualsFun);
+  MEqualsFun = getFunction("mequals");
+  assert(MEqualsFun);
 
   assert(sortExists("Bool"));
+  assert(sortExists("Int"));
   
   // small hack for existential quantifiers
   Log(DEBUG) << "Creating built ins" << endl;
@@ -365,12 +370,24 @@ Term *bFalse()
   return getFunTerm(FalseFun, vector0());
 }
 
+Term *mEquals(Term *left, Term *right)
+{
+  return getFunTerm(MEqualsFun, vector2(left, right));
+}
+
+Term *bEquals(Term *left, Term *right)
+{
+  return getFunTerm(EqualsFun, vector2(left, right));
+}
+
 Term *simplifyConstraint(Term *constraint)
 {
   if (existsRewriteSystem("simplifications")) {
     RewriteSystem rs = getRewriteSystem("simplifications");
     Log(DEBUG9) << "Normalizing constraint " << constraint->toString() << endl;
-    return constraint->normalize(rs);
+    Term *result = constraint->normalize(rs);
+    Log(DEBUG9) << "Normalized: " << result->toString() << endl;
+    return result;
   } else {
     assert(0);
   }

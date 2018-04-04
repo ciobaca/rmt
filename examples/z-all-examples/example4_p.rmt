@@ -12,39 +12,39 @@ The output should be:
 
 Proving circularity #1:
 --------
-    - init(N) if false -----> done((div (* N (+ N 1)) 2))
-    - init(N) if false =(C)=> done((div (* N (+ N 1)) 2))
-        - loop(0,N) if false -----> done((div (* N (+ N 1)) 2))
-            - done((+ 0 (div (* N (+ N 1)) 2))) if (<= 0 N) -----> done((div (* N (+ N 1)) 2))
-            - done((+ 0 (div (* N (+ N 1)) 2))) if false =(C)=> done((div (* N (+ N 1)) 2))
-            - done((+ 0 (div (* N (+ N 1)) 2))) if false =(R)=> done((div (* N (+ N 1)) 2))
-        * Proved that done((+ 0 (div (* N (+ N 1)) 2))) if (<= 0 N) => done((div (* N (+ N 1)) 2))
-        - loop(0,N) if (and (<= 0 N) (exists ((I_1 Int)) (exists ((S_1 Int)) (<= 0 N)))) =(C)=> done((div (* N (+ N 1)) 2))
-        - loop(0,N) if (and (<= 0 N) (not (exists ((I_1 Int)) (exists ((S_1 Int)) (<= 0 N))))) =(R)=> done((div (* N (+ N 1)) 2))
-    * Proved that loop(0,N) if (<= 0 N) => done((div (* N (+ N 1)) 2))
-    - init(N) if (<= 0 N) =(R)=> done((div (* N (+ N 1)) 2))
-* Proved that init(N) if (<= 0 N) => done((div (* N (+ N 1)) 2))
+    - (init N) if false -----> (done (div (* N (+ N 1)) 2))
+    - (init N) if false =(C)=> (done (div (* N (+ N 1)) 2))
+        - (loop 0,N) if false -----> (done (div (* N (+ N 1)) 2))
+            - (done (+ 0 (div (* N (+ N 1)) 2))) if (<= 0 N) -----> (done (div (* N (+ N 1)) 2))
+            - (done (+ 0 (div (* N (+ N 1)) 2))) if false =(C)=> (done (div (* N (+ N 1)) 2))
+            - (done (+ 0 (div (* N (+ N 1)) 2))) if false =(R)=> (done (div (* N (+ N 1)) 2))
+        * Proved that (done (+ 0 (div (* N (+ N 1)) 2))) if (<= 0 N) => (done (div (* N (+ N 1)) 2))
+        - (loop 0,N) if (and (<= 0 N) (exists ((I_1 Int)) (exists ((S_1 Int)) (<= 0 N)))) =(C)=> (done (div (* N (+ N 1)) 2))
+        - (loop 0,N) if (and (<= 0 N) (not (exists ((I_1 Int)) (exists ((S_1 Int)) (<= 0 N))))) =(R)=> (done (div (* N (+ N 1)) 2))
+    * Proved that (loop 0,N) if (<= 0 N) => (done (div (* N (+ N 1)) 2))
+    - (init N) if (<= 0 N) =(R)=> (done (div (* N (+ N 1)) 2))
+* Proved that (init N) if (<= 0 N) => (done (div (* N (+ N 1)) 2))
 --------
 Circularity #1 proved.
 
 Proving circularity #2:
 --------
-    - loop(S,I) if false -----> done((+ S (div (* I (+ I 1)) 2)))
-    - loop(S,I) if false =(C)=> done((+ S (div (* I (+ I 1)) 2)))
-        - loop((+ S I),(- I 1)) if false -----> done((+ S (div (* I (+ I 1)) 2)))
-            - done((+ (+ S I) (div (* (- I 1) (+ (- I 1) 1)) 2))) if (and (and (<= 0 I) (<= 1 I)) (<= 0 (- I 1))) -----> done((+ S (div (* I (+ I 1)) 2)))
-            - done((+ (+ S I) (div (* (- I 1) (+ (- I 1) 1)) 2))) if false =(C)=> done((+ S (div (* I (+ I 1)) 2)))
-            - done((+ (+ S I) (div (* (- I 1) (+ (- I 1) 1)) 2))) if false =(R)=> done((+ S (div (* I (+ I 1)) 2)))
-        * Proved that done((+ (+ S I) (div (* (- I 1) (+ (- I 1) 1)) 2))) if (and (and (<= 0 I) (<= 1 I)) (<= 0 (- I 1))) => done((+ S (div (* I (+ I 1)) 2)))
-        - loop((+ S I),(- I 1)) if (and (and (<= 0 I) (<= 1 I)) (exists ((I_6 Int)) (exists ((S_6 Int)) (and (and (<= 0 I) (<= 1 I)) (<= 0 (- I 1)))))) =(C)=> done((+ S (div (* I (+ I 1)) 2)))
-        - loop((+ S I),(- I 1)) if (and (and (<= 0 I) (<= 1 I)) (not (exists ((I_6 Int)) (exists ((S_6 Int)) (and (and (<= 0 I) (<= 1 I)) (<= 0 (- I 1))))))) =(R)=> done((+ S (div (* I (+ I 1)) 2)))
-    * Proved that loop((+ S I),(- I 1)) if (and (<= 0 I) (<= 1 I)) => done((+ S (div (* I (+ I 1)) 2)))
-        - done(S) if (and (<= 0 I) (not (<= 1 I))) -----> done((+ S (div (* I (+ I 1)) 2)))
-        - done(S) if false =(C)=> done((+ S (div (* I (+ I 1)) 2)))
-        - done(S) if false =(R)=> done((+ S (div (* I (+ I 1)) 2)))
-    * Proved that done(S) if (and (<= 0 I) (not (<= 1 I))) => done((+ S (div (* I (+ I 1)) 2)))
-    - loop(S,I) if (<= 0 I) =(R)=> done((+ S (div (* I (+ I 1)) 2)))
-* Proved that loop(S,I) if (<= 0 I) => done((+ S (div (* I (+ I 1)) 2)))
+    - (loop S,I) if false -----> (done (+ S (div (* I (+ I 1)) 2)))
+    - (loop S,I) if false =(C)=> (done (+ S (div (* I (+ I 1)) 2)))
+        - (loop (+ S I),(- I 1)) if false -----> (done (+ S (div (* I (+ I 1)) 2)))
+            - (done (+ (+ S I) (div (* (- I 1) (+ (- I 1) 1)) 2))) if (and (and (<= 0 I) (<= 1 I)) (<= 0 (- I 1))) -----> (done (+ S (div (* I (+ I 1)) 2)))
+            - (done (+ (+ S I) (div (* (- I 1) (+ (- I 1) 1)) 2))) if false =(C)=> (done (+ S (div (* I (+ I 1)) 2)))
+            - (done (+ (+ S I) (div (* (- I 1) (+ (- I 1) 1)) 2))) if false =(R)=> (done (+ S (div (* I (+ I 1)) 2)))
+        * Proved that (done (+ (+ S I) (div (* (- I 1) (+ (- I 1) 1)) 2))) if (and (and (<= 0 I) (<= 1 I)) (<= 0 (- I 1))) => (done (+ S (div (* I (+ I 1)) 2)))
+        - (loop (+ S I),(- I 1)) if (and (and (<= 0 I) (<= 1 I)) (exists ((I_6 Int)) (exists ((S_6 Int)) (and (and (<= 0 I) (<= 1 I)) (<= 0 (- I 1)))))) =(C)=> (done (+ S (div (* I (+ I 1)) 2)))
+        - (loop (+ S I),(- I 1)) if (and (and (<= 0 I) (<= 1 I)) (not (exists ((I_6 Int)) (exists ((S_6 Int)) (and (and (<= 0 I) (<= 1 I)) (<= 0 (- I 1))))))) =(R)=> (done (+ S (div (* I (+ I 1)) 2)))
+    * Proved that (loop (+ S I),(- I 1)) if (and (<= 0 I) (<= 1 I)) => (done (+ S (div (* I (+ I 1)) 2)))
+        - (done S) if (and (<= 0 I) (not (<= 1 I))) -----> (done (+ S (div (* I (+ I 1)) 2)))
+        - (done S) if false =(C)=> (done (+ S (div (* I (+ I 1)) 2)))
+        - (done S) if false =(R)=> (done (+ S (div (* I (+ I 1)) 2)))
+    * Proved that (done S) if (and (<= 0 I) (not (<= 1 I))) => (done (+ S (div (* I (+ I 1)) 2)))
+    - (loop S,I) if (<= 0 I) =(R)=> (done (+ S (div (* I (+ I 1)) 2)))
+* Proved that (loop S,I) if (<= 0 I) => (done (+ S (div (* I (+ I 1)) 2)))
 --------
 Circularity #2 proved.
 
@@ -53,57 +53,39 @@ example3.rmt, but it illustrates a completely different query: the
 "prove" query.
 */
 
-sorts Int/"Int", Bool/"Bool", State, nState;
-// subsort Int < State;
+sorts State, nState;
 
-signature mzero:->Int/"0", mone:->Int/"1", mtwo:->Int/"2",
-  mplus:Int Int->Int/"+", mminus:Int Int->Int/"-",
-  mtimes:Int Int->Int/"*", mdiv:Int Int->Int/"div",
-  mle:Int Int->Bool/"<=", mequals:Int Int->Bool/"=",
-
-  bequals:Bool Bool->Bool/"=", band:Bool Bool->Bool/"and",
-  bimplies:Bool Bool->Bool/"=>", bor:Bool Bool->Bool/"or",
-  bnot:Bool->Bool/"not", true:->Bool/"true", false:->Bool/"false",
-
+signature
   init:Int->State, loop:Int Int->State, done:Int->State,
   protect:State Int->nState;
 
 variables B:Bool, S:Int, N:Int, I:Int, X:Int;
 
-rewrite-system simplifications
-  bnot(false)=>true, bnot(true)=>false, bnot(bnot(B))=>B,
-  band(false, B)=>false, band(true, B)=>B, band(B, false)=>false,
-  band(B, true)=>B, bimplies(true, B)=>B, bimplies(false, B)=>true,
-  bor(false, B)=>B, bor(true, B)=>true, bor(B, false)=>B,
-  bor(B, true)=>true, mequals(N, N)=>true, bequals(B, B)=>true,
-  bequals(true, B)=>B,bequals(false, B)=>bnot(B), bequals(B, true)=>B,
-  bequals(B, false)=>bnot(B), band(B, B)=>B, bor(B, B)=>B;
-
 constrained-rewrite-system sum
-  init(N) => loop(mzero, N),
-  loop(S, N) /\ mle(mone, N) => loop(mplus(S, N), mminus(N, mone)),
-  loop(S, N) /\ bnot(mle(mone, N)) => done(S);
+  (init N) => (loop 0 N),
+  (loop S N) /\ (mle 1 N) => (loop (mplus S N) (mminus N 1)),
+  (loop S N) /\ (bnot (mle 1 N)) => (done S);
 
 /*
 
 To prove a set of reachability properties (we call them circularities
-because of they way we prove them), we have to place them in a
+because of they way we prove them) we have to place them in a
 constrained rewrite system.
 
-In our case, we are interested in proving that
+In our case we are interested in proving that
 
-  init(N) /\ mle(mzero,N) => done(mdiv(mtimes(N,mplus(N,mone)),mtwo)),
+  (init N) /\ (mle 0,N) => (done (mdiv (mtimes N,(mplus N,1)),2)),
 
-which essentially states that init(N) computes the sum of the first N
-positive naturals, provided N is non-negative.
+which essentially states that (init N) computes the sum of the first N
+positive naturals provided N is non-negative.
 
 Unfortunately the system cannot establish this without a little bit of
-help from us. We have to specify an auxiliary circularity, just like
+help from us. We have to specify an auxiliary circularity just like
 we have to specify invariants for while loops when proving
 programs. Our circularity describes the repetitive behaviour of the
 rewrite system:
 
-  loop(S,I) /\ mle(mzero,I) => done(mplus(S,mdiv(mtimes(I,mplus(I,mone)),mtwo)));
+  (loop S,I) /\ (mle 0,I) => (done (mplus S,(mdiv (mtimes I,(mplus I,1)),2)));
 
 But don't worry: there is no need to trust this auxiliary
 circularity. The RMT system will establish that both circularities
@@ -114,33 +96,35 @@ understand better how circularities are used.
 We note here just that the first circularity is proved by the help of
 the second one. What is more interesting is that the second
 circularity is proved with the help of itself. This use of
-circularities is sound for terminating terms, as we have explained in
+circularities is sound for terminating terms as we have explained in
 the article.
 
 */
 
 constrained-rewrite-system circularities
 
-  init(N) /\ mle(mzero,N) => done(mdiv(mtimes(N,mplus(N,mone)),mtwo)),
+  (init N) /\ (mle 0 N) => (done (mdiv (mtimes N (mplus N 1)) 2)),
 
-  loop(S,I) /\ mle(mzero,I) => done(mplus(S,mdiv(mtimes(I,mplus(I,mone)),mtwo)));
+  (loop S I) /\ (mle 0 I) => (done (mplus S (mdiv (mtimes I (mplus I 1)) 2)));
 
 constrained-rewrite-system circularities_protected
 
-  protect(init(N),mplus(N,mplus(mplus(mone,mone), mone))) /\ mle(mzero,N) => protect(done(mdiv(mtimes(N,mplus(N,mone)),mtwo)),mzero),
+  (protect (init N) (mplus N (mplus (mplus 1 1) 1))) /\ (mle 0 N) => (protect (done (mdiv (mtimes N (mplus N 1)) 2)) 0),
 
-  protect(loop(S,I),mplus(I,mplus(mplus(mone,mone), mone))) /\ mle(mzero,I) => protect(done(mplus(S,mdiv(mtimes(I,mplus(I,mone)),mtwo))),mzero);
+  (protect (loop S I) (mplus I (mplus (mplus 1 1) 1))) /\ (mle 0 I) => (protect (done (mplus S (mdiv (mtimes I (mplus I 1)) 2))) 0);
 
 /*
 
-Now that we have set up the rewrite system with circularities, we can
+Now that we have set up the rewrite system with circularities we can
 issue the "prove" command. The prove command will (try to) prove that
 all rewrite rules in "circularities" are sound with respect to the
 rules in "sum". The soundness holds for terminating paths starting
 with the terms on the left-hand side. RMT does not establish
-termination -- you would need another tool, like CTRL, for that.
+termination -- you would need another tool like CTRL for that.
 
 */
-/*prove in sum : circularities;*/
-instrument sum sum_protected State nState protect X
+//prove in sum : circularities;
+
+instrument sum sum_protected State nState protect;
+
 prove [100,4] in sum_protected : circularities_protected;

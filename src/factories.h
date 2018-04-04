@@ -22,6 +22,9 @@ Term *bFalse();
 Term *bExists(Variable *, Term *);
 bool isExistsFunction(Function *);
 
+Term *bEquals(Term *, Term *);
+Term *mEquals(Term *, Term *);
+
 Function *getEqualsFunction(Sort *);
 Term *createEqualityConstraint(Term *, Term *);
 

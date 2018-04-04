@@ -200,8 +200,10 @@ void addPredefinedFunctions()
     createInterpretedFunction("mminus", arguments, intSort, "-");
     createInterpretedFunction("mtimes", arguments, intSort, "*");
     createInterpretedFunction("mdiv", arguments, intSort, "div");
-    createInterpretedFunction("mle", arguments, intSort, "<=");
-    createInterpretedFunction("mequals", arguments, intSort, "=");
+    createInterpretedFunction("mmod", arguments, intSort, "mod");
+    createInterpretedFunction("mle", arguments, boolSort, "<=");
+    createInterpretedFunction("mless", arguments, boolSort, "<");
+    createInterpretedFunction("mequals", arguments, boolSort, "=");
   }
 
   {
@@ -214,6 +216,7 @@ void addPredefinedFunctions()
 
     arguments.push_back(boolSort);
     createInterpretedFunction("band", arguments, boolSort, "and");
+    createInterpretedFunction("biff", arguments, boolSort, "iff");
     createInterpretedFunction("bor", arguments, boolSort, "or");
     createInterpretedFunction("bimplies", arguments, boolSort, "=>");
     createInterpretedFunction("bequals", arguments, boolSort, "=");
@@ -312,6 +315,45 @@ void parseVariables(string &s, int &w)
       break;
     }
   }
+}
+
+void addPredefinedRewriteSystems()
+{
+  RewriteSystem rewrite;
+
+  Sort *boolSort = getSort("Bool");
+  Sort *intSort = getSort("Int");
+  Term *B = getVarTerm(createFreshVariable(boolSort));
+  Term *N = getVarTerm(createFreshVariable(intSort));
+
+  rewrite.addRule(bNot(bFalse()), bTrue());
+  rewrite.addRule(bNot(bTrue()), bFalse());
+  rewrite.addRule(bNot(bNot(B)), B);
+  
+  rewrite.addRule(bAnd(bFalse(), B), bFalse());
+  rewrite.addRule(bAnd(bTrue(), B), B);
+  rewrite.addRule(bAnd(B, bFalse()), bFalse());
+  rewrite.addRule(bAnd(B, bTrue()), B);
+
+  rewrite.addRule(bImplies(bFalse(), B), bTrue());
+  rewrite.addRule(bImplies(bTrue(), B), B);
+
+  rewrite.addRule(bOr(bFalse(), B), B);
+  rewrite.addRule(bOr(bTrue(), B), bTrue());
+  rewrite.addRule(bOr(B, bFalse()), B);
+  rewrite.addRule(bOr(B, bTrue()), bTrue());
+
+  rewrite.addRule(mEquals(N, N), bTrue());
+
+  rewrite.addRule(bEquals(bTrue(), B), B);
+  rewrite.addRule(bEquals(bFalse(), B), bNot(B));
+  rewrite.addRule(bEquals(B, bTrue()), B);
+  rewrite.addRule(bEquals(B, bFalse()), bNot(B));
+
+  rewrite.addRule(bAnd(B, B), B);
+  rewrite.addRule(bOr(B, B), B);
+
+  putRewriteSystem("simplifications", rewrite);
 }
 
 string parseRewriteSystem(string &s, int &w, RewriteSystem &rewrite)
@@ -424,6 +466,7 @@ int main(int argc, char **argv)
 
   createBuiltIns();
 
+  addPredefinedRewriteSystems();
   if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
     while (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
       if (lookAhead(s, w, "rewrite-system")) {

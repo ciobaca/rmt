@@ -14,9 +14,7 @@ smt-prelude
    (- (sumUpTo b) (sumUpTo (- a 1))))
 "
 
-sorts Int / "Int",
-      Bool / "Bool",
-      IntP,
+sorts IntP,
       BoolP,
       Var / "Var",
       AExp,
@@ -48,29 +46,8 @@ subsort BExp < Stmt;
 /* next we must declare all function symbols */
 signature
 	// interpreted integers and booleans
-	mzero : -> Int / "0",
-	mone : -> Int / "1",
-	mtwo : -> Int / "2",
-	mthree : -> Int / "3",
-	mplus : Int Int -> Int / "+",
-	mminus : Int Int -> Int / "-",
-	mtimes : Int Int -> Int / "*",
-	mdiv : Int Int -> Int / "div",
-	mle : Int Int -> Bool / "<=",
-	mless : Int Int -> Bool / "<",
-	meven : Int -> Bool / "even",
-	mequals : Int Int -> Bool / "=",
-
 	sum : Int Int -> Int / "sum",
-
-	bequals : Bool Bool -> Bool / "=",
-	band : Bool Bool -> Bool / "and",
-	bimplies : Bool Bool -> Bool / "=>",
-	bor : Bool Bool -> Bool / "or",
-	bnot : Bool -> Bool / "not",
-
-	true : -> Bool / "true",
-	false : -> Bool / "false",
+	meven : Int -> Bool / "even",
 
 	mapequals : Map Map -> Bool / "=",
 
@@ -196,260 +173,250 @@ variables
 	ENV1 : Map,
 	ENV2 : Map;
 
-rewrite-system simplifications
-  bnot(false) => true, bnot(true) => false, bnot(bnot(B)) => B,
-  band(false, B) => false, band(true, B) => B, band(B, false) => false,
-  band(B, true) => B, bimplies(true, B) => B, bimplies(false, B) => true,
-  bor(false, B) => B, bor(true, B) => true, bor(B, false) => B,
-  bor(B, true) => true, mequals(N, N) => true, bequals(B, B) => true,
-  bequals(true, B) => B, bequals(false, B) => bnot(B), bequals(B, true) => B,
-  bequals(B, false) => bnot(B), band(B, B) => B, bor(B, B) => B;
-
-/* next, declare all rewrite rules */
 constrained-rewrite-system language
 // language
- 	IC(push(X,              REST), ENV) =>
- 	IC(push(lookup(ENV, X), REST), ENV),
+ 	(IC (push X              REST) ENV) =>
+ 	(IC (push (lookup ENV X) REST) ENV),
 
-	IC(push(pred(N),            REST), ENV) =>
-	IC(push(mminus(N, mone),    REST), ENV),
+	(IC (push (pred N)            REST) ENV) =>
+	(IC (push (mminus N 1)    REST) ENV),
 
-	IC(push(pred(NVAE),       REST) , ENV) =>
-	IC(push(NVAE, push(predh, REST)), ENV),
+	(IC (push (pred NVAE)       REST)  ENV) =>
+	(IC (push NVAE (push predh REST)) ENV),
 
-	IC(push(N, push(predh, REST)), ENV) =>
-	IC(push(pred(N),       REST) , ENV),
-
-
-	IC(push(not(B),  REST), ENV) =>
-	IC(push(bnot(B), REST), ENV),
-
-	IC(push(not(NVBE),       REST) , ENV) =>
-	IC(push(NVBE, push(noth, REST)), ENV),
-
-	IC(push(B, push(noth, REST)), ENV) =>
-	IC(push(not(B),       REST) , ENV),
+	(IC (push N (push predh REST)) ENV) =>
+	(IC (push (pred N)       REST)  ENV),
 
 
-	IC(push(ieven(N), REST), ENV) =>
-	IC(push(meven(N), REST), ENV),
+	(IC (push (not B)  REST) ENV) =>
+	(IC (push (bnot B) REST) ENV),
 
-	IC(push(ieven(NVAE),       REST) , ENV) =>
-	IC(push(NVAE, push(ievenh, REST)), ENV),
+	(IC (push (not NVBE)       REST)  ENV) =>
+	(IC (push NVBE (push noth REST)) ENV),
 
-	IC(push(N, push(ievenh, REST)), ENV) =>
-	IC(push(ieven(N),       REST) , ENV),
+	(IC (push B (push noth REST)) ENV) =>
+	(IC (push (not B)       REST)  ENV),
 
 
-	IC(push(succ(N),           REST), ENV) =>
-	IC(push(mplus(N, mone),    REST), ENV),
+	(IC (push (ieven N) REST) ENV) =>
+	(IC (push (meven N) REST) ENV),
 
-	IC(push(succ(NVAE),       REST) , ENV) =>
-	IC(push(NVAE, push(succh, REST)), ENV),
+	(IC (push (ieven NVAE)       REST)  ENV) =>
+	(IC (push NVAE (push ievenh REST)) ENV),
 
-	IC(push(N, push(succh, REST)), ENV) =>
-	IC(push(succ(N),       REST) , ENV),
+	(IC (push N (push ievenh REST)) ENV) =>
+	(IC (push (ieven N)       REST)  ENV),
 
-	IC(push(assign(X, N), REST), ENV) =>
-        IC(REST,       update(ENV, X, N)),
+
+	(IC (push (succ N)           REST) ENV) =>
+	(IC (push (mplus N 1)    REST) ENV),
+
+	(IC (push (succ NVAE)       REST)  ENV) =>
+	(IC (push NVAE (push succh REST)) ENV),
+
+	(IC (push N (push succh REST)) ENV) =>
+	(IC (push (succ N)       REST)  ENV),
+
+	(IC (push (assign X N) REST) ENV) =>
+        (IC REST       (update ENV X N)),
     
- 	IC(push(assign(X, NVAE),       REST) , ENV) =>
- 	IC(push(NVAE, push(assignh(X), REST)), ENV),
+ 	(IC (push (assign X NVAE)       REST)  ENV) =>
+ 	(IC (push NVAE (push (assignh X) REST)) ENV),
 
-     	IC(push(N, push(assignh(X), REST)), ENV) =>
-     	IC(push(assign(X, N),        REST) , ENV),
+     	(IC (push N (push (assignh X) REST)) ENV) =>
+     	(IC (push (assign X N)        REST)  ENV),
 
 // sequential composition
-	IC(push(seq(S1, S2), REST) , ENV) =>
-	IC(push(S1, push(S2, REST)), ENV),
+	(IC (push (seq S1 S2) REST)  ENV) =>
+	(IC (push S1 (push S2 REST)) ENV),
 
-	IC(push(skip, REST), ENV) =>
-	IC(           REST , ENV),
+	(IC (push skip REST) ENV) =>
+	(IC            REST  ENV),
 
 // conditional statement
 
-	IC(push(ite(NVBE, S1, S2),       REST) , ENV) =>
-	IC(push(NVBE, push(iteh(S1, S2), REST)), ENV),
+	(IC (push (ite NVBE S1 S2)       REST)  ENV) =>
+	(IC (push NVBE (push (iteh S1 S2) REST)) ENV),
 
-	IC(push(B, push(iteh(S1, S2), REST)), ENV) =>
-	IC(push(ite(B, S1, S2),       REST) , ENV),
+	(IC (push B (push (iteh S1 S2) REST)) ENV) =>
+	(IC (push (ite B S1 S2)       REST)  ENV),
 
-	IC(push(ite(true, S1, S2), REST), ENV) =>
-	IC(push(S1,                REST), ENV),
+	(IC (push (ite true S1 S2) REST) ENV) =>
+	(IC (push S1                REST) ENV),
 
- 	IC(push(ite(false, S1, S2), REST), ENV) =>
- 	IC(push(S2,                 REST), ENV),
+ 	(IC (push (ite false S1 S2) REST) ENV) =>
+ 	(IC (push S2                 REST) ENV),
 
 // while statement
- 	IC(push(while(BE, S),                        REST), ENV) =>
- 	IC(push(ite(BE, seq(S, while(BE, S)), skip), REST), ENV),
+ 	(IC (push (while BE S)                        REST) ENV) =>
+ 	(IC (push (ite BE (seq S (while BE S)) skip) REST) ENV),
 
 // addition operator
- 	IC(push(plus(N, M),     REST), ENV) =>
- 	IC(push(mplus(N, M),    REST), ENV),
+ 	(IC (push (plus N M)     REST) ENV) =>
+ 	(IC (push (mplus N M)    REST) ENV),
 
-	IC(push(plus(NVAE1, AE2),        REST) , ENV) =>
-	IC(push(NVAE1, push(plushl(AE2), REST)), ENV),
+	(IC (push (plus NVAE1 AE2)        REST)  ENV) =>
+	(IC (push NVAE1 (push (plushl AE2) REST)) ENV),
   
- 	IC(push(N, push(plushl(AE2), REST)), ENV) =>
- 	IC(push(plus(N, AE2)       , REST) , ENV),
+ 	(IC (push N (push (plushl AE2) REST)) ENV) =>
+ 	(IC (push (plus N AE2)        REST)  ENV),
 
- 	IC(push(plus(N, NVAE2)       , REST) , ENV) =>
- 	IC(push(NVAE2, push(plushr(N), REST)), ENV),
+ 	(IC (push (plus N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (plushr N) REST)) ENV),
 
- 	IC(push(M, push(plushr(N), REST)), ENV) =>
- 	IC(push(plus(N, M)       , REST) , ENV),
+ 	(IC (push M (push (plushr N) REST)) ENV) =>
+ 	(IC (push (plus N M)        REST)  ENV),
 
 // multiplication operator
- 	IC(push(times(N, M),     REST), ENV) =>
- 	IC(push(mtimes(N, M),    REST), ENV),
+ 	(IC (push (times N M)     REST) ENV) =>
+ 	(IC (push (mtimes N M)    REST) ENV),
 
-	IC(push(times(NVAE1, AE2),        REST) , ENV) =>
-	IC(push(NVAE1, push(timeshl(AE2), REST)), ENV),
+	(IC (push (times NVAE1 AE2)        REST)  ENV) =>
+	(IC (push NVAE1 (push (timeshl AE2) REST)) ENV),
   
- 	IC(push(N, push(timeshl(AE2), REST)), ENV) =>
- 	IC(push(times(N, AE2)       , REST) , ENV),
+ 	(IC (push N (push (timeshl AE2) REST)) ENV) =>
+ 	(IC (push (times N AE2)        REST)  ENV),
 
- 	IC(push(times(N, NVAE2)       , REST) , ENV) =>
- 	IC(push(NVAE2, push(timeshr(N), REST)), ENV),
+ 	(IC (push (times N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (timeshr N) REST)) ENV),
 
- 	IC(push(M, push(timeshr(N), REST)), ENV) =>
- 	IC(push(times(N, M)       , REST) , ENV),
+ 	(IC (push M (push (timeshr N) REST)) ENV) =>
+ 	(IC (push (times N M)        REST)  ENV),
 
 // division operator
- 	IC(push(div(N, M),     REST), ENV) =>
- 	IC(push(mdiv(N, M),    REST), ENV),
+ 	(IC (push (div N M)     REST) ENV) =>
+ 	(IC (push (mdiv N M)    REST) ENV),
 
-	IC(push(div(NVAE1, AE2),        REST) , ENV) =>
-	IC(push(NVAE1, push(divhl(AE2), REST)), ENV),
+	(IC (push (div NVAE1 AE2)        REST)  ENV) =>
+	(IC (push NVAE1 (push (divhl AE2) REST)) ENV),
   
- 	IC(push(N, push(divhl(AE2), REST)), ENV) =>
- 	IC(push(div(N, AE2)       , REST) , ENV),
+ 	(IC (push N (push (divhl AE2) REST)) ENV) =>
+ 	(IC (push (div N AE2)        REST)  ENV),
 
- 	IC(push(div(N, NVAE2)       , REST) , ENV) =>
- 	IC(push(NVAE2, push(divhr(N), REST)), ENV),
+ 	(IC (push (div N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (divhr N) REST)) ENV),
 
- 	IC(push(M, push(divhr(N), REST)), ENV) =>
- 	IC(push(div(N, M)       , REST) , ENV),
+ 	(IC (push M (push (divhr N) REST)) ENV) =>
+ 	(IC (push (div N M)        REST)  ENV),
 
 // subtraction operator
- 	IC(push(minus(N, M),     REST), ENV) =>
- 	IC(push(mminus(N, M),    REST), ENV),
+ 	(IC (push (minus N M)     REST) ENV) =>
+ 	(IC (push (mminus N M)    REST) ENV),
 
-	IC(push(minus(NVAE1, AE2),        REST) , ENV) =>
-	IC(push(NVAE1, push(minushl(AE2), REST)), ENV),
+	(IC (push (minus NVAE1 AE2)        REST)  ENV) =>
+	(IC (push NVAE1 (push (minushl AE2) REST)) ENV),
   
- 	IC(push(N, push(minushl(AE2), REST)), ENV) =>
- 	IC(push(minus(N, AE2)       , REST) , ENV),
+ 	(IC (push N (push (minushl AE2) REST)) ENV) =>
+ 	(IC (push (minus N AE2)        REST)  ENV),
 
- 	IC(push(minus(N, NVAE2)       , REST) , ENV) =>
- 	IC(push(NVAE2, push(minushr(N), REST)), ENV),
+ 	(IC (push (minus N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (minushr N) REST)) ENV),
 
- 	IC(push(M, push(minushr(N), REST)), ENV) =>
- 	IC(push(minus(N, M)       , REST) , ENV),
+ 	(IC (push M (push (minushr N) REST)) ENV) =>
+ 	(IC (push (minus N M)        REST)  ENV),
 
 // for statement
- 	IC(push(for(X, NVAE1, NVAE2, S),        REST ), ENV) =>
- 	IC(push(NVAE1, push(forhl(X, NVAE2, S), REST)), ENV),
+ 	(IC (push (for X NVAE1 NVAE2 S)        REST ) ENV) =>
+ 	(IC (push NVAE1 (push (forhl X NVAE2 S) REST)) ENV),
 
- 	IC(push(N, push(forhl(X, NVAE2, S), REST)), ENV) =>
- 	IC(push(for(X, N, NVAE2, S),        REST) , ENV),
+ 	(IC (push N (push (forhl X NVAE2 S) REST)) ENV) =>
+ 	(IC (push (for X N NVAE2 S)        REST)  ENV),
 
- 	IC(push(for(X, N, NVAE2, S),            REST ), ENV) =>
- 	IC(push(NVAE2, push(forhr(X, N, S),     REST)), ENV),
+ 	(IC (push (for X N NVAE2 S)            REST ) ENV) =>
+ 	(IC (push NVAE2 (push (forhr X N S)     REST)) ENV),
 
- 	IC(push(M, push(forhr(X, N, S), REST)), ENV) =>
- 	IC(push(for(X, N, M, S),        REST) , ENV),
+ 	(IC (push M (push (forhr X N S) REST)) ENV) =>
+ 	(IC (push (for X N M S)        REST)  ENV),
 
-	IC(push(for(X, N, M, S),                                         REST), ENV) /\ mle(N, M) =>
-	IC(push(seq(assign(X, N), S), push(for(X, mplus(N, mone), M, S), REST)), ENV),
+	(IC (push (for X N M S)                                         REST) ENV) /\ (mle N M) =>
+	(IC (push (seq (assign X N) S) (push (for X (mplus N 1) M S) REST)) ENV),
 
-	IC(push(for(X, N, M, S), REST), ENV) /\ bnot(mle(N, M)) =>
-	IC(                      REST, ENV),
+	(IC (push (for X N M S) REST) ENV) /\ (bnot (mle N M)) =>
+	(IC                       REST ENV),
 
 // equality operator
 
- 	IC(push(iequals(N, M),  REST), ENV) =>
- 	IC(push(mequals(N, M), REST), ENV),
+ 	(IC (push (iequals N M)  REST) ENV) =>
+ 	(IC (push (mequals N M) REST) ENV),
 
- 	IC(push(iequals(NVAE1, AE2),        REST) , ENV) =>
- 	IC(push(NVAE1, push(iequalshl(AE2), REST)), ENV),
+ 	(IC (push (iequals NVAE1 AE2)        REST)  ENV) =>
+ 	(IC (push NVAE1 (push (iequalshl AE2) REST)) ENV),
 
- 	IC(push(N, push(iequalshl(AE2), REST)), ENV) =>
- 	IC(push(iequals(N, AE2),        REST) , ENV),
+ 	(IC (push N (push (iequalshl AE2) REST)) ENV) =>
+ 	(IC (push (iequals N AE2)        REST)  ENV),
 
- 	IC(push(iequals(N, NVAE2),        REST) , ENV) =>
- 	IC(push(NVAE2, push(iequalshr(N), REST)), ENV),
+ 	(IC (push (iequals N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (iequalshr N) REST)) ENV),
   
- 	IC(push(M, push(iequalshr(N), REST)), ENV) =>
- 	IC(push(iequals(N, M),       REST) , ENV),
+ 	(IC (push M (push (iequalshr N) REST)) ENV) =>
+ 	(IC (push (iequals N M)       REST)  ENV),
 
 // less than or equal to operator2
 
- 	IC(push(le(N, M),  REST), ENV) =>
- 	IC(push(mle(N, M), REST), ENV),
+ 	(IC (push (le N M)  REST) ENV) =>
+ 	(IC (push (mle N M) REST) ENV),
 
- 	IC(push(le(NVAE1, AE2),        REST) , ENV) =>
- 	IC(push(NVAE1, push(lehl(AE2), REST)), ENV),
+ 	(IC (push (le NVAE1 AE2)        REST)  ENV) =>
+ 	(IC (push NVAE1 (push (lehl AE2) REST)) ENV),
 
- 	IC(push(N, push(lehl(AE2), REST)), ENV) =>
- 	IC(push(le(N, AE2),        REST) , ENV),
+ 	(IC (push N (push (lehl AE2) REST)) ENV) =>
+ 	(IC (push (le N AE2)        REST)  ENV),
 
- 	IC(push(le(N, NVAE2),        REST) , ENV) =>
- 	IC(push(NVAE2, push(lehr(N), REST)), ENV),
+ 	(IC (push (le N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (lehr N) REST)) ENV),
   
- 	IC(push(M, push(lehr(N), REST)), ENV) =>
- 	IC(push(le(N, M),       REST) , ENV),
+ 	(IC (push M (push (lehr N) REST)) ENV) =>
+ 	(IC (push (le N M)       REST)  ENV),
 
 // strictly less than
 
- 	IC(push(less(N, M),  REST), ENV) =>
- 	IC(push(mless(N, M), REST), ENV),
+ 	(IC (push (less N M)  REST) ENV) =>
+ 	(IC (push (mless N M) REST) ENV),
 
- 	IC(push(less(NVAE1, AE2),        REST) , ENV) =>
- 	IC(push(NVAE1, push(lesshl(AE2), REST)), ENV),
+ 	(IC (push (less NVAE1 AE2)        REST)  ENV) =>
+ 	(IC (push NVAE1 (push (lesshl AE2) REST)) ENV),
 
- 	IC(push(N, push(lesshl(AE2), REST)), ENV) =>
- 	IC(push(less(N, AE2),        REST) , ENV),
+ 	(IC (push N (push (lesshl AE2) REST)) ENV) =>
+ 	(IC (push (less N AE2)        REST)  ENV),
 
- 	IC(push(less(N, NVAE2),        REST) , ENV) =>
- 	IC(push(NVAE2, push(lesshr(N), REST)), ENV),
+ 	(IC (push (less N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (lesshr N) REST)) ENV),
   
- 	IC(push(M, push(lesshr(N), REST)), ENV) =>
- 	IC(push(less(N, M),       REST) , ENV)
+ 	(IC (push M (push (lesshr N) REST)) ENV) =>
+ 	(IC (push (less N M)       REST)  ENV)
 ;
 
 constrained-rewrite-system circularities
 // this is the specification of the SUM program
-IC(push(
- 	seq(assign(x, N),                                // x <- N
-   	seq(assign(y, mzero),                            // y <- 0
- 	seq(assign(z, mzero),                            // z <- 0
- 	    while(le(y, x),                              // while y <= x
-                   seq(assign(z, plus(z, y)),            //   z <- z + y
- 		      assign(y, plus(y, mone))))))),     //   y <- y - 1
-     done), ENV) /\ mle(mzero, N)
+(IC (push 
+ 	(seq (assign x N)                                // x <- N
+   	(seq (assign y 0)                            // y <- 0
+ 	(seq (assign z 0)                            // z <- 0
+ 	    (while (le y x)                              // while y <= x
+                   (seq (assign z (plus z y))            //   z <- z + y
+ 		      (assign y (plus y 1)))))))     //   y <- y - 1
+     done) ENV) /\ (mle 0 N)
 =>
-IC(done, update(update(update(ENV, x, N),
-                       y, mplus(N, mone)),
-		z, mdiv(mtimes(N, mplus(N, mone)), mtwo))),
+(IC done (update (update (update ENV x N) 
+                       y (mplus N 1)) 
+		z (mdiv (mtimes N (mplus N 1)) 2))) 
 
-// cons(mi(x,N),cons(mi(y,mplus(N, mone)),cons(mi(z,mdiv(mtimes(N, mplus(N, mone)), mtwo)),emp)))), // at the end, the program variable z is mapped to N(N+1)/2 in the environment
-
+// (cons (mi x N) (cons (mi y (mplus N 1)) (cons (mi z (mdiv (mtimes N (mplus N 1)) 2)) emp)))) // at the end the program variable z is mapped to N(N+1)/2 in the environment
+,
 // this is the helper circularity that encodes the invariant of the while loop
-IC(push(
-	while(le(y,x),
-		seq(assign(z,plus(z,y)),
-		assign(y,plus(y,mone)))),
-      done),
-      update(update(update(ENV, x, N), y, J), z, SUM)
-//      cons(mi(x,N),cons(mi(y,J),cons(mi(z,SUM),emp)))
-      ) /\ band(mle(mzero, J),
-                mle(J, N)
+(IC (push 
+	(while (le y x) 
+		(seq (assign z (plus z y)) 
+		(assign y (plus y 1)))) 
+      done) 
+      (update (update (update ENV x N) y J) z SUM)
+//      (cons (mi x N) (cons (mi y J) (cons (mi z SUM) emp)))
+      ) /\ (band (mle 0 J) 
+                (mle J N)
                )
 =>
-IC(done, update(update(update(ENV, x, N), y, mplus(N,mone)), z, mplus(SUM, 
-			mdiv(mtimes(mplus(mminus(N, J), mone), mplus(J, N)), mtwo)
+(IC done (update (update (update ENV x N) y (mplus N 1)) z (mplus SUM 
+			(mdiv (mtimes (mplus (mminus N J) 1) (mplus J N)) 2)
 						)));
 
 prove [300,5] in language : circularities;
@@ -458,13 +425,13 @@ prove [300,5] in language : circularities;
 
 rewrite-system
 
-p(update(ENV, x, X, y, Y)) /\ y > 0 =>
-p(update(ENV, x, X + Y, y, Y - 1))
+(p (update ENV x X y Y)) /\ y > 0 =>
+(p (update ENV x X + Y y Y - 1))
 
 circularities
 
-p(update(ENV, x, 0, y, N) /\ N > 0 =>
-p(update(ENV, x, 1+...+N, y 0))
+(p (update ENV x 0 y N) /\ N > 0 =>
+(p (update ENV x 1+...+N y 0))
 
 
 */

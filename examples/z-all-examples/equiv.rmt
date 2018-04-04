@@ -6,25 +6,11 @@ smt-prelude "
   (- (sumUpTo b) (sumUpTo (- a 1))))
 "
 
-/* any file begins with the declaration of all sorts used */
-sorts Int / "Int",
-      Bool / "Bool",
-      Left,
+sorts Left,
       Right,
       State;
 
-// after declaring all sorts,
-// we must declare all subsort relations
-//subsort Int < AExp;
-//subsort Var < NonValAExp;
-//subsort NonValAExp < AExp;
-//subsort NonValBExp < BExp;
-//subsort AExp BExp Stmt < Code;
-//subsort Bool < BExp;
-
-/* next we must declare all function symbols */
 signature
-	// states
 	leftInit : Int Int -> Left,
 	leftLoop : Int Int Bool -> Left,
 	leftDone : Int -> Left,
@@ -36,28 +22,8 @@ signature
 	pair : Left Right -> State,
 	ok : -> State,
 
-	// interpreted integers and booleans
-	mzero : -> Int / "0",
-	mone : -> Int / "1",
-	mtwo : -> Int / "2",
-	mplus : Int Int -> Int / "+",
-	mminus : Int Int -> Int / "-",
-	mtimes : Int Int -> Int / "*",
-	mdiv : Int Int -> Int / "div",
-	mle : Int Int -> Bool / "<=",
-	mequals : Int Int -> Bool / "=",
-	msum : Int Int -> Bool / "sum",
+	msum : Int Int -> Bool / "sum";
 
-	bequals : Bool Bool -> Bool / "=",
-	band : Bool Bool -> Bool / "and",
-	bimplies : Bool Bool -> Bool / "=>",
-	bor : Bool Bool -> Bool / "or",
-	bnot : Bool -> Bool / "not",
-
-	true : -> Bool / "true",
-	false : -> Bool / "false";
-
-/* next we must declare all variables */
 variables
 	B : Bool,
 	S : Int,
@@ -69,189 +35,104 @@ variables
 	IP : Int,
 	J : Int;
 
-/* next, declare all rewrite systems */
-
-// the first rewrite system is called "simplifications"
-// if there is such a rewrite system, the tool will assume
-// that it is convergent and it will use it in order to 
-// perform simplifications on the terms before other
-// operations like calling an smt solver or narrowing a term.
-rewrite-system simplifications
-	// bnot
-	bnot(false) =>
-	true,
-
-	bnot(true) =>
-	false,
-
-	bnot(bnot(B)) =>
-	B,
-
-	// band
-	band(false, B) =>
-	false,
-	
-	band(true, B) =>
-	B,
-
-	band(B, false) =>
-	false,
-	
-	band(B, true) =>
-	B,
-
-	// implies
-	bimplies(true, B) =>
-	B,
-	
-	bimplies(false, B) =>
-	true,
-
-	// bor
-	bor(false, B) =>
-	B,
-	
-	bor(true, B) =>
-	true,
-
-	bor(B, false) =>
-	B,
-	
-	bor(B, true) =>
-	true,
-
-	// mplus
-	// mplus(N, mzero) =>
-	// N,
-
-	// mplus(mzero, N) =>
-	// N,
-
-	// mequals
-	mequals(N, N) =>
-	true,
-
-	// bequals
-	bequals(B, B) =>
-	true,
-
-	bequals(true, B) =>
-	B,
-
-	bequals(false, B) =>
-	bnot(B),
-
-	bequals(B, true) =>
-	B,
-
-	bequals(B, false) =>
-	bnot(B),
-
-	band(B, B) =>
-	B,
-
-	bor(B, B) =>
-	B;
-
 constrained-rewrite-system left
-	leftInit(S, I) =>
-	leftLoop(S, I, mle(mone, I)),
+	(leftInit S I) =>
+	(leftLoop S I (mle 1 I)),
 
-	leftLoop(S, I, true) =>
-	leftInit(mplus(S, I), mminus(I, mone)),
+	(leftLoop S I true) =>
+	(leftInit (mplus S I) (mminus I 1)),
 
-	leftLoop(S, I, false) =>
-	leftDone(S);
+	(leftLoop S I false) =>
+	(leftDone S);
 
 constrained-rewrite-system right
-	rightInit(S, I, N) =>
-	rightLoop(S, I, N, mle(I, N)),
+	(rightInit S I N) =>
+	(rightLoop S I N (mle I N)),
 
-	rightLoop(S, I, N, true) =>
-	rightInit(mplus(S, I), mplus(I, mone), N),
+	(rightLoop S I N true) =>
+	(rightInit (mplus S I) (mplus I 1) N),
 
-	rightLoop(S, I, N, false) =>
-	rightDone(S);
+	(rightLoop S I N false) =>
+	(rightDone S);
 
 constrained-rewrite-system both
-	leftInit(S, I) =>
-	leftLoop(S, I, mle(mone, I)),
+	(leftInit S I) =>
+	(leftLoop S I (mle 1 I)),
 
-	leftLoop(S, I, true) =>
-	leftInit(mplus(S, I), mminus(I, mone)),
+	(leftLoop S I true) =>
+	(leftInit (mplus S I) (mminus I 1)),
 
-	leftLoop(S, I, false) =>
-	leftDone(S),
+	(leftLoop S I false) =>
+	(leftDone S),
 
 	// cool
-	rightInit(S, I, N) =>
-	rightLoop(S, I, N, mle(I, N)),
+	(rightInit S I N) =>
+	(rightLoop S I N (mle I N)),
 
-	rightLoop(S, I, N, true) =>
-	rightInit(mplus(S, I), mplus(I, mone), N),
+	(rightLoop S I N true) =>
+	(rightInit (mplus S I) (mplus I 1) N),
 
-	rightLoop(S, I, N, false) =>
-	rightDone(S),
+	(rightLoop S I N false) =>
+	(rightDone S),
 	      
 	// helper for equivalence checking
-	pair(leftDone(S), rightDone(S)) =>
+	(pair (leftDone S) (rightDone S)) =>
 	ok;
 
 // constrained-rewrite-system circularitiesLeft
-// 	leftInit(mzero, N) /\ mle(mzero, N) =>
-// 	leftDone(mdiv(mtimes(N, mplus(N, mone)), mtwo)),
+// 	(leftInit 0 N) /\ (mle 0 N) =>
+// 	(leftDone (mdiv (mtimes N (mplus N 1)) 2)),
 
-// 	leftInit(S, I) /\ mle(mzero, I) =>
-// 	leftDone(mplus(S, mdiv(mtimes(I, mplus(I, mone)), mtwo)));
+// 	(leftInit S I) /\ (mle 0 I) =>
+// 	(leftDone (mplus S (mdiv (mtimes I (mplus I 1)) 2)));
 
 // constrained-rewrite-system circularitiesRight
-// 	rightInit(mzero, mzero, N) /\ mle(mzero, N) =>
-// 	rightDone(mdiv(mtimes(N, mplus(N, mone)), mtwo)),
+// 	(rightInit 0 0 N) /\ (mle 0 N) =>
+// 	(rightDone (mdiv (mtimes N (mplus N 1)) 2)),
 
-// 	rightInit(S, I, N) /\ mle(I, N) =>
-// 	rightDone(mplus(S, mdiv(mtimes(mplus(mminus(N, I), mone), mplus(I, N)), mtwo)));
+// 	(rightInit S I N) /\ (mle I N) =>
+// 	(rightDone (mplus S (mdiv (mtimes (mplus (mminus N I) 1) (mplus I N)) 2)));
 
 constrained-rewrite-system equivCirc
-	pair(leftInit(mzero, N), rightInit(mzero, mzero, N)) /\ mle(mzero, N) =>
+	(pair (leftInit 0 N) (rightInit 0 0 N)) /\ (mle 0 N) =>
 	ok,
 
-	pair(leftInit(S, J), rightInit(SP, I, N)) /\
-	band(
-	 band(
-	  mle(mzero, I),
-	  mle(mzero, J)
-	 ),
-	 band(
-	  band(
- 	   mequals(S, mdiv(mtimes(J, mplus(J, mone)), mtwo)),
-	   mequals(SP, mdiv(mtimes(mplus(mminus(N, I), mone), mplus(I, N)), mtwo))
-	  ),
-	  mequals(mplus(I, J), mplus(N, mone))
+	(pair (leftInit S J) (rightInit SP I N)) /\
+	(band 
+	 (band 
+	  (mle 0 I)
+	  (mle 0 J)
+	 )
+	 (band 
+	  (band 
+ 	   (mequals S (mdiv (mtimes J (mplus J 1)) 2))
+	   (mequals SP (mdiv (mtimes (mplus (mminus N I) 1) (mplus I N)) 2))
+	  )
+	  (mequals (mplus I J) (mplus N 1))
 	 )
 	) =>
 	ok;
 
 constrained-rewrite-system myrsCirc
-        pair(leftInit(S, I),
-             rightInit(SP, IP, NP))
+        (pair (leftInit S I) (rightInit SP IP NP))
         /\
-        band(band(mequals(S, mdiv(mtimes(mminus(NP, IP), mplus(mplus(IP, NP), mone)), mtwo)),
-                  mequals(SP, mdiv(mtimes(IP, mminus(IP, mone)), mtwo))),
-                  mequals(mplus(I, IP), mplus(NP, mone)))
+        (band (band (mequals S (mdiv (mtimes (mminus NP IP) (mplus (mplus IP NP) 1)) 2))
+                  (mequals SP (mdiv (mtimes IP (mminus IP 1)) 2)))
+                  (mequals (mplus I IP) (mplus NP 1)))
 		  => ok;
 
 constrained-rewrite-system myrsDone
-	pair(leftDone(S), rightDone(S)) => ok;
+	(pair (leftDone S) (rightDone S)) => ok;
 
 show-equivalent [7, 2] in left and right :
 
-  pair(leftInit(mzero, N), rightInit(mzero, mzero, N)) /\ mle(mzero, N),
+  (pair (leftInit 0 N) (rightInit 0 0 N)) /\ (mle 0 N),
 
-  pair(leftInit(S, I), rightInit(SP, IP, NP)) /\
-        band(band(band(mequals(S, msum(mplus(mminus(NP, IP), mone), NP)),
-                  mequals(SP, msum(mzero, mminus(IP, mone)))),
-                  mequals(mplus(I, IP), NP)), mle(mzero, NP))
+  (pair (leftInit S I) (rightInit SP IP NP)) /\
+        (band (band (band (mequals S (msum (mplus (mminus NP IP) 1) NP))
+                  (mequals SP (msum 0 (mminus IP 1))))
+                  (mequals (mplus I IP) NP)) (mle 0 NP))
 
 with-base
 
-  pair(leftDone(S), rightDone(S));
+  (pair (leftDone S) (rightDone S));

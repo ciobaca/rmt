@@ -18,9 +18,17 @@
   (interactive)
   (let ((case-fold-search nil)) ; or nil
 
-    (change-to-prefix "ca")
-    (change-to-prefix "cb")
-    (change-to-prefix "cc")
+    (change-to-prefix "aequals")
+    (change-to-prefix "aequalshl")
+    (change-to-prefix "aequalshr")
+    (change-to-prefix "lift")
+    (change-to-prefix "isBoolVal")
+    (change-to-prefix "isIntVal")
+    (change-to-prefix "lte")
+    (change-to-prefix "ltehl")
+    (change-to-prefix "ltehr")
+    (change-to-prefix "lthl")
+    (change-to-prefix "lthr")
 
     (change-to-prefix "band")
     (change-to-prefix "biff")
@@ -184,8 +192,14 @@
     (change-to-prefix "c")
     (change-to-prefix "d")
     (change-to-prefix "s")
+    (change-to-prefix "i")
     (change-to-prefix "sn")
 
+    (change-to-prefix "ca")
+    (change-to-prefix "cb")
+    (change-to-prefix "cc")
+
+    (change-to-prefix "lt")
     )
   )
 

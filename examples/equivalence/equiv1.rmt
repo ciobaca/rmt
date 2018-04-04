@@ -34,26 +34,7 @@ signature
 	pair : Left Right -> State,
 	ok : -> State,
 
-	// interpreted integers and booleans
-	0 : -> Int / "0",
-	1 : -> Int / "1",
-	2 : -> Int / "2",
-	mplus : Int Int -> Int / "+",
-	mminus : Int Int -> Int / "-",
-	mtimes : Int Int -> Int / "*",
-	mdiv : Int Int -> Int / "div",
-	mle : Int Int -> Bool / "<=",
-	mequals : Int Int -> Bool / "=",
-	msum : Int Int -> Bool / "sum",
-
-	bequals : Bool Bool -> Bool / "=",
-	band : Bool Bool -> Bool / "and",
-	bimplies : Bool Bool -> Bool / "=>",
-	bor : Bool Bool -> Bool / "or",
-	bnot : Bool -> Bool / "not",
-
-	true : -> Bool / "true",
-	false : -> Bool / "false";
+	msum : Int Int -> Int / "sum";
 
 /* next we must declare all variables */
 variables
@@ -66,6 +47,7 @@ variables
 	I : Int,
 	IP : Int,
 	J : Int;
+
 
 constrained-rewrite-system left
 	(leftInit S I) =>
@@ -162,9 +144,11 @@ show-equivalent [7, 2] in left and right :
   (pair (leftInit 0 N) (rightInit 0 0 N)) /\ (mle 0 N),
 
   (pair (leftInit S I) (rightInit SP IP NP)) /\
-        (band (band (band (mequals S (msum (mplus (mminus NP IP) 1) NP))
+        (band (band (band 
+		  (mequals S (msum (mplus (mminus NP IP) 1) NP))
                   (mequals SP (msum 0 (mminus IP 1))))
-                  (mequals (mplus I IP) NP)) (mle 0 NP))
+                  (mequals (mplus I IP) NP))
+		  (mle 0 NP))
 
 with-base
 

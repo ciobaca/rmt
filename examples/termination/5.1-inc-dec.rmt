@@ -9,56 +9,39 @@
 
   The rewrite system is:
 
-  init(x) => loop(x, 1)
-  loop(x, y) /\ x > 0 => loop(x - y, y + 1)
-  loop(x, y) /\ x <= 0 => done(x)
+  (init x) => (loop x, 1)
+  (loop x, y) /\ x > 0 => (loop x - y, y + 1)
+  (loop x, y) /\ x <= 0 => (done x)
 
   We prove the total correctness specification:
 
-  init(x) => done(z)
+  (init x) => (done z)
 
 */
-sorts Int/"Int", Bool/"Bool", State, nState;
+sorts State, nState;
 
-signature mzero:->Int/"0", mone:->Int/"1", mtwo:->Int/"2",
-  mplus:Int Int->Int/"+", mminus:Int Int->Int/"-",
-  mtimes:Int Int->Int/"*", mdiv:Int Int->Int/"div",
-  mle:Int Int->Bool/"<=", mequals:Int Int->Bool/"=",
+signature
   mabs : Int -> Int / "abs", // absolute value
-
-  bequals:Bool Bool->Bool/"=", band:Bool Bool->Bool/"and",
-  bimplies:Bool Bool->Bool/"=>", bor:Bool Bool->Bool/"or",
-  bnot:Bool->Bool/"not", true:->Bool/"true", false:->Bool/"false",
 
   init:Int->State, loop:Int Int->State, done:Int->State,
   protect:State Int->nState;
 
 variables B:Bool, S:Int, N:Int, I:Int, x:Int, y:Int, z:Int, VN:Int, VI:Int, REZ:Int;
 
-/* rewrite system used by the system to simplify constraints */
-rewrite-system simplifications
-  bnot(false)=>true, bnot(true)=>false, bnot(bnot(B))=>B,
-  band(false, B)=>false, band(true, B)=>B, band(B, false)=>false,
-  band(B, true)=>B, bimplies(true, B)=>B, bimplies(false, B)=>true,
-  bor(false, B)=>B, bor(true, B)=>true, bor(B, false)=>B,
-  bor(B, true)=>true, mequals(N, N)=>true, bequals(B, B)=>true,
-  bequals(true, B)=>B,bequals(false, B)=>bnot(B), bequals(B, true)=>B,
-  bequals(B, false)=>bnot(B), band(B, B)=>B, bor(B, B)=>B;
-
 /*** Rewrite Rules ***/
 constrained-rewrite-system whileloop
-  init(x) => loop(x, mone),
+  (init x) => (loop x 1),
 
-  loop(x, y) /\ bnot(mle(x, mzero)) => loop(mminus(x, y), mplus(y, mone)),
+  (loop x y) /\ (bnot (mle x 0)) => (loop (mminus x y) (mplus y 1)),
   
-  loop(x, y) /\ mle(x, mzero) => done(x);
+  (loop x y) /\ (mle x 0) => (done x);
 
 /*** Proof Obligation ***/
 constrained-rewrite-system circularities
 
-  init(x) => done(z),
+  (init x) => (done z),
 
-  loop(x, y) /\ mle(mone, y) => done(z);
+  (loop x y) /\ (mle 1 y) => (done z);
 
 // the following command proves partial correctness
 //prove in whileloop : circularities;

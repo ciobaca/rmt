@@ -66,6 +66,6 @@ constrained-rewrite-system circularities
 // the following commands are for proving total correctness
 instrument whileloop whileloop_protected State nState protect;
 
-cinstrument circularities circularities_protected State nState protect /* challenge */  /* challenge */;
+cinstrument circularities circularities_protected State nState protect x x;
 
 prove in whileloop_protected : circularities_protected;

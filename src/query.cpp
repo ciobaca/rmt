@@ -6,6 +6,8 @@
 #include "queryunify.h"
 #include "queryrun.h"
 #include "querysearch.h"
+#include "queryder.h"
+#include "querysubs.h"
 #include "queryprovereachability.h"
 #include "queryproveequivalence.h"
 #include "querysatisfiability.h"
@@ -33,6 +35,16 @@ Query *Query::lookAheadQuery(std::string &s, int &w)
     }
   }
   return 0;
+}
+
+Query *createQueryDer()
+{
+  return new QueryDer();
+}
+
+Query *createQuerySubs()
+{
+  return new QuerySubs();
 }
 
 Query *createQuerySearch()
@@ -85,11 +97,12 @@ std::map<std::string, QueryCreator> *registerQueries()
   std::map<std::string, QueryCreator> *map;
   map = new std::map<std::string, QueryCreator>;
   (*map)["search"] = createQuerySearch;
+  (*map)["der"] = createQueryDer;
+  (*map)["subs"] = createQuerySubs;
   (*map)["unify"] = createQueryUnify;
   (*map)["implies"] = createQueryImplies;
   (*map)["instrument"] = createQueryInstrument;
   (*map)["cinstrument"] = createQueryInstrument_C;
-  // TODO: after TACAS, change command "prove" to "prove-reachability"
   (*map)["prove"] = createQueryProveReachability;
   (*map)["show-equivalent"] = createQueryProveEquivalence;
   (*map)["run"] = createQueryRun;

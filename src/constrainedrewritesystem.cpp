@@ -45,7 +45,7 @@ ConstrainedRewriteSystem ConstrainedRewriteSystem::rename(string s)
   return result;
 }
 
-ConstrainedRewriteSystem ConstrainedRewriteSystem::fresh(vector<Variable *> vars)
+ConstrainedRewriteSystem ConstrainedRewriteSystem::fresh()
 {
   Log(DEBUG8) << "Creating fresh rewrite system" << endl;
   static int counter = 0;

@@ -109,7 +109,7 @@ void QueryProveReachability::execute()
 // returns a constraint that describes when
 // lhs implies rhs
 Term *QueryProveReachability::proveByImplicationCRS(ConstrainedTerm lhs, Term *rhs,
-			 ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth)
+			 ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int depth)
 {
   lhs.term = lhs.term->normalizeFunctions();
   lhs.constraint = lhs.constraint->normalizeFunctions();
@@ -191,7 +191,7 @@ Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
 Term *QueryProveReachability::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
-		     ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth, bool hadProgress, int branchingDepth)
+		     ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth, bool, int branchingDepth)
 {
   lhs.term = lhs.term->normalizeFunctions();
   lhs.constraint = lhs.constraint->normalizeFunctions();

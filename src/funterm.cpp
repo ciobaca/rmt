@@ -226,7 +226,7 @@ bool FunTerm::computeIsInstanceOf(Term *t, Substitution &s, map<pair<Term *, Ter
   return t->computeIsGeneralizationOf(this, s, cache);
 }
 
-bool FunTerm::computeIsGeneralizationOf(VarTerm *t, Substitution &s, map<pair<Term *, Term *>, bool> &cache)
+bool FunTerm::computeIsGeneralizationOf(VarTerm *, Substitution &, map<pair<Term *, Term *>, bool> &)
 {
   return false;
 }

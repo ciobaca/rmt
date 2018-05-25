@@ -1,4 +1,4 @@
-#include "querysearch.h"
+#include "queryder.h"
 #include "parse.h"
 #include "factories.h"
 #include <string>
@@ -8,34 +8,19 @@
 
 using namespace std;
 
-QuerySearch::QuerySearch()
-  : ct(0, 0)
+QueryDer::QueryDer()
+  : ctLeft(0, 0), ctRight(0, 0)
 {
 }
   
-Query *QuerySearch::create()
+Query *QueryDer::create()
 {
-  return new QuerySearch();
+  return new QueryDer();
 }
   
-void QuerySearch::parse(std::string &s, int &w)
+void QueryDer::parse(std::string &s, int &w)
 {
-  matchString(s, w, "search");
-  skipWhiteSpace(s, w);
-  if (lookAhead(s, w, "[")) {
-    matchString(s, w, "[");
-    skipWhiteSpace(s, w);
-    minDepth = getNumber(s, w);
-    skipWhiteSpace(s, w);
-    matchString(s, w, ",");
-    skipWhiteSpace(s, w);
-    maxDepth = getNumber(s, w);
-    skipWhiteSpace(s, w);
-    matchString(s, w, "]");
-    skipWhiteSpace(s, w);
-  } else {
-    minDepth = maxDepth = 1;
-  }
+  matchString(s, w, "der");
   skipWhiteSpace(s, w);
   matchString(s, w, "in");
   skipWhiteSpace(s, w);
@@ -43,12 +28,16 @@ void QuerySearch::parse(std::string &s, int &w)
   skipWhiteSpace(s, w);
   matchString(s, w, ":");
   skipWhiteSpace(s, w);
-  ct = parseConstrainedTerm(s, w);
+  ctLeft = parseConstrainedTerm(s, w);
+  skipWhiteSpace(s, w);
+  matchString(s, w, "=>");
+  skipWhiteSpace(s, w);
+  ctRight = parseConstrainedTerm(s, w);
   skipWhiteSpace(s, w);
   matchString(s, w, ";");
 }
 
-void QuerySearch::execute()
+void QueryDer::execute()
 {
   ConstrainedRewriteSystem crs;
   if (existsRewriteSystem(rewriteSystemName)) {
@@ -62,10 +51,10 @@ void QuerySearch::execute()
     return;
   }
 
-  vector<ConstrainedTerm> solutions = ct.smtNarrowSearch(crs, minDepth, maxDepth);
+  vector<ConstrainedTerm> solutions = ctLeft.smtNarrowSearch(crs, 1, 1);
   cout << "Success: " << solutions.size() << " solutions." << endl;
   for (int i = 0; i < (int)solutions.size(); ++i) {
     cout << "Solution #" << i + 1 << ":" << endl;
-    cout << simplifyConstrainedTerm(solutions[i]).toString() << endl;
+    cout << simplifyConstrainedTerm(solutions[i]).toString() << " => " << simplifyConstrainedTerm(ctRight).toString() << endl;
   }
 }

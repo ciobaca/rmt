@@ -165,7 +165,7 @@ bool QueryProveEquivalence::possibleLhsCircularity(Term *lhs)
   return false;
 }
 
-bool QueryProveEquivalence::possibleRhsCircularity(Term *rhs)
+bool QueryProveEquivalence::possibleRhsCircularity(Term *)
 {
   // TODO: check why this code is commented out
   // //  Term *lhs, *rhs;
@@ -268,7 +268,7 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
   }
 }
 
-bool QueryProveEquivalence::proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
+bool QueryProveEquivalence::proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int)
 {
   ct = ct.normalizeFunctions();
   cout << spaces(depth) << "Trying to prove base case: " << ct.toString() << endl;

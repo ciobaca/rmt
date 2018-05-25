@@ -265,7 +265,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem 
 
   // STEP 2: perform one-step narrowing from the abstract term
   Log(DEBUG9) << "Conditional system: " << crsInit.toString() << endl;
-  ConstrainedRewriteSystem crs = crsInit.fresh(abstractTerm->vars());
+  ConstrainedRewriteSystem crs = crsInit.fresh();
   Log(DEBUG9) << "Fresh rewrite system: " << crs.toString() << endl;
   vector<ConstrainedSolution> solutions = abstractTerm->narrowSearch(crs);
 

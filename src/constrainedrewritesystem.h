@@ -12,7 +12,7 @@ struct ConstrainedRewriteSystem : public vector<pair<ConstrainedTerm, Term *> >
   ConstrainedRewriteSystem(RewriteSystem &);
   void addRule(ConstrainedTerm l, Term *r);
   ConstrainedRewriteSystem rename(string);
-  ConstrainedRewriteSystem fresh(vector<Variable *>);
+  ConstrainedRewriteSystem fresh();
   std::string toString();
 };
 

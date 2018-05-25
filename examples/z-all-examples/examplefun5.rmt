@@ -253,5 +253,4 @@ constrained-rewrite-system circularities
  	(F (contextexp (mplus S (sumofsquares 1 N))))
 ;
 
-
 prove [100,3] in flanguage : circularities;

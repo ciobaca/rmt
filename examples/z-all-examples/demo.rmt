@@ -639,6 +639,7 @@ show-equivalent in language and flanguage :
 	     (app (app fvarF (fdiv fvarX 2)) (fplus fvarY 1))
 	     (app (app fvarF (fplus (ftimes fvarX 3) 1)) (fplus fvarY 1)))
 	fvarY))))
+	
 	     (fplus (ftimes N 3) 1)) (fplus I 1)))
 	I))))
 	                    
@@ -648,3 +649,90 @@ show-equivalent in language and flanguage :
 with-base
 
 (pair (IC done ENV) (F (contextexp N))) /\ (mequals (lookup ENV y) N);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// 	(F (contextexp (app (app (miu fvarF (lam fvarX (lam fvarY (fite (fle fvarX N) (app (app fvarF (fplus fvarX 1)) (fplus fvarY fvarX)) fvarY)))) I) S))) /\ (band (mle I N) (mle 1 N)) =>
+// 	(F (contextexp (mplus S sum(I N))))
+// this circularity will not work by itself since "I" and "S" will generally not be integers during the program call
+// instead of I we will find (fplus _ 1) and instead of S we will find (fplus _ I)
+//,
+
+// 	(F (contextexp (app (app (miu fvarF (lam fvarX (lam fvarY (fite (fle fvarX N) (app (app fvarF (fplus fvarX 1)) (fplus fvarY fvarX)) fvarY)))) 0) S))) /\ (mle 1 N) =>
+// 	(F (contextexp (mplus S sum(1,N))))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// bimplie(s 
+// (band (band (band (band (band 
+// (mequals (lookup ENV,x),N),
+// (mequals (lookup ENV,y),I)),
+// (band (band 
+// (mequals (lookup ENV,x),N),
+// (mequals (lookup ENV,y),I)),
+// (bnot (mequals (lookup ENV,x),1)))),
+// (band (band (band 
+// (mequals (lookup ENV,x),N),
+// (mequals (lookup ENV,y),I)),
+// (band (band 
+// (mequals (lookup ENV,x),N),
+// (mequals (lookup ENV,y),I)),(bnot (mequals (lookup ENV,x),1)))),(meven (lookup (update ENV,y,(mplus (lookup ENV,y),1)),x)))),(band (band (band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(bnot (mequals (lookup ENV,x),1)))),(band (band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(bnot (mequals (lookup ENV,x),1)))),(meven (lookup (update ENV,y,(mplus (lookup ENV,y),1)),x)))),(bnot (mequals N,1)))),(band (band (band (band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(bnot (mequals (lookup ENV,x),1)))),(band (band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(bnot (mequals (lookup ENV,x),1)))),(meven (lookup (update ENV,y,(mplus (lookup ENV,y),1)),x)))),(band (band (band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(bnot (mequals (lookup ENV,x),1)))),(band (band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(band (band (mequals (lookup ENV,x),N),(mequals (lookup ENV,y),I)),(bnot (mequals (lookup ENV,x),1)))),(meven (lookup (update ENV,y,(mplus (lookup ENV,y),1)),x)))),(bnot (mequals N,1)))),(meven N))),
+
+// _existsInt(I_190,_existsM(a p ENV_190,_existsInt(N_190,_existsM(a p ENV_190,_existsInt(I_190,_existsInt(I_190,_existsInt(N_190,_existsInt(I_190,_existsInt(N_190,_existsInt(N_190,_existsInt(N_190,_existsM(a p ENV_190,(band 
+// (mequals (lookup (update (update ENV,y,(mplus (lookup ENV,y),1)),x,(mdiv (lookup (update ENV,y,(mplus (lookup ENV,y),1)),x),2)),x),(mdiv N,2)),
+// (mequals (lookup (update (update ENV,y,(mplus (lookup ENV,y),1)),x,(mdiv (lookup (update ENV,y,(mplus (lookup ENV,y),1)),x),2)),y),(mplus I,1))
+// ))))))))))))))
+
+
+
+// (mequals (lookup (update (update ENV,y,(mplus (lookup ENV,y),1)),x,(mdiv N,2)),x),(mdiv N,2)),
+// (mequals (lookup (update (update ENV,y,(mplus (lookup ENV,y),1)),x,(mdiv N,2)),y),(mplus I,1))
+

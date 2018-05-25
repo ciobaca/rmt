@@ -8,6 +8,7 @@
 #include "querysearch.h"
 #include "queryder.h"
 #include "querysubs.h"
+#include "queryaxiom.h"
 #include "querycirc.h"
 #include "queryprovereachability.h"
 #include "queryproveequivalence.h"
@@ -46,6 +47,11 @@ Query *createQueryDer()
 Query *createQuerySubs()
 {
   return new QuerySubs();
+}
+
+Query *createQueryAxiom()
+{
+  return new QueryAxiom();
 }
 
 Query *createQueryCirc()
@@ -105,6 +111,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["search"] = createQuerySearch;
   (*map)["der"] = createQueryDer;
   (*map)["subs"] = createQuerySubs;
+  (*map)["axiom"] = createQueryAxiom;
   (*map)["circ"] = createQueryCirc;
   (*map)["unify"] = createQueryUnify;
   (*map)["implies"] = createQueryImplies;

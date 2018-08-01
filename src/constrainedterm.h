@@ -23,6 +23,8 @@ struct ConstrainedTerm
   std::string toString();
   std::string toPrettyString();
 
+  std::vector<ConstrainedTerm> successors(ConstrainedRewriteSystem &crs);
+
   std::vector<ConstrainedSolution> smtNarrowSearch(ConstrainedRewriteSystem &crs);
 
   std::vector<ConstrainedTerm> smtNarrowSearch(ConstrainedRewriteSystem &crs, int minDepth, int maxDepth);

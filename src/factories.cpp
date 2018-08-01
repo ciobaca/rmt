@@ -380,6 +380,18 @@ Term *bEquals(Term *left, Term *right)
   return getFunTerm(EqualsFun, vector2(left, right));
 }
 
+Term *equals(Term *t1, Term *t2)
+{
+  assert(t1->getSort() == t2->getSort());
+  Sort *sort = t1->getSort();
+  return getFunTerm(getEqualsFunction(sort), vector2(t1, t2));
+}
+
+Term *varEquals(Variable *v, Term *t)
+{
+  return equals(getVarTerm(v), t);
+}
+
 Term *simplifyConstraint(Term *constraint)
 {
   if (existsRewriteSystem("simplifications")) {

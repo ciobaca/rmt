@@ -139,3 +139,8 @@ ConstrainedTerm ConstrainedTerm::normalizeFunctions()
   }
   return ConstrainedTerm(newTerm, newConstraint);
 }
+
+std::vector<ConstrainedTerm> ConstrainedTerm::successors(ConstrainedRewriteSystem &crs)
+{
+  
+}

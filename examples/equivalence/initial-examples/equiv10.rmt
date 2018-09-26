@@ -107,7 +107,7 @@ signature
 
 	update : Map Var Int -> Map / "store",
 	lookup  : Map Var -> IntP / "select",
-	flookup : Map Var -> ValExpF / "select",
+	flookup : Map Var -> Int / "select",
 
 	// arithmetic and boolean expressions
 	plus : AExp AExp -> NonValAExp,
@@ -494,7 +494,7 @@ constrained-rewrite-system flanguage
 	(contextexp (fassign X I) ENV) => (contextexp I (update ENV X I)),
 	(contextexp (fassign X FNV) ENV) => (fassign X (contextexp FNV ENV)),
 	(fassign X (contextexp I ENV)) => (contextexp (fassign X I) ENV),
-	(contextexp X ENV) => (contextexp (lookup X ENV) ENV)
+	(contextexp X ENV) => (contextexp (flookup ENV X) ENV)
 ;
 
 /*
@@ -508,6 +508,24 @@ show-equivalent [100, 1] in language and flanguage :
      (pair (IC done ENV) (F (contextexp SUM))) /\ (mequals (lookup ENV x) SUM);
 */
 
-//search [1,7] in flanguage : (F (contextexp (app (app (lam fvarX (lam fvarY (fplus fvarX fvarY))) 2) 1) ENV));
+//search [1,10] in flanguage : (F (contextexp (fplus (fassign X 2) X) ENV1));
 
-search [1,7] in flanguage : (F (contextexp (fplus 2 (fassign X 2)) ENV));
+/*
+constrained-rewrite-system circularities1
+(F (contextexp (fplus 1 (fassign X 2)) ENV1))
+/\ (mequals (flookup ENV2 X) 2)
+=>
+(F (contextexp 3 ENV2))
+;
+
+prove in flanguage : circularities1;
+*/
+
+
+constrained-rewrite-system circularities2
+(F (contextexp (fplus (fassign X 2) X) ENV1))
+=>
+(F (contextexp 4 ENV2))
+;
+
+prove [10,10] in flanguage : circularities2;

@@ -262,6 +262,10 @@ rewrite-system functions
   (substitute fvarF FEXP1 (lam fvarY FEXP)) => (lam fvarY (substitute fvarF FEXP1 FEXP)),
   (substitute fvarF FEXP1 (lam fvarZ FEXP)) => (lam fvarZ (substitute fvarF FEXP1 FEXP)),
 
+  (substitute fvarF FEXP1 (fassign X FEXP)) => (fassign X (substitute fvarF FEXP1 FEXP)),
+  (substitute fvarX FEXP1 (fassign X FEXP)) => (fassign X (substitute fvarX FEXP1 FEXP)),
+  (substitute fvarY FEXP1 (fassign X FEXP)) => (fassign X (substitute fvarY FEXP1 FEXP)),
+
   (substitute XF FEXP1 (lam XF FEXP)) => (lam XF FEXP),
 
   (substitute fvarX FEXP1 (miu fvarY FEXP)) => (miu fvarY (substitute fvarX FEXP1 FEXP)),
@@ -522,19 +526,29 @@ constrained-rewrite-system circularities2
 ;
 
 constrained-rewrite-system circularities3
-(F (contextexp ( miu XF (app (lam fvarX fvarX) 2) ) ENV1))
+(F (contextexp (app (
+	miu fvarF (
+		lam fvarX
+			(fite (fle fvarX 2) 
+				(fplus fvarX (app fvarF (fplus (fassign X fvarX) 1 )))
+				0
+			)
+		)
+	)1) ENV1))
 =>
-(F (contextexp 4 ENV2))
+(F (contextexp 3 ENV2))
 ;
+
 
 //prove in flanguage : circularities1;
 //prove [10,10] in flanguage : circularities2;
-//search [1,10] in flanguage : (F (contextexp (app (lam fvarX fvarX) 2) ENV1));
+//prove [100, 100] in flanguage : circularities3;
+
 search [1,100] in flanguage : (F (contextexp (app (
 	miu fvarF (
 		lam fvarX
 			(fite (fle fvarX 2) 
-				(fplus fvarX (app fvarF (fplus fvarX 1)))
+				(fplus fvarX (app fvarF (fplus (fassign X fvarX) 1 )))
 				0
 			)
 		)

@@ -516,9 +516,10 @@ show-equivalent [100, 1] in language and flanguage :
 
 constrained-rewrite-system circularities1
 (F (contextexp (fplus 1 (fassign X 2)) ENV1))
-// /\ (mequals (flookup ENV1 X) 3)
+/\ true
 =>
 (F (contextexp 3 ENV1))
+/\ false
 ;
 
 prove in flanguage : circularities1;

@@ -65,64 +65,61 @@ with the terms on the left-hand side. RMT does not establish
 termination -- you would need another tool, like CTRL, for that.
 
 */
-subs in sum : (loop 0 N) /\ (mle 0 N) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true;
+der in sum : (init N) /\ (mle 0 N) => (done (mdiv (mtimes N (mplus N 1)) 2));
 
+/*
+Success: 1 solutions.
+Solution #1:
+(loop 0 N) /\ (mle 0 N) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
+*/
 
-// der in sum : (init N) /\ (mle 0 N) => (done (mdiv (mtimes N (mplus N 1)) 2));
+der in sum : (loop 0 N) /\ (mle 0 N) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true;
 
-// /*
-// Success: 1 solutions.
-// Solution #1:
-// (loop 0 N) /\ (mle 0 N) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
-// */
+/*
 
-// der in sum : (loop 0 N) /\ (mle 0 N) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true;
+Success: 2 solutions.
+Solution #1:
+(loop (mplus 0 N) (mminus N 1)) /\ (band (mle 0 N) (mle 1 N)) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
+Solution #2:
+(done 0) /\ (band (mle 0 N) (bnot (mle 1 N))) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
 
-// /*
+*/
 
-// Success: 2 solutions.
-// Solution #1:
-// (loop (mplus 0 N) (mminus N 1)) /\ (band (mle 0 N) (mle 1 N)) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
-// Solution #2:
-// (done 0) /\ (band (mle 0 N) (bnot (mle 1 N))) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
+subs in sum : (done 0) /\ (band (mle 0 N) (bnot (mle 1 N))) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true;
 
-// */
+/*
+Solution #1:
+(done 0) /\ false => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
+*/
 
-// subs in sum : (done 0) /\ (band (mle 0 N) (bnot (mle 1 N))) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true;
+axiom : (done 0) /\ false => (done (mdiv (mtimes N (mplus N 1)) 2));
 
-// /*
-// Solution #1:
-// (done 0) /\ false => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
-// */
+/*
+Success: 0 solutions.
+*/
 
-// axiom : (done 0) /\ false => (done (mdiv (mtimes N (mplus N 1)) 2));
+circ (loop SP IP) /\ (mle 0 IP) => (done (mplus SP (mdiv (mtimes IP (mplus IP 1)) 2))) : 
+  (loop (mplus 0 N) (mminus N 1)) /\ (band (mle 0 N) (mle 1 N)) => (done (mdiv (mtimes N (mplus N 1)) 2));
 
-// /*
-// Success: 0 solutions.
-// */
+/*
+Success: 2 solutions.
 
-// circ (loop SP IP) /\ (mle 0 IP) => (done (mplus SP (mdiv (mtimes IP (mplus IP 1)) 2))) : 
-//   (loop (mplus 0 N) (mminus N 1)) /\ (band (mle 0 N) (mle 1 N)) => (done (mdiv (mtimes N (mplus N 1)) 2));
+Solution #1:
+(loop (mplus 0 N) (mminus N 1)) /\ false => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
+Solution #2:
+(done (mplus SP (mdiv (mtimes IP (mplus IP 1)) 2))) /\ (band (mle 0 N) (mle 1 N)) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
+*/
 
-// /*
-// Success: 2 solutions.
+axiom : (loop (mplus 0 N) (mminus N 1)) /\ false => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true;
 
-// Solution #1:
-// (loop (mplus 0 N) (mminus N 1)) /\ false => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
-// Solution #2:
-// (done (mplus SP (mdiv (mtimes IP (mplus IP 1)) 2))) /\ (band (mle 0 N) (mle 1 N)) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
-// */
+/*
+Success: 0 solutions.
+*/
 
-// axiom : (loop (mplus 0 N) (mminus N 1)) /\ false => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true;
+subs in sum : (done (mplus S (mdiv (mtimes I (mplus I 1)) 2))) /\ (band (mle 0 N) (mle 1 N)) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true;
 
-// /*
-// Success: 0 solutions.
-// */
-
-// subs in sum : (done (mplus S (mdiv (mtimes I (mplus I 1)) 2))) /\ (band (mle 0 N) (mle 1 N)) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true;
-
-// /*
-// Success: 1 solutions.
-// Solution #1:
-// (done (mplus S (mdiv (mtimes I (mplus I 1)) 2))) /\ (band (band (mle 0 N) (mle 1 N)) (bnot (bimplies (band (mle 0 N) (mle 1 N)) (_existsInt N_2 (_existsInt N_2 (mequals (mdiv (mtimes N_2 (mplus N_2 1)) 2) (mplus S (mdiv (mtimes I (mplus I 1)) 2)))))))) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
-// */
+/*
+Success: 1 solutions.
+Solution #1:
+(done (mplus S (mdiv (mtimes I (mplus I 1)) 2))) /\ (band (band (mle 0 N) (mle 1 N)) (bnot (bimplies (band (mle 0 N) (mle 1 N)) (_existsInt N_2 (_existsInt N_2 (mequals (mdiv (mtimes N_2 (mplus N_2 1)) 2) (mplus S (mdiv (mtimes I (mplus I 1)) 2)))))))) => (done (mdiv (mtimes N (mplus N 1)) 2)) /\ true
+*/

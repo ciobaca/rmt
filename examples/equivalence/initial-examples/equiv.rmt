@@ -157,16 +157,14 @@ constrained-rewrite-system myrsCirc
 constrained-rewrite-system myrsDone
 	(pair (leftDone S) (rightDone S)) => ok;
 
-show-equivalent [10, 3] in left and right :
+show-equivalent [7, 2] in left and right :
 
   (pair (leftInit 0 N) (rightInit 0 0 N)) /\ (mle 0 N),
 
   (pair (leftInit S I) (rightInit SP IP NP)) /\
-        (band (band (band
-	          (mequals S (msum (mplus (mminus NP IP) 1) NP))
+        (band (band (band (mequals S (msum (mplus (mminus NP IP) 1) NP))
                   (mequals SP (msum 0 (mminus IP 1))))
-                  (mequals (mplus I IP) NP))
-		  (mle 0 NP))
+                  (mequals (mplus I IP) NP)) (mle 0 NP))
 
 with-base
 

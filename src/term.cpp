@@ -1,7 +1,6 @@
 #include <cassert>
 #include <iostream>
 #include "term.h"
-#include "sort.h"
 #include "log.h"
 #include "z3driver.h"
 #include "factories.h"
@@ -216,45 +215,31 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
 
 bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Term *&resultConstraint)
 {
-  // see: Stefan Ciobaca, Andrei Arusoaie, Dorel Lucanu. Unification Modulo Builtins. WoLLIC 2018
-  // (https://profs.info.uaic.ro/~stefan.ciobaca/umb.pdf) Page 9
-  Term *t1 = this;
-  Term *t2 = other;
+  Log(DEBUG6) << "unifyModuloTheories " << this->toString() << " and " <<
+    other->toString() << endl;
+  Substitution abstractingSubstitution;
 
-  Log(DEBUG6) << "unifyModuloTheories " << t1->toString() << " and " << t2->toString() << endl;
-
-  Substitution sigma1;
-  Substitution sigma2;
-
-  Term *s1 = t1->abstract(sigma1);
-  Term *s2 = t2->abstract(sigma2);
+  Term *abstractTerm = this->abstract(abstractingSubstitution);
+  Log(DEBUG6) << "Abstract term: " << abstractTerm->toString() << endl;
+  Log(DEBUG6) << "Abstracting substitution: " << abstractingSubstitution.toString() << endl;
   
-  Log(DEBUG6) << "s1 = " << s1->toString() << endl;
-  Log(DEBUG6) << "sigma1 = " << sigma1.toString() << endl;
-  Log(DEBUG6) << "s2 = " << s2->toString() << endl;
-  Log(DEBUG6) << "sigma2 = " << sigma2.toString() << endl;
-
   Substitution unifyingSubstitution;
-  if (s1->unifyWith(s2, unifyingSubstitution)) {
+  if (abstractTerm->unifyWith(other, unifyingSubstitution)) {
     Log(DEBUG6) << "Syntactic unification succeeded. Unifying substitution: " << endl;
     Log(DEBUG6) << unifyingSubstitution.toString() << endl;
+    Term *whatever = bTrue();
+    ConstrainedSolution sol(whatever, bTrue(), unifyingSubstitution, whatever);
 
-    resultConstraint = bTrue();
-    for (Substitution::iterator it = sigma1.begin(); it != sigma1.end(); ++it) {
-      resultConstraint = bAnd(varEquals(it->first, it->second), resultConstraint);
-    }
-    for (Substitution::iterator it = sigma2.begin(); it != sigma2.end(); ++it) {
-      resultConstraint = bAnd(varEquals(it->first, it->second), resultConstraint);
-    }
-    for (Substitution::iterator it = unifyingSubstitution.begin(); it != unifyingSubstitution.end(); ++it) {
-      if (!it->first->sort->hasInterpretation) {
-	resultSubstitution.force(it->first, it->second);
-      } else {
-	assert(it->second->isVarTerm());
-	resultConstraint = bAnd(varEquals(it->first, it->second), resultConstraint);
+    if (unabstractSolution(abstractingSubstitution, sol)) {
+      resultSubstitution = sol.subst; // TODO: compus cu simplifyingSubst?;
+      resultConstraint = sol.constraint->substitute(sol.simplifyingSubst);
+      for (Substitution::iterator it = sol.simplifyingSubst.begin(); it != sol.simplifyingSubst.end(); ++it) {
+	      resultSubstitution.force(it->first, it->second);
       }
+      return true;
+    } else {
+      return false;
     }
-    return true;
   } else {
     return false;
   }

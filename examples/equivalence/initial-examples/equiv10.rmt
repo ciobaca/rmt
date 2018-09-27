@@ -512,6 +512,12 @@ show-equivalent [100, 1] in language and flanguage :
      (pair (IC done ENV) (F (contextexp SUM))) /\ (mequals (lookup ENV x) SUM);
 */
 
+constrained-rewrite-system circularities0
+(F (contextexp (fplus 1 2) ENV1))
+=>
+(F (contextexp 3 ENV2))
+;
+
 constrained-rewrite-system circularities1
 (F (contextexp (fplus 1 (fassign X 2)) ENV1))
 /\ (mequals (flookup ENV2 X) 2)
@@ -539,11 +545,12 @@ constrained-rewrite-system circularities3
 (F (contextexp 3 ENV2))
 ;
 
-
+prove in flanguage : circularities0;
 //prove in flanguage : circularities1;
 //prove [10,10] in flanguage : circularities2;
 //prove [100, 100] in flanguage : circularities3;
 
+/*
 search [1,100] in flanguage : (F (contextexp (app (
 	miu fvarF (
 		lam fvarX
@@ -553,3 +560,4 @@ search [1,100] in flanguage : (F (contextexp (app (
 			)
 		)
 	)1) ENV1));
+*/

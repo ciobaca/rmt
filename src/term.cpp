@@ -144,9 +144,9 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
   Log(DEBUG7) << "Abstracting substitution = " << abstractingSubstitution.toString() << endl;
 
   Substitution simplifyingSubst;
-  for (Substitution::iterator it = abstractingSubstitution.begin(); it != abstractingSubstitution.end(); ++it) {
-    Term *lhsTerm = getVarTerm(it->first)->substitute(solution.subst)->substitute(abstractingSubstitution)->substitute(simplifyingSubst);
-    Term *rhsTerm = it->second->substitute(simplifyingSubst);
+  for (Substitution::iterator it = solution.subst.begin(); it != solution.subst.end(); ++it) {
+    Term *lhsTerm = getVarTerm(it->first)->substitute(abstractingSubstitution)->substitute(simplifyingSubst);
+    Term *rhsTerm = it->second->substitute(abstractingSubstitution)->substitute(simplifyingSubst);
     Log(DEBUG9) << "Processing constraint " << lhsTerm->toString() << " = " << rhsTerm->toString() << endl;
     if (lhsTerm == rhsTerm) {
       Log(DEBUG9) << "Constraint is trivial, skipping" << endl;

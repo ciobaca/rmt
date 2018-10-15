@@ -9,6 +9,12 @@
 
 using namespace std;
 
+void abortWithMessage(string error)
+{
+  cout << "Error: " << error << endl;
+  exit(0);
+}
+
 map<Variable *, Variable *> createRenaming(vector<Variable *>v, string s)
 {
   map<Variable *, Variable *> result;

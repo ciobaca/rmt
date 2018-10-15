@@ -9,7 +9,44 @@
 #include "term.h"
 #include "sort.h"
 #include "factories.h"
+#include "helper.h"
 #include <string>
+
+#include <z3.h>
+
+Z3_context z3context;
+Z3_solver z3solver;
+
+void z3_error_handler(Z3_context context, Z3_error_code error)
+{
+  Z3_string string_error = Z3_get_error_msg(context, error);
+  abortWithMessage(string("Z3 returned non OK error code (") + string_error + ".");
+}
+
+void startz3api()
+{
+  Z3_config z3config = Z3_mk_config();
+  Z3_set_param_value(z3config, "timeout", "200");
+  Z3_set_param_value(z3config, "auto_config", "true");
+  z3context = Z3_mk_context(z3config);
+  Z3_set_error_handler(z3context, z3_error_handler);
+
+  Z3_sort z3BoolSort = Z3_mk_bool_sort(z3context);
+  Z3_sort z3IntSort = Z3_mk_int_sort(z3context);
+
+  Z3_ast z3True = Z3_mk_true(z3context);
+  Z3_ast z3False = Z3_mk_false(z3context);
+
+  z3solver = Z3_mk_solver(z3context);
+  Z3_solver_assert(z3context, z3solver, z3True);
+  if (Z3_solver_check(z3context, z3solver) != Z3_L_TRUE) {
+    abortWithMessage("Z3 said true is unsatisfiable or undef.");
+  }
+  Z3_solver_assert(z3context, z3solver, z3False);
+  if (Z3_solver_check(z3context, z3solver) != Z3_L_FALSE) {
+    abortWithMessage("Z3 said true /\\ false is satisfiable or undef.");
+  }
+}
 
 using namespace std;
 

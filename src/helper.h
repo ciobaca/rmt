@@ -73,4 +73,6 @@ string spaces(int);
 
 extern int VERBOSITY;
 
+void abortWithMessage(std::string error);
+
 #endif

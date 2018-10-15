@@ -28,4 +28,6 @@ struct Z3Theory
 
 Z3Result isSatisfiable(Term *constraint);
 
+void startz3api();
+
 #endif

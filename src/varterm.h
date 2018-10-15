@@ -6,6 +6,7 @@
 struct VarTerm : public Term
 {
   Variable *variable;
+  Z3_ast interpretation;
 
   VarTerm(Variable *variable);
 
@@ -43,8 +44,9 @@ struct VarTerm : public Term
   virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
   virtual vector<ConstrainedSolution> narrowSearch(ConstrainedRewriteSystem &);
 
+  virtual Z3_ast toSmt();
+
   virtual string toString();
-  virtual string toSmtString();
   virtual string toPrettyString();
 };
 

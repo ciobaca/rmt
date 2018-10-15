@@ -56,45 +56,69 @@ string FunTerm::toString()
   return oss.str();
 }
 
-string FunTerm::toSmtString()
+Z3_ast FunTerm::toSmt()
 {
   assert(len(function->arguments) == len(arguments));
-  int n = len(function->arguments);
-
-  ostringstream oss;
-  if (n) {
-    oss << "(";
-  }
+  //  int n = len(function->arguments);
   assert(function->hasInterpretation);
+  
   if (isExistsFunction(function)) {
-    assert(n == 2);
-    oss << "exists ";
-    oss << "((";
-    oss << arguments[0]->toSmtString();
-    oss << " ";
-    assert(arguments[0].isVariable());
-    VarTerm *t = (VarTerm *)arguments[0];
-    assert(t->variable->sort->hasInterpretation);
-    oss << t->variable->sort->interpretation;
-    oss << ")) ";
-    oss << arguments[1]->toSmtString();
+    // assert(n == 2);
+    // oss << "exists ";
+    // oss << "((";
+    // oss << arguments[0]->toSmtString();
+    // oss << " ";
+    // assert(arguments[0].isVariable());
+    // VarTerm *t = (VarTerm *)arguments[0];
+    // assert(t->variable->sort->hasInterpretation);
+    // oss << t->variable->sort->interpretation;
+    // oss << ")) ";
+    // oss << arguments[1]->toSmtString();
+    // TODO
+    assert(0);
+    return function->interpretation(arguments);
   } else {
-    oss << function->interpretation;
-    for (int i = 0; i < n; ++i) {
-      oss << " " << arguments[i]->toSmtString();
-    }
+    Log(DEBUG8) << "Descending into " << function->name << endl;
+    assert(function->hasInterpretation);
+    Z3_ast result = function->interpretation(arguments);
+    Log(DEBUG8) << "Ascending into " << function->name << endl;
+    return result;
   }
-  if (n) {
-    oss << ")";
-  }
-  return oss.str();
+
+  // assert(len(function->arguments) == len(arguments));
+  // int n = len(function->arguments);
+
+  // ostringstream oss;
+  // if (n) {
+  //   oss << "(";
+  // }
+  // assert(function->hasInterpretation);
+  // if (isExistsFunction(function)) {
+  //   assert(n == 2);
+  //   oss << "exists ";
+  //   oss << "((";
+  //   oss << arguments[0]->toSmtString();
+  //   oss << " ";
+  //   assert(arguments[0].isVariable());
+  //   VarTerm *t = (VarTerm *)arguments[0];
+  //   assert(t->variable->sort->hasInterpretation);
+  //   oss << t->variable->sort->interpretation;
+  //   oss << ")) ";
+  //   oss << arguments[1]->toSmtString();
+  // } else {
+  //   oss << function->interpretation;
+  //   for (int i = 0; i < n; ++i) {
+  //     oss << " " << arguments[i]->toSmtString();
+  //   }
+  // }
+  // if (n) {
+  //   oss << ")";
+  // }
+  // return oss.str();
 }
 
 string FunTerm::toPrettyString()
 {
-  if (function->hasInterpretation) {
-    return this->toSmtString();
-  }
   assert(len(function->arguments) == len(arguments));
   int n = len(function->arguments);
 

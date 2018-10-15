@@ -205,6 +205,7 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
     theory.addVariable(interpretedVariables[i]);
   }
   theory.addConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst)->normalizeFunctions());
+  Log(DEBUG7) << "Sending to SMT solver." << endl;
   if (theory.isSatisfiable() != unsat) {
     Log(DEBUG7) << "Possibly satisfiable." << endl;
     return true;

@@ -286,7 +286,7 @@ bool QueryProveEquivalence::proveBaseCase(ConstrainedTerm ct, bool progressLeft,
 	      return true;
       }
       Log(DEBUG5) << spaces(depth) << "Instance of circularity only when " + constraint->toString() << endl;
-      Log(DEBUG5) << spaces(depth) << "Instance of circularity only when (SMT) " + constraint->toSmtString() << endl;
+      Log(DEBUG5) << spaces(depth) << "Instance of circularity only when (SMT) " + constraint->toString() << endl;
     }
   }
   cout << spaces(depth) << "Proof failed" << endl;

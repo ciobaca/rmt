@@ -280,6 +280,7 @@ Function *AndFun;
 Function *ImpliesFun;
 Function *OrFun;
 Function *EqualsFun;
+Function *MleFun;
 
 Function *MEqualsFun;
 
@@ -303,6 +304,8 @@ void createBuiltIns()
   assert(EqualsFun);
   MEqualsFun = getFunction("mequals");
   assert(MEqualsFun);
+  MleFun = getFunction("mle");
+  assert(MleFun);
 
   assert(sortExists("Bool"));
   assert(sortExists("Int"));
@@ -375,6 +378,11 @@ Term *mEquals(Term *left, Term *right)
   return getFunTerm(MEqualsFun, vector2(left, right));
 }
 
+Term *mle(Term *left, Term *right)
+{
+  return getFunTerm(MleFun, vector2(left, right));
+}
+
 Term *bEquals(Term *left, Term *right)
 {
   return getFunTerm(EqualsFun, vector2(left, right));
@@ -421,7 +429,7 @@ Function *getEqualsFunction(Sort *sort)
     if (!f->hasInterpretation) {
       continue;
     }
-    if (f->interpretation != "=") {
+    if (!f->isEqualityFunction) {
       continue;
     }
     return f;

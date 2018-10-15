@@ -30,11 +30,11 @@ void QuerySatisfiability::execute()
 {
   Z3Result result = isSatisfiable(constraint);
   if (result == sat) {
-    cout << "The constraint " << constraint->toSmtString() << " is SAT." << endl;
+    cout << "The constraint " << constraint->toString() << " is SAT." << endl;
   } else if (result == unsat) {
-    cout << "The constraint " << constraint->toSmtString() << " is UNSAT." << endl;
+    cout << "The constraint " << constraint->toString() << " is UNSAT." << endl;
   } else if (result == unknown) {
-    cout << "Satisfiability check of constraint " << constraint->toSmtString() << " is not conclusive." << endl;
+    cout << "Satisfiability check of constraint " << constraint->toString() << " is not conclusive." << endl;
   } else {
     assert(0);
   }

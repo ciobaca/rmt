@@ -430,8 +430,6 @@ Entry point to the RMT tool.
 */
 int main(int argc, char **argv)
 {
-  start_z3_api();
-  
   if (argc != 1) {
     if (argc == 3) {
       if (strcmp(argv[1], "-v") != 0) {
@@ -448,6 +446,17 @@ int main(int argc, char **argv)
     }
   }
 
+  start_z3_api();
+
+  addPredefinedSorts();
+  addPredefinedFunctions();
+  createBuiltIns();
+  addPredefinedRewriteSystems();
+
+  //  test_z3_api();
+
+  //  return 0;
+
   string s;
   int w = 0;
 
@@ -459,18 +468,13 @@ int main(int argc, char **argv)
   }
 
   parseSmtPrelude(s, w);
-  addPredefinedSorts();
   parseSorts(s, w);
   parseSubsorts(s, w);
-  addPredefinedFunctions();
   parseFunctions(s, w);
   parseVariables(s, w);
   skipWhiteSpace(s, w);
 
-  createBuiltIns();
-
-  addPredefinedRewriteSystems();
-  if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
+  //  if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
     while (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
       if (lookAhead(s, w, "rewrite-system")) {
 	      RewriteSystem rewrite;
@@ -485,11 +489,9 @@ int main(int argc, char **argv)
 	      skipWhiteSpace(s, w);
       }
     }
-  } else {
-    expected("rewrite-system or constrained-rewrite-system", w, s);
-  }
-
-  Log(INFO) << simplifyConstraint(bAnd(bTrue(), bFalse()))->toString() << endl;
+  // } else {
+  //   expected("rewrite-system or constrained-rewrite-system", w, s);
+  // }
 
   skipWhiteSpace(s, w);
   Query *query;

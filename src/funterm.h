@@ -42,8 +42,9 @@ struct FunTerm : public Term
 
   virtual Term *abstract(Substitution &);
 
+  virtual Z3_ast toSmt();
+
   virtual string toString();
-  virtual string toSmtString();
   virtual string toPrettyString();
 
   virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);

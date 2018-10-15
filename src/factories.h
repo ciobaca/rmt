@@ -24,6 +24,7 @@ bool isExistsFunction(Function *);
 
 Term *bEquals(Term *, Term *);
 Term *mEquals(Term *, Term *);
+Term *mle(Term *, Term *);
 
 Function *getEqualsFunction(Sort *);
 Term *createEqualityConstraint(Term *, Term *);

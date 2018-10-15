@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <z3.h>
 
 #include "variable.h"
 #include "function.h"
@@ -256,7 +257,8 @@ struct Term
   virtual Term *abstract(Substitution &) = 0;
 
   // return the reprezentation of a term in smt-speak (Z3)
-  virtual string toSmtString() = 0;
+  // virtual string toSmtString() = 0;
+  virtual Z3_ast toSmt() = 0;
 
   // returns an infix representation of the term as a string
   virtual string toString() = 0;

@@ -10,7 +10,7 @@ Iasi, Romania
 
 http://profs.info.uaic.ro/~stefan.ciobaca/rmt/
 
- */
+*/
 #include <iostream>
 #include <string>
 #include <map>
@@ -73,19 +73,21 @@ extern string smt_prelude;
 
 void parseSmtPrelude(string &s, int &w)
 {
+  string prelude;
   skipWhiteSpace(s, w);
   if (lookAhead(s, w, "smt-prelude")) {
     matchString(s, w, "smt-prelude");
     skipWhiteSpace(s, w);
-    smt_prelude = getQuotedString(s, w);
+    prelude = getQuotedString(s, w);
   }
+  parse_z3_prelude(prelude);
 }
 
 void addPredefinedSorts()
 {
   createInterpretedSort("Bool", "Bool");
   createInterpretedSort("Int", "Int");
- }
+}
 
 void parseSorts(string &s, int &w)
 {
@@ -428,7 +430,7 @@ Entry point to the RMT tool.
 */
 int main(int argc, char **argv)
 {
-  startz3api();
+  start_z3_api();
   
   if (argc != 1) {
     if (argc == 3) {

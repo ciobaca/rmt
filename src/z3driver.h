@@ -28,6 +28,7 @@ struct Z3Theory
 
 Z3Result isSatisfiable(Term *constraint);
 
-void startz3api();
+void parse_z3_prelude(std::string);
+void start_z3_api();
 
 #endif

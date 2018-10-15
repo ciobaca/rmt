@@ -17,13 +17,38 @@
 Z3_context z3context;
 Z3_solver z3solver;
 
+using namespace std;
+
+string smt_prelude;
+
+string prover = "z3 -T:5 -in <";
+//string prover = "cvc4 --lang smtlib2";
+
 void z3_error_handler(Z3_context context, Z3_error_code error)
 {
   Z3_string string_error = Z3_get_error_msg(context, error);
   abortWithMessage(string("Z3 returned non OK error code (") + string_error + ".");
 }
 
-void startz3api()
+void parse_z3_prelude(string prelude)
+{
+  smt_prelude = prelude;
+  //  Z3_parse_smtlib2_string()
+  /*
+Z3_ast_vector Z3_API Z3_parse_smtlib2_string 	( 	Z3_context  	c,
+		Z3_string  	str,
+		unsigned  	num_sorts,
+		Z3_symbol const  	sort_names[],
+		Z3_sort const  	sorts[],
+		unsigned  	num_decls,
+		Z3_symbol const  	decl_names[],
+		Z3_func_decl const  	decls[] 
+		) */
+  Z3_ast_vector conj = Z3_parse_smtlib2_string(z3context, prelude.c_str(),
+					       0, 0, 0, 0, 0, 0);
+}
+
+void start_z3_api()
 {
   Z3_config z3config = Z3_mk_config();
   Z3_set_param_value(z3config, "timeout", "200");
@@ -47,13 +72,6 @@ void startz3api()
     abortWithMessage("Z3 said true /\\ false is satisfiable or undef.");
   }
 }
-
-using namespace std;
-
-string smt_prelude;
-
-string prover = "z3 -T:5 -in <";
-//string prover = "cvc4 --lang smtlib2";
 
 string callz3(string s)
 {

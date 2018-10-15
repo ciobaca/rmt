@@ -13,6 +13,7 @@
 #include "queryprovereachability.h"
 #include "queryproveequivalence.h"
 #include "querysatisfiability.h"
+#include "querysimplification.h"
 
 #include <string>
 #include <map>
@@ -99,6 +100,11 @@ Query *createQuerySatisfiability()
   return new QuerySatisfiability();
 }
 
+Query *createQuerySimplification()
+{
+  return new QuerySimplification();
+}
+
 Query *createQueryRun()
 {
   return new QueryRun();
@@ -120,7 +126,10 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["prove"] = createQueryProveReachability;
   (*map)["show-equivalent"] = createQueryProveEquivalence;
   (*map)["run"] = createQueryRun;
+
+  // SMT related queries
   (*map)["satisfiability"] = createQuerySatisfiability;
+  (*map)["simplification"] = createQuerySimplification;
   return map;
 }
 

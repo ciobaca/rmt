@@ -37,6 +37,8 @@ void test_z3_api();
 
 typedef Z3_ast (*func_interpretation)(std::vector<Term *>);
 
+Z3_ast z3_simplify(Term *);
+
 Z3_sort z3_bool();
 
 Z3_sort z3_int();
@@ -104,5 +106,7 @@ Z3_ast z3_iff(std::vector<Term *> args);
 Z3_ast z3_implies(std::vector<Term *> args);
 
 Z3_ast z3_make_constant(Sort *);
+
+Term *unZ3(Z3_ast, Sort *);
 
 #endif

@@ -388,29 +388,36 @@ Term *bEquals(Term *left, Term *right)
   return getFunTerm(EqualsFun, vector2(left, right));
 }
 
+Term *simplifyTerm(Term *start)
+{
+  if (start->isFunTerm()) {
+    FunTerm *term = (FunTerm *)start;
+    if (term->function->hasInterpretation) {
+      Z3_ast result = z3_simplify(term);
+      return unZ3(result, term->function->result);
+    }
+  }
+  return start;
+}
+
 Term *simplifyConstraint(Term *constraint)
 {
-  if (existsRewriteSystem("simplifications")) {
-    RewriteSystem rs = getRewriteSystem("simplifications");
-    Log(DEBUG9) << "Normalizing constraint " << constraint->toString() << endl;
-    Term *result = constraint->normalize(rs);
-    Log(DEBUG9) << "Normalized: " << result->toString() << endl;
-    return result;
-  } else {
-    assert(0);
-  }
-  return constraint;
+  return simplifyTerm(constraint);
+  // if (existsRewriteSystem("simplifications")) {
+  //   RewriteSystem rs = getRewriteSystem("simplifications");
+  //   Log(DEBUG9) << "Normalizing constraint " << constraint->toString() << endl;
+  //   Term *result = constraint->normalize(rs);
+  //   Log(DEBUG9) << "Normalized: " << result->toString() << endl;
+  //   return result;
+  // } else {
+  //   //    assert(0);
+  // }
+  // return constraint;
 }
 
 ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm ct)
 {
-  if (existsRewriteSystem("simplifications")) {
-    RewriteSystem rs = getRewriteSystem("simplifications");
-    return ConstrainedTerm(ct.term->normalize(rs), ct.constraint->normalize(rs));
-  } else {
-    assert(0);
-  }
-  return ct;
+  return ConstrainedTerm(ct.term, simplifyTerm(ct.constraint));
 }
 
 Function *getEqualsFunction(Sort *sort)

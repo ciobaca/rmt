@@ -324,6 +324,8 @@ void parseVariables(string &s, int &w)
 
 void addPredefinedRewriteSystems()
 {
+  return;
+  
   RewriteSystem rewrite;
 
   Sort *boolSort = getSort("Bool");
@@ -452,10 +454,6 @@ int main(int argc, char **argv)
   addPredefinedFunctions();
   createBuiltIns();
   addPredefinedRewriteSystems();
-
-  //  test_z3_api();
-
-  //  return 0;
 
   string s;
   int w = 0;

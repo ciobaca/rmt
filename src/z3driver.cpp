@@ -30,6 +30,11 @@ Z3_ast z3_make_constant(Sort *sort)
   return Z3_mk_const(z3context, symbol, sort->interpretation);
 }
 
+Z3_ast z3_simplify(Term *term)
+{
+  return Z3_simplify(z3context, term->toSmt());
+}
+
 Z3_sort z3_bool()
 {
   return z3BoolSort;
@@ -430,4 +435,755 @@ Z3Result isSatisfiable(Term *constraint)
   }
   theory.addConstraint(constraint);
   return theory.isSatisfiable();
+}
+
+Term *unZ3(Z3_ast ast, Sort *sort)
+{
+  switch (Z3_get_ast_kind(z3context, ast)) {
+  case Z3_APP_AST:
+    {
+    Z3_app app = Z3_to_app(z3context, ast);
+    Z3_func_decl func_decl = Z3_get_app_decl(z3context, app);
+    switch (Z3_get_decl_kind(z3context, func_decl)) {
+    case Z3_OP_TRUE:
+      return bTrue();
+      break;
+    case Z3_OP_FALSE:
+      return bFalse();
+      break;
+    case Z3_OP_EQ:
+      abortWithMessage("Cannot handle decl kind Z3_OP_EQ.");
+      break;
+    case Z3_OP_DISTINCT    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_DISTINCT    .");
+      break;
+    case Z3_OP_ITE :
+      abortWithMessage("Cannot handle decl kind Z3_OP_ITE .");
+      break;
+    case Z3_OP_AND :
+      abortWithMessage("Cannot handle decl kind Z3_OP_AND .");
+      break;
+    case Z3_OP_OR  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_OR  .");
+      break;
+    case Z3_OP_IFF :
+      abortWithMessage("Cannot handle decl kind Z3_OP_IFF .");
+      break;
+    case Z3_OP_XOR :
+      abortWithMessage("Cannot handle decl kind Z3_OP_XOR .");
+      break;
+    case Z3_OP_NOT :
+      abortWithMessage("Cannot handle decl kind Z3_OP_NOT .");
+      break;
+    case Z3_OP_IMPLIES:
+      abortWithMessage("Cannot handle decl kind Z3_OP_IMPLIES.");
+      break;
+    case Z3_OP_OEQ :
+      abortWithMessage("Cannot handle decl kind Z3_OP_OEQ .");
+      break;
+    case Z3_OP_ANUM:
+      abortWithMessage("Cannot handle decl kind Z3_OP_ANUM.");
+      break;
+    case Z3_OP_AGNUM:
+      abortWithMessage("Cannot handle decl kind Z3_OP_AGNUM.");
+      break;
+    case Z3_OP_LE  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_LE  .");
+      break;
+    case Z3_OP_GE  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_GE  .");
+      break;
+    case Z3_OP_LT  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_LT  .");
+      break;
+    case Z3_OP_GT  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_GT  .");
+      break;
+    case Z3_OP_ADD :
+      abortWithMessage("Cannot handle decl kind Z3_OP_ADD .");
+      break;
+    case Z3_OP_SUB :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SUB .");
+      break;
+    case Z3_OP_UMINUS:
+      abortWithMessage("Cannot handle decl kind Z3_OP_UMINUS.");
+      break;
+    case Z3_OP_MUL :
+      abortWithMessage("Cannot handle decl kind Z3_OP_MUL .");
+      break;
+    case Z3_OP_DIV :
+      abortWithMessage("Cannot handle decl kind Z3_OP_DIV .");
+      break;
+    case Z3_OP_IDIV:
+      abortWithMessage("Cannot handle decl kind Z3_OP_IDIV.");
+      break;
+    case Z3_OP_REM :
+      abortWithMessage("Cannot handle decl kind Z3_OP_REM .");
+      break;
+    case Z3_OP_MOD :
+      abortWithMessage("Cannot handle decl kind Z3_OP_MOD .");
+      break;
+    case Z3_OP_TO_REAL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_TO_REAL.");
+      break;
+    case Z3_OP_TO_INT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_TO_INT.");
+      break;
+    case Z3_OP_IS_INT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_IS_INT.");
+      break;
+    case Z3_OP_POWER:
+      abortWithMessage("Cannot handle decl kind Z3_OP_POWER.");
+      break;
+    case Z3_OP_STORE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_STORE.");
+      break;
+    case Z3_OP_SELECT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_SELECT.");
+      break;
+    case Z3_OP_CONST_ARRAY :
+      abortWithMessage("Cannot handle decl kind Z3_OP_CONST_ARRAY .");
+      break;
+    case Z3_OP_ARRAY_MAP   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_ARRAY_MAP   .");
+      break;
+    case Z3_OP_ARRAY_DEFAULT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_ARRAY_DEFAULT.");
+      break;
+    case Z3_OP_SET_UNION   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SET_UNION   .");
+      break;
+    case Z3_OP_SET_INTERSECT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_SET_INTERSECT.");
+      break;
+    case Z3_OP_SET_DIFFERENCE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_SET_DIFFERENCE.");
+      break;
+    case Z3_OP_SET_COMPLEMENT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_SET_COMPLEMENT.");
+      break;
+    case Z3_OP_SET_SUBSET  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SET_SUBSET  .");
+      break;
+    case Z3_OP_AS_ARRAY    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_AS_ARRAY    .");
+      break;
+    case Z3_OP_ARRAY_EXT   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_ARRAY_EXT   .");
+      break;
+    case Z3_OP_BNUM:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BNUM.");
+      break;
+    case Z3_OP_BIT1:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BIT1.");
+      break;
+    case Z3_OP_BIT0:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BIT0.");
+      break;
+    case Z3_OP_BNEG:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BNEG.");
+      break;
+    case Z3_OP_BADD:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BADD.");
+      break;
+    case Z3_OP_BSUB:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSUB.");
+      break;
+    case Z3_OP_BMUL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BMUL.");
+      break;
+    case Z3_OP_BSDIV:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSDIV.");
+      break;
+    case Z3_OP_BUDIV:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BUDIV.");
+      break;
+    case Z3_OP_BSREM:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSREM.");
+      break;
+    case Z3_OP_BUREM:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BUREM.");
+      break;
+    case Z3_OP_BSMOD:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSMOD.");
+      break;
+    case Z3_OP_BSDIV0:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSDIV0.");
+      break;
+    case Z3_OP_BUDIV0:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BUDIV0.");
+      break;
+    case Z3_OP_BSREM0:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSREM0.");
+      break;
+    case Z3_OP_BUREM0:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BUREM0.");
+      break;
+    case Z3_OP_BSMOD0:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSMOD0.");
+      break;
+    case Z3_OP_ULEQ:
+      abortWithMessage("Cannot handle decl kind Z3_OP_ULEQ.");
+      break;
+    case Z3_OP_SLEQ:
+      abortWithMessage("Cannot handle decl kind Z3_OP_SLEQ.");
+      break;
+    case Z3_OP_UGEQ:
+      abortWithMessage("Cannot handle decl kind Z3_OP_UGEQ.");
+      break;
+    case Z3_OP_SGEQ:
+      abortWithMessage("Cannot handle decl kind Z3_OP_SGEQ.");
+      break;
+    case Z3_OP_ULT :
+      abortWithMessage("Cannot handle decl kind Z3_OP_ULT .");
+      break;
+    case Z3_OP_SLT :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SLT .");
+      break;
+    case Z3_OP_UGT :
+      abortWithMessage("Cannot handle decl kind Z3_OP_UGT .");
+      break;
+    case Z3_OP_SGT :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SGT .");
+      break;
+    case Z3_OP_BAND:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BAND.");
+      break;
+    case Z3_OP_BOR :
+      abortWithMessage("Cannot handle decl kind Z3_OP_BOR .");
+      break;
+    case Z3_OP_BNOT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BNOT.");
+      break;
+    case Z3_OP_BXOR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BXOR.");
+      break;
+    case Z3_OP_BNAND:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BNAND.");
+      break;
+    case Z3_OP_BNOR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BNOR.");
+      break;
+    case Z3_OP_BXNOR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BXNOR.");
+      break;
+    case Z3_OP_CONCAT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_CONCAT.");
+      break;
+    case Z3_OP_SIGN_EXT    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SIGN_EXT    .");
+      break;
+    case Z3_OP_ZERO_EXT    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_ZERO_EXT    .");
+      break;
+    case Z3_OP_EXTRACT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_EXTRACT.");
+      break;
+    case Z3_OP_REPEAT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_REPEAT.");
+      break;
+    case Z3_OP_BREDOR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BREDOR.");
+      break;
+    case Z3_OP_BREDAND:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BREDAND.");
+      break;
+    case Z3_OP_BCOMP:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BCOMP.");
+      break;
+    case Z3_OP_BSHL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSHL.");
+      break;
+    case Z3_OP_BLSHR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BLSHR.");
+      break;
+    case Z3_OP_BASHR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BASHR.");
+      break;
+    case Z3_OP_ROTATE_LEFT :
+      abortWithMessage("Cannot handle decl kind Z3_OP_ROTATE_LEFT .");
+      break;
+    case Z3_OP_ROTATE_RIGHT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_ROTATE_RIGHT.");
+      break;
+    case Z3_OP_EXT_ROTATE_LEFT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_EXT_ROTATE_LEFT.");
+      break;
+    case Z3_OP_EXT_ROTATE_RIGHT    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_EXT_ROTATE_RIGHT    .");
+      break;
+    case Z3_OP_BIT2BOOL    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_BIT2BOOL    .");
+      break;
+    case Z3_OP_INT2BV:
+      abortWithMessage("Cannot handle decl kind Z3_OP_INT2BV.");
+      break;
+    case Z3_OP_BV2INT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BV2I.");
+      break;
+    case Z3_OP_CARRY:
+      abortWithMessage("Cannot handle decl kind Z3_OP_CARRY.");
+      break;
+    case Z3_OP_XOR3:
+      abortWithMessage("Cannot handle decl kind Z3_OP_XOR3.");
+      break;
+    case Z3_OP_BSMUL_NO_OVFL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSMUL_NO_OVFL.");
+      break;
+    case Z3_OP_BUMUL_NO_OVFL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BUMUL_NO_OVFL.");
+      break;
+    case Z3_OP_BSMUL_NO_UDFL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSMUL_NO_UDFL.");
+      break;
+    case Z3_OP_BSDIV_I:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSDIV_I.");
+      break;
+    case Z3_OP_BUDIV_I:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BUDIV_I.");
+      break;
+    case Z3_OP_BSREM_I:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSREM_I.");
+      break;
+    case Z3_OP_BUREM_I:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BUREM_I.");
+      break;
+    case Z3_OP_BSMOD_I:
+      abortWithMessage("Cannot handle decl kind Z3_OP_BSMOD_I.");
+      break;
+    case Z3_OP_PR_UNDEF    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_UNDEF    .");
+      break;
+    case Z3_OP_PR_TRUE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_TRUE.");
+      break;
+    case Z3_OP_PR_ASSERTED :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_ASSERTED .");
+      break;
+    case Z3_OP_PR_GOAL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_GOAL.");
+      break;
+    case Z3_OP_PR_MODUS_PONENS:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_MODUS_PONENS.");
+      break;
+    case Z3_OP_PR_REFLEXIVITY:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_REFLEXIVITY.");
+      break;
+    case Z3_OP_PR_SYMMETRY :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_SYMMETRY .");
+      break;
+    case Z3_OP_PR_TRANSITIVITY:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_TRANSITIVITY.");
+      break;
+    case Z3_OP_PR_TRANSITIVITY_STAR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_TRANSITIVITY_STAR.");
+      break;
+    case Z3_OP_PR_MONOTONICITY:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_MONOTONICITY.");
+      break;
+    case Z3_OP_PR_QUANT_INTRO:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_QUANT_INTRO.");
+      break;
+    case Z3_OP_PR_BIND:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_BIND.");
+      break;
+    case Z3_OP_PR_DISTRIBUTIVITY   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_DISTRIBUTIVITY   .");
+      break;
+    case Z3_OP_PR_AND_ELIM :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_AND_ELIM .");
+      break;
+    case Z3_OP_PR_NOT_OR_ELIM:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_NOT_OR_ELIM.");
+      break;
+    case Z3_OP_PR_REWRITE  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_REWRITE  .");
+      break;
+    case Z3_OP_PR_REWRITE_STAR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_REWRITE_STAR.");
+      break;
+    case Z3_OP_PR_PULL_QUANT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_PULL_QUANT.");
+      break;
+    case Z3_OP_PR_PUSH_QUANT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_PUSH_QUANT.");
+      break;
+    case Z3_OP_PR_ELIM_UNUSED_VARS :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_ELIM_UNUSED_VARS .");
+      break;
+    case Z3_OP_PR_DER:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_DER.");
+      break;
+    case Z3_OP_PR_QUANT_INST:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_QUANT_INST.");
+      break;
+    case Z3_OP_PR_HYPOTHESIS:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_HYPOTHESIS.");
+      break;
+    case Z3_OP_PR_LEMMA    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_LEMMA    .");
+      break;
+    case Z3_OP_PR_UNIT_RESOLUTION  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_UNIT_RESOLUTION  .");
+      break;
+    case Z3_OP_PR_IFF_TRUE :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_IFF_TRUE .");
+      break;
+    case Z3_OP_PR_IFF_FALSE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_IFF_FALSE.");
+      break;
+    case Z3_OP_PR_COMMUTATIVITY    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_COMMUTATIVITY    .");
+      break;
+    case Z3_OP_PR_DEF_AXIOM:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_DEF_AXIOM.");
+      break;
+    case Z3_OP_PR_DEF_INTRO:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_DEF_INTRO.");
+      break;
+    case Z3_OP_PR_APPLY_DEF:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_APPLY_DEF.");
+      break;
+    case Z3_OP_PR_IFF_OEQ  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_IFF_OEQ  .");
+      break;
+    case Z3_OP_PR_NNF_POS  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_NNF_POS  .");
+      break;
+    case Z3_OP_PR_NNF_NEG  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_NNF_NEG  .");
+      break;
+    case Z3_OP_PR_SKOLEMIZE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_SKOLEMIZE.");
+      break;
+    case Z3_OP_PR_MODUS_PONENS_OEQ :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_MODUS_PONENS_OEQ .");
+      break;
+    case Z3_OP_PR_TH_LEMMA :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_TH_LEMMA .");
+      break;
+    case Z3_OP_PR_HYPER_RESOLVE    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PR_HYPER_RESOLVE    .");
+      break;
+    case Z3_OP_RA_STORE    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_STORE    .");
+      break;
+    case Z3_OP_RA_EMPTY    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_EMPTY    .");
+      break;
+    case Z3_OP_RA_IS_EMPTY :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_IS_EMPTY .");
+      break;
+    case Z3_OP_RA_JOIN:
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_JOIN.");
+      break;
+    case Z3_OP_RA_UNION    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_UNION    .");
+      break;
+    case Z3_OP_RA_WIDEN    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_WIDEN    .");
+      break;
+    case Z3_OP_RA_PROJECT  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_PROJECT  .");
+      break;
+    case Z3_OP_RA_FILTER   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_FILTER   .");
+      break;
+    case Z3_OP_RA_NEGATION_FILTER  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_NEGATION_FILTER  .");
+      break;
+    case Z3_OP_RA_RENAME   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_RENAME   .");
+      break;
+    case Z3_OP_RA_COMPLEMENT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_COMPLEMENT.");
+      break;
+    case Z3_OP_RA_SELECT   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_SELECT   .");
+      break;
+    case Z3_OP_RA_CLONE    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RA_CLONE    .");
+      break;
+    case Z3_OP_FD_CONSTANT :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FD_CONSTANT .");
+      break;
+    case Z3_OP_FD_LT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FD_LT.");
+      break;
+    case Z3_OP_SEQ_UNIT    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_UNIT    .");
+      break;
+    case Z3_OP_SEQ_EMPTY   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_EMPTY   .");
+      break;
+    case Z3_OP_SEQ_CONCAT  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_CONCAT  .");
+      break;
+    case Z3_OP_SEQ_PREFIX  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_PREFIX  .");
+      break;
+    case Z3_OP_SEQ_SUFFIX  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_SUFFIX  .");
+      break;
+    case Z3_OP_SEQ_CONTAINS:
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_CONTAINS.");
+      break;
+    case Z3_OP_SEQ_EXTRACT :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_EXTRACT .");
+      break;
+    case Z3_OP_SEQ_REPLACE :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_REPLACE .");
+      break;
+    case Z3_OP_SEQ_AT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_AT.");
+      break;
+    case Z3_OP_SEQ_LENGTH  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_LENGTH  .");
+      break;
+    case Z3_OP_SEQ_INDEX   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_INDEX   .");
+      break;
+    case Z3_OP_SEQ_TO_RE   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_TO_RE   .");
+      break;
+    case Z3_OP_SEQ_IN_RE   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_SEQ_IN_RE   .");
+      break;
+    case Z3_OP_STR_TO_INT  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_STR_TO_INT  .");
+      break;
+    case Z3_OP_INT_TO_STR  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_INT_TO_STR  .");
+      break;
+    case Z3_OP_RE_PLUS:
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_PLUS.");
+      break;
+    case Z3_OP_RE_STAR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_STAR.");
+      break;
+    case Z3_OP_RE_OPTION   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_OPTION   .");
+      break;
+    case Z3_OP_RE_CONCAT   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_CONCAT   .");
+      break;
+    case Z3_OP_RE_UNION    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_UNION    .");
+      break;
+    case Z3_OP_RE_RANGE    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_RANGE    .");
+      break;
+    case Z3_OP_RE_LOOP:
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_LOOP.");
+      break;
+    case Z3_OP_RE_INTERSECT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_INTERSECT.");
+      break;
+    case Z3_OP_RE_EMPTY_SET:
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_EMPTY_SET.");
+      break;
+    case Z3_OP_RE_FULL_SET :
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_FULL_SET .");
+      break;
+    case Z3_OP_RE_COMPLEMENT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_RE_COMPLEMENT.");
+      break;
+    case Z3_OP_LABEL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_LABEL.");
+      break;
+    case Z3_OP_LABEL_LIT   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_LABEL_LIT   .");
+      break;
+    case Z3_OP_DT_CONSTRUCTOR:
+      abortWithMessage("Cannot handle decl kind Z3_OP_DT_CONSTRUCTOR.");
+      break;
+    case Z3_OP_DT_RECOGNISER:
+      abortWithMessage("Cannot handle decl kind Z3_OP_DT_RECOGNISER.");
+      break;
+    case Z3_OP_DT_IS:
+      abortWithMessage("Cannot handle decl kind Z3_OP_DT_IS");
+      break;
+    case Z3_OP_DT_ACCESSOR :
+      abortWithMessage("Cannot handle decl kind Z3_OP_DT_ACCESSOR .");
+      break;
+    case Z3_OP_DT_UPDATE_FIELD:
+      abortWithMessage("Cannot handle decl kind Z3_OP_DT_UPDATE_FIELD.");
+      break;
+    case Z3_OP_PB_AT_MOST  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PB_AT_MOST  .");
+      break;
+    case Z3_OP_PB_AT_LEAST :
+      abortWithMessage("Cannot handle decl kind Z3_OP_PB_AT_LEAST .");
+      break;
+    case Z3_OP_PB_LE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PB_LE.");
+      break;
+    case Z3_OP_PB_GE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PB_GE.");
+      break;
+    case Z3_OP_PB_EQ:
+      abortWithMessage("Cannot handle decl kind Z3_OP_PB_EQ.");
+      break;
+    case Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_RM_NEAREST_TIES_TO_EVEN .");
+      break;
+    case Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_RM_NEAREST_TIES_TO_AWAY .");
+      break;
+    case Z3_OP_FPA_RM_TOWARD_POSITIVE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_RM_TOWARD_POSITIVE.");
+      break;
+    case Z3_OP_FPA_RM_TOWARD_NEGATIVE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_RM_TOWARD_NEGATIVE.");
+      break;
+    case Z3_OP_FPA_RM_TOWARD_ZERO  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_RM_TOWARD_ZERO  .");
+      break;
+    case Z3_OP_FPA_NUM:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_NUM.");
+      break;
+    case Z3_OP_FPA_PLUS_INF:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_PLUS_INF.");
+      break;
+    case Z3_OP_FPA_MINUS_INF:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_MINUS_INF.");
+      break;
+    case Z3_OP_FPA_NAN:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_NAN.");
+      break;
+    case Z3_OP_FPA_PLUS_ZERO:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_PLUS_ZERO.");
+      break;
+    case Z3_OP_FPA_MINUS_ZERO:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_MINUS_ZERO.");
+      break;
+    case Z3_OP_FPA_ADD:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_ADD.");
+      break;
+    case Z3_OP_FPA_SUB:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_SUB.");
+      break;
+    case Z3_OP_FPA_NEG:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_NEG.");
+      break;
+    case Z3_OP_FPA_MUL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_MUL.");
+      break;
+    case Z3_OP_FPA_DIV:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_DIV.");
+      break;
+    case Z3_OP_FPA_REM:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_REM.");
+      break;
+    case Z3_OP_FPA_ABS:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_ABS.");
+      break;
+    case Z3_OP_FPA_MIN:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_MIN.");
+      break;
+    case Z3_OP_FPA_MAX:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_MAX.");
+      break;
+    case Z3_OP_FPA_FMA:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_FMA.");
+      break;
+    case Z3_OP_FPA_SQRT    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_SQRT    .");
+      break;
+    case Z3_OP_FPA_ROUND_TO_INTEGRAL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_ROUND_TO_INTEGRAL.");
+      break;
+    case Z3_OP_FPA_EQ:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_EQ.");
+      break;
+    case Z3_OP_FPA_LT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_LT.");
+      break;
+    case Z3_OP_FPA_GT:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_GT.");
+      break;
+    case Z3_OP_FPA_LE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_LE.");
+      break;
+    case Z3_OP_FPA_GE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_GE.");
+      break;
+    case Z3_OP_FPA_IS_NAN  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_IS_NAN  .");
+      break;
+    case Z3_OP_FPA_IS_INF  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_IS_INF  .");
+      break;
+    case Z3_OP_FPA_IS_ZERO :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_IS_ZERO .");
+      break;
+    case Z3_OP_FPA_IS_NORMAL:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_IS_NORMAL.");
+      break;
+    case Z3_OP_FPA_IS_SUBNORMAL    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_IS_SUBNORMAL    .");
+      break;
+    case Z3_OP_FPA_IS_NEGATIVE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_IS_NEGATIVE.");
+      break;
+    case Z3_OP_FPA_IS_POSITIVE:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_IS_POSITIVE.");
+      break;
+    case Z3_OP_FPA_FP:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_FP.");
+      break;
+    case Z3_OP_FPA_TO_FP   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_TO_FP   .");
+      break;
+    case Z3_OP_FPA_TO_FP_UNSIGNED  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_TO_FP_UNSIGNED  .");
+      break;
+    case Z3_OP_FPA_TO_UBV  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_TO_UBV  .");
+      break;
+    case Z3_OP_FPA_TO_SBV  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_TO_SBV  .");
+      break;
+    case Z3_OP_FPA_TO_REAL :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_TO_REAL .");
+      break;
+    case Z3_OP_FPA_TO_IEEE_BV:
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_TO_IEEE_BV.");
+      break;
+    case Z3_OP_FPA_BVWRAP  :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_BVWRAP  .");
+      break;
+    case Z3_OP_FPA_BV2RM   :
+      abortWithMessage("Cannot handle decl kind Z3_OP_FPA_BV2RM   .");
+      break;
+    case Z3_OP_INTERNAL    :
+      abortWithMessage("Cannot handle decl kind Z3_OP_INTERNAL    .");
+      break;
+    case Z3_OP_UNINTERPRETED:
+      abortWithMessage("Cannot handle decl kind Z3_OP_UNINTERPRETED.");
+      break;
+    }
+    }
+    break;
+  case Z3_NUMERAL_AST:
+    abortWithMessage("Cannot unz3 an ast of kind Z3_NUMERAL_AST.");
+    break;
+  case Z3_VAR_AST:
+    abortWithMessage("Cannot unz3 an ast of kind Z3_VAR_AST.");
+    break;
+  case Z3_QUANTIFIER_AST:
+    abortWithMessage("Cannot unz3 an ast of kind Z3_QUANTIFIER_AST.");
+    break;
+  case Z3_SORT_AST:
+    abortWithMessage("Cannot unz3 an ast of kind Z3_SORT_AST.");
+    break;
+  case Z3_FUNC_DECL_AST:
+    abortWithMessage("Cannot unz3 an ast of kind Z3_FUNC_DECL_AST.");
+    break;
+  case Z3_UNKNOWN_AST:
+    abortWithMessage("Cannot unz3 an ast of kind Z3_UNKNOWN_AST.");
+    break;
+  }
+  assert(0);
+  return 0;
 }

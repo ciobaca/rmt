@@ -81,4 +81,6 @@ Term *introduceExists(Term *, std::vector<Variable *>);
 
 std::map<Variable *, Variable *> freshRenaming(std::vector<Variable *>);
 
+Term *simplifyTerm(Term *);
+
 #endif

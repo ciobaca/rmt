@@ -2,5 +2,4 @@ sorts State;
 signature init : -> State;
 variables N : Int;
 
-simplification (band true true);
-
+simplification (band true false);

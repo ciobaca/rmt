@@ -13,7 +13,7 @@ VarTerm::VarTerm(Variable *variable) :
 {
   hasDefinedFunctions = false;
   if (variable->sort->hasInterpretation) {
-    interpretation = z3_make_constant(variable->sort);
+    interpretation = z3_make_constant(variable);
   }
 }
 

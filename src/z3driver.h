@@ -105,7 +105,7 @@ Z3_ast z3_iff(std::vector<Term *> args);
 
 Z3_ast z3_implies(std::vector<Term *> args);
 
-Z3_ast z3_make_constant(Sort *);
+Z3_ast z3_make_constant(Variable *);
 
 Term *unZ3(Z3_ast, Sort *);
 

@@ -12,6 +12,7 @@
 #include "factories.h"
 #include "helper.h"
 #include <string>
+#include <map>
 
 #include <z3.h>
 
@@ -24,10 +25,14 @@ using namespace std;
 
 unsigned z3_symbol_count = 0;
 
-Z3_ast z3_make_constant(Sort *sort)
+map<Z3_symbol, Variable *> z3_const_to_var;
+
+Z3_ast z3_make_constant(Variable *variable)
 {
   Z3_symbol symbol = Z3_mk_int_symbol(z3context, z3_symbol_count++);
-  return Z3_mk_const(z3context, symbol, sort->interpretation);
+  Z3_ast result = Z3_mk_const(z3context, symbol, variable->sort->interpretation);
+  z3_const_to_var[symbol] = variable;
+  return result;
 }
 
 Z3_ast z3_simplify(Term *term)
@@ -382,6 +387,7 @@ Z3Result Z3Theory::isSatisfiable()
     return unknown;
   } else {
     assert(0);
+    return unknown;
   }
 }
 
@@ -445,6 +451,16 @@ Term *unZ3(Z3_ast ast, Sort *sort)
     Z3_app app = Z3_to_app(z3context, ast);
     Z3_func_decl func_decl = Z3_get_app_decl(z3context, app);
     switch (Z3_get_decl_kind(z3context, func_decl)) {
+    case Z3_OP_UNINTERPRETED:
+      {
+	Z3_symbol symbol = Z3_get_decl_name(z3context, func_decl);
+	// TODO might generalize in the future
+	// currently this *must* be an uninterpreted constant
+	// (standing for a variable)
+	assert(z3_const_to_var.find(symbol) != z3_const_to_var.end());
+	return getVarTerm(z3_const_to_var[symbol]);
+      }
+      break;
     case Z3_OP_TRUE:
       return bTrue();
       break;
@@ -1158,9 +1174,6 @@ Term *unZ3(Z3_ast ast, Sort *sort)
       break;
     case Z3_OP_INTERNAL    :
       abortWithMessage("Cannot handle decl kind Z3_OP_INTERNAL    .");
-      break;
-    case Z3_OP_UNINTERPRETED:
-      abortWithMessage("Cannot handle decl kind Z3_OP_UNINTERPRETED.");
       break;
     }
     }

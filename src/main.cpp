@@ -1,12 +1,15 @@
 /*
-Entry point of RMT tool.
 
-(C) 2016 Stefan Ciobaca
+Entry point of the RMT tool.
+
+(C) 2016 - 2018 Stefan Ciobaca
 stefan.ciobaca@gmail.com
 Faculty of Computer Science
-"Alexandru Ioan Cuza" University
+Alexandru Ioan Cuza University
 Iasi, Romania
-http:://profs.info.uaic.ro/~stefan.ciobaca/rmt/
+
+http://profs.info.uaic.ro/~stefan.ciobaca/rmt/
+
  */
 #include <iostream>
 #include <string>
@@ -34,7 +37,7 @@ http:://profs.info.uaic.ro/~stefan.ciobaca/rmt/
 
 using namespace std;
 
-void outputRewrite(RewriteSystem &rewriteSystem)
+void outputRewriteSystem(RewriteSystem &rewriteSystem)
 {
   for (int i = 0; i < len(rewriteSystem); ++i) {
     pair<Term *, Term *> rewriteRule = rewriteSystem[i];
@@ -193,7 +196,7 @@ void addPredefinedFunctions()
     createInterpretedFunction("13", arguments, intSort, "13");
     createInterpretedFunction("14", arguments, intSort, "14");
     createInterpretedFunction("15", arguments, intSort, "15");
-    
+
     arguments.push_back(intSort);
     arguments.push_back(intSort);
     createInterpretedFunction("mplus", arguments, intSort, "+");
@@ -420,30 +423,32 @@ string parseConstrainedRewriteSystem(string &s, int &w, ConstrainedRewriteSystem
 
 void abortWithMessage(string error)
 {
-	cout << "Error: " << error << endl;
-	exit(0);
+  cout << "Error: " << error << endl;
+  exit(0);
 }
 
 /*
-entry point to the RMT tool
- */
+
+Entry point to the RMT tool.
+
+*/
 int main(int argc, char **argv)
 {
   if (argc != 1) {
-	  if (argc == 3) {
-		  if (strcmp(argv[1], "-v") != 0) {
-			  abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (-v not found)");
-		  }
-		  char *end;
-		  printf("got verbosity <%s>\n", argv[2]);
-		  Log::debug_level = strtol(argv[2], &end, 10);
-		  if (*end) {
-			  abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (verbosity level not specified)");
-		  }
-	  } else {
-	    abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (-v not found)");
-	  }
-  } 
+    if (argc == 3) {
+      if (strcmp(argv[1], "-v") != 0) {
+	abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (-v not found)");
+      }
+      char *end;
+      printf("Got verbosity level <%s>.\n", argv[2]);
+      Log::debug_level = strtol(argv[2], &end, 10);
+      if (*end) {
+	abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (verbosity level not specified)");
+      }
+    } else {
+      abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (-v not found)");
+    }
+  }
 
   string s;
   int w = 0;

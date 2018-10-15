@@ -43,12 +43,15 @@ string FunTerm::toString()
   int n = len(function->arguments);
 
   ostringstream oss;
-  oss << function->name;
   if (n) {
     oss << "(";
   }
+  oss << function->name;
   for (int i = 0; i < n; ++i) {
-    oss << arguments[i]->toString() << (i == n - 1 ? ")" : ",");
+    oss << " " << arguments[i]->toString();
+  }
+  if (n) {
+    oss << ")";
   }
   return oss.str();
 }

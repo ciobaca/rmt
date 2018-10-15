@@ -13,7 +13,7 @@ string ConstrainedTerm::toString()
   ostringstream oss;
   oss << term->toString();
   if (constraint) {
-    oss << " if ";
+    oss << " /\\ ";
     oss << constraint->toString();
   }
   return oss.str();

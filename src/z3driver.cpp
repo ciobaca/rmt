@@ -16,7 +16,6 @@
 #include <z3.h>
 
 Z3_context z3context;
-Z3_solver z3solver;
 
 Z3_sort z3BoolSort;
 Z3_sort z3IntSort;
@@ -285,7 +284,7 @@ void start_z3_api()
   // Z3_ast z3True = Z3_mk_true(z3context);
   // Z3_ast z3False = Z3_mk_false(z3context);
 
-  z3solver = Z3_mk_solver(z3context);
+  // Z3_solver z3solver = Z3_mk_solver(z3context);
   // Z3_solver_assert(z3context, z3solver, z3True);
   // if (Z3_solver_check(z3context, z3solver) != Z3_L_TRUE) {
   //   abortWithMessage("Z3 said true is unsatisfiable or undef.");
@@ -298,6 +297,7 @@ void start_z3_api()
 
 void test_z3_api()
 {
+  Z3_solver z3solver = Z3_mk_solver(z3context);
   Term *N = getVarTerm(createFreshVariable(getSort("Int")));
   vector<Term *> empty;
   Term *One = getFunTerm(getFunction("0"), empty);
@@ -356,6 +356,7 @@ void Z3Theory::addConstraint(Term *constraint)
 
 Z3Result Z3Theory::isSatisfiable()
 {
+  Z3_solver z3solver = Z3_mk_solver(z3context);
   for (int i = 0; i < (int)constraints.size(); ++i) {
     Z3_ast constraint = constraints[i]->toSmt();
     Log(DEBUG7) << "Asserting " << constraints[i]->toString() << "." << endl;

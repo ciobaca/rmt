@@ -1,0 +1,18 @@
+sorts Nat;
+
+signature
+  z : -> Nat,
+  s : Nat -> Nat,
+  p : Nat Nat -> Nat;
+
+variables X:Nat, Y:Nat;
+
+constrained-rewrite-system addition
+
+  (p 0 X) => X,
+  (p (s X) Y) => (s (p X Y));
+
+constrained-rewrite-system commutativity
+  (p X Y) => (p Y X);
+
+prove in addition : commutativity;

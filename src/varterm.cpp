@@ -12,9 +12,6 @@ VarTerm::VarTerm(Variable *variable) :
   variable(variable)
 {
   hasDefinedFunctions = false;
-  if (variable->sort->hasInterpretation) {
-    interpretation = z3_make_constant(variable);
-  }
 }
 
 vector<Variable *> VarTerm::computeVars()
@@ -41,7 +38,7 @@ string VarTerm::toString()
 Z3_ast VarTerm::toSmt()
 {
   if (variable->sort->hasInterpretation) {
-    return interpretation;
+    return variable->interpretation;
   } else {
     abortWithMessage("Trying to SMT an uninterpreted variable (its name is " + variable->name + ").");
     return 0;

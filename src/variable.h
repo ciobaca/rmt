@@ -2,6 +2,7 @@
 #define VARIABLE_H__
 
 #include <string>
+#include <z3.h>
 
 using namespace std;
 
@@ -12,14 +13,11 @@ struct Variable
 {
   Sort *sort;
   string name;
+  Z3_ast interpretation;
   Variable *rename(Substitution &);
 
 private:
-  Variable(string name, Sort *sort)
-  {
-    this->name = name;
-    this->sort = sort;
-  }
+  Variable(string, Sort *);
 
   friend void createVariable(string, Sort *);
 };

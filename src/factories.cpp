@@ -116,6 +116,11 @@ Sort *getIntSort()
   return getSort("Int");
 }
 
+Sort *getBoolSort()
+{
+  return getSort("Bool");
+}
+
 void createUninterpretedSort(const string &sortName)
 {
 #ifndef NDEBUG
@@ -182,11 +187,11 @@ Function *getLEFunction()
 }
 
 Term *getIntOneConstant() {
-  return getFunTerm(getFunction("mone"), vector<Term*>());
+  return getFunTerm(getFunction("1"), vector<Term*>());
 }
 
 Term *getIntZeroConstant() {
-  return getFunTerm(getFunction("mzero"), vector<Term*>());
+  return getFunTerm(getFunction("0"), vector<Term*>());
 }
 
 void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result, bool isDefined)
@@ -353,6 +358,15 @@ Term *bAnd(Term *left, Term *right)
   return getFunTerm(AndFun, vector2(left, right));
 }
 
+Term *bAndVector(std::vector<Term *> args, int start)
+{
+  if (start == args.size() - 1) {
+    return args[start];
+  } else {
+    return bAnd(args[start], bAndVector(args, start + 1));
+  }
+}
+
 Term *bOr(Term *left, Term *right)
 {
   return getFunTerm(OrFun, vector2(left, right));
@@ -381,6 +395,26 @@ Term *mEquals(Term *left, Term *right)
 Term *mle(Term *left, Term *right)
 {
   return getFunTerm(MleFun, vector2(left, right));
+}
+
+Term *mplus(Term *left, Term *right)
+{
+  return getFunTerm(getFunction("mplus"), vector2(left, right));
+}
+
+Term *mminus(Term *left, Term *right)
+{
+  return getFunTerm(getFunction("mminus"), vector2(left, right));
+}
+
+Term *mdiv(Term *left, Term *right)
+{
+  return getFunTerm(getFunction("mdiv"), vector2(left, right));
+}
+
+Term *mtimes(Term *left, Term *right)
+{
+  return getFunTerm(getFunction("mtimes"), vector2(left, right));
 }
 
 Term *bEquals(Term *left, Term *right)

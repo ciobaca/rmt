@@ -432,7 +432,7 @@ Entry point to the RMT tool.
 */
 int main(int argc, char **argv)
 {
-  char *filename;
+  char *filename = argv[0];
   if (argc != 2) {
     if (argc == 4) {
       if (strcmp(argv[1], "-v") != 0) {

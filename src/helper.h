@@ -70,6 +70,7 @@ Substitution createSubstitution(map<Variable *, Variable *> r);
 string varVecToString(vector<Variable *> vars);
 
 string spaces(int);
+string string_from_int(int);
 
 extern int VERBOSITY;
 

@@ -15,6 +15,7 @@ struct Sort;
 
 Term *bImplies(Term *, Term *);
 Term *bAnd(Term *, Term *);
+Term *bAndVector(std::vector<Term *>, int = 0);
 Term *bOr(Term *, Term *);
 Term *bNot(Term *);
 Term *bTrue();
@@ -25,6 +26,10 @@ bool isExistsFunction(Function *);
 Term *bEquals(Term *, Term *);
 Term *mEquals(Term *, Term *);
 Term *mle(Term *, Term *);
+Term *mplus(Term *, Term *);
+Term *mminus(Term *, Term *);
+Term *mdiv(Term *, Term *);
+Term *mtimes(Term *, Term *);
 
 Function *getEqualsFunction(Sort *);
 Term *createEqualityConstraint(Term *, Term *);
@@ -44,6 +49,7 @@ void createVariable(std::string name, Sort *sort);
 
 Sort *getSort(std::string name);
 Sort *getIntSort();
+Sort *getBoolSort();
 void createUninterpretedSort(const std::string &sortName);
 void createInterpretedSort(const std::string &sortName, const std::string &interpretation);
 

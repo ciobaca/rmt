@@ -467,20 +467,61 @@ Term *unZ3(Z3_ast ast, Sort *sort)
     case Z3_OP_FALSE:
       return bFalse();
       break;
+    case Z3_OP_LE:
+      {
+	assert(sort == getBoolSort());
+	Z3_app app = Z3_to_app(z3context, ast);
+	if (Z3_get_app_num_args(z3context, app) != 2) {
+	  abortWithMessage("Expected 2 arguments in Z3_OP_LE application.");
+	}
+	Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	return mle(unZ3(arg1, getIntSort()), unZ3(arg2, getIntSort()));
+      }
+      break;
     case Z3_OP_EQ:
-      abortWithMessage("Cannot handle decl kind Z3_OP_EQ.");
+      {
+	assert(sort == getBoolSort());
+	Z3_app app = Z3_to_app(z3context, ast);
+	if (Z3_get_app_num_args(z3context, app) != 2) {
+	  abortWithMessage("Expected 2 arguments in Z3_OP_EQ application.");
+	}
+	Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	return mEquals(unZ3(arg1, getIntSort()), unZ3(arg2, getIntSort()));
+      }
       break;
     case Z3_OP_DISTINCT    :
       abortWithMessage("Cannot handle decl kind Z3_OP_DISTINCT    .");
       break;
-    case Z3_OP_ITE :
+    case Z3_OP_ITE:
       abortWithMessage("Cannot handle decl kind Z3_OP_ITE .");
       break;
-    case Z3_OP_AND :
-      abortWithMessage("Cannot handle decl kind Z3_OP_AND .");
+    case Z3_OP_AND:
+      {
+	assert(sort == getBoolSort());
+	Z3_app app = Z3_to_app(z3context, ast);
+	if (Z3_get_app_num_args(z3context, app) < 2) {
+	  abortWithMessage("Expected >= 2 arguments in Z3_OP_AND application.");
+	}
+	vector<Term *> args;
+	for (int i = 0; i < Z3_get_app_num_args(z3context, app); ++i) {
+	  args.push_back(unZ3(Z3_get_app_arg(z3context, app, i), getBoolSort()));
+	}
+	return bAndVector(args);
+      }
       break;
-    case Z3_OP_OR  :
-      abortWithMessage("Cannot handle decl kind Z3_OP_OR  .");
+    case Z3_OP_OR:
+      {
+	assert(sort == getBoolSort());
+	Z3_app app = Z3_to_app(z3context, ast);
+	if (Z3_get_app_num_args(z3context, app) != 2) {
+	  abortWithMessage("Expected 2 arguments in Z3_OP_OR application.");
+	}
+	Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	return bOr(unZ3(arg1, getBoolSort()), unZ3(arg2, getBoolSort()));
+      }
       break;
     case Z3_OP_IFF :
       abortWithMessage("Cannot handle decl kind Z3_OP_IFF .");
@@ -488,8 +529,16 @@ Term *unZ3(Z3_ast ast, Sort *sort)
     case Z3_OP_XOR :
       abortWithMessage("Cannot handle decl kind Z3_OP_XOR .");
       break;
-    case Z3_OP_NOT :
-      abortWithMessage("Cannot handle decl kind Z3_OP_NOT .");
+    case Z3_OP_NOT:
+      {
+	assert(sort == getBoolSort());
+	Z3_app app = Z3_to_app(z3context, ast);
+	if (Z3_get_app_num_args(z3context, app) != 1) {
+	  abortWithMessage("Expected 1 argument in Z3_OP_NOT application.");
+	}
+	Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	return bNot(unZ3(arg1, getBoolSort()));
+      }
       break;
     case Z3_OP_IMPLIES:
       abortWithMessage("Cannot handle decl kind Z3_OP_IMPLIES.");
@@ -503,9 +552,6 @@ Term *unZ3(Z3_ast ast, Sort *sort)
     case Z3_OP_AGNUM:
       abortWithMessage("Cannot handle decl kind Z3_OP_AGNUM.");
       break;
-    case Z3_OP_LE  :
-      abortWithMessage("Cannot handle decl kind Z3_OP_LE  .");
-      break;
     case Z3_OP_GE  :
       abortWithMessage("Cannot handle decl kind Z3_OP_GE  .");
       break;
@@ -515,8 +561,17 @@ Term *unZ3(Z3_ast ast, Sort *sort)
     case Z3_OP_GT  :
       abortWithMessage("Cannot handle decl kind Z3_OP_GT  .");
       break;
-    case Z3_OP_ADD :
-      abortWithMessage("Cannot handle decl kind Z3_OP_ADD .");
+    case Z3_OP_ADD:
+      {
+	assert(sort == getIntSort());
+	Z3_app app = Z3_to_app(z3context, ast);
+	if (Z3_get_app_num_args(z3context, app) != 2) {
+	  abortWithMessage("Expected 2 arguments in Z3_OP_ADD application.");
+	}
+	Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	return mplus(unZ3(arg1, getIntSort()), unZ3(arg2, getIntSort()));
+      }
       break;
     case Z3_OP_SUB :
       abortWithMessage("Cannot handle decl kind Z3_OP_SUB .");
@@ -525,13 +580,31 @@ Term *unZ3(Z3_ast ast, Sort *sort)
       abortWithMessage("Cannot handle decl kind Z3_OP_UMINUS.");
       break;
     case Z3_OP_MUL :
-      abortWithMessage("Cannot handle decl kind Z3_OP_MUL .");
+      {
+	assert(sort == getIntSort());
+	Z3_app app = Z3_to_app(z3context, ast);
+	if (Z3_get_app_num_args(z3context, app) != 2) {
+	  abortWithMessage("Expected 2 arguments in Z3_OP_MUL application.");
+	}
+	Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	return mtimes(unZ3(arg1, getIntSort()), unZ3(arg2, getIntSort()));
+      }
       break;
     case Z3_OP_DIV :
       abortWithMessage("Cannot handle decl kind Z3_OP_DIV .");
       break;
     case Z3_OP_IDIV:
-      abortWithMessage("Cannot handle decl kind Z3_OP_IDIV.");
+      {
+	assert(sort == getIntSort());
+	Z3_app app = Z3_to_app(z3context, ast);
+	if (Z3_get_app_num_args(z3context, app) != 2) {
+	  abortWithMessage("Expected 2 arguments in Z3_OP_IDIV application.");
+	}
+	Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	return mdiv(unZ3(arg1, getIntSort()), unZ3(arg2, getIntSort()));
+      }
       break;
     case Z3_OP_REM :
       abortWithMessage("Cannot handle decl kind Z3_OP_REM .");
@@ -1179,7 +1252,24 @@ Term *unZ3(Z3_ast ast, Sort *sort)
     }
     break;
   case Z3_NUMERAL_AST:
-    abortWithMessage("Cannot unz3 an ast of kind Z3_NUMERAL_AST.");
+    {
+      int result;
+      if (Z3_get_numeral_int(z3context, ast, &result)) {
+	if (result < 0 && result >= -15) {
+	  Term *term = mminus(getIntZeroConstant(),
+			getFunTerm(getFunction(string_from_int(-result)), vector<Term*>()));
+	  return term;
+	}
+	if (result < 0 || result > 15) {
+	  ostringstream oss;
+	  oss << "For ast of kind Z3_NUMERAL_AST, cannot retrieve numeral outside of range -15 -- 15; was " << result << ".";
+	  abortWithMessage(oss.str().c_str());
+	}
+	return getFunTerm(getFunction(string_from_int(result)), vector<Term*>());
+      } else {
+	abortWithMessage("For ast of kind Z3_NUMERAL_AST, cannot retrieve numeral outside of int range.");
+      }
+    }
     break;
   case Z3_VAR_AST:
     abortWithMessage("Cannot unz3 an ast of kind Z3_VAR_AST.");

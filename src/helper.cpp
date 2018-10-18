@@ -60,3 +60,11 @@ string spaces(int tabs)
   }
   return oss.str();
 }
+
+string string_from_int(int number)
+{
+  ostringstream oss;
+  oss << number;
+  return oss.str();
+}
+

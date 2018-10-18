@@ -402,6 +402,15 @@ Term *mplus(Term *left, Term *right)
   return getFunTerm(getFunction("mplus"), vector2(left, right));
 }
 
+Term *mPlusVector(std::vector<Term *> args, int start)
+{
+  if (start == args.size() - 1) {
+    return args[start];
+  } else {
+    return mplus(args[start], mPlusVector(args, start + 1));
+  }
+}
+
 Term *mminus(Term *left, Term *right)
 {
   return getFunTerm(getFunction("mminus"), vector2(left, right));

@@ -27,6 +27,7 @@ Term *bEquals(Term *, Term *);
 Term *mEquals(Term *, Term *);
 Term *mle(Term *, Term *);
 Term *mplus(Term *, Term *);
+Term *mPlusVector(vector<Term *>, int = 0);
 Term *mminus(Term *, Term *);
 Term *mdiv(Term *, Term *);
 Term *mtimes(Term *, Term *);

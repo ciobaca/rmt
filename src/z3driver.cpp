@@ -565,12 +565,14 @@ Term *unZ3(Z3_ast ast, Sort *sort)
       {
 	assert(sort == getIntSort());
 	Z3_app app = Z3_to_app(z3context, ast);
-	if (Z3_get_app_num_args(z3context, app) != 2) {
-	  abortWithMessage("Expected 2 arguments in Z3_OP_ADD application.");
+	if (Z3_get_app_num_args(z3context, app) < 2) {
+	  abortWithMessage("Expected >= 2 arguments in Z3_OP_ADD application.");
 	}
-	Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
-	Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
-	return mplus(unZ3(arg1, getIntSort()), unZ3(arg2, getIntSort()));
+	vector<Term *> args;
+	for (int i = 0; i < Z3_get_app_num_args(z3context, app); ++i) {
+	  args.push_back(unZ3(Z3_get_app_arg(z3context, app, i), getIntSort()));
+	}
+	return mPlusVector(args);
       }
       break;
     case Z3_OP_SUB :

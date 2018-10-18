@@ -432,20 +432,35 @@ Entry point to the RMT tool.
 */
 int main(int argc, char **argv)
 {
-  if (argc != 1) {
-    if (argc == 3) {
+  char *filename;
+  if (argc != 2) {
+    if (argc == 4) {
       if (strcmp(argv[1], "-v") != 0) {
-	abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (-v not found)");
+	abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
       }
       char *end;
-      printf("Got verbosity level <%s>.\n", argv[2]);
+      Log(INFO) << "Got verbosity level " << argv[2] << "." << endl;
       Log::debug_level = strtol(argv[2], &end, 10);
       if (*end) {
-	abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (verbosity level not specified)");
+	abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
       }
+      filename = argv[3];
     } else {
-      abortWithMessage("Syntax: ./rmt [-v <level>] < file.in (-v not found)");
+      abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
     }
+  } else {
+    filename = argv[1];
+  }
+
+  ifstream input(filename);
+  string s;
+  int w = 0;
+
+  while (!input.eof()) {
+    string tmp;
+    getline(input, tmp);
+    s += tmp;
+    s += "\n";
   }
 
   start_z3_api();
@@ -454,16 +469,6 @@ int main(int argc, char **argv)
   addPredefinedFunctions();
   createBuiltIns();
   addPredefinedRewriteSystems();
-
-  string s;
-  int w = 0;
-
-  while (!cin.eof()) {
-    string tmp;
-    getline(cin, tmp);
-    s += tmp;
-    s += "\n";
-  }
 
   parseSmtPrelude(s, w);
   parseSorts(s, w);

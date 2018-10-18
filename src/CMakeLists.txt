@@ -45,4 +45,4 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "[Ww]indows")
   endforeach()
 endif()
 
-
+install (TARGETS rmt DESTINATION bin)

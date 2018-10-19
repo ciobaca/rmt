@@ -76,11 +76,11 @@ Z3_ast FunTerm::toSmt()
     // oss << arguments[1]->toSmtString();
     // TODO
     assert(0);
-    return function->interpretation(arguments);
+    return (*function->interpretation)(arguments);
   } else {
     Log(DEBUG8) << "Descending into " << function->name << endl;
     assert(function->hasInterpretation);
-    Z3_ast result = function->interpretation(arguments);
+    Z3_ast result = (*function->interpretation)(arguments);
     Log(DEBUG8) << "Ascending into " << function->name << endl;
     return result;
   }

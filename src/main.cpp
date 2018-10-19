@@ -8,7 +8,7 @@ Faculty of Computer Science
 Alexandru Ioan Cuza University
 Iasi, Romania
 
-http://profs.info.uaic.ro/~stefan.ciobaca/rmt/
+http://profs.info.uaic.ro/~stefan.ciobaca/
 
 */
 #include <iostream>
@@ -69,18 +69,73 @@ void createSubsort(vector<string> &identifiersLeft,
   }
 }
 
-extern string smt_prelude;
-
-void parseSmtPrelude(string &s, int &w)
+void parseBuiltins(string &s, int &w)
 {
-  string prelude;
   skipWhiteSpace(s, w);
-  if (lookAhead(s, w, "smt-prelude")) {
-    matchString(s, w, "smt-prelude");
-    skipWhiteSpace(s, w);
-    prelude = getQuotedString(s, w);
+  if (!lookAhead(s, w, "builtins")) {
+    return;
   }
-  parse_z3_prelude(prelude);
+  matchString(s, w, "builtins");
+  while (w < len(s)) {
+    skipWhiteSpace(s, w);
+    string f = getIdentifier(s, w);
+    skipWhiteSpace(s, w);
+    match(s, w, ':');
+    skipWhiteSpace(s, w);
+    vector<Sort *> arguments;
+    while (lookAheadIdentifier(s, w)) {
+      string id = getIdentifier(s, w);
+      if (!sortExists(id)) {
+        parseError("(while parsing builtins) sort does not exist", w, s);
+      }
+      if (!isBuiltinSort(id)) {
+        parseError("(while parsing builtins) sort is not builtin", w, s);
+      }
+      skipWhiteSpace(s, w);
+      arguments.push_back(getSort(id));
+    }
+    matchString(s, w, "->");
+    skipWhiteSpace(s, w);
+    string id = getIdentifier(s, w);
+    if (!sortExists(id)) {
+      Log(ERROR) << "SORT: " << id << endl;
+      parseError("(while parsing builtins) sort does not exist", w, s);
+    }
+    if (!isBuiltinSort(id)) {
+      parseError("(while parsing builtins) sort is not builtin", w, s);
+    }
+    Sort *result = getSort(id);
+    string interpretation = f;
+    skipWhiteSpace(s, w);
+
+    createInterpretedFunction(f, arguments, result, createZ3FunctionSymbol(f, arguments, result));
+    if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
+      expected("more builtin function symbols", w, s);
+    }
+    if (s[w] == ',') {
+      match(s, w, ',');
+      continue;
+    } else {
+      match(s, w, ';');
+      break;
+    }
+  }
+}
+
+void parseAsserts(string &s, int &w)
+{
+  skipWhiteSpace(s, w);
+  while (lookAhead(s, w, "assert")) {
+    matchString(s, w, "assert");
+    skipWhiteSpace(s, w);
+    Term *term = parseTerm(s, w);
+    if (term->getSort() != getBoolSort()) {
+      parseError("(while parsing asserts) asserts should be of sort Bool.", w, s);
+    }
+    addZ3Assert(term);
+    skipWhiteSpace(s, w);
+    matchString(s, w, ";");
+  }
 }
 
 void addPredefinedSorts()
@@ -209,6 +264,10 @@ void addPredefinedFunctions()
     createInterpretedFunction("mle", arguments, boolSort, "<=");
     createInterpretedFunction("mless", arguments, boolSort, "<");
     createInterpretedFunction("mequals", arguments, boolSort, "=");
+
+    arguments.push_back(boolSort);
+    std::reverse(arguments.begin(), arguments.end());
+    createInterpretedFunction("iteInt", arguments, boolSort, "ite");
   }
 
   {
@@ -470,11 +529,12 @@ int main(int argc, char **argv)
   createBuiltIns();
   addPredefinedRewriteSystems();
 
-  parseSmtPrelude(s, w);
   parseSorts(s, w);
   parseSubsorts(s, w);
   parseFunctions(s, w);
   parseVariables(s, w);
+  parseBuiltins(s, w);
+  parseAsserts(s, w);
   skipWhiteSpace(s, w);
 
   //  if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {

@@ -148,6 +148,12 @@ bool sortExists(string name)
   return contains(sorts, name);
 }
 
+bool isBuiltinSort(string name)
+{
+  assert(sortExists(name));
+  return sorts[name]->hasInterpretation;
+}
+
 Variable *getInternalVariable(string name, Sort *sort)
 {
   if (!getVariable(name)) {
@@ -227,6 +233,23 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
   functions[name] = new Function(name, arguments, result, interpretation);
 }
 
+void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation)
+{
+#ifndef NDEBUG
+  Function *f = getFunction(name);
+  assert(f == 0);
+#endif
+  int arity = arguments.size();
+  Log log(INFO);
+  log << "Creating interpreted function " << name << " (as " << interpretation << ") : ";
+  for (int i = 0; i < arity; ++i) {
+    log << arguments[i]->name << " ";
+  }
+  log << " -> " << result->name << endl;
+  functions[name] = new Function(name, arguments, result, interpretation);
+}
+
+
 Term *getFunTerm(Function *f, vector<Term *> arguments)
 {
   pair<Function *, vector<Term *> > content = make_pair(f, arguments);
@@ -290,6 +313,7 @@ Function *MleFun;
 Function *MEqualsFun;
 
 map<Sort *, Function *> ExistsFun;
+map<Sort *, Function *> ForallFun;
 
 void createBuiltIns()
 {
@@ -314,8 +338,8 @@ void createBuiltIns()
 
   assert(sortExists("Bool"));
   assert(sortExists("Int"));
-  
-  // small hack for existential quantifiers
+
+  // small hack for existential and universal quantifiers
   Log(DEBUG) << "Creating built ins" << endl;
   for (map<string, Sort *>::iterator it = sorts.begin(); it != sorts.end(); ++it) {
     Sort *s = it->second;
@@ -328,6 +352,19 @@ void createBuiltIns()
     createUninterpretedFunction(funname.str(), args, sorts["Bool"], false);
     ExistsFun[s] = getFunction(funname.str());
     assert(ExistsFun[s]);
+  }
+  
+  for (map<string, Sort *>::iterator it = sorts.begin(); it != sorts.end(); ++it) {
+    Sort *s = it->second;
+    vector<Sort *> args;
+    args.push_back(s);
+    args.push_back(sorts["Bool"]);
+    ostringstream funname;
+    funname << "_forall" << s->name;
+    Log(DEBUG) << "Creating forall function " << funname.str() << endl;
+    createUninterpretedFunction(funname.str(), args, sorts["Bool"], false);
+    ForallFun[s] = getFunction(funname.str());
+    assert(ForallFun[s]);
   }
 }
 
@@ -360,7 +397,7 @@ Term *bAnd(Term *left, Term *right)
 
 Term *bAndVector(std::vector<Term *> args, int start)
 {
-  if (start == args.size() - 1) {
+  if (start == static_cast<int>(args.size()) - 1) {
     return args[start];
   } else {
     return bAnd(args[start], bAndVector(args, start + 1));

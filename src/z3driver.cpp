@@ -26,6 +26,9 @@ using namespace std;
 unsigned z3_symbol_count = 0;
 
 map<Z3_symbol, Variable *> z3_const_to_var;
+map<Z3_symbol, Z3_func_decl> symbol_to_func_decl;
+map<Z3_func_decl, Function *> func_decl_to_function;
+vector<Z3_ast> z3asserts;
 
 Z3_ast z3_make_constant(Variable *variable)
 {
@@ -50,7 +53,7 @@ Z3_sort z3_int()
   return z3IntSort;
 }
 
-Z3_ast z3_add(vector<Term *> args)
+Z3_ast z3_add::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   Z3_ast z3args[2];
@@ -59,7 +62,7 @@ Z3_ast z3_add(vector<Term *> args)
   return Z3_mk_add(z3context, 2, z3args);
 }
 
-Z3_ast z3_mul(vector<Term *> args)
+Z3_ast z3_mul::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   Z3_ast z3args[2];
@@ -68,7 +71,7 @@ Z3_ast z3_mul(vector<Term *> args)
   return Z3_mk_mul(z3context, 2, z3args);
 }
 
-Z3_ast z3_sub(vector<Term *> args)
+Z3_ast z3_sub::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   Z3_ast z3args[2];
@@ -77,151 +80,152 @@ Z3_ast z3_sub(vector<Term *> args)
   return Z3_mk_sub(z3context, 2, z3args);
 }
 
-Z3_ast z3_div(vector<Term *> args)
+Z3_ast z3_div::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   return Z3_mk_div(z3context, args[0]->toSmt(), args[1]->toSmt());
 }
 
-Z3_ast z3_mod(vector<Term *> args)
+Z3_ast z3_mod::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   return Z3_mk_mod(z3context, args[0]->toSmt(), args[1]->toSmt());
 }
 
-Z3_ast z3_le(vector<Term *> args)
+Z3_ast z3_le::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   return Z3_mk_le(z3context, args[0]->toSmt(), args[1]->toSmt());
 }
 
-Z3_ast z3_lt(vector<Term *> args)
+Z3_ast z3_lt::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   return Z3_mk_lt(z3context, args[0]->toSmt(), args[1]->toSmt());
 }
 
-Z3_ast z3_eq(vector<Term *> args)
+Z3_ast z3_eq::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   return Z3_mk_eq(z3context, args[0]->toSmt(), args[1]->toSmt());
 }
 
-Z3_ast z3_ct_0(vector<Term *> args)
+Z3_ast z3_ct_0::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 0, z3IntSort);
 }
 
-Z3_ast z3_ct_1(vector<Term *> args)
+Z3_ast z3_ct_1::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 1, z3IntSort);
 }
 
-Z3_ast z3_ct_2(vector<Term *> args)
+Z3_ast z3_ct_2::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 2, z3IntSort);
 }
 
-Z3_ast z3_ct_3(vector<Term *> args)
+Z3_ast z3_ct_3::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 3, z3IntSort);
 }
 
-Z3_ast z3_ct_4(vector<Term *> args)
+Z3_ast z3_ct_4::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 4, z3IntSort);
 }
 
-Z3_ast z3_ct_5(vector<Term *> args)
+Z3_ast z3_ct_5::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 5, z3IntSort);
 }
 
-Z3_ast z3_ct_6(vector<Term *> args)
+Z3_ast z3_ct_6::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 6, z3IntSort);
 }
 
-Z3_ast z3_ct_7(vector<Term *> args)
+Z3_ast z3_ct_7::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 7, z3IntSort);
 }
 
-Z3_ast z3_ct_8(vector<Term *> args)
+Z3_ast z3_ct_8::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 8, z3IntSort);
 }
 
-Z3_ast z3_ct_9(vector<Term *> args)
+Z3_ast z3_ct_9::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 9, z3IntSort);
 }
 
-Z3_ast z3_ct_10(vector<Term *> args)
+Z3_ast z3_ct_10::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 10, z3IntSort);
 }
 
-Z3_ast z3_ct_11(vector<Term *> args)
+Z3_ast z3_ct_11::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 11, z3IntSort);
 }
 
-Z3_ast z3_ct_12(vector<Term *> args)
+Z3_ast z3_ct_12::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 12, z3IntSort);
 }
 
-Z3_ast z3_ct_13(vector<Term *> args)
+Z3_ast z3_ct_13::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 13, z3IntSort);
 }
 
-Z3_ast z3_ct_14(vector<Term *> args)
+Z3_ast z3_ct_14::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 14, z3IntSort);
 }
 
-Z3_ast z3_ct_15(vector<Term *> args)
+Z3_ast z3_ct_15::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_int(z3context, 15, z3IntSort);
 }
 
-Z3_ast z3_true(vector<Term *> args)
+Z3_ast z3_true::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_true(z3context);
 }
 
-Z3_ast z3_false(vector<Term *> args)
+Z3_ast z3_false::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
   return Z3_mk_false(z3context);
 }
 
 
-Z3_ast z3_not(vector<Term *> args)
+Z3_ast z3_not::operator()(vector<Term *> args)
 {
   assert(args.size() == 1);
   return Z3_mk_not(z3context, args[0]->toSmt());
 }
-Z3_ast z3_and(vector<Term *> args)
+
+Z3_ast z3_and::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   Z3_ast z3args[2];
@@ -230,7 +234,7 @@ Z3_ast z3_and(vector<Term *> args)
   return Z3_mk_and(z3context, 2, z3args);
 }
 
-Z3_ast z3_or(vector<Term *> args)
+Z3_ast z3_or::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   Z3_ast z3args[2];
@@ -239,45 +243,46 @@ Z3_ast z3_or(vector<Term *> args)
   return Z3_mk_or(z3context, 2, z3args);
 }
 
-Z3_ast z3_iff(vector<Term *> args)
+Z3_ast z3_iff::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   return Z3_mk_iff(z3context, args[0]->toSmt(), args[1]->toSmt());
 }
 
-Z3_ast z3_implies(vector<Term *> args)
+Z3_ast z3_implies::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);
   return Z3_mk_implies(z3context, args[0]->toSmt(), args[1]->toSmt());
 }
 
-string smt_prelude;
+Z3_ast z3_ite::operator()(vector<Term *> args)
+{
+  assert(args.size() == 3);
+  return Z3_mk_ite(z3context, args[0]->toSmt(), args[1]->toSmt(), args[2]->toSmt());
+}
 
-string prover = "z3 -T:5 -in <";
-//string prover = "cvc4 --lang smtlib2";
+z3_custom_func::z3_custom_func(Z3_func_decl func, Function *fun)
+{
+  this->func = func;
+  func_decl_to_function[func] = fun;
+}
+
+Z3_ast z3_custom_func::operator()(vector<Term *> args)
+{
+  Z3_ast domain[16];
+  unsigned size = args.size();
+  assert(size < 16);
+  for (int i = 0; i < static_cast<int>(size); ++i) {
+    domain[i] = args[i]->toSmt();
+  }
+
+  return Z3_mk_app(z3context, func, size, domain);
+}
 
 void z3_error_handler(Z3_context context, Z3_error_code error)
 {
   Z3_string string_error = Z3_get_error_msg(context, error);
   abortWithMessage(string("Z3 returned non OK error code (") + string_error + ".");
-}
-
-void parse_z3_prelude(string prelude)
-{
-  smt_prelude = prelude;
-  //  Z3_parse_smtlib2_string()
-  /*
-Z3_ast_vector Z3_API Z3_parse_smtlib2_string 	( 	Z3_context  	c,
-		Z3_string  	str,
-		unsigned  	num_sorts,
-		Z3_symbol const  	sort_names[],
-		Z3_sort const  	sorts[],
-		unsigned  	num_decls,
-		Z3_symbol const  	decl_names[],
-		Z3_func_decl const  	decls[] 
-		) */
-  /*Z3_ast_vector conj = *///Z3_parse_smtlib2_string(z3context, prelude.c_str(),
-  //		       0, 0, 0, 0, 0, 0);
 }
 
 void start_z3_api()
@@ -328,21 +333,6 @@ void test_z3_api()
     cout << "unknown" << endl;
     break;
   }
-}
-
-string callz3(string s)
-{
-  FILE *fout = fopen("z3_temp.input", "w");
-  fprintf(fout, "%s\n", smt_prelude.c_str());
-  fprintf(fout, "%s", s.c_str());
-  fclose(fout);
-  system((prover + " z3_temp.input > z3_temp.output").c_str());
-  FILE *fin = fopen("z3_temp.output", "r");
-  char z3_result[1024];
-  // TODO: fix fixed length
-  fscanf(fin, "%s", z3_result);
-  fclose(fin);
-  return z3_result;
 }
 
 void Z3Theory::addVariable(Variable *var)
@@ -445,6 +435,7 @@ Z3Result isSatisfiable(Term *constraint)
 
 Term *unZ3(Z3_ast ast, Sort *sort)
 {
+  Log(DEBUG) << "UnZ3-ing " << Z3_ast_to_string(z3context, ast) << "." << endl;
   switch (Z3_get_ast_kind(z3context, ast)) {
   case Z3_APP_AST:
     {
@@ -457,8 +448,20 @@ Term *unZ3(Z3_ast ast, Sort *sort)
 	// TODO might generalize in the future
 	// currently this *must* be an uninterpreted constant
 	// (standing for a variable)
-	assert(z3_const_to_var.find(symbol) != z3_const_to_var.end());
-	return getVarTerm(z3_const_to_var[symbol]);
+	if (z3_const_to_var.find(symbol) != z3_const_to_var.end()) {
+	  return getVarTerm(z3_const_to_var[symbol]);
+	} else {
+	  assert(symbol_to_func_decl.find(symbol) != symbol_to_func_decl.end());
+	  Z3_func_decl func = symbol_to_func_decl[symbol];
+	  assert(func_decl_to_function.find(func) != func_decl_to_function.end());
+	  Function *function = func_decl_to_function[func];
+	  unsigned size = Z3_get_app_num_args(z3context, app);
+	  vector<Term *> arguments;
+	  for (int i = 0; i < static_cast<int>(size); ++i) {
+	    arguments.push_back(unZ3(Z3_get_app_arg(z3context, app, i), function->arguments[i]));
+	  }
+	  return getFunTerm(function, arguments);
+	}
       }
       break;
     case Z3_OP_TRUE:
@@ -505,7 +508,7 @@ Term *unZ3(Z3_ast ast, Sort *sort)
 	  abortWithMessage("Expected >= 2 arguments in Z3_OP_AND application.");
 	}
 	vector<Term *> args;
-	for (int i = 0; i < Z3_get_app_num_args(z3context, app); ++i) {
+	for (int i = 0; i < static_cast<int>(Z3_get_app_num_args(z3context, app)); ++i) {
 	  args.push_back(unZ3(Z3_get_app_arg(z3context, app, i), getBoolSort()));
 	}
 	return bAndVector(args);
@@ -569,7 +572,7 @@ Term *unZ3(Z3_ast ast, Sort *sort)
 	  abortWithMessage("Expected >= 2 arguments in Z3_OP_ADD application.");
 	}
 	vector<Term *> args;
-	for (int i = 0; i < Z3_get_app_num_args(z3context, app); ++i) {
+	for (int i = 0; i < static_cast<int>(Z3_get_app_num_args(z3context, app)); ++i) {
 	  args.push_back(unZ3(Z3_get_app_arg(z3context, app, i), getIntSort()));
 	}
 	return mPlusVector(args);
@@ -1291,4 +1294,26 @@ Term *unZ3(Z3_ast ast, Sort *sort)
   }
   assert(0);
   return 0;
+}
+
+Z3_func_decl createZ3FunctionSymbol(string name, std::vector<Sort *> arguments, Sort *resultSort)
+{
+  assert(arguments.size() < 16);
+  Z3_sort domain[16];
+  unsigned size = arguments.size();
+  for (int i = 0; i < static_cast<int>(size); ++i) {
+    assert(arguments[i]->hasInterpretation);
+    domain[i] = arguments[i]->interpretation;
+  }
+  assert(resultSort->hasInterpretation);
+  Z3_sort range = resultSort->interpretation;
+  Z3_symbol symbol = Z3_mk_string_symbol(z3context, name.c_str());
+  Z3_func_decl result = Z3_mk_func_decl(z3context, symbol, size, domain, range);
+  symbol_to_func_decl[symbol] = result;
+  return result;
+}
+
+void addZ3Assert(Term *formula)
+{
+  z3asserts.push_back(formula->toSmt());
 }

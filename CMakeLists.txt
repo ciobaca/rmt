@@ -19,3 +19,28 @@ set_tests_properties (RmtRunsSmt3 PROPERTIES PASS_REGULAR_EXPRESSION "is false")
 
 add_test(RmtRunsSmt4 "./rmt" -v 0 ../tests/smt/smt4.rmt)
 set_tests_properties (RmtRunsSmt4 PROPERTIES PASS_REGULAR_EXPRESSION "is B")
+
+add_test(RmtRunsSmt5 "./rmt" -v 0 ../tests/smt/smt5.rmt)
+set_tests_properties (RmtRunsSmt4 PROPERTIES PASS_REGULAR_EXPRESSION "result is")
+
+add_test(RmtRunsExample1 "./rmt" -v 0 ../examples/z-all-examples/example1.rmt)
+set_tests_properties (RmtRunsExample1 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
+
+add_test(RmtRunsExample2 "./rmt" -v 0 ../examples/z-all-examples/example2.rmt)
+set_tests_properties (RmtRunsExample2 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 1 solutions.")
+
+add_test(RmtRunsExample3 "./rmt" -v 0 ../examples/z-all-examples/example3.rmt)
+set_tests_properties (RmtRunsExample3 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 4 solutions.")
+
+add_test(RmtRunsExample4 "./rmt" -v 0 ../examples/z-all-examples/example4.rmt)
+set_tests_properties (RmtRunsExample4 PROPERTIES PASS_REGULAR_EXPRESSION "Circularity #2 proved.")
+set_tests_properties (RmtRunsExample4 PROPERTIES PASS_REGULAR_EXPRESSION "Circularity #1 proved.")
+
+add_test(RmtRunsExample5 "./rmt" -v 0 ../examples/z-all-examples/example5.rmt)
+set_tests_properties (RmtRunsExample5 PROPERTIES PASS_REGULAR_EXPRESSION "Circularity #1 proved.")
+set_tests_properties (RmtRunsExample5 PROPERTIES PASS_REGULAR_EXPRESSION "Circularity #2 not proved.")
+
+add_test(RmtRunsExample6 "./rmt" -v 0 ../examples/z-all-examples/example6.rmt)
+set_tests_properties (RmtRunsExample6 PROPERTIES PASS_REGULAR_EXPRESSION "Circularity #1 proved.")
+set_tests_properties (RmtRunsExample6 PROPERTIES PASS_REGULAR_EXPRESSION "Circularity #2 proved.")
+

@@ -63,6 +63,7 @@ Term *getIntOneConstant();
 Term *getIntZeroConstant();
 void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, bool isDefined);
 void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, std::string interpretation);
+void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, Z3_func_decl);
 
 Name *getName(std::string name);
 void createName(std::string name);
@@ -71,8 +72,9 @@ Term *getFunTerm(Function *f, std::vector<Term *> arguments);
 Term *getVarTerm(Variable *v);
 Term *getNamTerm(Name *n);
 
-bool variableExists(std::string name);
-bool sortExists(std::string name);
+bool variableExists(std::string);
+bool sortExists(std::string);
+bool isBuiltinSort(std::string);
 
 Variable *createFreshVariable(Sort *);
 

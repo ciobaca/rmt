@@ -1,11 +1,3 @@
-smt-prelude "
-(define-fun sumUpTo ((n Int)) Int
-  (div (* n (+ n 1)) 2)
-)
-(define-fun sum ((a Int) (b Int)) Int
-  (- (sumUpTo b) (sumUpTo (- a 1))))
-"
-
 /* any file begins with the declaration of all sorts used */
 sorts Left,
       Right,
@@ -32,9 +24,7 @@ signature
 	rightDone : Int -> Right,
 
 	pair : Left Right -> State,
-	ok : -> State,
-
-	msum : Int Int -> Int / "sum";
+	ok : -> State;
 
 /* next we must declare all variables */
 variables
@@ -46,8 +36,26 @@ variables
 	M : Int,
 	I : Int,
 	IP : Int,
-	J : Int;
+	J : Int,
+	X : Int,
+	AI : Int,
+	BI : Int;
 
+builtins sumUpTo : Int -> Int, sum : Int Int -> Int;
+
+assert (_forallInt N
+         (mequals (sumUpTo N) (mdiv (mtimes N (mplus N 1)) 2)));
+
+assert (_forallInt AI (_forallInt BI
+         (mequals (sum AI BI) (mminus (sumUpTo BI) (sumUpTo (mminus AI 1))))));
+
+// smt-prelude "
+// (define-fun sumUpTo ((n Int)) Int
+//   (div (* n (+ n 1)) 2)
+// )
+// (define-fun sum ((a Int) (b Int)) Int
+//   (- (sumUpTo b) (sumUpTo (- a 1))))
+// "
 
 constrained-rewrite-system left
 	(leftInit S I) =>
@@ -139,14 +147,14 @@ constrained-rewrite-system myrsCirc
 constrained-rewrite-system myrsDone
 	(pair (leftDone S) (rightDone S)) => ok;
 
-show-equivalent [7, 2] in left and right :
+show-equivalent [8, 2] in left and right :
 
   (pair (leftInit 0 N) (rightInit 0 0 N)) /\ (mle 0 N),
 
   (pair (leftInit S I) (rightInit SP IP NP)) /\
         (band (band (band 
-		  (mequals S (msum (mplus (mminus NP IP) 1) NP))
-                  (mequals SP (msum 0 (mminus IP 1))))
+		  (mequals S (sum (mplus (mminus NP IP) 1) NP))
+                  (mequals SP (sum 0 (mminus IP 1))))
                   (mequals (mplus I IP) NP))
 		  (mle 0 NP))
 

@@ -79,6 +79,18 @@ class z3_mod : public Z3Function {
   virtual Z3_ast operator()(std::vector<Term *> args);
 };
 
+class z3_ge : public Z3Function {
+ public:
+  z3_ge() {};
+  virtual Z3_ast operator()(std::vector<Term *> args);
+};
+
+class z3_gt : public Z3Function {
+ public:
+  z3_gt() {};
+  virtual Z3_ast operator()(std::vector<Term *> args);
+};
+
 class z3_le : public Z3Function {
  public:
   z3_le() {};
@@ -252,7 +264,7 @@ public:
 
 Z3_ast z3_make_constant(Variable *);
 
-Term *unZ3(Z3_ast, Sort *);
+Term *unZ3(Z3_ast, Sort *, std::vector<Variable *> = std::vector<Variable *>());
 
 Z3_func_decl createZ3FunctionSymbol(std::string name, std::vector<Sort *> arguments, Sort *result);
 

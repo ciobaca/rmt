@@ -13,8 +13,6 @@ The expected output is for the proof to go through.
 sorts State;
 
 signature 
-  mgcd : Int Int -> Int / "gcd",
-
   init : Int Int -> State, loop : Int Int Int -> State, done : Int -> State,
   ok : Int Int -> State;
 

@@ -135,6 +135,7 @@ void parseAsserts(string &s, int &w)
     addZ3Assert(term);
     skipWhiteSpace(s, w);
     matchString(s, w, ";");
+    skipWhiteSpace(s, w);
   }
 }
 
@@ -512,6 +513,9 @@ int main(int argc, char **argv)
   }
 
   ifstream input(filename);
+  if (!input.is_open()) {
+    abortWithMessage(string("Cannot open file ") + filename + ".");
+  }
   string s;
   int w = 0;
 

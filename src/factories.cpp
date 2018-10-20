@@ -400,6 +400,13 @@ Term *bExists(Variable *var, Term *condition)
   return result;
 }
 
+Term *bForall(Variable *var, Term *condition)
+{
+  assert(ForallFun[var->sort]);
+  Term *result = getFunTerm(ForallFun[var->sort], vector2(getVarTerm(var), condition));
+  return result;
+}
+
 Term *bImplies(Term *left, Term *right)
 {
   return getFunTerm(ImpliesFun, vector2(left, right));
@@ -473,9 +480,23 @@ Term *mdiv(Term *left, Term *right)
   return getFunTerm(getFunction("mdiv"), vector2(left, right));
 }
 
+Term *mmod(Term *left, Term *right)
+{
+  return getFunTerm(getFunction("mmod"), vector2(left, right));
+}
+
 Term *mtimes(Term *left, Term *right)
 {
   return getFunTerm(getFunction("mtimes"), vector2(left, right));
+}
+
+Term *mTimesVector(std::vector<Term *> args, int start)
+{
+  if (start == static_cast<int>(args.size() - 1)) {
+    return args[start];
+  } else {
+    return mtimes(args[start], mTimesVector(args, start + 1));
+  }
 }
 
 Term *bEquals(Term *left, Term *right)
@@ -483,36 +504,42 @@ Term *bEquals(Term *left, Term *right)
   return getFunTerm(EqualsFun, vector2(left, right));
 }
 
-Term *simplifyTerm(Term *start)
-{
-  if (start->isFunTerm()) {
-    FunTerm *term = (FunTerm *)start;
-    if (term->function->hasInterpretation) {
-      Z3_ast result = z3_simplify(term);
-      return unZ3(result, term->function->result);
-    }
-  }
-  return start;
-}
-
 Term *simplifyConstraint(Term *constraint)
 {
-  return simplifyTerm(constraint);
-  // if (existsRewriteSystem("simplifications")) {
-  //   RewriteSystem rs = getRewriteSystem("simplifications");
-  //   Log(DEBUG9) << "Normalizing constraint " << constraint->toString() << endl;
-  //   Term *result = constraint->normalize(rs);
-  //   Log(DEBUG9) << "Normalized: " << result->toString() << endl;
-  //   return result;
-  // } else {
-  //   //    assert(0);
-  // }
-  // return constraint;
+  Log(DEBUG) << "Simplifying constraint  " << constraint->toString() << "." << endl;
+  assert(constraint->getSort() == getBoolSort());
+  Term *result = simplifyTerm(constraint);
+  Log(DEBUG) << "Simplified constraint = " << result->toString() << "." << endl;
+  return result;;
+}
+
+Term *simplifyTerm(Term *term)
+{
+  if (term->isFunTerm()) {
+    FunTerm *funterm = term->getAsFunTerm();
+    Function *function = funterm->function;
+    if (function->hasInterpretation) {
+      Log(DEBUG) << "Simplifying builtin " << term->toString() << "." << endl;
+      Z3_ast result = z3_simplify(term);
+      Term *termResult = unZ3(result, function->result);
+      Log(DEBUG) << "Simplified builtin = " << termResult->toString() << "." << endl;
+      return termResult;
+    } else {
+      vector<Term *> arguments = funterm->arguments;
+      for (int i = 0; i < static_cast<int>(arguments.size()); ++i) {
+	arguments[i] = simplifyTerm(arguments[i]);
+      }
+      return getFunTerm(function, arguments);
+    }
+  } else {
+    assert(term->isVarTerm());
+    return term;
+  }
 }
 
 ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm ct)
 {
-  return ConstrainedTerm(ct.term, simplifyTerm(ct.constraint));
+  return ConstrainedTerm(simplifyTerm(ct.term), simplifyTerm(ct.constraint));
 }
 
 Function *getEqualsFunction(Sort *sort)

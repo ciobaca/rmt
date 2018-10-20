@@ -21,6 +21,7 @@ Term *bNot(Term *);
 Term *bTrue();
 Term *bFalse();
 Term *bExists(Variable *, Term *);
+Term *bForall(Variable *, Term *);
 bool isExistsFunction(Function *);
 bool isForallFunction(Function *);
 bool isQuantifierFunction(Function *);
@@ -29,10 +30,12 @@ Term *bEquals(Term *, Term *);
 Term *mEquals(Term *, Term *);
 Term *mle(Term *, Term *);
 Term *mplus(Term *, Term *);
-Term *mPlusVector(vector<Term *>, int = 0);
+Term *mPlusVector(std::vector<Term *>, int = 0);
 Term *mminus(Term *, Term *);
 Term *mdiv(Term *, Term *);
+Term *mmod(Term *, Term *);
 Term *mtimes(Term *, Term *);
+Term *mTimesVector(std::vector<Term *>, int = 0);
 
 Function *getEqualsFunction(Sort *);
 Term *createEqualityConstraint(Term *, Term *);
@@ -85,13 +88,12 @@ std::vector<Variable *> getInterpretedVariables();
 std::vector<Term *> vector1(Term *term);
 std::vector<Term *> vector2(Term *term1, Term *term2);
 
-Term *simplifyConstraint(Term *);
-ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm);
-
 Term *introduceExists(Term *, std::vector<Variable *>);
 
 std::map<Variable *, Variable *> freshRenaming(std::vector<Variable *>);
 
 Term *simplifyTerm(Term *);
+Term *simplifyConstraint(Term *);
+ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm);
 
 #endif

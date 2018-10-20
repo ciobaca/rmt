@@ -58,6 +58,10 @@ private:
     } else if (interpretation == "=") {
       this->interpretation = new z3_eq();
       this->isEqualityFunction = true;
+    } else if (interpretation == ">") {
+      this->interpretation = new z3_gt();
+    } else if (interpretation == ">=") {
+      this->interpretation = new z3_ge();
     } else if (interpretation == "0") {
       this->interpretation = new z3_ct_0();
     } else if (interpretation == "1") {

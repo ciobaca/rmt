@@ -1,21 +1,3 @@
-smt-prelude "
-(define-fun hasdiv ((x Int) (y Int) (z Int)) Bool
-   (exists ((u Int))
-        (and (>= u y) (<= u z) (= 0 (mod x u))))
-)
-(define-fun composite ((x Int)) Bool
-   (exists ((u Int))
-        (and (> u 1) (< u x) (= 0 (mod x u))))
-;;  (hasdiv x 2 (- x 1))
-)
-(define-fun bpredicate ((n Int) (i Int)) Bool
-   (exists ((k Int))
-     (and (> k 1)
-          (= n (* i k)))
-   )
-)
-"
-
 /*
   Welcome to the Running Example.
 
@@ -65,7 +47,7 @@ we define three predicates that will help us with the specification.
 
 */
 
-sorts Int / "Int", Bool / "Bool", Cfg;
+sorts Cfg;
 
 /*
 
@@ -99,9 +81,6 @@ signature // "m" stands for math built-in function symbols
   mle : Int Int->Bool / "<=", mequals : Int Int->Bool / "=",
   // note that we can now interpret relations using names
   // defined in the SMT prelude as follows:
-  mhasdiv : Int Int Int -> Bool / "hasdiv",
-  mcomposite : Int -> Bool / "composite",
-  bpredicate : Int Int -> Bool / "bpredicate",
 
   // bool built-in function symbols
   bequals : Bool Bool->Bool / "=", band : Bool Bool->Bool / "and",
@@ -126,35 +105,45 @@ signature // "m" stands for math built-in function symbols
 
  */	
 
-variables B : Bool, S : Int, N : Int, I : Int;
+variables B : Bool, S : Int, N : Int, I : Int, U : Int, X : Int, Y : Int, Z : Int, K : Int;
 
-/*
 
-  The following rewrite system is special, in the sense that it is
-  used to perform simplifications in the builtin model. It is assumed
-  to be sound by the tool and therefore it is the responsability of
-  the user to ensure that the lhs and rhs of each rule have the same
-  interpretation.
-  
-  At certain points, RMT will use the system to simplify certain
-  constraints. Without these simplifications, the output of the tool
-  could be more difficult to understand to the user, but could also
-  confuse the SMT solver (though generally, the solver will do
-  simplifications on its own).
+builtins hasdiv : Int Int Int -> Bool, mcomposite : Int -> Bool, bpredicate : Int Int -> Bool;
 
-  An idea for future development is to use "(simplify ...)" instead of
-  such a rewrite system.
+assert (_forallInt X (_forallInt Y (_forallInt Z
+       (biff
+        (hasdiv X Y Z)
+        (_existsInt U (band (mge U Y) (band (mle U Z) (mequals 0 (mmod X U)))))))));
 
- */
+assert (_forallInt X
+         (biff
+           (mcomposite X)
+           (_existsInt U (band (mgt U 1) (band (mless U X) (mequals 0 (mmod X U)))))
+	 ));
 
-rewrite-system simplifications
-  bnot(false) => true, bnot(true) => false, bnot(bnot(B)) => B,
-  band(false, B) => false, band(true, B) => B, band(B, false) => false,
-  band(B, true) => B, bimplies(true, B) => B, bimplies(false, B) => true,
-  bor(false, B) => B, bor(true, B) => true, bor(B, false) => B,
-  bor(B, true) => true, mequals(N, N) => true, bequals(B, B) => true,
-  bequals(true, B) => B,bequals(false, B) => bnot(B), bequals(B, true) => B,
-  bequals(B, false) => bnot(B), band(B, B) => B, bor(B, B) => B;
+assert (_forallInt N (_forallInt I
+         (biff
+	   (bpredicate N I)
+	   (_existsInt K  (band (mgt K 1) (mequals N (mtimes I K))))
+	 )));
+// smt-prelude "
+// (define-fun hasdiv ((x Int) (y Int) (z Int)) Bool
+//    (exists ((u Int))
+//         (and (>= u y) (<= u z) (= 0 (mod x u))))
+// )
+// (define-fun composite ((x Int)) Bool
+//    (exists ((u Int))
+//         (and (> u 1) (< u x) (= 0 (mod x u))))
+// ;;  (hasdiv x 2 (- x 1))
+// )
+// (define-fun bpredicate ((n Int) (i Int)) Bool
+//    (exists ((k Int))
+//      (and (> k 1)
+//           (= n (* i k)))
+//    )
+// )
+// "
+
 
 /*
 
@@ -168,14 +157,14 @@ rewrite-system simplifications
 
 constrained-rewrite-system composability
 
-  // init(N) => loop(N, 2)
-  init(N) => loop(N, mtwo),
+  // init(N) => (loop N, 2)
+  (init N) => (loop N 2),
 
-  // loop(N, 2) => composite if (exists ((k Int)) (and (> k 1) (= n (* i k))))
-  loop(N, I) /\ bpredicate(N, I) => composite,
+  // (loop N, 2) => composite if (exists ((k Int)) (and (> k 1) (= n (* i k))))
+  (loop N I) /\ (bpredicate N I) => composite,
 
-  // loop(N, 2) => composite if not (exists ((k Int)) (and (> k 1) (= n (* i k))))
-  loop(N, I) /\ bnot(bpredicate(N, I)) => loop(N, mplus(I, mone));
+  // (loop N, 2) => composite if not (exists ((k Int)) (and (> k 1) (= n (* i k))))
+  (loop N I) /\ (bnot (bpredicate N I)) => (loop N (mplus I mone));
 
 /*
 
@@ -204,10 +193,10 @@ constrained-rewrite-system composability
 constrained-rewrite-system circularitiesComposite
 
   // the specification that we actually want to prove
-  init(N) /\ mcomposite(N) => composite,
+  (init N) /\ (mcomposite N) => composite,
 
   // the helper circularity (plays the role of an invariant)
-  loop(N, I) /\ band(mle(mtwo, I), mhasdiv(N, I, mminus(N, mone))) => composite;
+  (loop N I) /\ (band (mle 2 I) (hasdiv N  I (mminus N 1))) => composite;
 
 /*
 

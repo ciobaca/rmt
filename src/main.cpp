@@ -263,7 +263,9 @@ void addPredefinedFunctions()
     createInterpretedFunction("mdiv", arguments, intSort, "div");
     createInterpretedFunction("mmod", arguments, intSort, "mod");
     createInterpretedFunction("mle", arguments, boolSort, "<=");
+    createInterpretedFunction("mge", arguments, boolSort, ">=");
     createInterpretedFunction("mless", arguments, boolSort, "<");
+    createInterpretedFunction("mgt", arguments, boolSort, ">");
     createInterpretedFunction("mequals", arguments, boolSort, "=");
 
     arguments.push_back(boolSort);

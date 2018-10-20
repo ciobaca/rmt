@@ -357,7 +357,11 @@ void Z3Theory::addConstraint(Term *constraint)
 Z3Result Z3Theory::isSatisfiable()
 {
   Z3_solver z3solver = Z3_mk_solver(z3context);
-  for (int i = 0; i < (int)constraints.size(); ++i) {
+  for (int i = 0; i < static_cast<int>(z3asserts.size()); ++i) {
+    Log(DEBUG7) << "Asserting (from prelude) " << Z3_ast_to_string(z3context, z3asserts[i]) << "." << endl;
+    Z3_solver_assert(z3context, z3solver, z3asserts[i]);
+  }
+  for (int i = 0; i < static_cast<int>(constraints.size()); ++i) {
     Z3_ast constraint = constraints[i]->toSmt();
     Log(DEBUG7) << "Asserting " << constraints[i]->toString() << "." << endl;
     Log(DEBUG7) << "Z3 Speak: asserting " << Z3_ast_to_string(z3context, constraint) << "." << endl;
@@ -445,9 +449,6 @@ Term *unZ3(Z3_ast ast, Sort *sort)
     case Z3_OP_UNINTERPRETED:
       {
 	Z3_symbol symbol = Z3_get_decl_name(z3context, func_decl);
-	// TODO might generalize in the future
-	// currently this *must* be an uninterpreted constant
-	// (standing for a variable)
 	if (z3_const_to_var.find(symbol) != z3_const_to_var.end()) {
 	  return getVarTerm(z3_const_to_var[symbol]);
 	} else {
@@ -1316,4 +1317,24 @@ Z3_func_decl createZ3FunctionSymbol(string name, std::vector<Sort *> arguments, 
 void addZ3Assert(Term *formula)
 {
   z3asserts.push_back(formula->toSmt());
+}
+
+Z3_ast z3exists(Variable *variable, Term *term)
+{
+  Log(DEBUG) << "z3exists " << variable->name << "." << term->toString() << endl;
+  Z3_app bound[4];
+  Z3_pattern patterns[4];
+  assert(Z3_get_ast_kind(z3context, variable->interpretation) == Z3_APP_AST);
+  bound[0] = Z3_to_app(z3context, variable->interpretation);
+  return Z3_mk_exists_const(z3context, 0, 1, bound, 0, patterns, term->toSmt());
+}
+
+Z3_ast z3forall(Variable *variable, Term *term)
+{
+  Log(DEBUG) << "z3forall " << variable->name << "." << term->toString() << endl;
+  Z3_app bound[4];
+  Z3_pattern patterns[4];
+  assert(Z3_get_ast_kind(z3context, variable->interpretation) == Z3_APP_AST);
+  bound[0] = Z3_to_app(z3context, variable->interpretation);
+  return Z3_mk_forall_const(z3context, 0, 1, bound, 0, patterns, term->toSmt());
 }

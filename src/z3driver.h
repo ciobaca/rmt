@@ -258,4 +258,8 @@ Z3_func_decl createZ3FunctionSymbol(std::string name, std::vector<Sort *> argume
 
 void addZ3Assert(Term *);
 
+Z3_ast z3exists(Variable *, Term *);
+
+Z3_ast z3forall(Variable *, Term *);
+
 #endif

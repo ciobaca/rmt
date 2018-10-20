@@ -22,6 +22,8 @@ Term *bTrue();
 Term *bFalse();
 Term *bExists(Variable *, Term *);
 bool isExistsFunction(Function *);
+bool isForallFunction(Function *);
+bool isQuantifierFunction(Function *);
 
 Term *bEquals(Term *, Term *);
 Term *mEquals(Term *, Term *);

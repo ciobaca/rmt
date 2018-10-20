@@ -61,22 +61,26 @@ Z3_ast FunTerm::toSmt()
   assert(len(function->arguments) == len(arguments));
   //  int n = len(function->arguments);
   assert(function->hasInterpretation);
-  
-  if (isExistsFunction(function)) {
-    // assert(n == 2);
+
+  if (isQuantifierFunction(function)) {
+    assert(n == 2);
+    assert(arguments[0].isVariable());
+    VarTerm *t = (VarTerm *)arguments[0];
+    assert(t->variable->sort->hasInterpretation);
     // oss << "exists ";
     // oss << "((";
     // oss << arguments[0]->toSmtString();
     // oss << " ";
-    // assert(arguments[0].isVariable());
-    // VarTerm *t = (VarTerm *)arguments[0];
-    // assert(t->variable->sort->hasInterpretation);
     // oss << t->variable->sort->interpretation;
     // oss << ")) ";
     // oss << arguments[1]->toSmtString();
-    // TODO
+    if (isExistsFunction(function)) {
+      return z3exists(t->variable, arguments[1]);
+    } else{
+      assert(isForallFunction(function));
+      return z3forall(t->variable, arguments[1]);
+    }
     assert(0);
-    return (*function->interpretation)(arguments);
   } else {
     Log(DEBUG8) << "Descending into " << function->name << endl;
     assert(function->hasInterpretation);

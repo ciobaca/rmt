@@ -378,6 +378,21 @@ bool isExistsFunction(Function *f)
   return false;
 }
 
+bool isForallFunction(Function *f)
+{
+  for (map<Sort *, Function *>::iterator it = ForallFun.begin(); it != ForallFun.end(); ++it) {
+    if (it->second == f) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool isQuantifierFunction(Function *f)
+{
+  return isExistsFunction(f) || isForallFunction(f);
+}
+
 Term *bExists(Variable *var, Term *condition)
 {
   assert(ExistsFun[var->sort]);
@@ -441,7 +456,7 @@ Term *mplus(Term *left, Term *right)
 
 Term *mPlusVector(std::vector<Term *> args, int start)
 {
-  if (start == args.size() - 1) {
+  if (start == static_cast<int>(args.size() - 1)) {
     return args[start];
   } else {
     return mplus(args[start], mPlusVector(args, start + 1));

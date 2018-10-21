@@ -139,6 +139,21 @@ void parseAsserts(string &s, int &w)
   }
 }
 
+void parseDefinedFunctions(string &s, int &w)
+{
+  skipWhiteSpace(s, w);
+  while (lookAhead(s, w, "define")) {
+    matchString(s, w, "define");
+    skipWhiteSpace(s, w);
+
+    
+
+    skipWhiteSpace(s, w);
+    matchString(s, w, ";");
+    skipWhiteSpace(s, w);
+  }
+}
+
 void addPredefinedSorts()
 {
   createInterpretedSort("Bool", "Bool");
@@ -541,6 +556,7 @@ int main(int argc, char **argv)
   parseVariables(s, w);
   parseBuiltins(s, w);
   parseAsserts(s, w);
+  parseDefined(s, w);
   skipWhiteSpace(s, w);
 
   //  if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {

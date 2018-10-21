@@ -1,15 +1,18 @@
-sorts State, ExpF, NonValExpF;
+sorts State, ExpF;
 
 subsort Int < ExpF;
-subsort NonValExpF < ExpF;
 
 signature
   pair : ExpF ExpF -> State,
-  fplus : ExpF ExpF -> NonValExpF,
+  fplus : ExpF ExpF -> ExpF,
   f : ExpF -> ExpF,
-  fa : ExpF ExpF -> NonValExpF;
+  fa : ExpF ExpF -> ExpF;
 
-variables N:Int, I:Int, NVE : NonValExpF, S:Int;
+variables N:Int, I:Int, S:Int, E : ExpF;
+
+define reduce : Int Int ExpF -> ExpF by
+  (reduce N I E) => E if (mle N I)
+  (reduce N I E) => (reduce N (mplus I 1) (fplus I E)) if (bnot (mle N I);
 
 constrained-rewrite-system flanguage
 
@@ -31,8 +34,8 @@ with-base
 
 show-equivalent [ 100, 100 ] in flanguage and flanguage :
    (pair
-    (f N)
-    (fa 0 N)
+    (f 2)
+    (fa 0 2)
     )
 with-base
      (pair S S);

@@ -41,6 +41,7 @@ private:
     this->arguments = arguments;
     this->result = result;
     this->hasInterpretation = true;
+    this->isEqualityFunction = false;
     if (interpretation == "+") {
       this->interpretation = new z3_add();
     } else if (interpretation == "*") {

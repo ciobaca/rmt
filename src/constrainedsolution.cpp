@@ -25,7 +25,7 @@ ConstrainedSolution::ConstrainedSolution(Term *term, Substitution subst, Term *l
 
 std::string ConstrainedSolution::toString() {
   std::ostringstream oss;
-  oss << term->toString() << " if " << constraint->toString();
+  oss << term->toString() << " if " << constraint->toString() << " [" << lhsTerm->toString() << "; " << subst.toString() << "; " << simplifyingSubst.toString() << "]";
   return oss.str();
 }
 

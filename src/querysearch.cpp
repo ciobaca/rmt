@@ -62,10 +62,12 @@ void QuerySearch::execute()
     return;
   }
 
+  Log(DEBUG) << "Narrowing search from " << ct.toString() << "." << endl;
   vector<ConstrainedTerm> solutions = ct.smtNarrowSearch(crs, minDepth, maxDepth);
   cout << "Success: " << solutions.size() << " solutions." << endl;
   for (int i = 0; i < (int)solutions.size(); ++i) {
     cout << "Solution #" << i + 1 << ":" << endl;
+    //cout << solutions[i].toString() << endl;
     cout << simplifyConstrainedTerm(solutions[i]).toString() << endl;
   }
 }

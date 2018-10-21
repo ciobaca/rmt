@@ -419,6 +419,7 @@ Term *bAnd(Term *left, Term *right)
 
 Term *bAndVector(std::vector<Term *> args, int start)
 {
+  assert(0 <= start && start < static_cast<int>(args.size()));
   if (start == static_cast<int>(args.size()) - 1) {
     return args[start];
   } else {
@@ -570,17 +571,21 @@ Term *createEqualityConstraint(Term *t1, Term *t2)
 {
   assert(t1);
   assert(t2);
+  Log(DEBUG2) << "Creating equality constraint between " << t1->toString() << " and " << t2->toString() << endl;
   Sort *s1 = t1->getSort();
   Sort *s2 = t2->getSort();
   if (s1 != s2) {
     assert(0);
   }
+  Log(DEBUG2) << "Equality sort is " << s1->name << endl;
   Function *equalsFun = getEqualsFunction(s1);
   if (!equalsFun) {
     Log(ERROR) << "Cannot find equality function symbol for sort " << s1->name << endl;
     assert(0);
   }
-  return getFunTerm(equalsFun, vector2(t1, t2));
+  Term *result = getFunTerm(equalsFun, vector2(t1, t2));
+  Log(DEBUG2) << "Equality constraint is " << result->toString() << "." << endl;
+  return result;
 }
 
 Term *introduceExists(Term *constraint, vector<Variable *> vars)

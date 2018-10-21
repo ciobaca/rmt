@@ -279,11 +279,13 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem 
 
   // STEP 3.2: check that the constraints are satisfiable
   for (int i = 0; i < (int)solutions.size(); ++i) {
+    Log(DEBUG) << "Initial solution " << i << " = " << solutions[i].toString() << endl;
     ConstrainedSolution sol = solutions[i];
 
     sol.constraint = bAnd(initialConstraint, sol.constraint);
 
     if (unabstractSolution(abstractingSubstitution, sol)) {
+      Log(DEBUG) << "Final solution " << i << " = " << sol.toString() << endl;
       finalResult.push_back(sol);
     }
   }

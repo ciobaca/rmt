@@ -32,8 +32,15 @@ string ConstrainedTerm::toPrettyString()
 
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs)
 {
-  Log(DEBUG7) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) " << this->toString();
-  vector<ConstrainedSolution> sols = term->normalizeFunctions()->smtNarrowSearchWdf(crs, constraint->normalizeFunctions());
+  Log(DEBUG1) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) " << this->toString() << endl;
+  Term *startTerm = term->normalizeFunctions();
+  Term *startConstraint = constraint->normalizeFunctions();
+  Log(DEBUG1) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) Starting Term = " << startTerm->toString() << endl;
+  Log(DEBUG1) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) Starting Constraint = " << startConstraint->toString() << endl;
+  vector<ConstrainedSolution> sols = startTerm->smtNarrowSearchWdf(crs, startConstraint);
+  for (int i = 0; i < static_cast<int>(sols.size()); ++i) {
+    Log(DEBUG1) << "Final solution " << i << " = " << sols[i].toString() << endl;
+  }
   return sols;
 }
 
@@ -41,14 +48,17 @@ void ConstrainedTerm::smtNarrowSearchHelper(ConstrainedRewriteSystem &crs,
 							       int minDepth, int maxDepth, int depth,
 							       vector<ConstrainedTerm> &result)
 {
+  Log(DEBUG2) << "ConstrainedTerm::smtNarrowSearchHelper " << this->toString() << endl;
   if (minDepth <= depth && depth <= maxDepth) {
     result.push_back(*this);
   } 
   if (depth < maxDepth) {
     vector<ConstrainedSolution> sols = this->smtNarrowSearch(crs);
     for (int i = 0; i < (int)sols.size(); ++i) {
-      ConstrainedTerm(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions(),
-		      sols[i].getFullConstraint(*this)->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions()).smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
+      ConstrainedTerm ct(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions(),
+			 sols[i].getFullConstraint(*this)->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions());
+      Log(DEBUG2) << "recurse " << ct.toString() << endl;
+      ct.smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
     }
   }
 }

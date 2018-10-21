@@ -61,6 +61,7 @@ Z3_ast FunTerm::toSmt()
   assert(len(function->arguments) == len(arguments));
   //  int n = len(function->arguments);
   assert(function->hasInterpretation);
+  Log(DEBUG7) << "toSmt " << this->toString() << endl;
 
   if (isQuantifierFunction(function)) {
     assert(n == 2);

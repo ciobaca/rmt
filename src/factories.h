@@ -66,7 +66,8 @@ Function *getMinusFunction();
 Function *getLEFunction();
 Term *getIntOneConstant();
 Term *getIntZeroConstant();
-void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, bool isDefined);
+void updateDefinedFunction(std::string name, ConstrainedRewriteSystem &);
+void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result);
 void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, std::string interpretation);
 void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, Z3_func_decl);
 

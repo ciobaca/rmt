@@ -12,7 +12,7 @@ variables N:Int, I:Int, S:Int, E : ExpF;
 
 define reduce : Int Int ExpF -> ExpF by
   (reduce N I E) /\ (mle N I) => E,
-  (reduce N I E) /\ (bnot (mle N I)) => (reduce N (mplus I 1) (fplus I E));
+  (reduce N I E) /\ (bnot (mle N I) => (reduce N (mplus I 1) (fplus I E));
 
 constrained-rewrite-system flanguage
 

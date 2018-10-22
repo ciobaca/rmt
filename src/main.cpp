@@ -146,10 +146,57 @@ void parseDefinedFunctions(string &s, int &w)
     matchString(s, w, "define");
     skipWhiteSpace(s, w);
 
-    
-
+    string f = getIdentifier(s, w);
     skipWhiteSpace(s, w);
-    matchString(s, w, ";");
+    match(s, w, ':');
+    skipWhiteSpace(s, w);
+    vector<Sort *> arguments;
+    while (lookAheadIdentifier(s, w)) {
+      string id = getIdentifier(s, w);
+      if (!sortExists(id)) {
+        parseError("(while parsing defined function) sort does not exist", w, s);
+      }
+      skipWhiteSpace(s, w);
+      arguments.push_back(getSort(id));
+    }
+    matchString(s, w, "->");
+    skipWhiteSpace(s, w);
+    string id = getIdentifier(s, w);
+    if (!sortExists(id)) {
+      Log(ERROR) << "SORT: " << id << endl;
+      parseError("(while parsing defined function) sort does not exist", w, s);
+    }
+    Sort *result = getSort(id);
+
+    createUninterpretedFunction(f, arguments, result);
+
+    ConstrainedRewriteSystem crewrite;
+    skipWhiteSpace(s, w);
+    matchString(s, w, "by");
+    skipWhiteSpace(s, w);
+    while (w < len(s)) {
+      skipWhiteSpace(s, w);
+      ConstrainedTerm t = parseConstrainedTerm(s, w);
+      skipWhiteSpace(s, w);
+      matchString(s, w, "=>");
+      skipWhiteSpace(s, w);
+      Term *tp = parseTerm(s, w);
+      Log(INFO) << "Parsed rewrite rule for func def: " << t.toString() << " => " << tp->toString() << endl;
+      crewrite.addRule(t, tp);
+      skipWhiteSpace(s, w);
+      if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
+	expected("more constrained rewrite rules", w, s);
+      }
+      if (s[w] == ',') {
+	match(s, w, ',');
+	continue;
+      } else {
+	match(s, w, ';');
+	break;
+      }
+    }
+    updateDefinedFunction(f, crewrite);
+    
     skipWhiteSpace(s, w);
   }
 }
@@ -343,15 +390,14 @@ void parseFunctions(string &s, int &w)
         interpretation = getQuotedString(s, w);
         hasInterpretation = true;
       } else {
-        matchString(s, w, "defined");
-        isDefined = true;
+	matchString(s, w, "\"");
       }
     }
     skipWhiteSpace(s, w);
     if (hasInterpretation) {
       createInterpretedFunction(f, arguments, result, interpretation);
     } else {
-      createUninterpretedFunction(f, arguments, result, isDefined);
+      createUninterpretedFunction(f, arguments, result);
     }
     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
       expected("more function symbols", w, s);
@@ -556,7 +602,7 @@ int main(int argc, char **argv)
   parseVariables(s, w);
   parseBuiltins(s, w);
   parseAsserts(s, w);
-  parseDefined(s, w);
+  parseDefinedFunctions(s, w);
   skipWhiteSpace(s, w);
 
   //  if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {

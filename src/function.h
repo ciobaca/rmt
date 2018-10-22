@@ -5,6 +5,7 @@
 #include <vector>
 #include "z3driver.h"
 #include "helper.h"
+#include "constrainedrewritesystem.h"
 
 struct Sort;
 
@@ -17,21 +18,29 @@ struct Function
   Sort *result;
 
   bool hasInterpretation; // should be interpreted as a builtin function
-  //string interpretation;  // the name of the function in Z3
-  Z3Function *interpretation;
+  Z3Function *interpretation; // the interpretation of the function
+  // only valid if hasIntrepretation == true
 
-  bool isEqualityFunction;
+  bool isEqualityFunction; // true if this is mequals, bequals, etc.
 
-  bool isDefined; // is a function (not just a function symbol) defined by a set of rewrite rules in the "functions" rewrite system
+  bool isDefined; // is a defined function
+  ConstrainedRewriteSystem crewrite; // only valid if it's a defined function
+
+  void updateDefined(ConstrainedRewriteSystem &crewrite)
+  {
+    this->isDefined = true;
+    this->crewrite = crewrite;
+  }
 
 private:
-  Function(string name, vector<Sort *> arguments, Sort *result, bool isDefined)
+
+  Function(string name, vector<Sort *> arguments, Sort *result)
   {
     this->name = name;
     this->arguments = arguments;
     this->result = result;
     this->hasInterpretation = false;
-    this->isDefined = isDefined;
+    this->isDefined = false;
     this->isEqualityFunction = false;
   }
 
@@ -42,6 +51,7 @@ private:
     this->result = result;
     this->hasInterpretation = true;
     this->isEqualityFunction = false;
+    this->isDefined = false;
     if (interpretation == "+") {
       this->interpretation = new z3_add();
     } else if (interpretation == "*") {
@@ -129,7 +139,7 @@ private:
     this->isDefined = false;
   }
 
-  friend void createUninterpretedFunction(string, vector<Sort *>, Sort *, bool);
+  friend void createUninterpretedFunction(string, vector<Sort *>, Sort *);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, string);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, Z3_func_decl);
 };

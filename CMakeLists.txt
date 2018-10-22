@@ -76,3 +76,6 @@ set_tests_properties (TestReachExample13 PROPERTIES PASS_REGULAR_EXPRESSION "Cir
 
 add_test(TestReachExample14 "./rmt" -v 0 ../examples/z-all-examples/example14.rmt)
 set_tests_properties (TestReachExample14 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
+
+add_test(TestDefined1 "./rmt" -v 0 ../tests/defined/defined1.rmt)
+set_tests_properties (TestDefined1 PROPERTIES PASS_REGULAR_EXPRESSION "Succeeded in proving circularity #1")

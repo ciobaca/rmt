@@ -200,7 +200,14 @@ Term *getIntZeroConstant() {
   return getFunTerm(getFunction("0"), vector<Term*>());
 }
 
-void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result, bool isDefined)
+void updateDefinedFunction(string name, ConstrainedRewriteSystem &crewrite)
+{
+  Function *f = getFunction(name);
+  assert(f != 0);
+  f->updateDefined(crewrite);
+}
+
+void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result)
 {
 #ifndef NDEBUG
   Function *f = getFunction(name);
@@ -213,7 +220,7 @@ void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *re
     log << arguments[i]->name << " ";
   }
   log << " -> " << result->name << endl;
-  functions[name] = new Function(name, arguments, result, isDefined);
+  functions[name] = new Function(name, arguments, result);
 }
 
 void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, string interpretation)
@@ -349,7 +356,7 @@ void createBuiltIns()
     ostringstream funname;
     funname << "_exists" << s->name;
     Log(DEBUG) << "Creating exists function " << funname.str() << endl;
-    createUninterpretedFunction(funname.str(), args, sorts["Bool"], false);
+    createUninterpretedFunction(funname.str(), args, sorts["Bool"]);
     ExistsFun[s] = getFunction(funname.str());
     assert(ExistsFun[s]);
   }
@@ -362,7 +369,7 @@ void createBuiltIns()
     ostringstream funname;
     funname << "_forall" << s->name;
     Log(DEBUG) << "Creating forall function " << funname.str() << endl;
-    createUninterpretedFunction(funname.str(), args, sorts["Bool"], false);
+    createUninterpretedFunction(funname.str(), args, sorts["Bool"]);
     ForallFun[s] = getFunction(funname.str());
     assert(ForallFun[s]);
   }

@@ -7,6 +7,7 @@
 #include "querycompute.h"
 #include "queryrun.h"
 #include "querysearch.h"
+#include "querydefinedsearch.h"
 #include "queryder.h"
 #include "querysubs.h"
 #include "queryaxiom.h"
@@ -66,6 +67,11 @@ Query *createQuerySearch()
   return new QuerySearch();
 }
 
+Query *createQueryDefinedSearch()
+{
+  return new QueryDefinedSearch();
+}
+
 Query *createQueryUnify()
 {
   return new QueryUnify();
@@ -121,6 +127,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   std::map<std::string, QueryCreator> *map;
   map = new std::map<std::string, QueryCreator>;
   (*map)["search"] = createQuerySearch;
+  (*map)["definedsearch"] = createQueryDefinedSearch;
   (*map)["der"] = createQueryDer;
   (*map)["subs"] = createQuerySubs;
   (*map)["axiom"] = createQueryAxiom;

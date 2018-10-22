@@ -36,12 +36,14 @@ ConstrainedTerm ConstrainedSolution::getConstrainedTerm()
 
 Term *ConstrainedSolution::getFullConstraint(ConstrainedTerm startTerm)
 {
-  Term *result = constraint;
-  for (Substitution::iterator it = simplifyingSubst.begin(); it != simplifyingSubst.end(); ++it) {
-    if (term->hasVariable(it->first) || startTerm.term->hasVariable(it->first) ||
-  	startTerm.constraint->hasVariable(it->first)) {
-      result = bAnd(result, createEqualityConstraint(getVarTerm(it->first), it->second));
-    }
-  }
-  return result;
+  return constraint;
+  
+  // Term *result = constraint;
+  // for (Substitution::iterator it = simplifyingSubst.begin(); it != simplifyingSubst.end(); ++it) {
+  //   if (term->hasVariable(it->first) || startTerm.term->hasVariable(it->first) ||
+  // 	startTerm.constraint->hasVariable(it->first)) {
+  //     result = bAnd(result, createEqualityConstraint(getVarTerm(it->first), it->second));
+  //   }
+  // }
+  // return result;
 }

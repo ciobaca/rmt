@@ -486,3 +486,18 @@ Sort *FunTerm::getSort()
 {
   return this->function->result;
 }
+
+Term *FunTerm::compute()
+{
+  vector<Term *> newargs;
+  for (int i = 0; i < static_cast<int>(arguments.size()); ++i) {
+    newargs.push_back(arguments[i]->compute());
+  }
+  if (function->isDefined) {
+    Substitution how;
+    Term *afterOneStep = rewriteTopMost(function->crewrite, how);
+    return simplifyTerm(afterOneStep)->compute(); // do the rest of the steps
+  } else {
+    return getFunTerm(function, newargs);
+  }
+}

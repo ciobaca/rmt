@@ -257,3 +257,8 @@ Sort *VarTerm::getSort()
 {
   return this->variable->sort;
 }
+
+Term *VarTerm::compute()
+{
+  return this;
+}

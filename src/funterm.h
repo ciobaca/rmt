@@ -49,6 +49,8 @@ struct FunTerm : public Term
 
   virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
   virtual vector<ConstrainedSolution> narrowSearch(ConstrainedRewriteSystem &);
+
+  virtual Term *compute();
 };
 
 #endif

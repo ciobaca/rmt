@@ -79,3 +79,6 @@ set_tests_properties (TestReachExample14 PROPERTIES PASS_REGULAR_EXPRESSION "Suc
 
 add_test(TestDefined1 "./rmt" -v 0 ../tests/defined/defined1.rmt)
 set_tests_properties (TestDefined1 PROPERTIES PASS_REGULAR_EXPRESSION "Succeeded in proving circularity #1")
+
+add_test(TestDefined2 "./rmt" -v 0 ../tests/defined/defined2.rmt)
+set_tests_properties (TestDefined2 PROPERTIES PASS_REGULAR_EXPRESSION "Result is")

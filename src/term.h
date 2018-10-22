@@ -265,6 +265,9 @@ struct Term
 
   // returns a pretier representation of the term
   virtual string toPrettyString() = 0;
+
+  // returns the term after computing all defined functions it contains
+  virtual Term *compute() = 0;
 };
 
 bool unabstractSolution(Substitution, ConstrainedSolution &);

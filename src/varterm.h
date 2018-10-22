@@ -48,6 +48,8 @@ struct VarTerm : public Term
 
   virtual string toString();
   virtual string toPrettyString();
+
+  virtual Term *compute();
 };
 
 #endif

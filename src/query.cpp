@@ -4,6 +4,7 @@
 #include "queryinstrument.h"
 #include "queryinstrument_c.h"
 #include "queryunify.h"
+#include "querycompute.h"
 #include "queryrun.h"
 #include "querysearch.h"
 #include "queryder.h"
@@ -70,6 +71,11 @@ Query *createQueryUnify()
   return new QueryUnify();
 }
 
+Query *createQueryCompute()
+{
+  return new QueryCompute();
+}
+
 Query *createQueryImplies()
 {
   return new QueryImplies();
@@ -126,6 +132,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["prove"] = createQueryProveReachability;
   (*map)["show-equivalent"] = createQueryProveEquivalence;
   (*map)["run"] = createQueryRun;
+  (*map)["compute"] = createQueryCompute;
 
   // SMT related queries
   (*map)["satisfiability"] = createQuerySatisfiability;

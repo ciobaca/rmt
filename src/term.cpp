@@ -312,14 +312,17 @@ bool Term::hasVariable(Variable *var)
 
 Term *Term::normalizeFunctions()
 {
+  return this;
+  // TODO this needs to be redesigned
+  
   //  Log(DEBUG6) << "Term *Term::normalizeFunctions() (" << this->toString() << ")" << endl;
-  if (hasDefinedFunctions) {
-    RewriteSystem functionsRS = getRewriteSystem("functions");
-    Term *result = this->normalize(functionsRS, false);
-    //    Log(DEBUG6) << "result (" << result->toString() << ")" << endl;
-    assert(!result->hasDefinedFunctions);
-    return result;
-  } else {
-    return this;
-  }
+  // if (hasDefinedFunctions) {
+  //   RewriteSystem functionsRS = getRewriteSystem("functions");
+  //   Term *result = this->normalize(functionsRS, false);
+  //   //    Log(DEBUG6) << "result (" << result->toString() << ")" << endl;
+  //   assert(!result->hasDefinedFunctions);
+  //   return result;
+  // } else {
+  //   return this;
+  // }
 }

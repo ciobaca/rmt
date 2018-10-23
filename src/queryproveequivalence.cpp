@@ -220,6 +220,7 @@ bool QueryProveEquivalence::proveEquivalenceExistsRight(ConstrainedTerm ct, bool
     ConstrainedSolution sol = rhsSuccessors[i];
     ConstrainedTerm afterStep = pairC(lhs, sol.term, bAnd(ct.constraint, sol.constraint));
     afterStep = afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst);
+    afterStep = simplifyConstrainedTerm(afterStep);
     if (proveEquivalenceExistsRight(afterStep, progressLeft, true, depth + 1, branchingDepth)) {
       cout << spaces(depth) << "- proof succeeded (" << i << "th successor) exists right" << ct.toString() << endl;
       return true;
@@ -253,7 +254,7 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {
     ConstrainedSolution sol = lhsSuccessors[i];
     ConstrainedTerm afterStep = pairC(sol.term, rhs, bAnd(ct.constraint, sol.constraint));
-    afterStep = afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst);
+    afterStep = simplifyConstrainedTerm(afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst));
     if (!proveEquivalenceForallLeft(afterStep, true, progressRight, depth + 1, branchingDepth)) {
       cout << spaces(depth) << "! proof failed (" << i << "th successor) forall left " << ct.toString() << endl;
       return false;

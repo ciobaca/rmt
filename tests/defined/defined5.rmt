@@ -1,0 +1,50 @@
+sorts State, ExpF;
+
+subsort Int < ExpF;
+
+signature
+  box : Int -> ExpF,
+  pair : ExpF ExpF -> State,
+  fplus : ExpF ExpF -> ExpF,
+  f : ExpF -> ExpF,
+  fa : ExpF ExpF -> ExpF;
+
+variables N:Int, I:Int, S:Int, E : ExpF;
+
+define reduce : Int Int ExpF -> ExpF by
+  (reduce N I E) /\ (mle N I) => E,
+  (reduce N I E) /\ (bnot (mle N I)) => (reduce N (mplus I 1) (fplus I E));
+
+constrained-rewrite-system flanguage
+  (f N) /\ (mle N 0) => 0,
+  (f N) /\ (bnot (mle N 0)) => (fplus N (f (mminus N 1))),
+  (fa I N) /\ (mle N 0) => I,
+  (fa I N) /\ (bnot (mle N 0)) => (fa (mplus I N) (mminus N 1)),
+  (fplus N I) => (mplus N I);
+
+// definedsearch [1,2] (reduce I 0 N) for reduce;
+// show-equivalent [ 100, 100 ] in flanguage and flanguage :
+//    (pair
+//     (f 2)
+//     (fa 0 2)
+//     )
+// with-base
+//      (pair S S);
+
+//compute (reduce 3 3 (f (mminus 3 1)));
+
+//compute (reduce 3 2 (f (mminus (mminus 3 1) 1)));
+
+//compute (reduce 3 1 (f (mminus (mminus (mminus 3 1) 1) 1)));
+
+//definedsearch (reduce N I (f (mminus I 1))) for reduce;
+
+// search in flanguage : (reduce N I (f (mminus I 1)));
+
+//search in flanguage : (reduce N (mplus 1 I) (fplus I (f (mplus (mminus 0 1) I)))) /\ (bnot (mle N I));
+
+compute (reduce 3 1 0);
+
+compute (reduce 3 2 1);
+
+compute (reduce 3 3 3);

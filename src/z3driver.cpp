@@ -218,6 +218,12 @@ Z3_ast z3_ct_15::operator()(vector<Term *> args)
   return Z3_mk_int(z3context, 15, z3IntSort);
 }
 
+Z3_ast z3_ct::operator()(vector<Term *> args)
+{
+  assert(args.size() == 0);
+  return Z3_mk_int(z3context, num, z3IntSort);
+}
+
 Z3_ast z3_true::operator()(vector<Term *> args)
 {
   assert(args.size() == 0);
@@ -1314,19 +1320,16 @@ Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
     {
       int result;
       if (Z3_get_numeral_int(z3context, ast, &result)) {
-	if (result < 0 && result >= -15) {
-	  Term *term = mminus(getIntZeroConstant(),
-			getFunTerm(getFunction(string_from_int(-result)), vector<Term*>()));
-	  Term *resultUnZ3 = term;
-	  Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
-	  return resultUnZ3;
+	string funname = string_from_int(result);
+	Function *function = getFunction(funname);
+	if (!function) {
+	  vector<Sort *> arguments;
+	  extern map<string, Function *> functions;
+	  functions[funname] = new Function(funname, arguments, getIntSort(), new z3_ct(result));
+	  function = getFunction(funname);
+	  assert(function != 0);
 	}
-	if (result < 0 || result > 15) {
-	  ostringstream oss;
-	  oss << "For ast of kind Z3_NUMERAL_AST, cannot retrieve numeral outside of range -15 -- 15; was " << result << ".";
-	  abortWithMessage(oss.str().c_str());
-	}
-	Term *resultUnZ3 = getFunTerm(getFunction(string_from_int(result)), vector<Term*>());
+	Term *resultUnZ3 = getFunTerm(function, vector<Term*>());
 	Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
 	return resultUnZ3;
       } else {

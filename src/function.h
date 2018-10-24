@@ -128,6 +128,17 @@ private:
     this->isDefined = false;
   }
 
+  Function(string name, vector<Sort *> arguments, Sort *result, Z3Function *interpretation)
+  {
+    this->name = name;
+    this->arguments = arguments;
+    this->result = result;
+    this->hasInterpretation = true;
+    this->interpretation = interpretation;
+    
+    this->isDefined = false;
+  }
+
   Function(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation)
   {
     this->name = name;
@@ -139,6 +150,7 @@ private:
     this->isDefined = false;
   }
 
+  friend Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars);
   friend void createUninterpretedFunction(string, vector<Sort *>, Sort *);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, string);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, Z3_func_decl);

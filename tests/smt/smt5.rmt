@@ -9,3 +9,6 @@ variables N : Int, S : Int, I : Int, B : Bool;
 // simplification (mtimes (mminus I 1) (mplus (mminus I 1) 1));
 // simplification (mdiv (mtimes (mminus I 1) (mplus (mminus I 1) 1)) 2);
 simplification (mequals (mplus (mplus S I) (mdiv (mtimes (mminus I 1) (mplus (mminus I 1) 1)) 2)) (mplus S (mdiv (mtimes I (mplus I 1)) 2)));
+
+//simplification (band (mle I N) (bnot (mle N I)));
+

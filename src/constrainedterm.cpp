@@ -139,13 +139,15 @@ Term *ConstrainedTerm::whenImplies(ConstrainedTerm goal)
 ConstrainedTerm ConstrainedTerm::normalizeFunctions()
 {
   Term *newTerm = term, *newConstraint = constraint;
-  if (term->hasDefinedFunctions) {
-    RewriteSystem functionsRS = getRewriteSystem("functions");
-    newTerm = term->normalize(functionsRS, false);
-  }
-  if (constraint->hasDefinedFunctions) {
-    RewriteSystem functionsRS = getRewriteSystem("functions");
-    newConstraint = constraint->normalize(functionsRS, false);
-  }
+  newTerm = term->normalizeFunctions();
+  // if (term->hasDefinedFunctions) {
+  //   RewriteSystem functionsRS = getRewriteSystem("functions");
+  //   newTerm = term->normalize(functionsRS, false);
+  // }
+  newConstraint = constraint->normalizeFunctions();
+  // if (constraint->hasDefinedFunctions) {
+  //   RewriteSystem functionsRS = getRewriteSystem("functions");
+  //   newConstraint = constraint->normalize(functionsRS, false);
+  // }
   return ConstrainedTerm(newTerm, newConstraint);
 }

@@ -12,7 +12,7 @@
   "Keymap for RMT major mode")
 (add-to-list 'auto-mode-alist '("\\.rmt\\'" . rmt-mode))
 
-(setq rmt-keywords '("sorts" "subsort" "signature" "variables" "rewrite-system" "constrained-rewrite-system" "smt-narrow-search" "smt-unify" "smt-implies" "smt-satisfiability" "smt-prove" "show-equivalent" "with-base" "define" "by" "assert" "builtins"))
+(setq rmt-keywords '("sorts" "subsort" "signature" "variables" "rewrite-system" "constrained-rewrite-system" "smt-narrow-search" "smt-unify" "smt-implies" "smt-satisfiability" "smt-prove" "show-equivalent" "with-base" "define" "by" "assert" "builtins" "compute""definedsearch" "for"))
 (setq rmt-keywords-regexp (regexp-opt rmt-keywords 'words))
 
 (setq rmt-types '("Int" "Bool"))

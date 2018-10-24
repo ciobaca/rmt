@@ -54,7 +54,7 @@ void QueryRun::execute()
   int steps = 0;
 
   do {
-    oldTerm = newTerm;
+    oldTerm = simplifyTerm(newTerm);
     cout << "STEP " << steps << ": " << oldTerm->toString() << endl;
     if (steps == maxSteps) {
       break;

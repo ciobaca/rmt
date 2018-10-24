@@ -22,4 +22,4 @@ constrained-rewrite-system flanguage
   (fa I N) /\ (bnot (mle N 0)) => (fa (mplus I N) (mminus N 1)),
   (fplus N I) => (mplus N I);
 
-definedsearch [1,2] (reduce I 0 N) for reduce;
+definedsearch [1,1] (reduce N 0 S) for reduce;

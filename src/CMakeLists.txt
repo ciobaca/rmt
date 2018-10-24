@@ -4,7 +4,7 @@ project(rmt C CXX)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 99)
 
-# add_definitions ("-Wall -Wextra -std=c++11")
+add_definitions ("-Wall -Wextra -std=c++11")
 
 # Make sure you pass the path using "/" even on Windows.
 find_package(Z3

@@ -21,4 +21,4 @@ constrained-rewrite-system flanguage
   (fa I N) /\ (bnot (mle N 0)) => (fa (mplus I N) (mminus N 1)),
   (fplus N I) => (mplus N I);
 
-compute (reduce 5 0 10);
+compute (reduce 5 0 E);

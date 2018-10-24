@@ -205,6 +205,14 @@ class z3_ct_15 : public Z3Function {
   virtual Z3_ast operator()(std::vector<Term *> args);
 };
 
+class z3_ct : public Z3Function {
+private:
+  int num;
+public:
+  z3_ct(int num) : num(num) {};
+  virtual Z3_ast operator()(std::vector<Term *> args);
+};
+
 class z3_true : public Z3Function {
  public:
   z3_true() {};

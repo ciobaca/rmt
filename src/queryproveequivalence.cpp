@@ -244,7 +244,8 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
   Log(DEBUG5) << spaces(depth) << "progressLeft " << progressLeft << "; possibleLhsCircularity " << possibleLhsCircularity(lhs) << endl;
   if (possibleLhsBase(lhs) || (progressLeft && possibleLhsCircularity(lhs))) {
     Log(DEBUG5) << spaces(depth) << "possible lhs base or circularity" << endl;
-    if (proveEquivalenceExistsRight(ct, progressLeft, progressRight, depth + 1, branchingDepth)) {
+    // TODO: changed progressRight to true for partial equivalence temporarily
+    if (proveEquivalenceExistsRight(ct, progressLeft, true /* progressRight */, depth + 1, branchingDepth)) {
       cout << spaces(depth) << "- proof succeeded forall left " << ct.toString() << endl;
       return true;
     }
@@ -278,7 +279,7 @@ bool QueryProveEquivalence::proveBaseCase(ConstrainedTerm ct, bool progressLeft,
     cout << spaces(depth) << "Proof succeeded: reached based equivalence." << endl; 
     return true;
   } else {
-    Log(DEBUG5) << spaces(depth) << "Instance of base only when " + constraint->toString() << endl;
+    cout << spaces(depth) << "Instance of base only when " + constraint->toString() << endl;
     if (progressLeft && progressRight) {
       Log(DEBUG5) << spaces(depth) << "Testing for circularity" << endl;
       constraint = simplifyConstraint(whenImpliesCircularity(ct));
@@ -286,7 +287,7 @@ bool QueryProveEquivalence::proveBaseCase(ConstrainedTerm ct, bool progressLeft,
 	      cout << spaces(depth) << "Proof succeeded: reached a circularity." << endl; 
 	      return true;
       }
-      Log(DEBUG5) << spaces(depth) << "Instance of circularity only when " + constraint->toString() << endl;
+      cout << spaces(depth) << "Instance of circularity only when " + constraint->toString() << endl;
       Log(DEBUG5) << spaces(depth) << "Instance of circularity only when (SMT) " + constraint->toString() << endl;
     }
   }
@@ -360,7 +361,7 @@ void QueryProveEquivalence::execute()
   for (int i = 0; i < (int)circularities.size(); ++i) {
     cout << "Proving equivalence circularity #" << (i + 1) << endl;
     ConstrainedTerm ct = circularities[i];
-    if (proveEquivalence(ct, false, false, false, false)) {
+    if (proveEquivalence(ct, true, true, 0, 0)) {
       cout << "Succeeded in proving circularity #" << (i + 1) << endl;
     } else {
       cout << "Failed to prove circularity #" << (i + 1) << endl;

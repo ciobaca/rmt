@@ -7,6 +7,8 @@
 #include "rewritesystem.h"
 #include "constrainedsolution.h"
 
+struct Function;
+
 struct Term;
 
 struct ConstrainedRewriteSystem;
@@ -20,8 +22,15 @@ struct ConstrainedTerm
   {
   }
 
+  std::vector<Function *> getDefinedFunctions();
+
   std::string toString();
   std::string toPrettyString();
+  
+  ConstrainedRewriteSystem getDefinedFunctionsSystem();
+  
+  vector<ConstrainedSolution> smtNarrowDefinedSearch();
+  std::vector<ConstrainedTerm> smtNarrowDefinedSearch(int minDepth, int maxDepth);
 
   std::vector<ConstrainedSolution> smtNarrowSearch(ConstrainedRewriteSystem &crs);
 

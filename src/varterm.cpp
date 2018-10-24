@@ -262,3 +262,8 @@ Term *VarTerm::compute()
 {
   return this;
 }
+
+void VarTerm::getDefinedFunctions(std::set<Function *> &)
+{
+  // intentionally empty; no defined functions in a variable term
+}

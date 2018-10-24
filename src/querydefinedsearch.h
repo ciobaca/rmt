@@ -9,7 +9,7 @@
 struct QueryDefinedSearch : public Query
 {
   ConstrainedTerm ct;
-  string funid;
+  //  string funid;
 
   int minDepth;
   int maxDepth;

@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <set>
 #include <z3.h>
 
 #include "variable.h"
@@ -268,6 +269,9 @@ struct Term
 
   // returns the term after computing all defined functions it contains
   virtual Term *compute() = 0;
+
+  // return all defined function occuring in term
+  virtual void getDefinedFunctions(std::set<Function *> &) = 0;
 };
 
 bool unabstractSolution(Substitution, ConstrainedSolution &);

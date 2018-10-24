@@ -26,17 +26,23 @@ constrained-rewrite-system flanguage
 
 //definedsearch (reduce N I (f (mminus I 1))) /\ (mle I N) for reduce;
 
-compute (reduce 11 4 (f (mminus 4 1)));
+// compute (reduce 11 4 (f (mminus 4 1)));
 
-run in flanguage : (fplus 3 (fplus 2 (f 1)));
+// run in flanguage : (fplus 3 (fplus 2 (f 1)));
 
-run in flanguage : (f 3);
+// run in flanguage : (f 3);
 
-run in flanguage : (fa 0 0 3);
+// run in flanguage : (fa 0 0 3);
 
-run in flanguage : (fa 0 2 (mminus 4 1));
+// run in flanguage : (fa 0 2 (mminus 4 1));
 
-definedsearch (reduce (mplus N 1) (mplus I 1) (f I)) /\ (mle I N) for reduce;
+//definedsearch (reduce (mplus N 1) (mplus I 1) (f I)) /\ (band (mle I N) (mle 0 I)) for reduce;
+
+//definedsearch (reduce (mplus 1 N) (mplus 2 I) (fplus (mplus I 1) (f I))) /\ (band (mle I (mplus N 1)) (bnot (mle N I))) for reduce;
+
+definedsearch    (pair
+    (reduce (mplus N 1) (mplus I 1) (f I))
+    (fa 0 0 N)) /\ (band (mle I N) (mle 0 I));
 
 show-equivalent [ 15, 1 ] in flanguage and flanguage :
    (pair
@@ -46,20 +52,34 @@ show-equivalent [ 15, 1 ] in flanguage and flanguage :
    (pair
     (reduce (mplus N 1) (mplus I 1) (f I))
     (fa 0 0 N)) /\ (band (mle I N) (mle 0 I))
-  ,
+,
     (pair
-      (reduce (mplus N 1) I X)
-      (fa X I N))
-// //expanded from circularity #2
- ,   
-   (pair
-     (reduce (mplus 1 N) (mplus 2 I) (fplus (mplus I 1) (f I)))
-     (fa 0 0 N)) /\ (band (mle I (mplus N 1)) (bnot (mle N I)))
- ,
-   (pair
-     (fplus I (f (mminus I 1)))
-     (fa 0 0 (mminus N 1)))
-     /\ (band (mle I (mplus N 1)) (band (bnot (mle N I)) (mle N (mplus 1 I))))
+     (reduce (mplus N 1) I X)
+     (fa X I N))
+// // expanded from circularity #3
+// ,
+//    (pair
+//      (reduce (mplus N 1) (mplus I 1) (fplus I X))
+//      (fa X I N))
+// ,
+//    (pair
+//      X
+//      (fa X I N)) /\ (bnot (mle I N))
+// // expanded from circularity #2 (one of resulting cases)
+// ,
+//    (pair
+//      (reduce (mplus 1 N) (mplus 2 I) (fplus (mplus I 1) (f I)))
+//      (fa 0 0 N)) /\ (band (mle I (mplus N 1)) (bnot (mle N I)))
+// ,
+// // expanded from case above (2 levels down from circuliarty #2)
+//    (pair
+//      (fplus (mplus 1 I) (f I))
+//      (fa 0 0 N))
+//      /\ (band (mle I (mplus 1 N)) (band (bnot (mle N I)) (mle N (mplus 1 I))))
+// ,
+//    (pair
+//      (reduce (mplus 1 N) (mplus 3 I) (fplus (mplus 2 I) (fplus (mplus 1 I) (f I))))
+//      (fa 0 0 N)) /\ (band (mle I (mplus 1 N)) (band (bnot (mle N I)) (bnot (mle N (mplus 1 I)))))
 with-base
      (pair S S);
 

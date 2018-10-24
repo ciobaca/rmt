@@ -501,3 +501,13 @@ Term *FunTerm::compute()
     return getFunTerm(function, newargs);
   }
 }
+
+void FunTerm::getDefinedFunctions(std::set<Function *> &where)
+{
+  if (function->isDefined) {
+    where.insert(function);
+  }
+  for (int i = 0; i < static_cast<int>(arguments.size()); ++i) {
+    arguments[i]->getDefinedFunctions(where);
+  }
+}

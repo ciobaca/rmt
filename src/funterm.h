@@ -51,6 +51,8 @@ struct FunTerm : public Term
   virtual vector<ConstrainedSolution> narrowSearch(ConstrainedRewriteSystem &);
 
   virtual Term *compute();
+
+  virtual void getDefinedFunctions(std::set<Function *> &);
 };
 
 #endif

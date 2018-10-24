@@ -252,6 +252,9 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
     Log(DEBUG5) << spaces(depth) << "close, but no cigar" << endl;
   }
   vector<ConstrainedSolution> lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft);
+  if (lhsSuccessors.size () == 0) {
+    lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch();
+  }
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {
     ConstrainedSolution sol = lhsSuccessors[i];
     ConstrainedTerm afterStep = pairC(sol.term, rhs, bAnd(ct.constraint, sol.constraint));
@@ -357,11 +360,30 @@ void QueryProveEquivalence::execute()
     abort();
   }
 
+  int circCount = static_cast<int>(circularities.size());
+  // expand all defined functions in circularities (twice)
+  for (int i = 0; i < circCount; ++i) {
+    ConstrainedTerm ct = circularities[i];
+    vector<ConstrainedTerm> csols = ct.smtNarrowDefinedSearch(1, 1);
+    for (int j = 0; j < static_cast<int>(csols.size()); ++j) {
+      ConstrainedTerm newBase = csols[j];
+      vector<ConstrainedTerm> csols2 = newBase.smtNarrowDefinedSearch(1, 1);
+      for (int k = 0; k < static_cast<int>(csols2.size()); ++k) {
+      	ConstrainedTerm newnewBase = csols2[k];
+      	Log(INFO) << "Adding new circ (not necessary to prove) " << newnewBase.toString() << endl;
+      	circularities.push_back(newnewBase);
+      }
+      Log(INFO) << "Adding new circ (not necessary to prove) " << newBase.toString() << endl;
+      circularities.push_back(newBase);
+    }
+  }
+
+  
   // prove all circularities
-  for (int i = 0; i < (int)circularities.size(); ++i) {
+  for (int i = 0; i < circCount; ++i) {
     cout << "Proving equivalence circularity #" << (i + 1) << endl;
     ConstrainedTerm ct = circularities[i];
-    if (proveEquivalence(ct, true, true, 0, 0)) {
+    if (proveEquivalence(ct, false, false, 0, 0)) {
       cout << "Succeeded in proving circularity #" << (i + 1) << endl;
     } else {
       cout << "Failed to prove circularity #" << (i + 1) << endl;

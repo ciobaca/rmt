@@ -39,26 +39,19 @@ void QueryDefinedSearch::parse(std::string &s, int &w)
   skipWhiteSpace(s, w);
   ct = parseConstrainedTerm(s, w);
   skipWhiteSpace(s, w);
-  matchString(s, w, "for");
-  skipWhiteSpace(s, w);
-  funid = getIdentifier(s, w);
-  skipWhiteSpace(s, w);
+  // matchString(s, w, "for");
+  // skipWhiteSpace(s, w);
+  // funid = getIdentifier(s, w);
+  // skipWhiteSpace(s, w);
   matchString(s, w, ";");
 }
 
 void QueryDefinedSearch::execute()
 {
-  Function *f = getFunction(funid);
-  if (!f) {
-    abortWithMessage(string("Function ") + f->name + " not found.");
-  }
-  if (!f->isDefined) {
-    abortWithMessage(string("Function ") + f->name + " is not a defined function.");
-  }
-  ConstrainedRewriteSystem crs = f->crewrite;
+  ConstrainedRewriteSystem crsFinal = ct.getDefinedFunctionsSystem();
 
   Log(DEBUG) << "Defined searching from " << ct.toString() << "." << endl;
-  vector<ConstrainedTerm> solutions = ct.smtNarrowSearch(crs, minDepth, maxDepth);
+  vector<ConstrainedTerm> solutions = ct.smtNarrowSearch(crsFinal, minDepth, maxDepth);
   cout << "Success: " << solutions.size() << " solutions." << endl;
   for (int i = 0; i < (int)solutions.size(); ++i) {
     cout << "Solution #" << i + 1 << ":" << endl;

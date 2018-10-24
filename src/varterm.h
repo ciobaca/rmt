@@ -50,6 +50,8 @@ struct VarTerm : public Term
   virtual string toPrettyString();
 
   virtual Term *compute();
+
+  virtual void getDefinedFunctions(std::set<Function *> &);
 };
 
 #endif

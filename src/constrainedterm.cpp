@@ -5,6 +5,7 @@
 #include "z3driver.h"
 #include <sstream>
 #include <cassert>
+#include <set>
 
 using namespace std;
 
@@ -28,6 +29,40 @@ string ConstrainedTerm::toPrettyString()
     oss << constraint->toPrettyString();
   }
   return oss.str();
+}
+
+ConstrainedRewriteSystem ConstrainedTerm::getDefinedFunctionsSystem()
+{
+  vector<Function *> definedFunctions = this->getDefinedFunctions();
+  ConstrainedRewriteSystem crsFinal;
+
+  cout << "Constrained term " << this->toString() << " has " << definedFunctions.size() << " defined symbols." << endl;
+  
+  for (int i = 0; i < static_cast<int>(definedFunctions.size()); ++i) {
+    Function *f = definedFunctions[i];
+    if (!f) {
+      abortWithMessage(string("Function ") + f->name + " not found.");
+    }
+    if (!f->isDefined) {
+      abortWithMessage(string("Function ") + f->name + " is not a defined function.");
+    }
+    ConstrainedRewriteSystem crs = f->crewrite;
+    for (int j = 0; j < static_cast<int>(crs.size()); ++j) {
+      crsFinal.addRule(crs[j].first, crs[j].second);
+    }
+  }
+
+  return crsFinal;
+}
+
+vector<ConstrainedTerm> ConstrainedTerm::smtNarrowDefinedSearch(int minDepth, int maxDepth)
+{
+  return this->smtNarrowSearch(this->getDefinedFunctionsSystem(), minDepth, maxDepth);
+}
+
+vector<ConstrainedSolution> ConstrainedTerm::smtNarrowDefinedSearch()
+{
+  return this->smtNarrowSearch(this->getDefinedFunctionsSystem());
 }
 
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs)
@@ -150,4 +185,14 @@ ConstrainedTerm ConstrainedTerm::normalizeFunctions()
   //   newConstraint = constraint->normalize(functionsRS, false);
   // }
   return ConstrainedTerm(newTerm, newConstraint);
+}
+
+vector<Function *> ConstrainedTerm::getDefinedFunctions()
+{
+  set<Function *> where;
+  term->getDefinedFunctions(where);
+  constraint->getDefinedFunctions(where);
+  vector<Function *> result;
+  std::copy(where.begin(), where.end(), std::back_inserter(result));
+  return result;
 }

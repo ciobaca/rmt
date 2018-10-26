@@ -57,12 +57,14 @@ ConstrainedRewriteSystem ConstrainedTerm::getDefinedFunctionsSystem()
 
 vector<ConstrainedTerm> ConstrainedTerm::smtNarrowDefinedSearch(int minDepth, int maxDepth)
 {
-  return this->smtNarrowSearch(this->getDefinedFunctionsSystem(), minDepth, maxDepth);
+  ConstrainedRewriteSystem rs = this->getDefinedFunctionsSystem();
+  return this->smtNarrowSearch(rs, minDepth, maxDepth);
 }
 
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowDefinedSearch()
 {
-  return this->smtNarrowSearch(this->getDefinedFunctionsSystem());
+  ConstrainedRewriteSystem rs = this->getDefinedFunctionsSystem();
+  return this->smtNarrowSearch(rs);
 }
 
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs)

@@ -555,14 +555,17 @@ Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
       {
 	assert(sort == getBoolSort());
 	Z3_app app = Z3_to_app(z3context, ast);
-	if (Z3_get_app_num_args(z3context, app) != 2) {
+	if (Z3_get_app_num_args(z3context, app) < 2) {
 	  abortWithMessage("Expected 2 arguments in Z3_OP_OR application.");
 	}
-	Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
-	Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
-	Term *resultUnZ3 = bOr(unZ3(arg1, getBoolSort(), boundVars), unZ3(arg2, getBoolSort(), boundVars));
-	Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
-	return resultUnZ3;
+
+  vector<Term *> args;
+  for (int i = 0; i < static_cast<int>(Z3_get_app_num_args(z3context, app)); ++i) {
+    args.push_back(unZ3(Z3_get_app_arg(z3context, app, i), getBoolSort(), boundVars));
+  }
+  Term *resultUnZ3 = bOrVector(args);
+  Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
+  return resultUnZ3;
       }
       break;
     case Z3_OP_IFF :

@@ -16,6 +16,7 @@ struct Sort;
 Term *bImplies(Term *, Term *);
 Term *bAnd(Term *, Term *);
 Term *bAndVector(std::vector<Term *>, int = 0);
+Term *bOrVector(std::vector<Term *>, int = 0);
 Term *bOr(Term *, Term *);
 Term *bNot(Term *);
 Term *bTrue();

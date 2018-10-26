@@ -434,6 +434,17 @@ Term *bAndVector(std::vector<Term *> args, int start)
   }
 }
 
+Term *bOrVector(std::vector<Term *> args, int start)
+{
+  assert(0 <= start && start < static_cast<int>(args.size()));
+  if (start == static_cast<int>(args.size()) - 1) {
+    return args[start];
+  }
+  else {
+    return bOr(args[start], bOrVector(args, start + 1));
+  }
+}
+
 Term *bOr(Term *left, Term *right)
 {
   return getFunTerm(OrFun, vector2(left, right));

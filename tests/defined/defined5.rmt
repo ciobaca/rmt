@@ -40,9 +40,9 @@ constrained-rewrite-system flanguage
 
 //definedsearch (reduce (mplus 1 N) (mplus 2 I) (fplus (mplus I 1) (f I))) /\ (band (mle I (mplus N 1)) (bnot (mle N I))) for reduce;
 
-definedsearch    (pair
-    (reduce (mplus N 1) (mplus I 1) (f I))
-    (fa 0 0 N)) /\ (band (mle I N) (mle 0 I));
+// definedsearch    (pair
+//     (reduce (mplus N 1) (mplus I 1) (f I))
+//     (fa 0 0 N)) /\ (band (mle I N) (mle 0 I));
 
 show-equivalent [ 15, 1 ] in flanguage and flanguage :
    (pair

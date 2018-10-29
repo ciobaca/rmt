@@ -596,6 +596,7 @@ int main(int argc, char **argv)
   createBuiltIns();
   addPredefinedRewriteSystems();
 
+  // TODO: de modificat astfel incat sa fie in orice ordine parse-urile urmatoare
   parseSorts(s, w);
   parseSubsorts(s, w);
   parseFunctions(s, w);

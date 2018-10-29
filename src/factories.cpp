@@ -228,6 +228,7 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
 #ifndef NDEBUG
   Function *f = getFunction(name);
   assert(f == 0);
+  // ma asigura ca nu exista deja o functie cu acelasi nume
 #endif
   int arity = arguments.size();
   Log log(INFO);

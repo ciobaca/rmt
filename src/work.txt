@@ -1,3 +1,23 @@
+ 1 (pair (f 2)                      (fa 0 2)) /\ true
+ 2 (pair (fplus 2 (f 1))            (fa 0 2)) /\ true
+ 3 (pair (fplus 2 (fplus 1 (f 0)))  (fa 0 2)) /\ true
+ 4 (pair (fplus 2 (fplus 1 0))      (fa 0 2)) /\ true
+ 5 (pair (fplus 2 1)                (fa 0 2)) /\ true
+ 6 (pair 3                          (fa 0 2)) /\ true
+ 7 (pair 3                          (fa 0 2)) /\ true
+ 8 (pair 3                          (fa 2 1)) /\ true
+ 9 (pair 3                          (fa 3 0)) /\ true
+10 (pair 3                          3) /\ true
+
+
+
+
+
+
+
+
+
+
 (pair (reduce N I (f (mminus I 1))) (fa (mminus I 1) (mminus N 1)))
 
  1 (pair (f 2)                      (fa 0 2)) /\ true
@@ -28,7 +48,7 @@
 
 (reduce 3 3 3)
 
-7 (pair 3                          (fa 0 2)) /\ true
+ 7 (pair 3                          (fa 0 2)) /\ true
 
  8 (pair 3                          (fa 2 1)) /\ true
 
@@ -36,7 +56,9 @@
 
 10 (pair 3                          3) /\ true
 
-                                            Proof succeeded: reached based equivalence.
+
+
+
 (pair 3 3) /\ true
 (pair 3 (fa 3 0)) /\ true
 (pair 3 (fa 2 1)) /\ true

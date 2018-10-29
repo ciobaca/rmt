@@ -324,14 +324,14 @@ search [35,35] in language :
  	      done)
           emp);
 	 
- show-equivalent [40 2] in language and language :
+ show-equivalent [80,2] in language and language :
    (pair (I (push (seq (assign pV1 pE1)
                    (seq pS1
  		      (assign pV2 pE1)))
  	      done)
           emp)
         (I (push (seq (assign pV1 pE1)
-                   (seq pS1,
+                   (seq pS1
 		      (assign pV2 pV1)))
  	      done)
           emp))

@@ -1,8 +1,4 @@
 /* any file begins with the declaration of all sorts used */
-smt-prelude
-"(declare-fun uifun (Int Int) Int)
- (declare-datatypes () ((Var varX varY varZ varC1 varC2 varV1 varV2)))
-"
 
 sorts IntP,
       BoolP,
@@ -115,6 +111,14 @@ signature
 	for : Var AExp AExp Stmt -> Stmt,
 	forhl : Var AExp Stmt -> Stmt,
 	forhr : Var AExp Stmt -> Stmt;
+
+/*
+smt-prelude
+"(declare-fun uifun (Int Int) Int)
+ (declare-datatypes () ((Var varX varY varZ varC1 varC2 varV1 varV2)))
+"
+*/
+
 
 /* next we must declare all variables */
 variables

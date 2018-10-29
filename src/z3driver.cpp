@@ -53,6 +53,60 @@ Z3_sort z3_int()
   return z3IntSort;
 }
 
+Z3_sort z3_uninterpreted_sort(string sortName) {
+  return Z3_mk_uninterpreted_sort(z3context,
+    Z3_mk_string_symbol(z3context, sortName.c_str()));
+}
+
+Z3_sort z3_array(string);
+
+string extractSortName(string fullString, int from, int to) {
+  int brackets = 0;
+  for (int i = from; i < to; ++i) {
+    if (fullString[i] == '(') {
+      ++brackets;
+      continue;
+    }
+    if (fullString[i] == ')') {
+      --brackets;
+      if (brackets < 0) {
+        abortWithMessage("Unable to parse sort " + fullString);
+      }
+      continue;
+    }
+    if (fullString[i] == ' ' && brackets == 0) {
+      return fullString.substr(from, i - from);
+    }
+  }
+  if (brackets != 0) {
+    abortWithMessage("Unable to parse sort " + fullString);
+  }
+  return fullString.substr(from, to - from);
+}
+
+Z3_sort z3_getInterpretation(string i) {
+  if (i == "Bool") {
+    return z3_bool();
+  }
+  else if (i == "Int") {
+    return z3_int();
+  }
+  else if (i.front() == '(' && i.back() == ')' &&
+    i.find("Array") == 1) {
+    return z3_array(i);
+  }
+  else {
+    return z3_uninterpreted_sort(i);
+  }
+}
+
+Z3_sort z3_array(string i) {
+  string domainName = extractSortName(i, 2 + string("Array").size(), i.size() - 1);
+  string rangeName = extractSortName(i, 3 + string("Array").size() + domainName.size(), i.size() - 1);
+  Log(INFO) << "Creating Array sort with domain " << domainName << " and range " << rangeName << endl;
+  return Z3_mk_array_sort(z3context, z3_getInterpretation(domainName), z3_getInterpretation(rangeName));
+}
+
 Z3_ast z3_add::operator()(vector<Term *> args)
 {
   assert(args.size() == 2);

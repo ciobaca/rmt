@@ -43,6 +43,10 @@ Z3_sort z3_bool();
 
 Z3_sort z3_int();
 
+Z3_sort z3_uninterpreted_sort(std::string sortName);
+
+Z3_sort z3_getInterpretation(std::string i);
+
 class Z3Function {
 public:
   Z3Function() {};

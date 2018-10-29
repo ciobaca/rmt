@@ -8,13 +8,7 @@ Sort::Sort(string n) {
 Sort::Sort(string n, string i) {
   name = n;
   hasInterpretation = true;
-  if (i == "Bool") {
-    interpretation = z3_bool();
-  } else if (i == "Int") {
-    interpretation = z3_int();
-  } else {
-    abortWithMessage("Unable to create interpreted sort " + i + " (unknown sort).");
-  }
+  interpretation = z3_getInterpretation(i);
 }
 
 bool Sort::addSubSort(Sort *subSort) {

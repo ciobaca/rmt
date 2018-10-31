@@ -46,7 +46,7 @@ void outputRewriteSystem(RewriteSystem &rewriteSystem)
 }
 
 void createSubsort(vector<string> &identifiersLeft,
-		   vector<string> &identifiersRight)
+  vector<string> &identifiersRight)
 {
   Log log(INFO);
   log << "Declaring the sorts: ";
@@ -64,7 +64,7 @@ void createSubsort(vector<string> &identifiersLeft,
       Sort *right = getSort(identifiersRight[j]);
       assert(left);
       assert(right);
-      right->addSubSort(left); 
+      right->addSubSort(left);
     }
   }
 }
@@ -115,7 +115,8 @@ void parseBuiltins(string &s, int &w)
     if (s[w] == ',') {
       match(s, w, ',');
       continue;
-    } else {
+    }
+    else {
       match(s, w, ';');
       break;
     }
@@ -185,18 +186,19 @@ void parseDefinedFunctions(string &s, int &w)
       crewrite.addRule(t, tp);
       skipWhiteSpace(s, w);
       if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
-	expected("more constrained rewrite rules", w, s);
+        expected("more constrained rewrite rules", w, s);
       }
       if (s[w] == ',') {
-	match(s, w, ',');
-	continue;
-      } else {
-	match(s, w, ';');
-	break;
+        match(s, w, ',');
+        continue;
+      }
+      else {
+        match(s, w, ';');
+        break;
       }
     }
     updateDefinedFunction(f, crewrite);
-    
+
     skipWhiteSpace(s, w);
   }
 }
@@ -232,13 +234,15 @@ void parseSorts(string &s, int &w)
     }
     if (hasInterpretation) {
       createInterpretedSort(sortName, sortInterpretation);
-    } else {
+    }
+    else {
       createUninterpretedSort(sortName);
     }
     if (s[w] == ',') {
       match(s, w, ',');
       continue;
-    } else {
+    }
+    else {
       match(s, w, ';');
       break;
     }
@@ -253,11 +257,12 @@ void parseSubsort(string &s, int &w)
   vector<string> identifiersLeft;
   if (!lookAheadIdentifier(s, w)) {
     expected("identifier", w, s);
-  } else {
+  }
+  else {
     do {
       string id = getIdentifier(s, w);
       if (!sortExists(id)) {
-	      parseError("sort does not exist", w, s);
+        parseError("sort does not exist", w, s);
       }
       identifiersLeft.push_back(id);
       skipWhiteSpace(s, w);
@@ -268,11 +273,12 @@ void parseSubsort(string &s, int &w)
   vector<string> identifiersRight;
   if (!lookAheadIdentifier(s, w)) {
     expected("identifier", w, s);
-  } else {
+  }
+  else {
     do {
       string id = getIdentifier(s, w);
       if (!sortExists(id)) {
-	      parseError("sort does not exist", w, s);
+        parseError("sort does not exist", w, s);
       }
       identifiersRight.push_back(id);
       skipWhiteSpace(s, w);
@@ -389,14 +395,16 @@ void parseFunctions(string &s, int &w)
       if (lookAhead(s, w, "\"")) {
         interpretation = getQuotedString(s, w);
         hasInterpretation = true;
-      } else {
-	matchString(s, w, "\"");
+      }
+      else {
+        matchString(s, w, "\"");
       }
     }
     skipWhiteSpace(s, w);
     if (hasInterpretation) {
       createInterpretedFunction(f, arguments, result, interpretation);
-    } else {
+    }
+    else {
       createUninterpretedFunction(f, arguments, result);
     }
     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
@@ -405,7 +413,8 @@ void parseFunctions(string &s, int &w)
     if (s[w] == ',') {
       match(s, w, ',');
       continue;
-    } else {
+    }
+    else {
       match(s, w, ';');
       break;
     }
@@ -438,7 +447,8 @@ void parseVariables(string &s, int &w)
     if (s[w] == ',') {
       match(s, w, ',');
       continue;
-    } else {
+    }
+    else {
       match(s, w, ';');
       break;
     }
@@ -448,7 +458,7 @@ void parseVariables(string &s, int &w)
 void addPredefinedRewriteSystems()
 {
   return;
-  
+
   RewriteSystem rewrite;
 
   Sort *boolSort = getSort("Bool");
@@ -459,7 +469,7 @@ void addPredefinedRewriteSystems()
   rewrite.addRule(bNot(bFalse()), bTrue());
   rewrite.addRule(bNot(bTrue()), bFalse());
   rewrite.addRule(bNot(bNot(B)), B);
-  
+
   rewrite.addRule(bAnd(bFalse(), B), bFalse());
   rewrite.addRule(bAnd(bTrue(), B), B);
   rewrite.addRule(bAnd(B, bFalse()), bFalse());
@@ -509,7 +519,8 @@ string parseRewriteSystem(string &s, int &w, RewriteSystem &rewrite)
     if (s[w] == ',') {
       match(s, w, ',');
       continue;
-    } else {
+    }
+    else {
       match(s, w, ';');
       break;
     }
@@ -540,7 +551,8 @@ string parseConstrainedRewriteSystem(string &s, int &w, ConstrainedRewriteSystem
     if (s[w] == ',') {
       match(s, w, ',');
       continue;
-    } else {
+    }
+    else {
       match(s, w, ';');
       break;
     }
@@ -559,19 +571,21 @@ int main(int argc, char **argv)
   if (argc != 2) {
     if (argc == 4) {
       if (strcmp(argv[1], "-v") != 0) {
-	abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
+        abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
       }
       char *end;
       Log(INFO) << "Got verbosity level " << argv[2] << "." << endl;
       Log::debug_level = strtol(argv[2], &end, 10);
       if (*end) {
-	abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
+        abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
       }
       filename = argv[3];
-    } else {
+    }
+    else {
       abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
     }
-  } else {
+  }
+  else {
     filename = argv[1];
   }
 
@@ -596,48 +610,34 @@ int main(int argc, char **argv)
   createBuiltIns();
   addPredefinedRewriteSystems();
 
-  // TODO: de modificat astfel incat sa fie in orice ordine parse-urile urmatoare
-  parseSorts(s, w);
-  parseSubsorts(s, w);
-  parseFunctions(s, w);
-  parseVariables(s, w);
-  parseBuiltins(s, w);
-  parseAsserts(s, w);
-  parseDefinedFunctions(s, w);
-  skipWhiteSpace(s, w);
-
-  //  if (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
-    while (lookAhead(s, w, "rewrite-system") || lookAhead(s, w, "constrained-rewrite-system")) {
-      if (lookAhead(s, w, "rewrite-system")) {
-	      RewriteSystem rewrite;
-	      string name = parseRewriteSystem(s, w, rewrite);
-	      putRewriteSystem(name, rewrite);
-	      skipWhiteSpace(s, w);
-      } else {
-	      assert(lookAhead(s, w, "constrained-rewrite-system"));
-	      ConstrainedRewriteSystem crewrite;
-	      string name = parseConstrainedRewriteSystem(s, w, crewrite);
-	      putConstrainedRewriteSystem(name, crewrite);
-	      skipWhiteSpace(s, w);
-      }
+  for (skipWhiteSpace(s, w); w < len(s); skipWhiteSpace(s, w)) {
+    Query *query = NULL;
+    if (lookAhead(s, w, "sorts")) parseSorts(s, w);
+    else if (lookAhead(s, w, "subsort")) parseSubsorts(s, w);
+    else if (lookAhead(s, w, "signature")) parseFunctions(s, w);
+    else if (lookAhead(s, w, "variables")) parseVariables(s, w);
+    else if (lookAhead(s, w, "builtins")) parseBuiltins(s, w);
+    else if (lookAhead(s, w, "assert")) parseAsserts(s, w);
+    else if (lookAhead(s, w, "define")) parseDefinedFunctions(s, w);
+    else if (lookAhead(s, w, "rewrite-system")) {
+      RewriteSystem rewrite;
+      string name = parseRewriteSystem(s, w, rewrite);
+      putRewriteSystem(name, rewrite);
+      skipWhiteSpace(s, w);
     }
-  // } else {
-  //   expected("rewrite-system or constrained-rewrite-system", w, s);
-  // }
-
-  skipWhiteSpace(s, w);
-  Query *query;
-  do {
-    query = Query::lookAheadQuery(s, w);
-    if (!query) {
-      break;
+    else if (lookAhead(s, w, "constrained-rewrite-system")) {
+      ConstrainedRewriteSystem crewrite;
+      string name = parseConstrainedRewriteSystem(s, w, crewrite);
+      putConstrainedRewriteSystem(name, crewrite);
+      skipWhiteSpace(s, w);
     }
-    query->parse(s, w);
-    skipWhiteSpace(s, w);
-    query->execute();
-  } while (1);
-
-  if (w < len(s)) {
-    expected("query", w, s);
+    else if (query = Query::lookAheadQuery(s, w)) {
+      query->parse(s, w);
+      skipWhiteSpace(s, w);
+      query->execute();
+    }
+    else {
+      expected("valid command", w, s);
+    }
   }
 }

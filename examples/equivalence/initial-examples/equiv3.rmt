@@ -13,6 +13,9 @@ sorts IntP,
       CfgI,
       State;
 
+builtins f_iS1 : Int Int Int Int -> Int, f_iE1 : Int Int -> Int, var : Var -> Int,
+ storevi : Map Var Int -> Map, selectvi : Map Var -> Int;
+
 // after declaring all sorts,
 // we must declare all subsort relations
 subsort Int < IntP;
@@ -33,25 +36,18 @@ signature
 	mapequals : Map Map -> Bool / "=",
 
 	// some program variables
-	x : -> Var / "varX",
-	y : -> Var / "varY",
-	z : -> Var / "varZ",
-
-	pV1 : -> Var / "varV1",
-	pV2 : -> Var / "varV2",
-	pC1 : -> Var / "varC1",
-	pC2 : -> Var / "varC2",
+	var : Var -> Int,
 	
 	pS1 : -> Stmt,
 	pE1 : -> NonValAExp,
-	iS1 : Int Int Int Int -> Int / "iS1",
-	iE1 : Int Int -> Int / "iE1",
+	iS1 : Int Int Int Int -> Int / "f_iS1",
+	iE1 : Int Int -> Int / "f_iE1",
 
 	// helper functions
 	synEq : Var Var -> Bool / "=",
 
-	update : Map Var Int -> Map / "store",
-	lookup  : Map Var -> IntP / "select",
+	update : Map Var Int -> Map / "storevi",
+	lookup  : Map Var -> Int / "selectvi",
 
 	// arithmetic and boolean expressions
 	plus : AExp AExp -> NonValAExp,
@@ -110,7 +106,6 @@ smt-prelude
  (declare-datatypes () ((Var varX varY varZ varC1 varC2 varV1 varV2)))
 "
 */
-
 
 /* next we must declare all variables */
 variables
@@ -303,25 +298,25 @@ constrained-rewrite-system language
 
 // symbolic variables statements and expressions
    	(I (push pE1 REST) ENV) =>
-	(I (push (iE1 (lookup ENV pC2) (lookup ENV pV2)) REST) ENV),
+	(I (push (iE1 (lookup ENV (var 4)) (lookup ENV (var 2))) REST) ENV),
 
 	(I (push pS1 REST) ENV) =>
-	(I REST (update ENV pC1 (iS1 (lookup ENV pC1) (lookup ENV pC2) (lookup ENV pV1) (lookup ENV pV2))))
+	(I REST (update ENV (var 3) (iS1 (lookup ENV (var 3)) (lookup ENV (var 4)) (lookup ENV (var 1)) (lookup ENV (var 2)))))
 ;
 
 //search [3,3] in language :
-//	(I (push (assign x 1) done) emp);
+//	(I (push (assign (var 0) 1) done) emp);
 
 show-equivalent [40, 2] in language and language :
 //    (pair 
-// 	(I (push (for x 1 N pS1) done) ENV)
-// 	(I (push (ite (le 1 N) (seq (assign x 1) (while (le x N) (seq pS1 (assign x (plus x 1))))) skip) done) ENV))
+// 	(I (push (for (var 0) 1 N pS1) done) ENV)
+// 	(I (push (ite (le 1 N) (seq (assign (var 0) 1) (while (le (var 0) N) (seq pS1 (assign (var 0) (plus (var 0) 1))))) skip) done) ENV))
 
 // 
    (pair 
-	(I (push (for x M N pS1) done) ENV)
+	(I (push (for (var 0) M N pS1) done) ENV)
 
-	(I (push (assign x M) (push (while (less x N) (seq pS1 (assign x (plus x 1)))) done)) ENV)) /\ (mle M N)
+	(I (push (assign (var 0) M) (push (while (less (var 0) N) (seq pS1 (assign (var 0) (plus (var 0) 1)))) done)) ENV)) /\ (mle M N)
 
 with-base
-   (pair (I done ENV) (I done ENVP)) /\ (mequals (lookup ENV x) (lookup ENVP x));
+   (pair (I done ENV) (I done ENVP)) /\ (mequals (lookup ENV (var 0)) (lookup ENVP (var 0)));

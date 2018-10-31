@@ -233,7 +233,10 @@ void parseSorts(string &s, int &w)
       parseError("sort already exists", w, s);
     }
     if (hasInterpretation) {
+      //this is a builtin sort!! .. will be refactored later (TODO)
       createInterpretedSort(sortName, sortInterpretation);
+      createBuiltinExistsFunction(getSort(sortName));
+      createBuiltinForallFunction(getSort(sortName));
     }
     else {
       createUninterpretedSort(sortName);
@@ -602,6 +605,7 @@ int main(int argc, char **argv)
     s += tmp;
     s += "\n";
   }
+  input.close();
 
   start_z3_api();
 

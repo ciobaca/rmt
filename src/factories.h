@@ -41,6 +41,10 @@ Term *mTimesVector(std::vector<Term *>, int = 0);
 Function *getEqualsFunction(Sort *);
 Term *createEqualityConstraint(Term *, Term *);
 
+map< pair< Sort*, pair<Sort*, Sort*> >, Function* > *getSelectFunctions();
+map< pair< Sort*, pair<Sort*, Sort*> >, Function* > *getStoreFunctions();
+map< pair< Sort*, Sort* >, Function* > *getEqualityFunctions();
+
 void createBuiltinExistsFunction(Sort*);
 void createBuiltinForallFunction(Sort*);
 
@@ -58,6 +62,7 @@ Variable *getVariable(std::string name);
 void createVariable(std::string name, Sort *sort);
 
 Sort *getSort(std::string name);
+Sort *getBuiltinSort(Z3_string sortName);
 Sort *getIntSort();
 Sort *getBoolSort();
 void createUninterpretedSort(const std::string &sortName);
@@ -92,6 +97,7 @@ std::vector<Variable *> getInterpretedVariables();
 
 std::vector<Term *> vector1(Term *term);
 std::vector<Term *> vector2(Term *term1, Term *term2);
+std::vector<Term *> vector3(Term *term1, Term *term2, Term *term3);
 
 Term *introduceExists(Term *, std::vector<Variable *>);
 

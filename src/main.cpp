@@ -405,7 +405,7 @@ void parseFunctions(string &s, int &w)
     }
     skipWhiteSpace(s, w);
     if (hasInterpretation) {
-      createInterpretedFunction(f, arguments, result, interpretation);
+      createInterpretedFunction(f, arguments, result, interpretation);      
     }
     else {
       createUninterpretedFunction(f, arguments, result);
@@ -640,8 +640,12 @@ int main(int argc, char **argv)
       skipWhiteSpace(s, w);
       query->execute();
     }
+    else if (lookAhead(s, w, "!EOF!")) {
+      break;
+    }
     else {
       expected("valid command", w, s);
     }
   }
+  return 0;
 }

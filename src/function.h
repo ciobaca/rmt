@@ -121,6 +121,10 @@ private:
       this->interpretation = new z3_implies();
     } else if (interpretation == "ite") {
       this->interpretation = new z3_ite();
+    } else if (interpretation == "select") {
+      this->interpretation = new z3_select();
+    } else if (interpretation == "store") {
+      this->interpretation = new z3_store();
     } else {
       abortWithMessage(std::string("Unknown interpretation of function (") + interpretation + ").");
     }

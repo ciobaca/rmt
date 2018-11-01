@@ -10,6 +10,8 @@ struct Sort;
 struct Variable;
 struct Term;
 
+Z3_string z3_sort_to_string(Z3_sort s);
+
 enum Z3Result
 {
   sat,
@@ -262,6 +264,18 @@ class z3_ite : public Z3Function {
 class z3_implies : public Z3Function {
  public:
   z3_implies() {};
+  virtual Z3_ast operator()(std::vector<Term *> args);
+};
+
+class z3_select : public Z3Function {
+public : 
+  z3_select() {};
+  virtual Z3_ast operator()(std::vector<Term *> args);
+};
+
+class z3_store : public Z3Function {
+public:
+  z3_store() {};
   virtual Z3_ast operator()(std::vector<Term *> args);
 };
 

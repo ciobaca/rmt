@@ -13,8 +13,7 @@ sorts IntP,
       CfgI,
       State;
 
-builtins f_iS1 : Int Int Int Int -> Int, f_iE1 : Int Int -> Int, var : Var -> Int,
- storevi : Map Var Int -> Map, selectvi : Map Var -> Int;
+builtins iS1 : Int Int Int Int -> Int, iE1 : Int Int -> Int, var : Int -> Var;
 
 // after declaring all sorts,
 // we must declare all subsort relations
@@ -36,18 +35,15 @@ signature
 	mapequals : Map Map -> Bool / "=",
 
 	// some program variables
-	var : Var -> Int,
 	
 	pS1 : -> Stmt,
 	pE1 : -> NonValAExp,
-	iS1 : Int Int Int Int -> Int / "f_iS1",
-	iE1 : Int Int -> Int / "f_iE1",
 
 	// helper functions
 	synEq : Var Var -> Bool / "=",
 
-	update : Map Var Int -> Map / "storevi",
-	lookup  : Map Var -> Int / "selectvi",
+	update : Map Var Int -> Map / "store",
+	lookup  : Map Var -> Int / "select",
 
 	// arithmetic and boolean expressions
 	plus : AExp AExp -> NonValAExp,
@@ -99,14 +95,6 @@ signature
 	forhl : Var AExp Stmt -> Stmt,
 	forhr : Var AExp Stmt -> Stmt;
 
-/*
-smt-prelude
-"(declare-fun iS1 (Int Int Int Int) Int)
- (declare-fun iE1 (Int Int) Int)
- (declare-datatypes () ((Var varX varY varZ varC1 varC2 varV1 varV2)))
-"
-*/
-
 /* next we must declare all variables */
 variables
 	// necessary variables
@@ -142,6 +130,14 @@ variables
 	ENVP : Map,
 	ENV1 : Map,
 	ENV2 : Map;
+
+//defining equality of variables
+assert (_forallInt N (_forallInt M
+         (bimplies (mequals N M) (synEq (var N) (var M)))
+));
+assert (_forallInt N (_forallInt M
+         (bimplies (synEq (var N) (var M)) (mequals N M))
+));
 
 /* next, declare all rewrite rules */
 constrained-rewrite-system language
@@ -304,8 +300,13 @@ constrained-rewrite-system language
 	(I REST (update ENV (var 3) (iS1 (lookup ENV (var 3)) (lookup ENV (var 4)) (lookup ENV (var 1)) (lookup ENV (var 2)))))
 ;
 
-//search [3,3] in language :
-//	(I (push (assign (var 0) 1) done) emp);
+search [1,10] in language:
+	(I (push (ite (mapequals (update (update ENV (var 1) 1) (var 0) 0) (update (update ENV (var 0) 0) (var 1) 1)  ) 1 0) done) ENV);
+!EOF!
+
+search [1,10] in language :
+	(I (push (var 0) done) ENV) /\ (mapequals ENV (update ENVP (var 0) 1));
+!EOF!
 
 show-equivalent [40, 2] in language and language :
 //    (pair 

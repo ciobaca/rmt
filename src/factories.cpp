@@ -14,6 +14,7 @@ map<string, RewriteSystem> rewriteSystems;
 map<string, ConstrainedRewriteSystem> cRewriteSystems;
 map<string, Variable *> variables;
 map<string, Sort *> sorts;
+map<string, Sort *> builtinSorts;
 map<string, Function *> functions;
 map<pair<Function *, vector<Term *> >, Term *> funTerms;
 map<Variable *, Term *> varTerms;
@@ -121,6 +122,15 @@ Sort *getBoolSort()
   return getSort("Bool");
 }
 
+Sort *getBuiltinSort(Z3_string sortName) {
+  if (builtinSorts.count(sortName)) {
+    return builtinSorts[sortName];
+  }
+  else {
+    return 0;
+  }
+}
+
 void createUninterpretedSort(const string &sortName)
 {
 #ifndef NDEBUG
@@ -139,7 +149,9 @@ void createInterpretedSort(const string &sortName, const string &interpretation)
   assert(!s);
 #endif
   
-  sorts[sortName] = new Sort(sortName, interpretation);
+  Sort *s = new Sort(sortName, interpretation);
+  sorts[sortName] = s;
+  builtinSorts[z3_sort_to_string(s->interpretation)] = s;
   Log(INFO) << "Creating interpreted sort " << sortName << " as (" << interpretation << ")." << endl;
 }
 
@@ -238,20 +250,32 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
   }
   log << " -> " << result->name << endl;
   assert(interpretation != "");
-  if (functions.count(interpretation)) {
-    //interpretation might exist with this name
-    Function *f_interpretation = functions[interpretation];
-    if (f_interpretation->hasInterpretation) {
-      if (f_interpretation->arguments != arguments || f_interpretation->result != result) {
-        Log(ERROR) << "Signature of function " << name <<
-          " is different from signature of interpretation " << interpretation  << endl;
-        assert(0);
-      }
-      functions[name] = new Function(name, arguments, result, f_interpretation->interpretation);
-      return;
+
+  Function *f = new Function(name, arguments, result, interpretation);
+  functions[name] = f;
+  
+  //handling special functions
+  if (interpretation == "store") {
+    if (arguments.size() != 3) {
+      Log(ERROR) << "Wrong number of arguments for store function" << endl;
+      assert(0);
     }
+    (*getStoreFunctions())[make_pair(arguments[0], make_pair(arguments[1], arguments[2]))] = f;
   }
-  functions[name] = new Function(name, arguments, result, interpretation);
+  else if (interpretation == "select") {
+    if (arguments.size() != 2) {
+      Log(ERROR) << "Wrong number of arguments for select function" << endl;
+      assert(0);
+    }
+    (*getSelectFunctions())[make_pair(result, make_pair(arguments[0], arguments[1]))] = f;
+  }
+  else if (interpretation == "=") {
+    if (arguments.size() != 2) {
+      Log(ERROR) << "Wrong number of arguments for = function" << endl;
+      assert(0);
+    }
+    (*getEqualityFunctions())[make_pair(arguments[0], arguments[1])] = f;
+  }
 }
 
 void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation)
@@ -322,6 +346,15 @@ vector<Term *> vector2(Term *term1, Term *term2)
   return result;
 }
 
+vector<Term *> vector3(Term *term1, Term *term2, Term *term3)
+{
+  vector<Term *> result;
+  result.push_back(term1);
+  result.push_back(term2);
+  result.push_back(term3);
+  return result;
+}
+
 Function *TrueFun;
 Function *FalseFun;
 Function *NotFun;
@@ -332,6 +365,19 @@ Function *EqualsFun;
 Function *MleFun;
 
 Function *MEqualsFun;
+
+map< pair< Sort*, pair<Sort*, Sort*> >, Function* > SelectFun;
+map< pair< Sort*, pair<Sort*, Sort*> >, Function* > StoreFun;
+map< pair< Sort*, Sort* >, Function* > EqualityFun;
+map< pair< Sort*, pair<Sort*, Sort*> >, Function* > *getSelectFunctions() {
+  return &SelectFun;
+}
+map< pair< Sort*, pair<Sort*, Sort*> >, Function* > *getStoreFunctions() {
+  return &StoreFun;
+}
+map< pair< Sort*, Sort* >, Function* > *getEqualityFunctions() {
+  return &EqualityFun;
+}
 
 map<Sort *, Function *> ExistsFun;
 map<Sort *, Function *> ForallFun;

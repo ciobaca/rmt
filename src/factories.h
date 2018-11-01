@@ -41,6 +41,9 @@ Term *mTimesVector(std::vector<Term *>, int = 0);
 Function *getEqualsFunction(Sort *);
 Term *createEqualityConstraint(Term *, Term *);
 
+void createBuiltinExistsFunction(Sort*);
+void createBuiltinForallFunction(Sort*);
+
 void createBuiltIns();
 
 RewriteSystem &getRewriteSystem(std::string name);

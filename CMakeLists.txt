@@ -21,7 +21,7 @@ add_test(TestSmt4 "./rmt" -v 0 ../tests/smt/smt4.rmt)
 set_tests_properties (TestSmt4 PROPERTIES PASS_REGULAR_EXPRESSION "is B")
 
 add_test(TestSmt5 "./rmt" -v 0 ../tests/smt/smt5.rmt)
-set_tests_properties (TestSmt4 PROPERTIES PASS_REGULAR_EXPRESSION "result is")
+set_tests_properties (TestSmt5 PROPERTIES PASS_REGULAR_EXPRESSION "result is")
 
 add_test(TestReachExample1 "./rmt" -v 0 ../examples/z-all-examples/example1.rmt)
 set_tests_properties (TestReachExample1 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")

@@ -238,6 +238,19 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
   }
   log << " -> " << result->name << endl;
   assert(interpretation != "");
+  if (functions.count(interpretation)) {
+    //interpretation might exist with this name
+    Function *f_interpretation = functions[interpretation];
+    if (f_interpretation->hasInterpretation) {
+      if (f_interpretation->arguments != arguments || f_interpretation->result != result) {
+        Log(ERROR) << "Signature of function " << name <<
+          " is different from signature of interpretation " << interpretation  << endl;
+        assert(0);
+      }
+      functions[name] = new Function(name, arguments, result, f_interpretation->interpretation);
+      return;
+    }
+  }
   functions[name] = new Function(name, arguments, result, interpretation);
 }
 
@@ -322,6 +335,32 @@ Function *MEqualsFun;
 map<Sort *, Function *> ExistsFun;
 map<Sort *, Function *> ForallFun;
 
+// small hacks for existential and universal quantifiers
+
+void createBuiltinExistsFunction(Sort *s) {
+  vector<Sort *> args;
+  args.push_back(s);
+  args.push_back(sorts["Bool"]);
+  ostringstream funname;
+  funname << "_exists" << s->name;
+  Log(DEBUG) << "Creating exists function " << funname.str() << endl;
+  createUninterpretedFunction(funname.str(), args, sorts["Bool"]);
+  ExistsFun[s] = getFunction(funname.str());
+  assert(ExistsFun[s]);
+}
+
+void createBuiltinForallFunction(Sort *s) {
+  vector<Sort *> args;
+  args.push_back(s);
+  args.push_back(sorts["Bool"]);
+  ostringstream funname;
+  funname << "_forall" << s->name;
+  Log(DEBUG) << "Creating forall function " << funname.str() << endl;
+  createUninterpretedFunction(funname.str(), args, sorts["Bool"]);
+  ForallFun[s] = getFunction(funname.str());
+  assert(ForallFun[s]);
+}
+
 void createBuiltIns()
 {
   TrueFun = getFunction("true");
@@ -346,32 +385,13 @@ void createBuiltIns()
   assert(sortExists("Bool"));
   assert(sortExists("Int"));
 
-  // small hack for existential and universal quantifiers
   Log(DEBUG) << "Creating built ins" << endl;
   for (map<string, Sort *>::iterator it = sorts.begin(); it != sorts.end(); ++it) {
-    Sort *s = it->second;
-    vector<Sort *> args;
-    args.push_back(s);
-    args.push_back(sorts["Bool"]);
-    ostringstream funname;
-    funname << "_exists" << s->name;
-    Log(DEBUG) << "Creating exists function " << funname.str() << endl;
-    createUninterpretedFunction(funname.str(), args, sorts["Bool"]);
-    ExistsFun[s] = getFunction(funname.str());
-    assert(ExistsFun[s]);
+    createBuiltinExistsFunction(it->second);
   }
   
   for (map<string, Sort *>::iterator it = sorts.begin(); it != sorts.end(); ++it) {
-    Sort *s = it->second;
-    vector<Sort *> args;
-    args.push_back(s);
-    args.push_back(sorts["Bool"]);
-    ostringstream funname;
-    funname << "_forall" << s->name;
-    Log(DEBUG) << "Creating forall function " << funname.str() << endl;
-    createUninterpretedFunction(funname.str(), args, sorts["Bool"]);
-    ForallFun[s] = getFunction(funname.str());
-    assert(ForallFun[s]);
+    createBuiltinForallFunction(it->second);
   }
 }
 

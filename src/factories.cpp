@@ -294,7 +294,6 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
   functions[name] = new Function(name, arguments, result, interpretation);
 }
 
-
 Term *getFunTerm(Function *f, vector<Term *> arguments)
 {
   pair<Function *, vector<Term *> > content = make_pair(f, arguments);

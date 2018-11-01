@@ -607,13 +607,12 @@ Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
       if ((!sa1) || (!sa2)) {
         abortWithMessage("Cannot find sorts in Z3_OP_EQ application.");
       }
-      pair<Sort*, Sort*> key = make_pair(sa1, sa2);
-      Function *fun = (*getEqualityFunctions())[key];
-      if (!fun) {
-        abortWithMessage("Cannot find select function in Z3_OP_EQ application.");
+      if (sa1 != sa2) {
+        abortWithMessage("Equality for different sorts in Z3_OP_EQ application.");
       }
-      if (fun->result != sort) {
-        abortWithMessage("Select function has wrong sort in Z3_OP_SELECT application.");
+      Function *fun = getEqualsFunction(sa1);
+      if (!fun) {
+        abortWithMessage("Cannot find equal function in Z3_OP_EQ application.");
       }
       Term *resultUnZ3 = getFunTerm(fun, vector2(
         unZ3(arg1, sa1, boundVars),

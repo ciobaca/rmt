@@ -269,13 +269,6 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
     }
     (*getSelectFunctions())[make_pair(result, make_pair(arguments[0], arguments[1]))] = f;
   }
-  else if (interpretation == "=") {
-    if (arguments.size() != 2) {
-      Log(ERROR) << "Wrong number of arguments for = function" << endl;
-      assert(0);
-    }
-    (*getEqualityFunctions())[make_pair(arguments[0], arguments[1])] = f;
-  }
 }
 
 void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation)
@@ -367,15 +360,11 @@ Function *MEqualsFun;
 
 map< pair< Sort*, pair<Sort*, Sort*> >, Function* > SelectFun;
 map< pair< Sort*, pair<Sort*, Sort*> >, Function* > StoreFun;
-map< pair< Sort*, Sort* >, Function* > EqualityFun;
 map< pair< Sort*, pair<Sort*, Sort*> >, Function* > *getSelectFunctions() {
   return &SelectFun;
 }
 map< pair< Sort*, pair<Sort*, Sort*> >, Function* > *getStoreFunctions() {
   return &StoreFun;
-}
-map< pair< Sort*, Sort* >, Function* > *getEqualityFunctions() {
-  return &EqualityFun;
 }
 
 map<Sort *, Function *> ExistsFun;

@@ -43,7 +43,6 @@ Term *createEqualityConstraint(Term *, Term *);
 
 map< pair< Sort*, pair<Sort*, Sort*> >, Function* > *getSelectFunctions();
 map< pair< Sort*, pair<Sort*, Sort*> >, Function* > *getStoreFunctions();
-map< pair< Sort*, Sort* >, Function* > *getEqualityFunctions();
 
 void createBuiltinExistsFunction(Sort*);
 void createBuiltinForallFunction(Sort*);

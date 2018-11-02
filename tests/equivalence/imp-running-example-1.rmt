@@ -1,71 +1,75 @@
-sorts BoolP,
-      Var, // a sort for program variable
-      AExp, // a sort for arithmetic expressions
-      BExp, // a sort of boolean program expressions
-      NonValAExp, // a sort for arithmetic expressions that are not values
-      NonValBExp, // a sort for boolean expressions that are not values
-      Stmt, // a sort for statements
-      Code, // a sort for "Code" (either statements or expressions)
-      CompStack, // a sort for a Stack of Code
-      Map, // maps that recall the environment (which variable has which value)
-      MapItem, // maps contain MapItem s
+sorts IntP,
+      BoolP,
+      Var,
+      AExp,
+      BExp,
+      NonValAExp,
+      NonValBExp,
+      Stmt,
+      Code,
+      CompStack,
+      Map / "(Array Int Int)",
       CfgI,
-      Cfg
-      ; // a sort holding the configuration of a program
+      State;
 
-subsort Int < AExp; // any integer is an arithmetic expression
-subsort Var < NonValAExp; // any variables is an arithmetic expression that is not a value
-subsort NonValAExp < AExp; // any arithmetic expression that is not a value is an a.e.
-subsort NonValBExp < BExp; // same for boolean expressions
-subsort AExp BExp Stmt < Code; // expressions and statements are code
-subsort Bool < BoolP; // BoolP contains the built-in sort Bool
-subsort BoolP < BExp; // BoolP can be part of boolean expressions
+subsort Int < IntP;
+subsort IntP < AExp;
+subsort Var < NonValAExp;
+subsort NonValAExp < AExp;
+subsort NonValBExp < BExp;
+subsort AExp BExp Stmt < Code;
+subsort Bool < BoolP;
+subsort BoolP < BExp;
+subsort AExp < Stmt;
+subsort BExp < Stmt;
 
 signature
-	// some program variables
-	x : -> Var,
-	y : -> Var,
-	z : -> Var,
+	pair : CfgI CfgI -> State,
 
-	pair : CfgI CfgI -> Cfg,
+	mapequals : Map Map -> Bool / "=",
 
+	// program variables
+	var : Int -> Var,
+	
 	// helper functions
-	synEq : Var Var -> BoolP,
-    	update : Var Int Map -> Stmt,
-	updateh : MapItem -> Stmt,
-	lookup  : Var Map -> Stmt,
-    	lookuph : Var Int Map -> Stmt,
+	update : Map Int Int -> Map / "store",
+	lookup : Map Int -> Int / "select",
 
 	// arithmetic and boolean expressions
 	plus : AExp AExp -> NonValAExp,
 	plushl : AExp -> AExp,
     	plushr : AExp -> AExp,
 
+	minus : AExp AExp -> NonValAExp,
+	minushl : AExp -> AExp,
+    	minushr : AExp -> AExp,
+
 	pred : AExp -> NonValAExp,
-	predh : -> AExp,
+	predh : -> Stmt,
 
 	succ : AExp -> NonValAExp,
-	succh : -> AExp,
+	succh : -> Stmt,
 
 	le   : AExp AExp -> NonValBExp,
     	lehl : AExp -> BExp,
     	lehr : AExp -> BExp,
 
+	less   : AExp AExp -> NonValBExp,
+    	lesshl : AExp -> BExp,
+    	lesshr : AExp -> BExp,
+
+	not : BExp -> NonValBExp,
+	noth : -> Stmt,
+
 	// computation stack
 	done : -> CompStack,
 	push : Code CompStack -> CompStack,
-
-	// environment
-	mi : Var Int -> MapItem,
-	emp : -> Map,
-	cons : MapItem Map -> Map,
 
 	// configuration
 	I : CompStack Map -> CfgI,
 
 	// statements
 	assign : Var AExp -> Stmt,
-	updateEnv : -> Stmt,
     	assignh : Var -> Stmt,
 
 	skip : -> Stmt,
@@ -75,17 +79,22 @@ signature
 	ite : BExp Stmt Stmt -> Stmt,
 	iteh : Stmt Stmt -> Stmt,
 
-	while : BExp Stmt -> Stmt;
+	while : BExp Stmt -> Stmt,
+
+	for : Var AExp AExp Stmt -> Stmt,
+	forhl : Var AExp Stmt -> Stmt,
+	forhr : Var AExp Stmt -> Stmt;
 
 /* next we must declare all variables */
 variables
-	X : Var,
-	Y : Var,
-	Z : Var,
+	// necessary variables
+
 	N : Int,
-	M : Int,
 	J : Int,
+	X : Int,
+	M : Int,
 	SUM : Int,
+
 	B : Bool,
 	BE : BExp,
 	BE1 : BExp,
@@ -102,67 +111,23 @@ variables
 	S : Stmt,
 	S1 : Stmt,
 	S2 : Stmt,
+	S3 : Stmt,
+	S4 : Stmt,
 	REST : CompStack,
 	ENV : Map,
+	ENVP : Map,
 	ENV1 : Map,
-	ENV2 : Map;
+	ENV2 : Map,
+	ENV3 : Map,
+	ENV4 : Map;
 
-/*
-
-Next, we declare all rewrite rules that constitute the operational
-semantics of our language.
-
-*/
+/* next, declare all rewrite rules */
 constrained-rewrite-system language
-// a function to compare program variables
-	(synEq x y) =>
-	false,
-	(synEq x z) =>
-	false,
-	(synEq y z) =>
-	false,
-	(synEq y x) =>
-	false,
-	(synEq z y) =>
-	false,
-	(synEq z x) =>
-	false,
-	(synEq x x) =>
-	true,
-	(synEq y y) =>
-	true,
-	(synEq z z) =>
-	true,
+// language
+ 	(I (push (var X)              REST) ENV) =>
+ 	(I (push (lookup ENV X) REST) ENV),
 
-// definition of update function
-	(I (push (update X N emp)    REST) ENV) =>
-	(I (push (cons (mi X N) emp) REST) ENV),
 
-    	(I (push (update X N (cons (mi Y M) ENV1))   REST) ENV) =>
-    	(I (push (synEq X Y) (push (update X N (cons (mi Y M) ENV1)) REST)) ENV),
-
-    	(I (push true (push (update X N (cons (mi Y M) ENV1))   REST)) ENV) =>
-    	(I (push (cons (mi X N) ENV1) REST) ENV),
-
-    	(I (push false (push (update X N (cons (mi Y M) ENV1))   REST)) ENV) =>
-    	(I (push (update X N ENV1) (push (updateh (mi Y M)) REST)) ENV),
-
-    	(I (push ENV1 (push (updateh (mi Y M))   REST)) ENV) =>
-    	(I (push (cons (mi Y M) ENV1) REST) ENV),
-
-	(I (push (lookup X (cons (mi Y M) ENV1))   REST) ENV) =>
-	(I (push (synEq X Y) (push (lookuph X M ENV1) REST)) ENV),
-
-	(I (push true (push (lookuph X M ENV1)   REST)) ENV) =>
-	(I (push M                                REST)  ENV),
-
-	(I (push false (push (lookuph X M ENV1)  REST)) ENV) =>
-	(I (push (lookup X ENV1)                  REST)  ENV),
-
- 	(I (push X              REST) ENV) =>
- 	(I (push (lookup X ENV) REST) ENV),
-
-// pred
 	(I (push (pred N)            REST) ENV) =>
 	(I (push (mminus N 1)    REST) ENV),
 
@@ -172,7 +137,17 @@ constrained-rewrite-system language
 	(I (push N (push predh REST)) ENV) =>
 	(I (push (pred N)       REST)  ENV),
 
-// succ
+	
+	(I (push (not B)  REST) ENV) =>
+	(I (push (bnot B) REST) ENV),
+
+	(I (push (not NVBE)       REST)  ENV) =>
+	(I (push NVBE (push noth REST)) ENV),
+
+	(I (push B (push noth REST)) ENV) =>
+	(I (push (not B)       REST)  ENV),
+
+
 	(I (push (succ N)           REST) ENV) =>
 	(I (push (mplus N 1)    REST) ENV),
 
@@ -182,18 +157,15 @@ constrained-rewrite-system language
 	(I (push N (push succh REST)) ENV) =>
 	(I (push (succ N)       REST)  ENV),
 
-// assignment statement
-	(I (push (assign X N)                      REST) ENV) =>
-        (I (push (update X N ENV) (push updateEnv REST)) emp),
 
-        (I (push ENV  (push updateEnv REST)) emp) =>
-	(I (push skip                 REST) ENV),
+	(I (push (assign (var X) N) REST) ENV) =>
+        (I REST (update ENV X N)),
     
- 	(I (push (assign X NVAE)       REST)  ENV) =>
- 	(I (push NVAE (push (assignh X) REST)) ENV),
+ 	(I (push (assign (var X) NVAE)       REST)  ENV) =>
+ 	(I (push NVAE (push (assignh (var X)) REST)) ENV),
 
-     	(I (push N (push (assignh X) REST)) ENV) =>
-     	(I (push (assign X N)        REST)  ENV),
+     	(I (push N (push (assignh (var X)) REST)) ENV) =>
+     	(I (push (assign (var X) N)        REST)  ENV),
 
 // sequential composition
 	(I (push (seq S1 S2) REST)  ENV) =>
@@ -217,7 +189,7 @@ constrained-rewrite-system language
  	(I (push S2                 REST) ENV),
 
 // while statement
- 	(I (push (while BE S)                       REST) ENV) =>
+ 	(I (push (while BE S)                        REST) ENV) =>
  	(I (push (ite BE (seq S (while BE S)) skip) REST) ENV),
 
 // addition operator
@@ -236,8 +208,23 @@ constrained-rewrite-system language
  	(I (push M (push (plushr N) REST)) ENV) =>
  	(I (push (plus N M)        REST)  ENV),
 
-// less than or equal to operator2
+// subtraction operator
+ 	(I (push (minus N M)     REST) ENV) =>
+ 	(I (push (mminus N M)    REST) ENV),
 
+	(I (push (minus NVAE1 AE2)        REST)  ENV) =>
+	(I (push NVAE1 (push (minushl AE2) REST)) ENV),
+  
+ 	(I (push N (push (minushl AE2) REST)) ENV) =>
+ 	(I (push (minus N AE2)        REST)  ENV),
+
+ 	(I (push (minus N NVAE2)        REST)  ENV) =>
+ 	(I (push NVAE2 (push (minushr N) REST)) ENV),
+
+ 	(I (push M (push (minushr N) REST)) ENV) =>
+ 	(I (push (minus N M)        REST)  ENV),
+
+// less than or equal to operator2
  	(I (push (le N M)  REST) ENV) =>
  	(I (push (mle N M) REST) ENV),
 
@@ -251,75 +238,106 @@ constrained-rewrite-system language
  	(I (push NVAE2 (push (lehr N) REST)) ENV),
   
  	(I (push M (push (lehr N) REST)) ENV) =>
- 	(I (push (le N M)       REST)  ENV);
+ 	(I (push (le N M)       REST)  ENV),
+
+// strictly less than
+ 	(I (push (less N M)  REST) ENV) =>
+ 	(I (push (mless N M) REST) ENV),
+
+ 	(I (push (less NVAE1 AE2)        REST)  ENV) =>
+ 	(I (push NVAE1 (push (lesshl AE2) REST)) ENV),
+
+ 	(I (push N (push (lesshl AE2) REST)) ENV) =>
+ 	(I (push (less N AE2)        REST)  ENV),
+
+ 	(I (push (less N NVAE2)        REST)  ENV) =>
+ 	(I (push NVAE2 (push (lesshr N) REST)) ENV),
+  
+ 	(I (push M (push (lesshr N) REST)) ENV) =>
+ 	(I (push (less N M)       REST)  ENV)
+;
+
+// show-equivalent [40, 2] in language and language :
+// (pair 
+
+//   (I (push (assign (var 0) M) (push (while (le (var 0) N) (seq (assign (var 1) (plus (var 1) 1)) (assign (var 0) (plus (var 0) 1)))) done)) ENV2)
+
+//   (I (push (assign (var 0) M) (push (while (le (var 0) N) (seq (assign (var 1) (plus (var 1) 1)) (assign (var 0) (plus (var 0) 1)))) done)) ENV2)
+// )
+// with-base
+// (pair (I done ENV3) (I done ENV4)) /\ (mequals (lookup ENV3 0) (lookup ENV4 0));
 
 // search in language :
 // (pair
 // (I (push
-//        (seq (assign x N)                            // x <- N
-//        (seq (assign y 0)                            // y <- 0
-//        (seq (assign z 0)                            // z <- 0
-//        (while (le y x)                              // while y <= x
-//               (seq (assign z (plus z y))            //   z <- z + y
-//               (assign y (plus y 1)))))))     //   y <- y - 1
-//      done) emp)
+//        (seq (assign (var 0) N)                            // x <- N
+//        (seq (assign (var 1) 0)                            // y <- 0
+//        (seq (assign (var 2) 0)                            // z <- 0
+//        (while (le (var 2) (var 1))                              // while y <= x
+//               (seq (assign (var 2) (plus (var 2) (var 1)))            //   z <- z + y
+//               (assign (var 2) (plus (var 2) 1)))))))     //   y <- y - 1
+//      done) ENV)
 // (I (push
-//        (seq (assign x N)                            // x <- N
-//        (seq (assign y 0)                            // y <- 0
-//        (seq (assign z 0)                            // z <- 0
-//        (while (le y x)                              // while y <= x
-//               (seq (assign z (plus z y))            //   z <- z + y
-//               (assign y (plus y 1)))))))     //   y <- y - 1
-//      done) emp)) /\ (mle 0 N)
+//        (seq (assign (var 0) N)                            // x <- N
+//        (seq (assign (var 1) 0)                            // y <- 0
+//        (seq (assign (var 2) 0)                            // z <- 0
+//        (while (le (var 2) (var 1))                              // while y <= x
+//               (seq (assign (var 2) (plus (var 2) (var 1)))            //   z <- z + y
+//               (assign (var 2) (plus (var 2) 1)))))))     //   y <- y - 1
+//      done) ENV)
+// ) /\ (mle 0 N)
 // ;
 
 // search in language :
 // (pair
 
 // (I (push
-//        (seq (assign x N)                            // x <- N
-//             (assign y 0))                            // y <- 0
-//      done) emp)
+//        (seq (assign (var 0) N)                            // x <- N
+//             (assign (var 1) 0))                            // y <- 0
+//      done) ENV)
    
 // (I (push
-//        (seq (assign x N)                            // x <- N
-//             (assign y 0))                            // y <- 0
-//      done) emp))
+//        (seq (assign (var 0) N)                            // x <- N
+//             (assign (var 1) 0))                            // y <- 0
+//      done) ENV))
 
 // /\
 
 // (mle 0 N);
 
-show-equivalent [ 900, 10 ] in language and language :
-(pair
+run in language :
 
 (I (push
-       (seq (assign x N)                            // x <- N
-       (seq (assign y 0)                            // y <- 0
-       (seq (assign z 0)                            // z <- 0
-       (while (le y x)                              // while y <= x
-              (seq (assign z (plus z y))            //   z <- z + y
-              (assign y (plus y 1)))))))     //   y <- y - 1
-     done) emp)
-(I (push
-       (seq (assign x N)                            // x <- N
-       (seq (assign y 0)                            // y <- 0
-       (seq (assign z 0)                            // z <- 0
-       (while (le y x)                              // while y <= x
-              (seq (assign z (plus z y))            //   z <- z + y
-              (assign y (plus y 1)))))))     //   y <- y - 1
-     done) emp))
+       (seq (assign (var 0) 0)                               // x <- 0
+       (seq (assign (var 1) 0)                               // s <- 0
+       (while (le (var 0) 4)                                 // while x <= N
+              (seq (ite true                                          // if B
+	                (assign (var 1) (plus (var 1) (var 0)))    //    then s := s + x
+			(assign (var 1) (minus (var 1) (var 0))))  //    else s := s - x
+                   (assign (var 0) (plus (var 0) 1))))))           // x :- x + 1
+     done) ENV);
 
-/\ (band (mle 0 N) (mle N 1))
+// show-equivalent [ 900, 10 ] in language and language :
+// (pair
+// (I (push
+//        (seq (assign (var 0) 0)                               // x <- 0
+//        (seq (assign (var 1) 0)                               // s <- 0
+//        (while (le (var 0) N)                                 // while x <= N
+//               (seq (assign (var 2) (plus (var 2) (var 1)))   //   z <- z + y
+//                    (assign (var 0) (plus (var 0) 1)))))))         //   x <- x + 1
+//      done) ENV)
+// (I (push
+//        (seq (assign (var 0) N)                              // x <- N
+//        (seq (assign (var 1) 0)                              // y <- 0
+//        (seq (assign (var 2) 0)                              // z <- 0
+//        (while (le (var 1) (var 0))                          // while y <= x
+//               (seq (assign (var 2) (plus (var 2) (var 1)))  //   z <- z + y
+//               (assign (var 1) (plus (var 1) 1)))))))        //   y <- y - 1
+//      done) ENV)
+// )
+// /\ (band (mle 0 N) (mle N 2))
 
-with-base
-  (pair
-	(I done
-	   (cons (mi x N)
-	   (cons (mi y M)
-           (cons (mi z M) emp))))
-	(I done
-	   (cons (mi x N)
-	   (cons (mi y M)
-           (cons (mi z M) emp))))
-  );
+// with-base
+// (pair (I done ENV1)
+//       (I done ENV2)) /\
+// (mequals (lookup ENV1 1) (lookup ENV2 1));

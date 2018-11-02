@@ -129,7 +129,9 @@ variables
 	ENV : Map,
 	ENVP : Map,
 	ENV1 : Map,
-	ENV2 : Map;
+	ENV2 : Map,
+	ENV3 : Map,
+	ENV4 : Map;
 
 /* next, declare all rewrite rules */
 constrained-rewrite-system language
@@ -172,7 +174,7 @@ constrained-rewrite-system language
  	(I (push NVAE (push (assignh (var X)) REST)) ENV),
 
      	(I (push N (push (assignh (var X)) REST)) ENV) =>
-     	(I (push (assign X N)        REST)  ENV),
+     	(I (push (assign (var X) N)        REST)  ENV),
 
 // sequential composition
 	(I (push (seq S1 S2) REST)  ENV) =>
@@ -248,7 +250,7 @@ constrained-rewrite-system language
 	(I (push (seq (assign (var X) N) S) (push (for (var X) (mplus N 1) M S) REST)) ENV),
 
 	(I (push (for (var X) N M S) REST) ENV) /\ (bnot (mle N M)) =>
-	(I                       REST ENV),
+	(I (push (assign (var X) N)  REST) ENV),
 
 // less than or equal to operator2
 
@@ -293,16 +295,16 @@ constrained-rewrite-system language
 ;
 
 /*
-search [1,10] in language:
-	(I (push (ite (mapequals (update (update ENV 1 1) 0 0) (update (update ENV 0 0) 1 1)  ) 1 0) done) ENV);
-!EOF!
-*/
-/*
-search [1,10] in language :
-	(I (push (ite (le 5 (var 0)) 1 0) done) ENV) /\ (mapequals ENV (update ENVP 0 5));
+search [1,200] in language:
+	(I (push (seq (assign (var 1) 0) (for (var 0) 0 3 (assign (var 1) (plus (var 1) (var 0))) )) done) ENV);
 !EOF!
 */
 
+/*
+search [1,200] in language:
+(I (push (seq (assign (var 1) 0) (assign (var 0) 0)) (push (while (le (var 0) 3) (seq (assign (var 1) (plus (var 1) (var 0))) (assign (var 0) (plus (var 0) 1)))) done)) ENV);
+!EOF!
+*/
 
 show-equivalent [40, 2] in language and language :
 //    (pair 
@@ -311,9 +313,9 @@ show-equivalent [40, 2] in language and language :
 
 // 
    (pair 
-	(I (push (for (var 0) M N pS1) done) ENV)
+	(I (push (for (var 0) M N pS1) done) ENV1)
 
-	(I (push (assign (var 0) M) (push (while (less (var 0) N) (seq pS1 (assign (var 0) (plus (var 0) 1)))) done)) ENV)) /\ (mle M N)
+	(I (push (assign (var 0) M) (push (while (le (var 0) N) (seq pS1 (assign (var 0) (plus (var 0) 1)))) done)) ENV2))
 
 with-base
-   (pair (I done ENV) (I done ENVP)) /\ (mequals (lookup ENV 0) (lookup ENVP 0));
+   (pair (I done ENV3) (I done ENV4)) /\ (mequals (lookup ENV3 0) (lookup ENV4 0));

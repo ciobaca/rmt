@@ -467,10 +467,6 @@ Z3Result Z3Theory::isSatisfiable()
   }
   else if (result == Z3_L_UNDEF) {
     Log(LOGSAT) << "Result is UNKNOWN (or timeout)" << endl;
-    Log(LOGSAT) << "Constraints are:" << endl;
-    for(vector<Term*>::iterator it = this->constraints.begin();
-      it != this->constraints.end(); ++it)
-      Log(LOGSAT) << (**it).toPrettyString() << endl;
     Log(WARNING) << "Result is UNKNOWN (or timeout)" << endl;
     return unknown;
   }

@@ -305,39 +305,80 @@ constrained-rewrite-system language
 
 // (mle 0 N);
 
-run in language :
+// run in language :
 
-(I (push
-       (seq (assign (var 0) 0)                               // x <- 0
-       (seq (assign (var 1) 0)                               // s <- 0
-       (while (le (var 0) 4)                                 // while x <= N
-              (seq (ite true                                          // if B
-	                (assign (var 1) (plus (var 1) (var 0)))    //    then s := s + x
-			(assign (var 1) (minus (var 1) (var 0))))  //    else s := s - x
-                   (assign (var 0) (plus (var 0) 1))))))           // x :- x + 1
-     done) ENV);
-
-// show-equivalent [ 900, 10 ] in language and language :
-// (pair
 // (I (push
 //        (seq (assign (var 0) 0)                               // x <- 0
 //        (seq (assign (var 1) 0)                               // s <- 0
-//        (while (le (var 0) N)                                 // while x <= N
-//               (seq (assign (var 2) (plus (var 2) (var 1)))   //   z <- z + y
-//                    (assign (var 0) (plus (var 0) 1)))))))         //   x <- x + 1
-//      done) ENV)
-// (I (push
-//        (seq (assign (var 0) N)                              // x <- N
-//        (seq (assign (var 1) 0)                              // y <- 0
-//        (seq (assign (var 2) 0)                              // z <- 0
-//        (while (le (var 1) (var 0))                          // while y <= x
-//               (seq (assign (var 2) (plus (var 2) (var 1)))  //   z <- z + y
-//               (assign (var 1) (plus (var 1) 1)))))))        //   y <- y - 1
-//      done) ENV)
-// )
-// /\ (band (mle 0 N) (mle N 2))
+//        (while (le (var 0) 4)                                 // while x <= N
+//               (seq (ite true                                       // if B
+// 	                (assign (var 1) (plus (var 1) (var 0)))    //    then s := s + x
+// 			(assign (var 1) (minus (var 1) (var 0))))  //    else s := s - x
+//                    (assign (var 0) (plus (var 0) 1))))))           // x :- x + 1
+//      done) ENV);
 
-// with-base
-// (pair (I done ENV1)
-//       (I done ENV2)) /\
-// (mequals (lookup ENV1 1) (lookup ENV2 1));
+show-equivalent [ 900, 10 ] in language and language :
+(pair
+(I (push
+       (seq (assign (var 0) 0)                               // x <- 0
+       (seq (assign (var 1) 0)                               // s <- 0
+       (while (le (var 0) N)                                 // while x <= N
+              (seq (ite B                                          // if B
+	                (assign (var 1) (plus (var 1) (var 0)))    //    then s := s + x
+			(assign (var 1) (minus (var 1) (var 0))))  //    else s := s - x
+                   (assign (var 0) (plus (var 0) 1))))))           // x :- x + 1
+     done) ENV)
+(I (push
+       (seq (assign (var 0) 0)                               // x <- 0
+       (seq (assign (var 1) 0)                               // s <- 0
+       (ite B
+        (while (le (var 0) N)                                // while x <= N
+              (seq 
+	           (assign (var 1) (plus (var 1) (var 0)))   // s := s + x
+                   (assign (var 0) (plus (var 0) 1)))        // x :- x + 1
+		   )
+	(while (le (var 0) N)                                // while x <= N
+              (seq 
+                   (assign (var 1) (minus (var 1) (var 0)))  // s := s - x
+                   (assign (var 0) (plus (var 0) 1)))))      // x :- x + 1
+		   ))           
+     done) ENV)
+),
+(pair
+(I (push
+       (while (le (var 0) N)                                 // while x <= N
+              (seq (ite true                                          // if B
+	                (assign (var 1) (plus (var 1) (var 0)))    //    then s := s + x
+			(assign (var 1) (minus (var 1) (var 0))))  //    else s := s - x
+                   (assign (var 0) (plus (var 0) 1))))           // x :- x + 1
+     done) ENV)
+(I (push
+        (while (le (var 0) N)                                // while x <= N
+              (seq 
+	           (assign (var 1) (plus (var 1) (var 0)))   // s := s + x
+                   (assign (var 0) (plus (var 0) 1)))        // x :- x + 1
+		   )
+		              
+     done) ENV)
+),
+(pair
+(I (push
+       (while (le (var 0) N)                                 // while x <= N
+              (seq (ite false                                      // if B
+	                (assign (var 1) (plus (var 1) (var 0)))    //    then s := s + x
+			(assign (var 1) (minus (var 1) (var 0))))  //    else s := s - x
+                   (assign (var 0) (plus (var 0) 1))))           // x :- x + 1
+     done) ENV)
+(I (push
+	(while (le (var 0) N)                                // while x <= N
+              (seq 
+                   (assign (var 1) (minus (var 1) (var 0)))  // s := s - x
+                   (assign (var 0) (plus (var 0) 1))))      // x :- x + 1
+		              
+     done) ENV)
+)
+///\ (band (mle 0 N) (mle N 3))
+with-base
+(pair (I done ENV1)
+      (I done ENV2)) /\
+(mequals (lookup ENV1 1) (lookup ENV2 1));

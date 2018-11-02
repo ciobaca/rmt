@@ -82,3 +82,9 @@ set_tests_properties (TestDefined1 PROPERTIES PASS_REGULAR_EXPRESSION "Succeeded
 
 add_test(TestDefined2 "./rmt" -v 0 ../tests/defined/defined2.rmt)
 set_tests_properties (TestDefined2 PROPERTIES PASS_REGULAR_EXPRESSION "Result is")
+
+add_test(TestEquiv1Slow "./rmt" -v 0 ../tests/equivalence/imp-running-example-1.rmt)
+set_tests_properties (TestEquiv1Slow PROPERTIES PASS_REGULAR_EXPRESSION "Succeeded in proving circularity #1")
+set_tests_properties (TestEquiv1Slow PROPERTIES PASS_REGULAR_EXPRESSION "Succeeded in proving circularity #2")
+set_tests_properties (TestEquiv1Slow PROPERTIES PASS_REGULAR_EXPRESSION "Succeeded in proving circularity #3")
+

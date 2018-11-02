@@ -159,7 +159,9 @@ Term *ConstrainedTerm::whenImplies(ConstrainedTerm goal)
   vector<Variable *> vars = freshGoal.vars();
   Substitution subst;
   Term *constraint;
+  Log(DEBUG) << "whenImplies " << this->toString() << " " << goal.toString() << endl; 
   if (this->term->unifyModuloTheories(freshGoal.term, subst, constraint)) {
+    Log(DEBUG) << "whenImplies unification " << endl;
     Term *lhsConstraint = this->constraint->substitute(subst);
     Term *rhsConstraint = freshGoal.constraint->substitute(subst);
     Term *resultingConstraint = bImplies(lhsConstraint, introduceExists(bAnd(constraint, rhsConstraint), vars));
@@ -170,6 +172,7 @@ Term *ConstrainedTerm::whenImplies(ConstrainedTerm goal)
       return resultingConstraint;
     }
   }
+  Log(DEBUG) << "whenImplies no unification" << endl;
   return bFalse();
 }
 

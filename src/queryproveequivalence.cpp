@@ -134,9 +134,12 @@ bool QueryProveEquivalence::possibleLhsBase(Term *lhs)
   for (int i = 0; i < (int)base.size(); ++i) {
     Term *lhsBase, *rhsBase;
     decomposeConstrainedTermEq(base[i], lhsBase, rhsBase);
+    Log(DEBUG) <<   "possibleLhsBase? Checking whether " << lhs->toString() << " unifies with " << lhsBase->toString() << endl;
     if (ConstrainedTerm(lhs, bTrue()).normalizeFunctions().whenImplies(ConstrainedTerm(lhsBase, bTrue())) != bFalse()) {
+      Log(DEBUG) << "possibleLhsBase?     Is true that " << lhs->toString() << " unifies with " << lhsBase->toString() << endl;
       return true;
     }
+    Log(DEBUG) << "possibleLhsBase?    Not true that " << lhs->toString() << " unifies with " << lhsBase->toString() << endl;
   }
   return false;
 }
@@ -253,6 +256,7 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
   }
   vector<ConstrainedSolution> lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft);
   if (lhsSuccessors.size () == 0) {
+    //    cout << spaces(depth) << "no successors, taking defined symbols";
     lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch();
   }
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {

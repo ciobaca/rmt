@@ -1,7 +1,7 @@
 /* any file begins with the declaration of all sorts used */
 sorts IntP,
       BoolP,
-      Var / "Var",
+      Var,
       AExp,
       BExp,
       NonValAExp,
@@ -9,11 +9,11 @@ sorts IntP,
       Stmt,
       Code,
       CompStack,
-      Map / "(Array Var Int)",
+      Map / "(Array Int Int)",
       CfgI,
       State;
 
-builtins iS1 : Int Int Int Int -> Int, iE1 : Int Int -> Int, var : Int -> Var;
+builtins iS1 : Int Int Int Int -> Int, iE1 : Int Int -> Int;
 
 // after declaring all sorts,
 // we must declare all subsort relations
@@ -35,6 +35,8 @@ signature
 	mapequals : Map Map -> Bool / "=",
 
 	// some program variables
+
+	var : Int -> Var,
 	
 	pS1 : -> Stmt,
 	pE1 : -> NonValAExp,
@@ -42,8 +44,8 @@ signature
 	// helper functions
 	synEq : Var Var -> Bool / "=",
 
-	update : Map Var Int -> Map / "store",
-	lookup  : Map Var -> Int / "select",
+	update : Map Int Int -> Map / "store",
+	lookup  : Map Int -> Int / "select",
 
 	// arithmetic and boolean expressions
 	plus : AExp AExp -> NonValAExp,
@@ -98,12 +100,10 @@ signature
 /* next we must declare all variables */
 variables
 	// necessary variables
-	X : Var,
-	Y : Var,
-	Z : Var,
 
 	N : Int,
 	J : Int,
+	X : Int,
 	M : Int,
 	SUM : Int,
 
@@ -131,18 +131,10 @@ variables
 	ENV1 : Map,
 	ENV2 : Map;
 
-//defining equality of variables
-assert (_forallInt N (_forallInt M
-         (bimplies (mequals N M) (synEq (var N) (var M)))
-));
-assert (_forallInt N (_forallInt M
-         (bimplies (synEq (var N) (var M)) (mequals N M))
-));
-
 /* next, declare all rewrite rules */
 constrained-rewrite-system language
 // language
- 	(I (push X              REST) ENV) =>
+ 	(I (push (var X)              REST) ENV) =>
  	(I (push (lookup ENV X) REST) ENV),
 
 	(I (push (pred N)            REST) ENV) =>
@@ -173,13 +165,13 @@ constrained-rewrite-system language
 	(I (push N (push succh REST)) ENV) =>
 	(I (push (succ N)       REST)  ENV),
 
-	(I (push (assign X N) REST) ENV) =>
+	(I (push (assign (var X) N) REST) ENV) =>
         (I REST       (update ENV X N)),
     
- 	(I (push (assign X NVAE)       REST)  ENV) =>
- 	(I (push NVAE (push (assignh X) REST)) ENV),
+ 	(I (push (assign (var X) NVAE)       REST)  ENV) =>
+ 	(I (push NVAE (push (assignh (var X)) REST)) ENV),
 
-     	(I (push N (push (assignh X) REST)) ENV) =>
+     	(I (push N (push (assignh (var X)) REST)) ENV) =>
      	(I (push (assign X N)        REST)  ENV),
 
 // sequential composition
@@ -240,22 +232,22 @@ constrained-rewrite-system language
  	(I (push (minus N M)        REST)  ENV),
 
 // for statement
- 	(I (push (for X NVAE1 NVAE2 S)        REST ) ENV) =>
- 	(I (push NVAE1 (push (forhl X NVAE2 S) REST)) ENV),
+ 	(I (push (for (var X) NVAE1 NVAE2 S)        REST ) ENV) =>
+ 	(I (push NVAE1 (push (forhl (var X) NVAE2 S) REST)) ENV),
 
- 	(I (push N (push (forhl X NVAE2 S) REST)) ENV) =>
- 	(I (push (for X N NVAE2 S)        REST)  ENV),
+ 	(I (push N (push (forhl (var X) NVAE2 S) REST)) ENV) =>
+ 	(I (push (for (var X) N NVAE2 S)        REST)  ENV),
 
- 	(I (push (for X N NVAE2 S)            REST ) ENV) =>
- 	(I (push NVAE2 (push (forhr X N S)     REST)) ENV),
+ 	(I (push (for (var X) N NVAE2 S)            REST ) ENV) =>
+ 	(I (push NVAE2 (push (forhr (var X) N S)     REST)) ENV),
 
- 	(I (push M (push (forhr X N S) REST)) ENV) =>
- 	(I (push (for X N M S)        REST)  ENV),
+ 	(I (push M (push (forhr (var X) N S) REST)) ENV) =>
+ 	(I (push (for (var X) N M S)        REST)  ENV),
 
-	(I (push (for X N M S)                                         REST) ENV) /\ (mle N M) =>
-	(I (push (seq (assign X N) S) (push (for X (mplus N 1) M S) REST)) ENV),
+	(I (push (for (var X) N M S)                                         REST) ENV) /\ (mle N M) =>
+	(I (push (seq (assign X N) S) (push (for (var X) (mplus N 1) M S) REST)) ENV),
 
-	(I (push (for X N M S) REST) ENV) /\ (bnot (mle N M)) =>
+	(I (push (for (var X) N M S) REST) ENV) /\ (bnot (mle N M)) =>
 	(I                       REST ENV),
 
 // less than or equal to operator2
@@ -294,19 +286,21 @@ constrained-rewrite-system language
 
 // symbolic variables statements and expressions
    	(I (push pE1 REST) ENV) =>
-	(I (push (iE1 (lookup ENV (var 4)) (lookup ENV (var 2))) REST) ENV),
+	(I (push (iE1 (lookup ENV 4) (lookup ENV 2)) REST) ENV),
 
 	(I (push pS1 REST) ENV) =>
-	(I REST (update ENV (var 3) (iS1 (lookup ENV (var 3)) (lookup ENV (var 4)) (lookup ENV (var 1)) (lookup ENV (var 2)))))
+	(I REST (update ENV 3 (iS1 (lookup ENV 3) (lookup ENV 4) (lookup ENV 1) (lookup ENV 2))))
 ;
 
+/*
 search [1,10] in language:
-	(I (push (ite (mapequals (update (update ENV (var 1) 1) (var 0) 0) (update (update ENV (var 0) 0) (var 1) 1)  ) 1 0) done) ENV);
+	(I (push (ite (mapequals (update (update ENV 1 1) 0 0) (update (update ENV 0 0) 1 1)  ) 1 0) done) ENV);
+!EOF!
+*/
+search [1,10] in language :
+	(I (push (ite (le 5 (var 0)) 1 0) done) ENV) /\ (mapequals ENV (update ENVP 0 5));
 !EOF!
 
-search [1,10] in language :
-	(I (push (var 0) done) ENV) /\ (mapequals ENV (update ENVP (var 0) 1));
-!EOF!
 
 show-equivalent [40, 2] in language and language :
 //    (pair 

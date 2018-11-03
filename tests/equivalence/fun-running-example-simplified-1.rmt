@@ -1,0 +1,74 @@
+sorts State, Exp, Nexp;
+
+subsort Int < Exp;
+subsort Nexp < Exp;
+
+signature
+  fc : Exp -> Exp,
+  pair : Exp Exp -> State,
+  fplus : Exp Exp -> Nexp,
+  fminus : Exp Exp -> Nexp,
+  f : Exp -> Nexp,
+  fa : Exp Exp Exp -> Nexp;
+
+variables N : Int, I : Int, J : Int, K : Int, S : Int, A : Int, X : Int,
+
+E : Exp, E1 : Exp, E2 : Exp, E3 : Exp,
+
+NE : Nexp, NE1 : Nexp, NE2 : Nexp, NE3 : Nexp;
+
+define reduce : Int Int Exp -> Exp by
+  (reduce N I E) /\ (mle N I) => E,
+  (reduce N I E) /\ (bnot (mle N I)) => (reduce N (mplus I 1) (fplus I E));
+
+constrained-rewrite-system flanguage
+  (fc (fplus NE1 E2)) => (fplus (fc NE1) E2),
+  (fplus (fc I) E2) => (fc (fplus I E2)),
+  (fc (fplus I NE2)) => (fplus I (fc NE2)),
+  (fplus I (fc J)) => (fc (fplus I J)),
+  (fc (fplus I J)) => (fc (mplus I J)),
+
+  (fc (fminus NE1 E2)) => (fminus (fc NE1) E2),
+  (fminus (fc I) E2) => (fc (fminus I E2)),
+  (fc (fminus I NE2)) => (fminus I (fc NE2)),
+  (fminus I (fc J)) => (fc (fminus I J)),
+  (fc (fminus I J)) => (fc (mminus I J)),
+
+  (fc (f NE)) => (f (fc NE)),
+  (f (fc I)) => (fc (f I)),
+  (fc (f N)) /\ (mle N 0) => (fc 0),
+  (fc (f N)) /\ (bnot (mle N 0)) => (fc (fplus N (f (fminus N 1)))),
+
+  (fc (fa NE1 E2 E3)) => (fa (fc NE1) E2 E3),
+  (fa (fc I) E2 E3) => (fc (fa I E2 E3)),
+  (fc (fa I NE2 E3)) => (fa I (fc NE2) E3),
+  (fa I (fc J) E3) => (fc (fa I J E3)),
+  (fc (fa I J NE3)) => (fa I J (fc NE3)),
+  (fa I J (fc K)) => (fa I J K),
+
+  (fc (fa A I N)) /\ (bnot (mle I N)) => (fc A),
+  (fc (fa A I N)) /\ (mle I N) => (fc (fa (fplus A I) (fplus I 1) N));
+
+// run in flanguage : (fc (fa 0 0 (mplus 15 15)));
+
+show-equivalent [ 900, 1 ] in flanguage and flanguage :
+   (pair
+    (fc (f N))
+    (fc (fa 0 0 N))) /\ (mle 0 N)
+// /\       (band (mle 0 N) (mle N 2))
+,
+   (pair
+    (reduce (mplus N 1) (mplus I 1) (fc (f I)))
+    (fc (fa 0 0 N))) /\ (band (mle I N) (mle 0 I))
+// /\ (band
+//          (band (mle 0 N) (mle N 2))
+//          (band (mle I N) (mle 0 I)))
+,
+    (pair
+     (reduce (mplus N 1) I (fc X))
+     (fc (fa X I N)))
+// /\ (band
+//          (band (mle 0 N) (mle N 5))
+//          (band (mle I N) (mle 0 I)))
+with-base
+     (pair (fc S) (fc S));

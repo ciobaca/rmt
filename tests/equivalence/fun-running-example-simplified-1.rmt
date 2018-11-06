@@ -58,14 +58,14 @@ show-equivalent [ 900, 1 ] in flanguage and flanguage :
 // /\       (band (mle 0 N) (mle N 2))
 ,
    (pair
-    (reduce (mplus N 1) (mplus I 1) (fc (f I)))
+    (reduce (mplus N 1) (mplus I 1) (fc (f I)))          // N + ... + (I+1) + (fc (f I))
     (fc (fa 0 0 N))) /\ (band (mle I N) (mle 0 I))
 // /\ (band
 //          (band (mle 0 N) (mle N 2))
 //          (band (mle I N) (mle 0 I)))
 ,
     (pair
-     (reduce (mplus N 1) I (fc X))
+     (reduce (mplus N 1) I (fc X))                       // N + ... + I + (fc X)
      (fc (fa X I N)))
 // /\ (band
 //          (band (mle 0 N) (mle N 5))

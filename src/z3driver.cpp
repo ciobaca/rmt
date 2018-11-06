@@ -29,6 +29,7 @@ map<Z3_symbol, Variable *> z3_const_to_var;
 map<Z3_symbol, Z3_func_decl> symbol_to_func_decl;
 map<Z3_func_decl, Function *> func_decl_to_function;
 vector<Z3_ast> z3asserts;
+Z3_params simplifyParams;
 
 Z3_string z3_sort_to_string(Z3_sort s) {
   return Z3_sort_to_string(z3context, s);
@@ -43,8 +44,8 @@ Z3_ast z3_make_constant(Variable *variable)
 }
 
 Z3_ast z3_simplify(Term *term)
-{
-  return Z3_simplify(z3context, term->toSmt());
+{  
+  return Z3_simplify_ex(z3context, term->toSmt(), simplifyParams);
 }
 
 Z3_sort z3_bool()
@@ -380,6 +381,10 @@ void start_z3_api()
   Z3_set_param_value(z3config, "auto_config", "true");
   z3context = Z3_mk_context(z3config);
   Z3_set_error_handler(z3context, z3_error_handler);
+
+  simplifyParams = Z3_mk_params(z3context);
+  Z3_params_set_bool(z3context, simplifyParams, Z3_mk_string_symbol(z3context, "sort_store"), true);
+  Z3_params_inc_ref(z3context, simplifyParams);
 
   z3BoolSort = Z3_mk_bool_sort(z3context);
   z3IntSort = Z3_mk_int_sort(z3context);

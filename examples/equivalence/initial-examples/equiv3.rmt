@@ -306,7 +306,7 @@ search [1,200] in language:
 !EOF!
 */
 
-show-equivalent [40, 2] in language and language :
+show-simulation [40] in language and language :
 //    (pair 
 // 	(I (push (for (var 0) 1 N pS1) done) ENV)
 // 	(I (push (ite (le 1 N) (seq (assign (var 0) 1) (while (le (var 0) N) (seq pS1 (assign (var 0) (plus (var 0) 1))))) skip) done) ENV))

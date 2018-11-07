@@ -16,6 +16,7 @@
 #include "queryproveequivalence.h"
 #include "querysatisfiability.h"
 #include "querysimplification.h"
+#include "queryprovesim.h"
 
 #include <string>
 #include <map>
@@ -107,6 +108,11 @@ Query *createQueryProveEquivalence()
   return new QueryProveEquivalence();
 }
 
+Query *createQueryProveSim()
+{
+  return new QueryProveSim();
+}
+
 Query *createQuerySatisfiability()
 {
   return new QuerySatisfiability();
@@ -138,6 +144,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["cinstrument"] = createQueryInstrument_C;
   (*map)["prove"] = createQueryProveReachability;
   (*map)["show-equivalent"] = createQueryProveEquivalence;
+  (*map)["show-simulation"] = createQueryProveSim;
   (*map)["run"] = createQueryRun;
   (*map)["compute"] = createQueryCompute;
 

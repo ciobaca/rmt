@@ -327,6 +327,7 @@ ConstrainedTerm QueryProveEquivalence::pairC(Term *left, Term *right, Term *cons
 
 void QueryProveEquivalence::execute()
 {
+  Log(WARNING) << "Warning! prove-equivalent is deprecated. Consider using prove-simulation instead" << endl;
   crsLeft = getConstrainedRewriteSystem(lrsName);
   crsRight = getConstrainedRewriteSystem(rrsName);
 

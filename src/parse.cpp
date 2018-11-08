@@ -165,6 +165,13 @@ bool lookAhead(string &s, int &pos, string what)
       return false;
     }
   }
+  //if I am parsing alphanumeric string, I want to have non-alphanumeric character after
+  if (all_of(what.begin(), what.end(), isalnum)) {
+    int lastpos = pos + len(what);
+    if (lastpos < len(s) && isalnum(s[lastpos])) {
+      return false;
+    }
+  }
   return true;
 }
 

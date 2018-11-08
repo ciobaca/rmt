@@ -150,6 +150,7 @@ private:
     this->result = result;
     this->hasInterpretation = true;
     this->interpretation = new z3_custom_func(interpretation, this);
+    this->isEqualityFunction = false;
     
     this->isDefined = false;
   }

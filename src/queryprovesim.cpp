@@ -187,36 +187,45 @@ ConstrainedTerm QueryProveSim::pairC(Term *left, Term *right, Term *constraint) 
   return simplifyConstrainedTerm(ConstrainedTerm(getFunTerm(pairFun, vector2(left, right)), constraint));
 }
 
-bool QueryProveSim::proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth) {
+//returns a constraint under which either base or circularity holds
+Term *QueryProveSim::proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth) {
   ct = ct.normalizeFunctions();
   cout << spaces(depth) << "Trying to prove base case: " << ct.toString() << endl;
-  Term *constraint = simplifyConstraint(whenImpliesBase(ct));
-  if (constraint == bTrue()) {
+  Term *baseConstraint = simplifyConstraint(whenImpliesBase(ct));
+  if(isSatisfiable(bNot(baseConstraint)) == unsat) {
     cout << spaces(depth) << "Proof succeeded: reached based equivalence." << endl;
-    return true;
+    return bTrue();
   }
-  else {
-    cout << spaces(depth) << "Instance of base only when " + constraint->toString() << endl;
-    if (progressLeft && progressRight) {
-      Log(DEBUG5) << spaces(depth) << "Testing for circularity" << endl;
-      constraint = simplifyConstraint(whenImpliesCircularity(ct));
-      if (constraint == bTrue()) {
-        cout << spaces(depth) << "Proof succeeded: reached a circularity." << endl;
-        return true;
-      }
-      cout << spaces(depth) << "Instance of circularity only when " + constraint->toString() << endl;
-      Log(DEBUG5) << spaces(depth) << "Instance of circularity only when (SMT) " + constraint->toString() << endl;
+  cout << spaces(depth) << "Instance of base only when " + baseConstraint->toString() << endl;
+
+  Term *circConstraint = bFalse();
+  if (progressLeft && progressRight) {
+    Log(DEBUG5) << spaces(depth) << "Testing for circularity" << endl;
+    circConstraint = simplifyConstraint(whenImpliesCircularity(ct));
+    if (isSatisfiable(bNot(circConstraint)) == unsat) {
+      cout << spaces(depth) << "Proof succeeded: reached a circularity." << endl;
+      return bTrue();
     }
+    cout << spaces(depth) << "Instance of circularity only when " + circConstraint->toString() << endl;
+    Log(DEBUG5) << spaces(depth) << "Instance of circularity only when (SMT) " + circConstraint->toString() << endl;
   }
-  cout << spaces(depth) << "Proof failed" << endl;
-  return false;
+
+  Term *constraint = simplifyConstraint(bOr(baseConstraint, circConstraint));
+  if (isSatisfiable(bNot(constraint)) == unsat) {
+    cout << spaces(depth) << "Proof succeeded: either base or circularity is reached in every case." << endl;
+    return bTrue();
+  }
+  return constraint;
 }
 
 proveSimulationExistsRight_arguments::proveSimulationExistsRight_arguments(ConstrainedTerm ct, bool progressRight, int depth) :
   ct(ct), progressRight(progressRight), depth(depth) {
 }
 
-bool QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_arguments args, bool progressLeft) {
+//returns a constraint under which some RHS configuration matches
+Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_arguments args, bool progressLeft) {
+  
+  vector<Term*> solvedConstraints;
 
   queue<proveSimulationExistsRight_arguments> BFS_Q;
   BFS_Q.push(args);
@@ -233,24 +242,34 @@ bool QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argume
     }
 
     Term *lhs, *rhs;
+    Term *addedConstraint = bTrue();
     QueryProveSim::decomposeConstrainedTermEq(t.ct, lhs, rhs);
 
     cout << spaces(t.depth) << "+ prove exists right " << t.ct.toString() << endl;
     if ((possibleLhsBase(lhs) && possibleRhsBase(rhs)) || (progressLeft && t.progressRight && possibleCircularity(t.ct))) {
       Log(DEBUG5) << spaces(t.depth) << "possible rhs base" << endl;
-      if (proveBaseCase(t.ct, progressLeft, t.progressRight, t.depth + 1)) {
+      Term *baseCaseConstraint = proveBaseCase(t.ct, progressLeft, t.progressRight, t.depth + 1);
+      if (baseCaseConstraint == bTrue()) {
         cout << spaces(t.depth) << "- proof successful exists right " << t.ct.toString() << endl;
-        for(--t.depth; t.depth >= initial_depth; --t.depth)
+        for (--t.depth; t.depth >= initial_depth; --t.depth)
           cout << spaces(t.depth) << "- proof was successful for exists right" << endl;
-        return true;
+        return bTrue();
       }
       Log(DEBUG5) << spaces(t.depth) << "close, but no cigar" << endl;
+      //if baseCaseConstraint holds, then the problem is solved
+      solvedConstraints.push_back(baseCaseConstraint);
+
+      addedConstraint = bNot(baseCaseConstraint);
+      cout << spaces(t.depth) << "+ continuing exists right for case " << addedConstraint->toString() << endl;
     }
-    if (t.depth > maxDepth) {
-      cout << spaces(t.depth) << "! proof failed (exceeded maximum depth) exists right " << t.ct.toString() << endl;
+
+    t.ct = ConstrainedTerm(t.ct.term, simplifyConstraint(bAnd(t.ct.constraint, addedConstraint)));
+
+    vector<ConstrainedSolution> rhsSuccessors = ConstrainedTerm(rhs, t.ct.constraint).smtNarrowSearch(crsRight);
+    if (rhsSuccessors.size() == 0) {
+      cout << spaces(t.depth) << "! proof failed (no successors) exists right " << t.ct.toString() << endl;
       continue;
     }
-    vector<ConstrainedSolution> rhsSuccessors = ConstrainedTerm(rhs, t.ct.constraint).smtNarrowSearch(crsRight);
     for (int i = 0; i < (int)rhsSuccessors.size(); ++i) {
       ConstrainedSolution sol = rhsSuccessors[i];
       ConstrainedTerm afterStep = pairC(lhs, sol.term, bAnd(t.ct.constraint, sol.constraint));
@@ -260,7 +279,18 @@ bool QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argume
     }
 
   }
-  return false;
+
+  if (solvedConstraints.size() == 0) {
+    return bFalse();
+  }
+
+  Term *solvedConstraint = bOrVector(solvedConstraints);
+  if (isSatisfiable(bNot(solvedConstraint)) == unsat) {
+    cout << spaces(initial_depth) << "- proof successful exists right (exists happens in ALL cases)" << endl;
+    return bTrue();
+  }
+
+  return solvedConstraint;
 }
 
 bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth) {
@@ -274,16 +304,23 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
   cout << spaces(depth) << "+ prove forall left " << ct.toString() << endl;
   Log(DEBUG5) << spaces(depth) << "possible lhs base " << possibleLhsBase(lhs) << endl;
   Log(DEBUG5) << spaces(depth) << "progressLeft " << progressLeft << "; possibleLhsCircularity " << possibleLhsCircularity(lhs) << endl;
+  Term *addedConstraint = bTrue();
   if (possibleLhsBase(lhs) || (progressLeft && possibleLhsCircularity(lhs))) {
     Log(DEBUG5) << spaces(depth) << "possible lhs base or circularity" << endl;
     // TODO: changed progressRight to true for partial equivalence temporarily
-    if (proveSimulationExistsRight(
-      proveSimulationExistsRight_arguments(ct, true /* progressRight */, depth + 1), progressLeft)) {
+    Term *existsRConstraint = proveSimulationExistsRight(proveSimulationExistsRight_arguments(ct, true /* progressRight */, depth + 1), progressLeft);
+    if (existsRConstraint == bTrue()) {
       cout << spaces(depth) << "- proof succeeded forall left " << ct.toString() << endl;
       return true;
     }
     Log(DEBUG5) << spaces(depth) << "close, but no cigar" << endl;
+
+    addedConstraint = bNot(existsRConstraint);
+    cout << spaces(depth) << "+ continuing forall left for case " << addedConstraint->toString() << endl;
   }
+
+  ct = ConstrainedTerm(ct.term, simplifyConstraint(bAnd(ct.constraint, addedConstraint)));
+
   vector<ConstrainedSolution> lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft);
   if (lhsSuccessors.size() == 0) {
     //    cout << spaces(depth) << "no successors, taking defined symbols";

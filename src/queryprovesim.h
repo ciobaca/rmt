@@ -36,12 +36,12 @@ struct QueryProveSim : public Query {
   //functions which help with execution
   bool proveSimulation(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth);
   bool proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth);
-  bool proveSimulationExistsRight(proveSimulationExistsRight_arguments args, bool progressLeft);
+  Term *proveSimulationExistsRight(proveSimulationExistsRight_arguments args, bool progressLeft);
   bool possibleLhsBase(Term *lhs);
   bool possibleRhsBase(Term *rhs);
   bool possibleLhsCircularity(Term *lhs);
   bool possibleRhsCircularity(Term *);
-  bool proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth);
+  Term *proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth);
   Term *whenImpliesBase(ConstrainedTerm current);
   Term *whenImpliesCircularity(ConstrainedTerm current);
   bool possibleCircularity(ConstrainedTerm ct);

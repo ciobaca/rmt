@@ -1,0 +1,10 @@
+sorts State;
+
+signature
+  f : State State->State;
+
+variables X : State, Y : State, Z : State;
+
+unify (f X Y) (f Y (f Z Y));
+c-unify (f X Y) (f Y (f Z Y));
+c-unify (f (f X Z) (f Z Y)) (f Y (f Z Y));

@@ -4,6 +4,7 @@
 #include "queryinstrument.h"
 #include "queryinstrument_c.h"
 #include "queryunify.h"
+#include "querycunify.h"
 #include "querycompute.h"
 #include "queryrun.h"
 #include "querysearch.h"
@@ -24,7 +25,7 @@
 using namespace std;
 
 void Query::registerQueryCreator(std::string command,
-					   QueryCreator constructor)
+             QueryCreator constructor)
 {
   (*commands)[command] = constructor;
 }
@@ -76,6 +77,11 @@ Query *createQueryDefinedSearch()
 Query *createQueryUnify()
 {
   return new QueryUnify();
+}
+
+Query *createQueryCUnify()
+{
+  return new QueryCUnify();
 }
 
 Query *createQueryCompute()
@@ -139,6 +145,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["axiom"] = createQueryAxiom;
   (*map)["circ"] = createQueryCirc;
   (*map)["unify"] = createQueryUnify;
+  (*map)["c-unify"] = createQueryCUnify;
   (*map)["implies"] = createQueryImplies;
   (*map)["instrument"] = createQueryInstrument;
   (*map)["cinstrument"] = createQueryInstrument_C;

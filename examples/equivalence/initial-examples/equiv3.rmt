@@ -315,7 +315,7 @@ show-simulation [40] in language and language :
    (pair 
 	(I (push (for (var 0) M N pS1) done) ENV1)
 
-	(I (push (assign (var 0) M) (push (while (le (var 0) N) (seq pS1 (assign (var 0) (plus (var 0) 1)))) done)) ENV2))
+	(I (push (assign (var 0) M) (push (while (le (var 0) N) (seq pS1 (assign (var 0) (plus (var 0) 1)))) done)) ENV2)) /\ (mle M N)
 
 with-base
    (pair (I done ENV3) (I done ENV4)) /\ (mequals (lookup ENV3 0) (lookup ENV4 0));

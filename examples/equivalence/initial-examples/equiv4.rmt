@@ -1,12 +1,6 @@
-/* any file begins with the declaration of all sorts used */
-smt-prelude
-"(declare-fun uifun (Int Int) Int)
- (declare-datatypes () ((Var varX varY varZ varC1 varC2 varV1 varV2)))
-"
-
 sorts IntP,
       BoolP,
-      Var / "Var",
+      Var,
       AExp,
       BExp,
       NonValAExp,
@@ -14,11 +8,12 @@ sorts IntP,
       Stmt,
       Code,
       CompStack,
-      Map / "(Array Var Int)",
+      Map / "(Array Int Int)",
       CfgI,
       State;
 
-// after declaring all sorts,
+builtins muifun : Int Int -> Int;
+
 // we must declare all subsort relations
 subsort Int < IntP;
 subsort IntP < AExp;
@@ -38,38 +33,22 @@ signature
 	mapequals : Map Map -> Bool / "=",
 
 	// some program variables
-	x : -> Var / "varX",
-	y : -> Var / "varY",
-	z : -> Var / "varZ",
 
-	pV1 : -> Var / "varV1",
-	pV2 : -> Var / "varV2",
-	pC1 : -> Var / "varC1",
-	pC2 : -> Var / "varC2",
+	var : Int -> Var,
 	
 	pS1 : -> Stmt,
 	pE1 : -> NonValAExp,
-	iS1 : Int Int Int Int -> Int / "iS1",
-	iE1 : Int Int -> Int / "iE1",
 
 	// helper functions
 	synEq : Var Var -> Bool / "=",
 
-	update : Map Var Int -> Map / "store",
-	lookup  : Map Var -> IntP / "select",
+	update : Map Int Int -> Map / "store",
+	lookup  : Map Int -> Int / "select",
 
 	// arithmetic and boolean expressions
 	plus : AExp AExp -> NonValAExp,
 	plushl : AExp -> AExp,
     	plushr : AExp -> AExp,
-
-	// uninterpreted function Z3
-	muifun : Int Int -> Int / "uifun",
-
-	// uninterpreted function
-	uifun : AExp AExp -> NonValAExp,
-	uifunhl : AExp -> AExp,
-	uifunhr : AExp -> AExp,
 
 	minus : AExp AExp -> NonValAExp,
 	minushl : AExp -> AExp,
@@ -91,6 +70,11 @@ signature
 
 	not : BExp -> NonValBExp,
 	noth : -> Stmt,
+
+	//uninterpreted function
+	uifun : AExp AExp -> NonValAExp,
+	uifunhl : AExp -> AExp,
+	uifunhr : AExp -> AExp,
 
 	// computation stack
 	done : -> CompStack,
@@ -119,17 +103,11 @@ signature
 /* next we must declare all variables */
 variables
 	// necessary variables
-	X : Var,
-	Y : Var,
-	Z : Var,
 
 	N : Int,
 	J : Int,
+	X : Int,
 	M : Int,
-	PRIMM : Int,
-	PRIMMP : Int,
-	PRIMN : Int,
-	PRIMENV : Map,
 	MP : Int,
 	SUM : Int,
 
@@ -155,12 +133,14 @@ variables
 	ENV : Map,
 	ENVP : Map,
 	ENV1 : Map,
-	ENV2 : Map;
+	ENV2 : Map,
+	ENV3 : Map,
+	ENV4 : Map;
 
 /* next, declare all rewrite rules */
 constrained-rewrite-system language
 // language
- 	(I (push X              REST) ENV) =>
+ 	(I (push (var X)              REST) ENV) =>
  	(I (push (lookup ENV X) REST) ENV),
 
 	(I (push (pred N)            REST) ENV) =>
@@ -191,14 +171,14 @@ constrained-rewrite-system language
 	(I (push N (push succh REST)) ENV) =>
 	(I (push (succ N)       REST)  ENV),
 
-	(I (push (assign X N) REST) ENV) =>
+	(I (push (assign (var X) N) REST) ENV) =>
         (I REST       (update ENV X N)),
     
- 	(I (push (assign X NVAE)       REST)  ENV) =>
- 	(I (push NVAE (push (assignh X) REST)) ENV),
+ 	(I (push (assign (var X) NVAE)       REST)  ENV) =>
+ 	(I (push NVAE (push (assignh (var X)) REST)) ENV),
 
-     	(I (push N (push (assignh X) REST)) ENV) =>
-     	(I (push (assign X N)        REST)  ENV),
+     	(I (push N (push (assignh (var X)) REST)) ENV) =>
+     	(I (push (assign (var X) N)        REST)  ENV),
 
 // sequential composition
 	(I (push (seq S1 S2) REST)  ENV) =>
@@ -241,22 +221,6 @@ constrained-rewrite-system language
  	(I (push M (push (plushr N) REST)) ENV) =>
  	(I (push (plus N M)        REST)  ENV),
 
-// uninterpreted function
- 	(I (push (uifun N M)     REST) ENV) =>
- 	(I (push (muifun N M)    REST) ENV),
-
-	(I (push (uifun NVAE1 AE2)        REST)  ENV) =>
-	(I (push NVAE1 (push (uifunhl AE2) REST)) ENV),
-  
- 	(I (push N (push (uifunhl AE2) REST)) ENV) =>
- 	(I (push (uifun N AE2)        REST)  ENV),
-
- 	(I (push (uifun N NVAE2)        REST)  ENV) =>
- 	(I (push NVAE2 (push (uifunhr N) REST)) ENV),
-
- 	(I (push M (push (uifunhr N) REST)) ENV) =>
- 	(I (push (uifun N M)        REST)  ENV),
-
 // subtraction operator
  	(I (push (minus N M)     REST) ENV) =>
  	(I (push (mminus N M)    REST) ENV),
@@ -274,23 +238,23 @@ constrained-rewrite-system language
  	(I (push (minus N M)        REST)  ENV),
 
 // for statement
- 	(I (push (for X NVAE1 NVAE2 S)        REST ) ENV) =>
- 	(I (push NVAE1 (push (forhl X NVAE2 S) REST)) ENV),
+ 	(I (push (for (var X) NVAE1 NVAE2 S)        REST ) ENV) =>
+ 	(I (push NVAE1 (push (forhl (var X) NVAE2 S) REST)) ENV),
 
- 	(I (push N (push (forhl X NVAE2 S) REST)) ENV) =>
- 	(I (push (for X N NVAE2 S)        REST)  ENV),
+ 	(I (push N (push (forhl (var X) NVAE2 S) REST)) ENV) =>
+ 	(I (push (for (var X) N NVAE2 S)        REST)  ENV),
 
- 	(I (push (for X N NVAE2 S)            REST ) ENV) =>
- 	(I (push NVAE2 (push (forhr X N S)     REST)) ENV),
+ 	(I (push (for (var X) N NVAE2 S)            REST ) ENV) =>
+ 	(I (push NVAE2 (push (forhr (var X) N S)     REST)) ENV),
 
- 	(I (push M (push (forhr X N S) REST)) ENV) =>
- 	(I (push (for X N M S)        REST)  ENV),
+ 	(I (push M (push (forhr (var X) N S) REST)) ENV) =>
+ 	(I (push (for (var X) N M S)        REST)  ENV),
 
-	(I (push (for X N M S)                                         REST) ENV) /\ (mle N M) =>
-	(I (push (seq (assign X N) S) (push (for X (mplus N 1) M S) REST)) ENV),
+	(I (push (for (var X) N M S)                                         REST) ENV) /\ (mle N M) =>
+	(I (push (seq (assign (var X) N) S) (push (for (var X) (mplus N 1) M S) REST)) ENV),
 
-	(I (push (for X N M S) REST) ENV) /\ (bnot (mle N M)) =>
-	(I                       REST ENV),
+	(I (push (for (var X) N M S) REST) ENV) /\ (bnot (mle N M)) =>
+	(I (push (assign (var X) N)  REST) ENV),
 
 // less than or equal to operator2
 
@@ -309,6 +273,22 @@ constrained-rewrite-system language
  	(I (push M (push (lehr N) REST)) ENV) =>
  	(I (push (le N M)       REST)  ENV),
 
+// uninterpreted function
+ 	(I (push (uifun N M)     REST) ENV) =>
+ 	(I (push (muifun N M)    REST) ENV),
+
+	(I (push (uifun NVAE1 AE2)        REST)  ENV) =>
+	(I (push NVAE1 (push (uifunhl AE2) REST)) ENV),
+  
+ 	(I (push N (push (uifunhl AE2) REST)) ENV) =>
+ 	(I (push (uifun N AE2)        REST)  ENV),
+
+ 	(I (push (uifun N NVAE2)        REST)  ENV) =>
+ 	(I (push NVAE2 (push (uifunhr N) REST)) ENV),
+
+ 	(I (push M (push (uifunhr N) REST)) ENV) =>
+ 	(I (push (uifun N M)        REST)  ENV),
+
 // strictly less than
 
  	(I (push (less N M)  REST) ENV) =>
@@ -325,16 +305,9 @@ constrained-rewrite-system language
   
  	(I (push M (push (lesshr N) REST)) ENV) =>
  	(I (push (less N M)       REST)  ENV)
-
-// symbolic variables statements and expressions
-   	// (I (push pE1 REST) ENV) =>
-	// (I (push (iE1 (lookup ENV,pC2),(lookup ENV,pV2)) REST) ENV),
-
-	// (I (push pS1 REST) ENV) =>
-	// (I REST (update ENV pC1 (iS1 (lookup ENV pC1),(lookup ENV,pC2),(lookup ENV,pV1),(lookup ENV pV2))))
 ;
 
-show-equivalent [100, 2] in language and language :
+show-simulation [100] in language and language :
 //    (pair 
 // 	(I (push (for x 1 N pS1) done) ENV),
 // 	(I (push (ite (le 1 N) (seq (assign x 1) (while (le x N) (seq pS1 (assign x (plus x 1))))) skip) done) ENV))
@@ -354,18 +327,18 @@ show-equivalent [100, 2] in language and language :
    // 		done) ENV)),
 		
    (pair 
-	(I (push (assign x M) 
-               (push (while (less x N) (seq (assign y (uifun y x)) 
-		                        (assign x (plus x 1)))) 
-	            done)) ENV) 
-	(I (push (assign x MP) 
-               (push (while (le 1 x) (seq (assign y (uifun y (minus N x))) 
-		                           (assign x (minus x 1)))) 
-		    (push (ite (le N 0) (assign x 0) (assign x N)) 
-                         done))) ENVP)) /\ (band (mequals (mplus M MP) N) (mequals (lookup ENV y) (lookup ENVP y)))
+	(I (push (assign (var 0) M) 
+               (push (while (less (var 0) N) (seq (assign (var 1) (uifun (var 1) (var 0))) 
+		                        (assign (var 0) (plus (var 0) 1)))) 
+	            done)) ENV1) 
+	(I (push (assign (var 0) MP) 
+               (push (while (le 1 (var 0)) (seq (assign (var 1) (uifun (var 1) (minus N (var 0)))) 
+		                           (assign (var 0) (minus (var 0) 1)))) 
+		    (push (ite (le N 0) (assign (var 0) 0) (assign (var 0) N)) 
+                         done))) ENV2)) /\ (band (mequals (mplus M MP) N) (mequals (lookup ENV1 1) (lookup ENV2 1)))
 
 with-base
-    (pair (I done ENV) (I done ENVP)) /\ (mequals (lookup ENV y) (lookup ENVP y));
+    (pair (I done ENV3) (I done ENV4)) /\ (mequals (lookup ENV3 1) (lookup ENV4 1));
 
 // implies
 

@@ -325,16 +325,16 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
 
   ct = ConstrainedTerm(ct.term, simplifyConstraint(bAnd(ct.constraint, addedConstraint)));
 
-  vector<ConstrainedSolution> lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft);
-  if (lhsSuccessors.size() == 0) {
-    cout << spaces(depth) << "no successors, taking defined symbols" << "(" << ConstrainedTerm(lhs, ct.constraint).toString() << ")";
-    lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch();
-  }
+  vector< pair<ConstrainedSolution,bool> > lhsSuccessors;
+  for (const auto &it : ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft))
+    lhsSuccessors.push_back(make_pair(it, true));
+  for (const auto &it : ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch())
+    lhsSuccessors.push_back(make_pair(it, false));
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {
-    ConstrainedSolution sol = lhsSuccessors[i];
+    ConstrainedSolution sol = lhsSuccessors[i].first;
     ConstrainedTerm afterStep = pairC(sol.term, rhs, bAnd(ct.constraint, sol.constraint));
     afterStep = simplifyConstrainedTerm(afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst));
-    if (!proveSimulationForallLeft(afterStep, true, progressRight, depth + 1)) {
+    if (!proveSimulationForallLeft(afterStep, lhsSuccessors[i].second, progressRight, depth + 1)) {
       cout << spaces(depth) << "! proof failed (" << i << "th successor) forall left " << ct.toString() << endl;
       return false;
     }

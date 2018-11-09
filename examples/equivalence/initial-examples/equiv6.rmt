@@ -445,7 +445,6 @@ constrained-rewrite-system flanguage
 ;
 
 definedsearch [1,20] (F (app (contextexp (substitute (fvar 0) 2 (lam (fvar 1) (fplus (fvar 0) (fvar 1))))) 1));
-!EOF!
 
 show-simulation [100] in language and flanguage :
    (pair (IC (push 

@@ -256,7 +256,7 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
   }
   vector<ConstrainedSolution> lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft);
   if (lhsSuccessors.size () == 0) {
-    //    cout << spaces(depth) << "no successors, taking defined symbols";
+    cout << spaces(depth) << "no successors, taking defined symbols" << "(" << ConstrainedTerm(lhs, ct.constraint).toString() << ")";
     lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch();
   }
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {

@@ -267,6 +267,10 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
 
     vector<ConstrainedSolution> rhsSuccessors = ConstrainedTerm(rhs, t.ct.constraint).smtNarrowSearch(crsRight);
     if (rhsSuccessors.size() == 0) {
+      cout << spaces(t.depth) << "no rhs successors, taking defined symbols" << "(" << ConstrainedTerm(rhs, t.ct.constraint).toString() << ")";
+      rhsSuccessors = ConstrainedTerm(rhs, t.ct.constraint).smtNarrowDefinedSearch();
+    }
+    if (rhsSuccessors.size() == 0) {
       cout << spaces(t.depth) << "! proof failed (no successors) exists right " << t.ct.toString() << endl;
       continue;
     }
@@ -277,7 +281,7 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
       afterStep = simplifyConstrainedTerm(afterStep);
       BFS_Q.push(proveSimulationExistsRight_arguments(afterStep, true, t.depth + 1));
     }
-
+    
   }
 
   if (solvedConstraints.size() == 0) {
@@ -323,7 +327,7 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
 
   vector<ConstrainedSolution> lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft);
   if (lhsSuccessors.size() == 0) {
-    //    cout << spaces(depth) << "no successors, taking defined symbols";
+    cout << spaces(depth) << "no successors, taking defined symbols" << "(" << ConstrainedTerm(lhs, ct.constraint).toString() << ")";
     lhsSuccessors = ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch();
   }
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {
@@ -411,7 +415,6 @@ void QueryProveSim::execute() {
       circularities.push_back(newBase);
     }
   }
-
 
   // prove all circularities
   for (int i = 0; i < circCount; ++i) {

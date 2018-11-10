@@ -390,7 +390,6 @@ void parseFunctions(string &s, int &w)
     Sort *result = getSort(id);
     string interpretation;
     bool hasInterpretation = false;
-    bool isDefined = false;
     skipWhiteSpace(s, w);
     if (lookAhead(s, w, "/")) {
       matchString(s, w, "/");
@@ -635,7 +634,7 @@ int main(int argc, char **argv)
       putConstrainedRewriteSystem(name, crewrite);
       skipWhiteSpace(s, w);
     }
-    else if (query = Query::lookAheadQuery(s, w)) {
+    else if ((query = Query::lookAheadQuery(s, w))) {
       query->parse(s, w);
       skipWhiteSpace(s, w);
       query->execute();

@@ -34,7 +34,7 @@ ConstrainedTerm ConstrainedSolution::getConstrainedTerm()
   return ConstrainedTerm(term, constraint);
 }
 
-Term *ConstrainedSolution::getFullConstraint(ConstrainedTerm startTerm)
+Term *ConstrainedSolution::getFullConstraint()
 {
   return constraint;
   

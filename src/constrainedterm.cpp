@@ -93,7 +93,7 @@ void ConstrainedTerm::smtNarrowSearchHelper(ConstrainedRewriteSystem &crs,
     vector<ConstrainedSolution> sols = this->smtNarrowSearch(crs);
     for (int i = 0; i < (int)sols.size(); ++i) {
       ConstrainedTerm ct(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions(),
-			 sols[i].getFullConstraint(*this)->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions());
+			 sols[i].getFullConstraint()->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions());
       Log(DEBUG2) << "recurse " << ct.toString() << endl;
       ct.smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
     }

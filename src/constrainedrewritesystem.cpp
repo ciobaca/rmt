@@ -48,7 +48,7 @@ ConstrainedRewriteSystem ConstrainedRewriteSystem::rename(string s)
 ConstrainedRewriteSystem ConstrainedRewriteSystem::fresh()
 {
   Log(DEBUG8) << "Creating fresh rewrite system" << endl;
-  static int counter = 0;
+  //  static int counter = 100;
   vector<Variable *> myvars;
   for (int i = 0; i < (int)this->size(); ++i) {
     append(myvars, (*this)[i].first.vars());
@@ -56,20 +56,8 @@ ConstrainedRewriteSystem ConstrainedRewriteSystem::fresh()
   }
   Log(DEBUG8) << "Variables: " << varVecToString(myvars) << endl;
 
-  map<Variable *, Variable *> renaming;
+  map<Variable *, Variable *> renaming = freshRenaming(myvars);
   
-  for (int i = 0; i < len(myvars); ++i) {
-    if (contains(renaming, myvars[i])) {
-      continue;
-    }
-    ostringstream oss;
-    oss << myvars[i]->name << "_" << counter;
-    string varname = oss.str();
-    createVariable(varname, myvars[i]->sort);
-    renaming[myvars[i]] = getVariable(varname);
-  }
-  counter++;
-
   Substitution subst = createSubstitution(renaming);
 
   ConstrainedRewriteSystem result;

@@ -35,8 +35,8 @@ void QueryImplies::parse(std::string &s, int &w)
 void QueryImplies::execute()
 {
   Substitution subst;
-  assert(ct1->constraint);
-  assert(ct2->constraint);
+  assert(ct1.constraint);
+  assert(ct2.constraint);
   cout << "Testing implication between " << ct1.toString() << " and " << ct2.toString() << endl;
   cout << "Implication holds in case: " << ct1.whenImplies(ct2)->toString() << endl;
 }

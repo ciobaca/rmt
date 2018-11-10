@@ -148,10 +148,9 @@ void skipWhiteSpace(string &s, int &pos)
 	      if (s[pos] == '\n') {
 	        match(s, pos, '\n');
 	      }
-	      if (s[pos] == '\r') {
+	      if (pos < len(s) && s[pos] == '\r') {
 	        match(s, pos, '\r');
 	      }
-	      assert(0);
       }
       progress = true;
     }

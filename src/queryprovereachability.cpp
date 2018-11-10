@@ -165,7 +165,6 @@ Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term 
   if (hadProgress) {
     vector<ConstrainedSolution> solutions;
 
-    assert(circ);
     solutions = lhs.smtNarrowSearch(circ);
 
     Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;

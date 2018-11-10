@@ -16,7 +16,7 @@ FunTerm::FunTerm(Function *function, vector<Term *> arguments) :
   arguments(arguments)
 {
   hasDefinedFunctions = function->isDefined;
-  assert(this->arguments->size() == function->arguments.size());
+  assert(this->arguments.size() == function->arguments.size());
   if (!hasDefinedFunctions) {
     for (vector<Term *>::iterator it = arguments.begin(); it != arguments.end(); ++it) {
       if ((*it)->hasDefinedFunctions) {
@@ -64,9 +64,9 @@ Z3_ast FunTerm::toSmt()
   Log(DEBUG7) << "toSmt " << this->toString() << endl;
 
   if (isQuantifierFunction(function)) {
-    assert(n == 2);
-    assert(arguments[0].isVariable());
-    VarTerm *t = (VarTerm *)arguments[0];
+    assert(arguments.size() == 2);
+    assert(arguments[0]->isVarTerm());
+    VarTerm *t = arguments[0]->getAsVarTerm();
     assert(t->variable->sort->hasInterpretation);
     // oss << "exists ";
     // oss << "((";

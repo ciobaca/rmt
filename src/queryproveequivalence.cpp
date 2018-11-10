@@ -124,7 +124,7 @@ void decomposeConstrainedTermEq(ConstrainedTerm ct, Term *&lhs, Term *&rhs)
     Log(ERROR) << term->toString() << endl;
     abort();
   }
-  assert(arguments.size() == 2);
+  assert(term->arguments.size() == 2);
   lhs = term->arguments[0];
   rhs = term->arguments[1];
 }

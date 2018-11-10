@@ -145,8 +145,8 @@ void createUninterpretedSort(const string &sortName)
 void createInterpretedSort(const string &sortName, const string &interpretation)
 {
 #ifndef NDEBUG
-  Sort *s = getSort(sortName);
-  assert(!s);
+  Sort *sold = getSort(sortName);
+  assert(!sold);
 #endif
   
   Sort *s = new Sort(sortName, interpretation);
@@ -238,8 +238,8 @@ void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *re
 void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, string interpretation)
 {
 #ifndef NDEBUG
-  Function *f = getFunction(name);
-  assert(f == 0);
+  Function *fold = getFunction(name);
+  assert(fold == 0);
   // ma asigura ca nu exista deja o functie cu acelasi nume
 #endif
   int arity = arguments.size();

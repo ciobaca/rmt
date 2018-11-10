@@ -222,10 +222,10 @@ proveSimulationExistsRight_arguments::proveSimulationExistsRight_arguments(Const
   ct(ct), progressRight(progressRight), depth(depth) {
 }
 
-//returns a constraint under which some RHS configuration matches
+//returns a constraint under which RHS is unsolved
 Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_arguments args, bool progressLeft) {
   
-  vector<Term*> solvedConstraints;
+  Term *unsolvedConstraint = bTrue();
 
   queue<proveSimulationExistsRight_arguments> BFS_Q;
   BFS_Q.push(args);
@@ -241,8 +241,10 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
       continue;
     }
 
+    //adding unsolvedConstraint to constraint of current successor
+    t.ct = ConstrainedTerm(t.ct.term, simplifyConstraint(bAnd(t.ct.constraint, unsolvedConstraint)));
+
     Term *lhs, *rhs;
-    Term *addedConstraint = bTrue();
     QueryProveSim::decomposeConstrainedTermEq(t.ct, lhs, rhs);
 
     cout << spaces(t.depth) << "+ prove exists right " << t.ct.toString() << endl;
@@ -253,52 +255,53 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
         cout << spaces(t.depth) << "- proof successful exists right " << t.ct.toString() << endl;
         for (--t.depth; t.depth >= initial_depth; --t.depth)
           cout << spaces(t.depth) << "- proof was successful for exists right" << endl;
-        return bTrue();
+        return bFalse();
       }
       Log(DEBUG5) << spaces(t.depth) << "close, but no cigar" << endl;
       //if baseCaseConstraint holds, then the problem is solved
-      solvedConstraints.push_back(baseCaseConstraint);
+      unsolvedConstraint = simplifyConstraint(bAnd(unsolvedConstraint, bNot(baseCaseConstraint)));
 
-      addedConstraint = bNot(baseCaseConstraint);
-      cout << spaces(t.depth) << "+ continuing exists right for case " << addedConstraint->toString() << endl;
+      if (isSatisfiable(unsolvedConstraint) == unsat) {
+        cout << spaces(t.depth) << "- proof successful exists right (no unsolved cases) " << unsolvedConstraint->toString() << endl;
+        return bFalse();
+      }
+
+      //re-adding unsolvedConstrained to current successor
+      t.ct = ConstrainedTerm(t.ct.term, simplifyConstraint(bAnd(t.ct.constraint, unsolvedConstraint)));
+      Log(DEBUG5) << spaces(t.depth) << "+ continuing exists right for case " << unsolvedConstraint->toString() << endl;
     }
 
-    t.ct = ConstrainedTerm(t.ct.term, simplifyConstraint(bAnd(t.ct.constraint, addedConstraint)));
-
-    vector<ConstrainedSolution> rhsSuccessors = ConstrainedTerm(rhs, t.ct.constraint).smtNarrowSearch(crsRight);
+    vector< pair<ConstrainedSolution, bool> > rhsSuccessors;
+    for (const auto &it : ConstrainedTerm(rhs, t.ct.constraint).smtNarrowSearch(crsRight))
+      rhsSuccessors.push_back(make_pair(it, true));
     if (rhsSuccessors.size() == 0) {
-      cout << spaces(t.depth) << "no rhs successors, taking defined symbols" << "(" << ConstrainedTerm(rhs, t.ct.constraint).toString() << ")";
-      rhsSuccessors = ConstrainedTerm(rhs, t.ct.constraint).smtNarrowDefinedSearch();
+      cout << spaces(t.depth) << "no rhs successors, taking defined symbols" << "(" << ConstrainedTerm(rhs, t.ct.constraint).toString() << ")" << endl;
+      for (const auto &it : ConstrainedTerm(rhs, t.ct.constraint).smtNarrowDefinedSearch())
+        rhsSuccessors.push_back(make_pair(it, false));
     }
     if (rhsSuccessors.size() == 0) {
       cout << spaces(t.depth) << "! proof failed (no successors) exists right " << t.ct.toString() << endl;
       continue;
     }
     for (int i = 0; i < (int)rhsSuccessors.size(); ++i) {
-      ConstrainedSolution sol = rhsSuccessors[i];
+      ConstrainedSolution sol = rhsSuccessors[i].first;
       ConstrainedTerm afterStep = pairC(lhs, sol.term, bAnd(t.ct.constraint, sol.constraint));
       afterStep = afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst);
       afterStep = simplifyConstrainedTerm(afterStep);
-      BFS_Q.push(proveSimulationExistsRight_arguments(afterStep, true, t.depth + 1));
+      BFS_Q.push(proveSimulationExistsRight_arguments(afterStep, rhsSuccessors[i].second, t.depth + 1));
     }
     
   }
 
-  if (solvedConstraints.size() == 0) {
-    return bFalse();
-  }
-
-  Term *solvedConstraint = bOrVector(solvedConstraints);
-  if (isSatisfiable(bNot(solvedConstraint)) == unsat) {
-    cout << spaces(initial_depth) << "- proof successful exists right (exists happens in ALL cases)" << endl;
-    return bTrue();
-  }
-
-  return solvedConstraint;
+  return unsolvedConstraint;
 }
 
 bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth) {
   if (depth > maxDepth) {
+    if (!progressLeft) {
+      cout << spaces(depth) << "! reached a forall left state for which no progress was made " << ct.toString() << endl;
+      return true;
+    }
     cout << spaces(depth) << "! proof failed (exceeded maximum depth) forall left " << ct.toString() << endl;
     return false;
   }
@@ -308,28 +311,29 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
   cout << spaces(depth) << "+ prove forall left " << ct.toString() << endl;
   Log(DEBUG5) << spaces(depth) << "possible lhs base " << possibleLhsBase(lhs) << endl;
   Log(DEBUG5) << spaces(depth) << "progressLeft " << progressLeft << "; possibleLhsCircularity " << possibleLhsCircularity(lhs) << endl;
-  Term *addedConstraint = bTrue();
+  Term *unsolvedConstraint = bTrue();
   if (possibleLhsBase(lhs) || (progressLeft && possibleLhsCircularity(lhs))) {
     Log(DEBUG5) << spaces(depth) << "possible lhs base or circularity" << endl;
     // TODO: changed progressRight to true for partial equivalence temporarily
-    Term *existsRConstraint = proveSimulationExistsRight(proveSimulationExistsRight_arguments(ct, true /* progressRight */, depth + 1), progressLeft);
-    if (existsRConstraint == bTrue()) {
+    unsolvedConstraint = proveSimulationExistsRight(proveSimulationExistsRight_arguments(ct, true /* progressRight */, depth + 1), progressLeft);
+    if (unsolvedConstraint == bFalse()) {
       cout << spaces(depth) << "- proof succeeded forall left " << ct.toString() << endl;
       return true;
     }
     Log(DEBUG5) << spaces(depth) << "close, but no cigar" << endl;
-
-    addedConstraint = bNot(existsRConstraint);
-    cout << spaces(depth) << "+ continuing forall left for case " << addedConstraint->toString() << endl;
+    Log(DEBUG5) << spaces(depth) << "continuing forall left for case " << unsolvedConstraint->toString() << endl;
   }
 
-  ct = ConstrainedTerm(ct.term, simplifyConstraint(bAnd(ct.constraint, addedConstraint)));
+  ct = ConstrainedTerm(ct.term, simplifyConstraint(bAnd(ct.constraint, unsolvedConstraint)));
 
-  vector< pair<ConstrainedSolution,bool> > lhsSuccessors;
+  vector< pair<ConstrainedSolution, bool> > lhsSuccessors;
   for (const auto &it : ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft))
     lhsSuccessors.push_back(make_pair(it, true));
-  for (const auto &it : ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch())
-    lhsSuccessors.push_back(make_pair(it, false));
+  if (lhsSuccessors.size() == 0) {
+    cout << spaces(depth) << "no lhs successors, taking defined symbols" << "(" << ConstrainedTerm(lhs, ct.constraint).toString() << ")" << endl;
+    for (const auto &it : ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch())
+      lhsSuccessors.push_back(make_pair(it, false));
+  }
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {
     ConstrainedSolution sol = lhsSuccessors[i].first;
     ConstrainedTerm afterStep = pairC(sol.term, rhs, bAnd(ct.constraint, sol.constraint));

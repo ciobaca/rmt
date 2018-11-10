@@ -6,7 +6,9 @@
 #include <algorithm>
 #include <string>
 
-// #define NDEBUG
+#ifndef NDEBUG
+#define NDEBUG
+#endif
 
 #define len(x) ((int)x.size())
 

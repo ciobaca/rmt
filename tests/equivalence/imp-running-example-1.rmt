@@ -331,12 +331,12 @@ show-equivalent [ 900, 10 ] in language and language :
 (I (push
        (seq (assign (var 0) 0)                               // x <- 0
        (seq (assign (var 1) 0)                               // s <- 0
-       (ite B
+       (ite B                                                // if B then
         (while (le (var 0) N)                                // while x <= N
               (seq 
 	           (assign (var 1) (plus (var 1) (var 0)))   // s := s + x
                    (assign (var 0) (plus (var 0) 1)))        // x :- x + 1
-		   )
+		   )                                         // else B
 	(while (le (var 0) N)                                // while x <= N
               (seq 
                    (assign (var 1) (minus (var 1) (var 0)))  // s := s - x

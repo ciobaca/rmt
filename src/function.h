@@ -17,6 +17,8 @@ struct Function
   vector<Sort *> arguments;
   Sort *result;
 
+  bool isCommutative;
+
   bool hasInterpretation; // should be interpreted as a builtin function
   Z3Function *interpretation; // the interpretation of the function
   // only valid if hasIntrepretation == true
@@ -34,7 +36,7 @@ struct Function
 
 private:
 
-  Function(string name, vector<Sort *> arguments, Sort *result)
+  Function(string name, vector<Sort *> arguments, Sort *result, bool isCommutative = false)
   {
     this->name = name;
     this->arguments = arguments;
@@ -42,9 +44,10 @@ private:
     this->hasInterpretation = false;
     this->isDefined = false;
     this->isEqualityFunction = false;
+    this->isCommutative = isCommutative;
   }
 
-  Function(string name, vector<Sort *> arguments, Sort *result, string interpretation)
+  Function(string name, vector<Sort *> arguments, Sort *result, string interpretation, bool isCommutative = false)
   {
     this->name = name;
     this->arguments = arguments;
@@ -130,20 +133,22 @@ private:
     }
     
     this->isDefined = false;
+
+    this->isCommutative = isCommutative;
   }
 
-  Function(string name, vector<Sort *> arguments, Sort *result, Z3Function *interpretation)
+  Function(string name, vector<Sort *> arguments, Sort *result, Z3Function *interpretation, bool isCommutative = false)
   {
     this->name = name;
     this->arguments = arguments;
     this->result = result;
     this->hasInterpretation = true;
     this->interpretation = interpretation;
-    
     this->isDefined = false;
+    this->isCommutative = isCommutative;
   }
 
-  Function(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation)
+  Function(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation, bool isCommutative = false)
   {
     this->name = name;
     this->arguments = arguments;
@@ -151,14 +156,18 @@ private:
     this->hasInterpretation = true;
     this->interpretation = new z3_custom_func(interpretation, this);
     this->isEqualityFunction = false;
-    
     this->isDefined = false;
+    this->isCommutative = isCommutative;
   }
 
   friend Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars);
   friend void createUninterpretedFunction(string, vector<Sort *>, Sort *);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, string);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, Z3_func_decl);
+
+  friend void createUninterpretedFunction(string, vector<Sort *>, Sort *, bool);
+  friend void createInterpretedFunction(string, vector<Sort *>, Sort *, string, bool);
+  friend void createInterpretedFunction(string, vector<Sort *>, Sort *, Z3_func_decl, bool);
 };
 
 #endif

@@ -403,11 +403,25 @@ void parseFunctions(string &s, int &w)
       }
     }
     skipWhiteSpace(s, w);
-    if (hasInterpretation) {
-      createInterpretedFunction(f, arguments, result, interpretation);      
+    bool isCommutative = false;
+    if (lookAhead(s, w, "[")) {
+      matchString(s, w, "[");
+      skipWhiteSpace(s, w);
+      while (w < len(s) && s[w] != ']') {
+        switch(s[w]) {
+          case 'a': break; // TODO: is Associative
+          case 'c': isCommutative = true; break;
+          case 'u': break; // TODO: has unity element
+        }
+        ++w;
+        skipWhiteSpace(s, w);
+      }
+      matchString(s, w, "]");
     }
-    else {
-      createUninterpretedFunction(f, arguments, result);
+    if (hasInterpretation) {
+      createInterpretedFunction(f, arguments, result, interpretation, isCommutative);
+    } else {
+      createUninterpretedFunction(f, arguments, result, isCommutative);
     }
     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
       expected("more function symbols", w, s);

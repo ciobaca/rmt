@@ -129,10 +129,10 @@ void skipWhiteSpace(string &s, int &pos)
       match(s, pos, '/');
       match(s, pos, '*');
       while (pos + 1 < len(s) && !(s[pos] == '*' && s[pos + 1] == '/')) {
-	      pos++;
+        pos++;
       }
       if (pos + 1 >= len(s)) {
-	      expected("end of comment", pos, s);
+        expected("end of comment", pos, s);
       }
       match(s, pos, '*');
       match(s, pos, '/');
@@ -142,15 +142,15 @@ void skipWhiteSpace(string &s, int &pos)
       match(s, pos, '/');
       match(s, pos, '/');
       while (pos < len(s) && s[pos] != '\n' && s[pos] != '\r') {
-	      pos++;
+        pos++;
       }
       if (pos < len(s)) {
-	      if (s[pos] == '\n') {
-	        match(s, pos, '\n');
-	      }
-	      if (pos < len(s) && s[pos] == '\r') {
-	        match(s, pos, '\r');
-	      }
+        if (s[pos] == '\n') {
+          match(s, pos, '\n');
+        }
+        if (pos < len(s) && s[pos] == '\r') {
+          match(s, pos, '\r');
+        }
       }
       progress = true;
     }
@@ -210,9 +210,9 @@ Term *parseTerm(string &s, int &pos)
     if (f && len(f->arguments)) {
       vector<Term *> arguments;
       for (int i = 0; i < len(f->arguments); ++i) {
-	Term *t = parseTerm(s, pos);
-	skipWhiteSpace(s, pos);
-	arguments.push_back(t);
+  Term *t = parseTerm(s, pos);
+  skipWhiteSpace(s, pos);
+  arguments.push_back(t);
       }
       match(s, pos, ')');
       return getFunTerm(f, arguments);
@@ -226,7 +226,7 @@ Term *parseTerm(string &s, int &pos)
     if (f) {
       vector<Term *> arguments;
       if (len(f->arguments) == 0) {
-	return getFunTerm(f, arguments);
+  return getFunTerm(f, arguments);
       }
     } else if (v) {
       return getVarTerm(v);

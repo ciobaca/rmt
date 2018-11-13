@@ -219,6 +219,22 @@ void updateDefinedFunction(string name, ConstrainedRewriteSystem &crewrite)
   f->updateDefined(crewrite);
 }
 
+void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result, bool isCommutative)
+{
+#ifndef NDEBUG
+  Function *f = getFunction(name);
+  assert(f == 0);
+#endif
+  int arity = arguments.size();
+  Log log(INFO);
+  log << "Creating uninterpreted function " << name << " : ";
+  for (int i = 0; i < arity; ++i) {
+    log << arguments[i]->name << " ";
+  }
+  log << " -> " << result->name << endl;
+  functions[name] = new Function(name, arguments, result, isCommutative);
+}
+
 void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result)
 {
 #ifndef NDEBUG
@@ -233,6 +249,42 @@ void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *re
   }
   log << " -> " << result->name << endl;
   functions[name] = new Function(name, arguments, result);
+}
+
+void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, string interpretation, bool isCommutative)
+{
+#ifndef NDEBUG
+  Function *fold = getFunction(name);
+  assert(fold == 0);
+  // ma asigura ca nu exista deja o functie cu acelasi nume
+#endif
+  int arity = arguments.size();
+  Log log(INFO);
+  log << "Creating interpreted function " << name << " (as " << interpretation << ") : ";
+  for (int i = 0; i < arity; ++i) {
+    log << arguments[i]->name << " ";
+  }
+  log << " -> " << result->name << endl;
+  assert(interpretation != "");
+
+  Function *f = new Function(name, arguments, result, interpretation, isCommutative);
+  functions[name] = f;
+  
+  //handling special functions
+  if (interpretation == "store") {
+    if (arguments.size() != 3) {
+      Log(ERROR) << "Wrong number of arguments for store function" << endl;
+      assert(0);
+    }
+    (*getStoreFunctions())[make_pair(arguments[0], make_pair(arguments[1], arguments[2]))] = f;
+  }
+  else if (interpretation == "select") {
+    if (arguments.size() != 2) {
+      Log(ERROR) << "Wrong number of arguments for select function" << endl;
+      assert(0);
+    }
+    (*getSelectFunctions())[make_pair(result, make_pair(arguments[0], arguments[1]))] = f;
+  }
 }
 
 void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, string interpretation)
@@ -269,6 +321,22 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
     }
     (*getSelectFunctions())[make_pair(result, make_pair(arguments[0], arguments[1]))] = f;
   }
+}
+
+void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation, bool isCommutative)
+{
+#ifndef NDEBUG
+  Function *f = getFunction(name);
+  assert(f == 0);
+#endif
+  int arity = arguments.size();
+  Log log(INFO);
+  log << "Creating interpreted function " << name << " (as " << interpretation << ") : ";
+  for (int i = 0; i < arity; ++i) {
+    log << arguments[i]->name << " ";
+  }
+  log << " -> " << result->name << endl;
+  functions[name] = new Function(name, arguments, result, interpretation, isCommutative);
 }
 
 void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation)
@@ -601,7 +669,7 @@ Term *simplifyTerm(Term *term)
     } else {
       vector<Term *> arguments = funterm->arguments;
       for (int i = 0; i < static_cast<int>(arguments.size()); ++i) {
-	arguments[i] = simplifyTerm(arguments[i]);
+  arguments[i] = simplifyTerm(arguments[i]);
       }
       return getFunTerm(function, arguments);
     }

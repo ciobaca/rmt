@@ -35,13 +35,11 @@ void QueryCUnify::parse(string &s, int &w) {
 void QueryCUnify::execute() {
   cout << "C-Unifying " << t1->toString() << " and " << t2->toString() << endl;
 
-  const string comutativeFunction = "f";
-
   function<int(Term*)> countNumberOfCFunTerm = [&](Term *t) {
     if(t->isVarTerm()) {
       return 0;
     }
-    int cnt = t->getAsFunTerm()->function->name == comutativeFunction;
+    int cnt = t->getAsFunTerm()->function->isCommutative;
     for(auto term : t->getAsFunTerm()->arguments) {
       cnt += countNumberOfCFunTerm(term);
     }
@@ -54,7 +52,7 @@ void QueryCUnify::execute() {
     }
 
     vector<Term*> args = t->getAsFunTerm()->arguments;
-    if(t->getAsFunTerm()->function->name == comutativeFunction) {
+    if(t->getAsFunTerm()->function->isCommutative) {
       sort(args.begin(), args.end());
     }
     Term *copyT = t;
@@ -79,7 +77,7 @@ void QueryCUnify::execute() {
       }
     }
 
-    if(copyT->getAsFunTerm()->function->name == comutativeFunction) {
+    if(copyT->getAsFunTerm()->function->isCommutative) {
       if(next_permutation(args.begin(), args.end())) {
         t = getFunTerm(copyT->getAsFunTerm()->function, args);
         return true;

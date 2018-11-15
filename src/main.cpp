@@ -404,24 +404,43 @@ void parseFunctions(string &s, int &w)
     }
     skipWhiteSpace(s, w);
     bool isCommutative = false;
+    bool isAssociative = false;
+    Function *unityElement = NULL;
     if (lookAhead(s, w, "[")) {
       matchString(s, w, "[");
       skipWhiteSpace(s, w);
       while (w < len(s) && s[w] != ']') {
         switch(s[w]) {
-          case 'a': break; // TODO: is Associative
-          case 'c': isCommutative = true; break;
-          case 'u': break; // TODO: has unity element
+          case 'a': isAssociative = true; ++w; break;
+          case 'c': isCommutative = true; ++w; break;
+          case 'u': {
+            matchString(s, w, "u");
+            skipWhiteSpace(s, w);
+            if (lookAhead(s, w, "(")) {
+              matchString(s, w, "(");
+              skipWhiteSpace(s, w);
+              string id = getIdentifier(s, w);
+              unityElement = getFunction(id);
+              skipWhiteSpace(s, w);
+            } else {
+              parseError("(while parsing unity element) '(' is missing", w, s);
+            }
+
+            if (lookAhead(s, w, ")")) {
+              matchString(s, w, ")");
+            } else {
+              parseError("(while parsing unity element) ')' is missing", w, s);
+            }
+          }
         }
-        ++w;
         skipWhiteSpace(s, w);
       }
       matchString(s, w, "]");
     }
     if (hasInterpretation) {
-      createInterpretedFunction(f, arguments, result, interpretation, isCommutative);
+      createInterpretedFunction(f, arguments, result, interpretation);
     } else {
-      createUninterpretedFunction(f, arguments, result, isCommutative);
+      createUninterpretedFunction(f, arguments, result, isCommutative, isAssociative, unityElement);
     }
     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
       expected("more function symbols", w, s);

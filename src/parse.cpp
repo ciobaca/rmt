@@ -210,9 +210,9 @@ Term *parseTerm(string &s, int &pos)
     if (f && len(f->arguments)) {
       vector<Term *> arguments;
       for (int i = 0; i < len(f->arguments); ++i) {
-  Term *t = parseTerm(s, pos);
-  skipWhiteSpace(s, pos);
-  arguments.push_back(t);
+        Term *t = parseTerm(s, pos);
+        skipWhiteSpace(s, pos);
+        arguments.push_back(t);
       }
       match(s, pos, ')');
       return getFunTerm(f, arguments);
@@ -226,7 +226,7 @@ Term *parseTerm(string &s, int &pos)
     if (f) {
       vector<Term *> arguments;
       if (len(f->arguments) == 0) {
-  return getFunTerm(f, arguments);
+        return getFunTerm(f, arguments);
       }
     } else if (v) {
       return getVarTerm(v);

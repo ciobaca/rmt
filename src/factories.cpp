@@ -219,7 +219,7 @@ void updateDefinedFunction(string name, ConstrainedRewriteSystem &crewrite)
   f->updateDefined(crewrite);
 }
 
-void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result, bool isCommutative)
+void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *result, bool isCommutative, bool isAssociative, Function *unityElement)
 {
 #ifndef NDEBUG
   Function *f = getFunction(name);
@@ -232,10 +232,10 @@ void createUninterpretedFunction(string name, vector<Sort *> arguments, Sort *re
     log << arguments[i]->name << " ";
   }
   log << " -> " << result->name << endl;
-  functions[name] = new Function(name, arguments, result, isCommutative);
+  functions[name] = new Function(name, arguments, result, isCommutative, isAssociative, unityElement);
 }
 
-void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, string interpretation, bool isCommutative)
+void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, string interpretation)
 {
 #ifndef NDEBUG
   Function *fold = getFunction(name);
@@ -251,7 +251,7 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
   log << " -> " << result->name << endl;
   assert(interpretation != "");
 
-  Function *f = new Function(name, arguments, result, interpretation, isCommutative);
+  Function *f = new Function(name, arguments, result, interpretation);
   functions[name] = f;
   
   //handling special functions
@@ -271,7 +271,7 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
   }
 }
 
-void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation, bool isCommutative)
+void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation)
 {
 #ifndef NDEBUG
   Function *f = getFunction(name);
@@ -284,7 +284,7 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
     log << arguments[i]->name << " ";
   }
   log << " -> " << result->name << endl;
-  functions[name] = new Function(name, arguments, result, interpretation, isCommutative);
+  functions[name] = new Function(name, arguments, result, interpretation);
 }
 
 Term *getFunTerm(Function *f, vector<Term *> arguments)

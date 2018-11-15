@@ -76,9 +76,9 @@ Term *getIntOneConstant();
 Term *getIntZeroConstant();
 void updateDefinedFunction(std::string name, ConstrainedRewriteSystem &);
 
-void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, bool = false);
-void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, std::string interpretation, bool = false);
-void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, Z3_func_decl, bool = false);
+void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, bool isCommutative, bool isAssociative, Function *unityElement);
+void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, std::string interpretation);
+void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, Z3_func_decl);
 
 Name *getName(std::string name);
 void createName(std::string name);

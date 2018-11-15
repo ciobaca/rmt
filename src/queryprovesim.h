@@ -23,7 +23,12 @@ struct QueryProveSim : public Query {
 
   Function *pairFun;
 
+  /* query parameters */
   int maxDepth;
+  bool needProgressRight;
+
+  /* holds information about which proofs failed */
+  vector<int> failedCircularities;
 
   QueryProveSim();
 
@@ -34,8 +39,8 @@ struct QueryProveSim : public Query {
   virtual void execute();
 
   //functions which help with execution
-  bool proveSimulation(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth);
-  bool proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth);
+  bool proveSimulation(ConstrainedTerm ct, int depth);
+  bool proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, int depth);
   Term *proveSimulationExistsRight(proveSimulationExistsRight_arguments args, bool progressLeft);
   bool possibleLhsBase(Term *lhs);
   bool possibleRhsBase(Term *rhs);

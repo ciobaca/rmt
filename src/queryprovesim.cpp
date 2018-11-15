@@ -32,6 +32,11 @@ ConstrainedRewriteSystem parseCRSfromName(string &s, int &w) {
 void QueryProveSim::parse(std::string &s, int &w) {
   matchString(s, w, "show-simulation");
   skipWhiteSpace(s, w);
+
+  /* defaults */
+  needProgressRight = false;
+  maxDepth = 100;
+
   if (lookAhead(s, w, "[")) {
     matchString(s, w, "[");
     skipWhiteSpace(s, w);
@@ -41,11 +46,24 @@ void QueryProveSim::parse(std::string &s, int &w) {
       expected("Legal maximum depth", w, s);
     }
     skipWhiteSpace(s, w);
+    if (lookAhead(s, w, ",")) {
+      matchString(s, w, ",");
+      skipWhiteSpace(s, w);
+      if (lookAhead(s, w, "partial")) {
+        matchString(s, w, "partial");
+        needProgressRight = false;
+      }
+      else if (lookAhead(s, w, "total")) {
+        matchString(s, w, "total");
+        needProgressRight = true;
+      }
+      else {
+        expected("Type of simulation must be either 'partial' or 'total'", w, s);
+      }
+    }
+    skipWhiteSpace(s, w);
     matchString(s, w, "]");
     skipWhiteSpace(s, w);
-  }
-  else {
-    maxDepth = 100;
   }
   matchString(s, w, "in");
   crsLeft = parseCRSfromName(s, w);
@@ -277,7 +295,7 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
     if (rhsSuccessors.size() == 0) {
       cout << spaces(t.depth) << "no rhs successors, taking defined symbols" << "(" << ConstrainedTerm(rhs, t.ct.constraint).toString() << ")" << endl;
       for (const auto &it : ConstrainedTerm(rhs, t.ct.constraint).smtNarrowDefinedSearch())
-        rhsSuccessors.push_back(make_pair(it, false));
+        rhsSuccessors.push_back(make_pair(it, (t.progressRight || false )));
     }
     if (rhsSuccessors.size() == 0) {
       cout << spaces(t.depth) << "! proof failed (no successors) exists right " << t.ct.toString() << endl;
@@ -296,12 +314,8 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
   return unsolvedConstraint;
 }
 
-bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth) {
+bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, int depth) {
   if (depth > maxDepth) {
-    if (!progressLeft) {
-      cout << spaces(depth) << "! reached a forall left state for which no progress was made " << ct.toString() << endl;
-      return true;
-    }
     cout << spaces(depth) << "! proof failed (exceeded maximum depth) forall left " << ct.toString() << endl;
     return false;
   }
@@ -314,8 +328,7 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
   Term *unsolvedConstraint = bTrue();
   if (possibleLhsBase(lhs) || (progressLeft && possibleLhsCircularity(lhs))) {
     Log(DEBUG5) << spaces(depth) << "possible lhs base or circularity" << endl;
-    // TODO: changed progressRight to true for partial equivalence temporarily
-    unsolvedConstraint = proveSimulationExistsRight(proveSimulationExistsRight_arguments(ct, true /* progressRight */, depth + 1), progressLeft);
+    unsolvedConstraint = proveSimulationExistsRight(proveSimulationExistsRight_arguments(ct, !needProgressRight, depth + 1), progressLeft);
     if (unsolvedConstraint == bFalse()) {
       cout << spaces(depth) << "- proof succeeded forall left " << ct.toString() << endl;
       return true;
@@ -332,13 +345,13 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
   if (lhsSuccessors.size() == 0) {
     cout << spaces(depth) << "no lhs successors, taking defined symbols" << "(" << ConstrainedTerm(lhs, ct.constraint).toString() << ")" << endl;
     for (const auto &it : ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch())
-      lhsSuccessors.push_back(make_pair(it, false));
+      lhsSuccessors.push_back(make_pair(it, (progressLeft || false)));
   }
   for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {
     ConstrainedSolution sol = lhsSuccessors[i].first;
     ConstrainedTerm afterStep = pairC(sol.term, rhs, bAnd(ct.constraint, sol.constraint));
     afterStep = simplifyConstrainedTerm(afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst));
-    if (!proveSimulationForallLeft(afterStep, lhsSuccessors[i].second, progressRight, depth + 1)) {
+    if (!proveSimulationForallLeft(afterStep, lhsSuccessors[i].second, depth + 1)) {
       cout << spaces(depth) << "! proof failed (" << i << "th successor) forall left " << ct.toString() << endl;
       return false;
     }
@@ -353,10 +366,10 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
   }
 }
 
-bool QueryProveSim::proveSimulation(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth) {
+bool QueryProveSim::proveSimulation(ConstrainedTerm ct, int depth) {
   ct = ct.normalizeFunctions();
   cout << spaces(depth) << "Proving simulation circularity " << ct.toString() << endl;
-  bool result = proveSimulationForallLeft(ct, progressLeft, progressRight, depth + 1);
+  bool result = proveSimulationForallLeft(ct, false, depth + 1);
   if (result) {
     cout << spaces(depth) << "Proof succeeded." << endl;
   }
@@ -367,7 +380,7 @@ bool QueryProveSim::proveSimulation(ConstrainedTerm ct, bool progressLeft, bool 
 }
 
 void QueryProveSim::execute() {
-  Log(DEBUG9) << "Proving equivalence" << endl;
+  Log(DEBUG9) << "Proving simulation" << endl;
   Log(DEBUG9) << "Left constrained rewrite sytem:" << endl;
   Log(DEBUG9) << crsLeft.toString() << endl;
   Log(DEBUG9) << "Rigth constrained rewrite sytem:" << endl;
@@ -398,7 +411,7 @@ void QueryProveSim::execute() {
     }
   }
   if (pairFun == 0) {
-    Log(ERROR) << "Found no base terms in equivalence prove query." << endl;
+    Log(ERROR) << "Found no base terms in simulation prove query." << endl;
     abort();
   }
 
@@ -422,13 +435,24 @@ void QueryProveSim::execute() {
 
   // prove all circularities
   for (int i = 0; i < circCount; ++i) {
-    cout << "Proving equivalence circularity #" << (i + 1) << endl;
+    cout << "Proving simulation circularity #" << (i + 1) << endl;
     ConstrainedTerm ct = circularities[i];
-    if (proveSimulation(ct, false, false, 0)) {
+    if (proveSimulation(ct, 0)) {
       cout << "Succeeded in proving circularity #" << (i + 1) << endl;
     }
     else {
       cout << "Failed to prove circularity #" << (i + 1) << endl;
+      failedCircularities.push_back(i + 1);
     }
+  }
+
+  if (failedCircularities.empty()) {
+    cout << "Succeeded in proving ALL circularities" << endl;
+  }
+  else {
+    cout << "Failed to prove the following cirularities:";
+    for (const auto &idx : failedCircularities)
+      cout << " #" << idx;
+    cout << endl;
   }
 }

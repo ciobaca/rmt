@@ -1,8 +1,9 @@
 sorts State;
 
 signature
-  f : State State -> State [c],
-  ff : State State -> State [acu],
+  f : State State -> State [ c ],
+  e : -> State,
+  ff : State State -> State [ a c u(e)],
   g : State State -> State;
 
 variables X : State, Y : State, Z : State;

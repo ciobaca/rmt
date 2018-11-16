@@ -171,7 +171,7 @@ private:
   }
 
   friend Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars);
-  friend void createUninterpretedFunction(string, vector<Sort *>, Sort *, bool = false, bool = false, Function* = NULL);
+  friend void createUninterpretedFunction(string, vector<Sort *>, Sort *, bool, bool, Function*);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, string);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, Z3_func_decl);
 };

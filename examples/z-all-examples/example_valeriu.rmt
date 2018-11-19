@@ -13,3 +13,4 @@ c-unify (f X Y) (f Y (f Z Y));
 c-unify (g X Y) (g Y (f Z Y));
 c-unify (f (f X Z) (f Z Y)) (f Y (f Z Y));
 c-unify (g (g X Z) (g Z Y)) (g Y (g Z Y));
+acu-unify (f X Y) (f X Y);

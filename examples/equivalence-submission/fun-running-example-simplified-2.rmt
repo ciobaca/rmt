@@ -1,27 +1,23 @@
-/*
-
-Top-most definition of the FUN language.
-
-*/
-
+/* Top-most definition of the FUN language. */
 sorts State, Exp, Nexp, List;
 
 subsort Int < Exp;
 subsort Nexp < Exp;
 
 signature
-  empty : List,
-  cons : Exp List,
+  empty : -> List,
+  cons : Exp List -> List,
 
-  HOLE : Exp,
+  HOLE : -> Exp,
 
   fplus : Exp Exp -> Nexp,
   fminus : Exp Exp -> Nexp,
 
   f : Exp -> Nexp,
+
   fa : Exp Exp Exp -> Nexp,
 
-  pair : Exp Exp -> State;
+  pair : List List -> State;
 
 variables N : Int, I : Int, J : Int, K : Int, S : Int, A : Int, X : Int,
 
@@ -31,58 +27,69 @@ NE : Nexp, NE1 : Nexp, NE2 : Nexp, NE3 : Nexp,
 
 LIST : List;
 
-define reduce : Int Int Exp -> Exp by
-  (reduce N I E) /\ (mle N I) => E,
-  (reduce N I E) /\ (bnot (mle N I)) => (reduce N (mplus I 1) (fplus I E));
+define reduce : Int Int List -> List by
+  (reduce I N LIST) /\ (mgt I N) => LIST,
+  (reduce I N LIST) /\ (mle I N) => (cons (fplus I HOLE)
+                                       (reduce (mplus I 1) N LIST));
+
+// definedsearch [1,10] (reduce 1 3 empty);
+
+// !EOF!
 
 constrained-rewrite-system flanguage
   (cons (fplus NE1 E2) LIST) => (cons NE1 (cons (fplus HOLE E2) LIST)),
-  (fplus (fc I) E2) => (fc (fplus I E2)),
-  (fc (fplus I NE2)) => (fplus I (fc NE2)),
-  (fplus I (fc J)) => (fc (fplus I J)),
-  (fc (fplus I J)) => (fc (mplus I J)),
+  (cons I (cons (fplus HOLE E2) LIST)) => (cons (fplus I E2) LIST),
+  (cons (fplus I NE2) LIST) => (cons NE2 (cons (fplus I HOLE) LIST)),
+  (cons J (cons (fplus I HOLE) LIST)) => (cons (fplus I J) LIST),
+  (cons (fplus I J) LIST) => (cons (mplus I J) LIST),
+  
+  (cons (fminus NE1 E2) LIST) => (cons NE1 (cons (fminus HOLE E2) LIST)),
+  (cons I (cons (fminus HOLE E2) LIST)) => (cons (fminus I E2) LIST),
+  (cons (fminus I NE2) LIST) => (cons NE2 (cons (fminus I HOLE) LIST)),
+  (cons J (cons (fminus I HOLE) LIST)) => (cons (fminus I J) LIST),
+  (cons (fminus I J) LIST) => (cons (mminus I J) LIST),
 
-  (fc (fminus NE1 E2)) => (fminus (fc NE1) E2),
-  (fminus (fc I) E2) => (fc (fminus I E2)),
-  (fc (fminus I NE2)) => (fminus I (fc NE2)),
-  (fminus I (fc J)) => (fc (fminus I J)),
-  (fc (fminus I J)) => (fc (mminus I J)),
+  (cons (f NE) LIST) => (cons NE (cons (f HOLE) LIST)),
+  (cons I (cons (f HOLE) LIST)) => (cons (f I) LIST),
+  (cons (f I) LIST) /\ (bnot (mle I 0)) => (cons (fplus I (f (fminus I 1))) LIST),
+  (cons (f I) LIST) /\ (mle I 0) => (cons 0 LIST),
 
-  (fc (f NE)) => (f (fc NE)),
-  (f (fc I)) => (fc (f I)),
-  (fc (f N)) /\ (mle N 0) => (fc 0),
-  (fc (f N)) /\ (bnot (mle N 0)) => (fc (fplus N (f (fminus N 1)))),
+  (cons (fa NE1 E2 E3) LIST) => (cons NE1 (cons (fa HOLE E2 E3) LIST)),
+  (cons N (cons (fa HOLE E2 E3) LIST)) => (cons (fa N E2 E3) LIST),
 
-  (fc (fa NE1 E2 E3)) => (fa (fc NE1) E2 E3),
-  (fa (fc I) E2 E3) => (fc (fa I E2 E3)),
-  (fc (fa I NE2 E3)) => (fa I (fc NE2) E3),
-  (fa I (fc J) E3) => (fc (fa I J E3)),
-  (fc (fa I J NE3)) => (fa I J (fc NE3)),
-  (fa I J (fc K)) => (fa I J K),
+  (cons (fa N NE2 E3) LIST) => (cons NE2 (cons (fa N HOLE E3) LIST)),
+  (cons I (cons (fa N HOLE E3) LIST)) => (cons (fa N I E3) LIST),
 
-  (fc (fa A I N)) /\ (bnot (mle I N)) => (fc A),
-  (fc (fa A I N)) /\ (mle I N) => (fc (fa (fplus A I) (fplus I 1) N));
+  (cons (fa N I NE3) LIST) => (cons NE3 (cons (fa N I HOLE) LIST)),
+  (cons A (cons (fa N I HOLE) LIST)) => (cons (fa N I A) LIST),
 
-// run in flanguage : (fc (fa 0 0 (mplus 15 15)));
+  (cons (fa N I A) LIST) /\ (bnot (mle I N)) => (cons A LIST),
+  (cons (fa N I A) LIST) /\ (mle I N) => (cons (fa N (fplus I 1) (fplus A I)) LIST);
+ 
+//run in flanguage : (cons (fa 4 0 0) empty);
 
-show-equivalent [ 900, 1 ] in flanguage and flanguage :
+//run in flanguage : (cons (f 4) empty);
+
+//!EOF!
+
+show-simulation [ 900, partial ] in flanguage and flanguage :
+ //   (pair
+ //     (cons (f N) empty)
+ //     (cons (fa N 0 0) empty)) ///\ (mle 0 N)
+ // /\       (band (mle 0 N) (mle N 2))
+// ,
    (pair
-    (fc (f N))
-    (fc (fa 0 0 N))) /\ (mle 0 N)
-// /\       (band (mle 0 N) (mle N 2))
-,
-   (pair
-    (reduce (mplus N 1) (mplus I 1) (fc (f I)))          // N + ... + (I+1) + (fc (f I))
-    (fc (fa 0 0 N))) /\ (band (mle I N) (mle 0 I))
-// /\ (band
-//          (band (mle 0 N) (mle N 2))
-//          (band (mle I N) (mle 0 I)))
-,
-    (pair
-     (reduce (mplus N 1) I (fc X))                       // N + ... + I + (fc X)
-     (fc (fa X I N)))
-// /\ (band
-//          (band (mle 0 N) (mle N 5))
-//          (band (mle I N) (mle 0 I)))
+     (cons S (reduce I N empty))
+     (cons (fa N I S) empty))
+ /\ (band
+          (band (mle 1 N) (mle N 1))
+          (band (mle I 1) (mle 1 I)))
+// ,
+//     (pair
+//      (reduce (mplus N 1) I (fc X))                       // N + ... + I + (fc X)
+//      (fc (fa X I N)))
+// // /\ (band
+// //          (band (mle 0 N) (mle N 5))
+// //          (band (mle I N) (mle 0 I)))
 with-base
-     (pair (fc S) (fc S));
+      (pair (cons S empty) (cons S empty));

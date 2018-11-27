@@ -26,6 +26,7 @@ struct QueryProveSim : public Query {
   /* query parameters */
   int maxDepth;
   bool needProgressRight;
+  bool isBounded;
 
   /* holds information about which proofs failed */
   vector<int> failedCircularities;

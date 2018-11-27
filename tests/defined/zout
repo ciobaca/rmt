@@ -1,0 +1,151 @@
+INF Creating interpreted sort Bool as (Bool).
+INF Creating interpreted sort Int as (Int).
+INF Creating interpreted function 0 (as 0) :  -> Int
+INF Creating interpreted function 1 (as 1) :  -> Int
+INF Creating interpreted function 2 (as 2) :  -> Int
+INF Creating interpreted function 3 (as 3) :  -> Int
+INF Creating interpreted function 4 (as 4) :  -> Int
+INF Creating interpreted function 5 (as 5) :  -> Int
+INF Creating interpreted function 6 (as 6) :  -> Int
+INF Creating interpreted function 7 (as 7) :  -> Int
+INF Creating interpreted function 8 (as 8) :  -> Int
+INF Creating interpreted function 9 (as 9) :  -> Int
+INF Creating interpreted function 10 (as 10) :  -> Int
+INF Creating interpreted function 11 (as 11) :  -> Int
+INF Creating interpreted function 12 (as 12) :  -> Int
+INF Creating interpreted function 13 (as 13) :  -> Int
+INF Creating interpreted function 14 (as 14) :  -> Int
+INF Creating interpreted function 15 (as 15) :  -> Int
+INF Creating interpreted function mplus (as +) : Int Int  -> Int
+INF Creating interpreted function mminus (as -) : Int Int  -> Int
+INF Creating interpreted function mtimes (as *) : Int Int  -> Int
+INF Creating interpreted function mdiv (as div) : Int Int  -> Int
+INF Creating interpreted function mmod (as mod) : Int Int  -> Int
+INF Creating interpreted function mle (as <=) : Int Int  -> Bool
+INF Creating interpreted function mge (as >=) : Int Int  -> Bool
+INF Creating interpreted function mless (as <) : Int Int  -> Bool
+INF Creating interpreted function mgt (as >) : Int Int  -> Bool
+INF Creating interpreted function mequals (as =) : Int Int  -> Bool
+INF Creating interpreted function iteInt (as ite) : Bool Int Int  -> Bool
+INF Creating interpreted function true (as true) :  -> Bool
+INF Creating interpreted function false (as false) :  -> Bool
+INF Creating interpreted function bnot (as not) : Bool  -> Bool
+INF Creating interpreted function band (as and) : Bool Bool  -> Bool
+INF Creating interpreted function biff (as iff) : Bool Bool  -> Bool
+INF Creating interpreted function bor (as or) : Bool Bool  -> Bool
+INF Creating interpreted function bimplies (as =>) : Bool Bool  -> Bool
+INF Creating interpreted function bequals (as =) : Bool Bool  -> Bool
+INF Creating uninterpreted function _existsBool : Bool Bool  -> Bool
+INF Creating uninterpreted function _existsInt : Int Bool  -> Bool
+INF Creating uninterpreted function _forallBool : Bool Bool  -> Bool
+INF Creating uninterpreted function _forallInt : Int Bool  -> Bool
+INF Creating uninterpreted sort State.
+INF Creating uninterpreted sort ExpF.
+INF Declaring the sorts: Int as subsorts of ExpF 
+INF Creating uninterpreted function box : Int  -> ExpF
+INF Creating uninterpreted function pair : ExpF ExpF  -> State
+INF Creating uninterpreted function fplus : ExpF ExpF  -> ExpF
+INF Creating uninterpreted function f : ExpF  -> ExpF
+INF Creating uninterpreted function fa : ExpF ExpF ExpF  -> ExpF
+INF Creating uninterpreted function reduce : Int Int ExpF  -> ExpF
+INF Parsed rewrite rule for func def: (reduce N I E) /\ (mle N I) => E
+INF Parsed rewrite rule for func def: (reduce N I E) /\ (bnot (mle N I)) => (reduce N (mplus I 1) (fplus I E))
+INF Parsed rewrite rule: (f N) /\ (mle N 0) => 0
+INF Parsed rewrite rule: (f N) /\ (bnot (mle N 0)) => (fplus N (f (mminus N 1)))
+INF Parsed rewrite rule: (fa A I N) /\ (bnot (mle I N)) => A
+INF Parsed rewrite rule: (fa A I N) /\ (mle I N) => (fa (mplus A I) (mplus I 1) N)
+INF Parsed rewrite rule: (fplus N I) /\ true => (mplus N I)
+Constrained term (pair (f N) (fa 0 0 N)) /\ (mle 0 N) has 0 defined symbols.
+Constrained term (pair (reduce (mplus N 1) (mplus I 1) (f I)) (fa 0 0 N)) /\ (band (mle I N) (mle 0 I)) has 1 defined symbols.
+Constrained term (pair (f I) (fa 0 0 N)) /\ (band (band (mle I N) (mle 0 I)) (mle (mplus N 1) (mplus I 1))) has 0 defined symbols.
+INF Adding new circ (not necessary to prove) (pair (f I) (fa 0 0 N)) /\ (band (band (mle I N) (mle 0 I)) (mle (mplus N 1) (mplus I 1)))
+Constrained term (pair (reduce (mplus N 1) (mplus (mplus I 1) 1) (fplus (mplus I 1) (f I))) (fa 0 0 N)) /\ (band (band (mle I N) (mle 0 I)) (bnot (mle (mplus N 1) (mplus I 1)))) has 1 defined symbols.
+INF Adding new circ (not necessary to prove) (pair (fplus (mplus I 1) (f I)) (fa 0 0 N)) /\ (band (band (band (mle I N) (mle 0 I)) (bnot (mle (mplus N 1) (mplus I 1)))) (mle (mplus N 1) (mplus (mplus I 1) 1)))
+INF Adding new circ (not necessary to prove) (pair (reduce (mplus N 1) (mplus (mplus (mplus I 1) 1) 1) (fplus (mplus (mplus I 1) 1) (fplus (mplus I 1) (f I)))) (fa 0 0 N)) /\ (band (band (band (mle I N) (mle 0 I)) (bnot (mle (mplus N 1) (mplus I 1)))) (bnot (mle (mplus N 1) (mplus (mplus I 1) 1))))
+INF Adding new circ (not necessary to prove) (pair (reduce (mplus N 1) (mplus (mplus I 1) 1) (fplus (mplus I 1) (f I))) (fa 0 0 N)) /\ (band (band (mle I N) (mle 0 I)) (bnot (mle (mplus N 1) (mplus I 1))))
+Constrained term (pair (reduce (mplus N 1) I X) (fa X I N)) /\ true has 1 defined symbols.
+Constrained term (pair X (fa X I N)) /\ (band true (mle (mplus N 1) I)) has 0 defined symbols.
+INF Adding new circ (not necessary to prove) (pair X (fa X I N)) /\ (band true (mle (mplus N 1) I))
+Constrained term (pair (reduce (mplus N 1) (mplus I 1) (fplus I X)) (fa X I N)) /\ (band true (bnot (mle (mplus N 1) I))) has 1 defined symbols.
+INF Adding new circ (not necessary to prove) (pair (fplus I X) (fa X I N)) /\ (band (band true (bnot (mle (mplus N 1) I))) (mle (mplus N 1) (mplus I 1)))
+INF Adding new circ (not necessary to prove) (pair (reduce (mplus N 1) (mplus (mplus I 1) 1) (fplus (mplus I 1) (fplus I X))) (fa X I N)) /\ (band (band true (bnot (mle (mplus N 1) I))) (bnot (mle (mplus N 1) (mplus I 1))))
+INF Adding new circ (not necessary to prove) (pair (reduce (mplus N 1) (mplus I 1) (fplus I X)) (fa X I N)) /\ (band true (bnot (mle (mplus N 1) I)))
+Proving equivalence circularity #1
+Proving simulation circularity (pair (f N) (fa 0 0 N)) /\ (mle 0 N)
+    + prove forall left (pair (f N) (fa 0 0 N)) /\ (mle 0 N)
+        + prove forall left (pair 0 (fa 0 0 N)) /\ (band (mle 0 N) (mle N 0))
+            + prove exists right (pair 0 (fa 0 0 N)) /\ (band (mle 0 N) (mle N 0))
+                Trying to prove base case: (pair 0 (fa 0 0 N)) /\ (band (mle 0 N) (mle N 0))
+                Instance of base only when false
+                Instance of circularity only when (bor (bnot (band (mle 0 N) (mle N 0))) (mle N -1))
+            + continuing exists right for case (bnot (bor (bnot (band (mle 0 N) (mle N 0))) (mle N -1)))
+                + prove exists right (pair 0 (fa 0 1 N)) /\ (band (mle 0 N) (band (mle N 0) (bnot (bor (bnot (band (mle 0 N) (mle N 0))) (mle N -1)))))
+                    Trying to prove base case: (pair 0 (fa 0 1 N)) /\ (band (mle 0 N) (band (mle N 0) (bnot (bor (bnot (band (mle 0 N) (mle N 0))) (mle N -1)))))
+                    Instance of base only when false
+                    Proof succeeded: reached a circularity.
+                - proof successful exists right (pair 0 (fa 0 1 N)) /\ (band (mle 0 N) (band (mle N 0) (bnot (bor (bnot (band (mle 0 N) (mle N 0))) (mle N -1)))))
+            - proof was successful for exists right
+        - proof succeeded forall left (pair 0 (fa 0 0 N)) /\ (band (mle 0 N) (mle N 0))
+        + prove forall left (pair (fplus N (f (mplus -1 N))) (fa 0 0 N)) /\ (band (mle 0 N) (bnot (mle N 0)))
+            + prove exists right (pair (fplus N (f (mplus -1 N))) (fa 0 0 N)) /\ (band (mle 0 N) (bnot (mle N 0)))
+                Trying to prove base case: (pair (fplus N (f (mplus -1 N))) (fa 0 0 N)) /\ (band (mle 0 N) (bnot (mle N 0)))
+                Instance of base only when false
+                Proof succeeded: reached a circularity.
+            - proof successful exists right (pair (fplus N (f (mplus -1 N))) (fa 0 0 N)) /\ (band (mle 0 N) (bnot (mle N 0)))
+        - proof succeeded forall left (pair (fplus N (f (mplus -1 N))) (fa 0 0 N)) /\ (band (mle 0 N) (bnot (mle N 0)))
+    - proof succeeded forall left (pair (f N) (fa 0 0 N)) /\ (mle 0 N)
+Proof succeeded.
+Succeeded in proving circularity #1
+Proving equivalence circularity #2
+Proving simulation circularity (pair (reduce (mplus N 1) (mplus I 1) (f I)) (fa 0 0 N)) /\ (band (mle I N) (mle 0 I))
+    + prove forall left (pair (reduce (mplus N 1) (mplus I 1) (f I)) (fa 0 0 N)) /\ (band (mle I N) (mle 0 I))
+        + prove forall left (pair (reduce (mplus 1 N) (mplus 1 I) 0) (fa 0 0 N)) /\ (band (mle I N) (band (mle 0 I) (mle I 0)))
+            + prove exists right (pair (reduce (mplus 1 N) (mplus 1 I) 0) (fa 0 0 N)) /\ (band (mle I N) (band (mle 0 I) (mle I 0)))
+                Trying to prove base case: (pair (reduce (mplus 1 N) (mplus 1 I) 0) (fa 0 0 N)) /\ (band (mle I N) (band (mle 0 I) (mle I 0)))
+                Instance of base only when false
+                Instance of circularity only when (bor (bnot (band (mle I N) (band (mle 0 I) (mle I 0)))) (mequals I -1))
+            + continuing exists right for case (bnot (bor (bnot (band (mle I N) (band (mle 0 I) (mle I 0)))) (mequals I -1)))
+                + prove exists right (pair (reduce (mplus 1 N) (mplus 1 I) 0) (fa 0 1 N)) /\ (band (mle I N) (band (mle 0 I) (band (mle I 0) (band (bnot (bor (bnot (band (mle I N) (band (mle 0 I) (mle I 0)))) (mequals I -1))) (mle 0 N)))))
+                    Trying to prove base case: (pair (reduce (mplus 1 N) (mplus 1 I) 0) (fa 0 1 N)) /\ (band (mle I N) (band (mle 0 I) (band (mle I 0) (band (bnot (bor (bnot (band (mle I N) (band (mle 0 I) (mle I 0)))) (mequals I -1))) (mle 0 N)))))
+                    Instance of base only when false
+                    Proof succeeded: reached a circularity.
+                - proof successful exists right (pair (reduce (mplus 1 N) (mplus 1 I) 0) (fa 0 1 N)) /\ (band (mle I N) (band (mle 0 I) (band (mle I 0) (band (bnot (bor (bnot (band (mle I N) (band (mle 0 I) (mle I 0)))) (mequals I -1))) (mle 0 N)))))
+            - proof was successful for exists right
+        - proof succeeded forall left (pair (reduce (mplus 1 N) (mplus 1 I) 0) (fa 0 0 N)) /\ (band (mle I N) (band (mle 0 I) (mle I 0)))
+        + prove forall left (pair (reduce (mplus 1 N) (mplus 1 I) (fplus I (f (mplus -1 I)))) (fa 0 0 N)) /\ (band (mle I N) (band (mle 0 I) (bnot (mle I 0))))
+            + prove exists right (pair (reduce (mplus 1 N) (mplus 1 I) (fplus I (f (mplus -1 I)))) (fa 0 0 N)) /\ (band (mle I N) (band (mle 0 I) (bnot (mle I 0))))
+                Trying to prove base case: (pair (reduce (mplus 1 N) (mplus 1 I) (fplus I (f (mplus -1 I)))) (fa 0 0 N)) /\ (band (mle I N) (band (mle 0 I) (bnot (mle I 0))))
+                Instance of base only when false
+                Proof succeeded: reached a circularity.
+            - proof successful exists right (pair (reduce (mplus 1 N) (mplus 1 I) (fplus I (f (mplus -1 I)))) (fa 0 0 N)) /\ (band (mle I N) (band (mle 0 I) (bnot (mle I 0))))
+        - proof succeeded forall left (pair (reduce (mplus 1 N) (mplus 1 I) (fplus I (f (mplus -1 I)))) (fa 0 0 N)) /\ (band (mle I N) (band (mle 0 I) (bnot (mle I 0))))
+    - proof succeeded forall left (pair (reduce (mplus N 1) (mplus I 1) (f I)) (fa 0 0 N)) /\ (band (mle I N) (mle 0 I))
+Proof succeeded.
+Succeeded in proving circularity #2
+Proving equivalence circularity #3
+Proving simulation circularity (pair (reduce (mplus N 1) I X) (fa X I N)) /\ true
+    + prove forall left (pair (reduce (mplus N 1) I X) (fa X I N)) /\ true
+    no lhs successors, taking defined symbols((fa X I N) /\ true)
+Constrained term (reduce (mplus N 1) I X) /\ true has 1 defined symbols.
+        + prove forall left (pair X (fa X I N)) /\ (mle N (mplus -1 I))
+            + prove exists right (pair X (fa X I N)) /\ (mle N (mplus -1 I))
+                + prove exists right (pair X X) /\ (band (mle N (mplus -1 I)) (bnot (mle I N)))
+                    Trying to prove base case: (pair X X) /\ (band (mle N (mplus -1 I)) (bnot (mle I N)))
+                    Proof succeeded: reached based equivalence.
+                - proof successful exists right (pair X X) /\ (band (mle N (mplus -1 I)) (bnot (mle I N)))
+            - proof was successful for exists right
+        - proof succeeded forall left (pair X (fa X I N)) /\ (mle N (mplus -1 I))
+        + prove forall left (pair (reduce (mplus 1 N) (mplus 1 I) (fplus I X)) (fa X I N)) /\ (bnot (mle N (mplus -1 I)))
+            + prove forall left (pair (reduce (mplus 1 N) (mplus 1 I) (mplus I X)) (fa X I N)) /\ (bnot (mle N (mplus -1 I)))
+                + prove exists right (pair (reduce (mplus 1 N) (mplus 1 I) (mplus I X)) (fa X I N)) /\ (bnot (mle N (mplus -1 I)))
+                    + prove exists right (pair (reduce (mplus 1 N) (mplus 1 I) (mplus I X)) (fa (mplus X I) (mplus 1 I) N)) /\ (band (bnot (mle N (mplus -1 I))) (mle I N))
+                        Trying to prove base case: (pair (reduce (mplus 1 N) (mplus 1 I) (mplus I X)) (fa (mplus X I) (mplus 1 I) N)) /\ (band (bnot (mle N (mplus -1 I))) (mle I N))
+                        Instance of base only when false
+                        Proof succeeded: reached a circularity.
+                    - proof successful exists right (pair (reduce (mplus 1 N) (mplus 1 I) (mplus I X)) (fa (mplus X I) (mplus 1 I) N)) /\ (band (bnot (mle N (mplus -1 I))) (mle I N))
+                - proof was successful for exists right
+            - proof succeeded forall left (pair (reduce (mplus 1 N) (mplus 1 I) (mplus I X)) (fa X I N)) /\ (bnot (mle N (mplus -1 I)))
+        - proof succeeded forall left (pair (reduce (mplus 1 N) (mplus 1 I) (fplus I X)) (fa X I N)) /\ (bnot (mle N (mplus -1 I)))
+    - proof succeeded forall left (pair (reduce (mplus N 1) I X) (fa X I N)) /\ true
+Proof succeeded.
+Succeeded in proving circularity #3

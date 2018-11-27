@@ -44,7 +44,7 @@ constrained-rewrite-system flanguage
 //     (reduce (mplus N 1) (mplus I 1) (f I))
 //     (fa 0 0 N)) /\ (band (mle I N) (mle 0 I));
 
-show-equivalent [ 15, 1 ] in flanguage and flanguage :
+show-simulation [ 20 ] in flanguage and flanguage :
    (pair
     (f N)
     (fa 0 0 N)) /\ (mle 0 N)

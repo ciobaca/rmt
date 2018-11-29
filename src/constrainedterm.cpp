@@ -31,12 +31,12 @@ string ConstrainedTerm::toPrettyString()
   return oss.str();
 }
 
-ConstrainedRewriteSystem ConstrainedTerm::getDefinedFunctionsSystem()
+ConstrainedRewriteSystem ConstrainedTerm::getDefinedFunctionsSystem(int printDepth)
 {
   vector<Function *> definedFunctions = this->getDefinedFunctions();
   ConstrainedRewriteSystem crsFinal;
 
-  cout << "Constrained term " << this->toString() << " has " << definedFunctions.size() << " defined symbols." << endl;
+  cout << spaces(printDepth) << "Constrained term " << this->toString() << " has " << definedFunctions.size() << " defined symbols." << endl;
   
   for (int i = 0; i < static_cast<int>(definedFunctions.size()); ++i) {
     Function *f = definedFunctions[i];
@@ -55,15 +55,15 @@ ConstrainedRewriteSystem ConstrainedTerm::getDefinedFunctionsSystem()
   return crsFinal;
 }
 
-vector<ConstrainedTerm> ConstrainedTerm::smtNarrowDefinedSearch(int minDepth, int maxDepth)
+vector<ConstrainedTerm> ConstrainedTerm::smtNarrowDefinedSearch(int minDepth, int maxDepth, int printDepth)
 {
-  ConstrainedRewriteSystem rs = this->getDefinedFunctionsSystem();
+  ConstrainedRewriteSystem rs = this->getDefinedFunctionsSystem(printDepth);
   return this->smtNarrowSearch(rs, minDepth, maxDepth);
 }
 
-vector<ConstrainedSolution> ConstrainedTerm::smtNarrowDefinedSearch()
+vector<ConstrainedSolution> ConstrainedTerm::smtNarrowDefinedSearch(int printDepth)
 {
-  ConstrainedRewriteSystem rs = this->getDefinedFunctionsSystem();
+  ConstrainedRewriteSystem rs = this->getDefinedFunctionsSystem(printDepth);
   return this->smtNarrowSearch(rs);
 }
 

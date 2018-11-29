@@ -27,10 +27,10 @@ struct ConstrainedTerm
   std::string toString();
   std::string toPrettyString();
   
-  ConstrainedRewriteSystem getDefinedFunctionsSystem();
+  ConstrainedRewriteSystem getDefinedFunctionsSystem(int printDepth = 0);
   
-  vector<ConstrainedSolution> smtNarrowDefinedSearch();
-  std::vector<ConstrainedTerm> smtNarrowDefinedSearch(int minDepth, int maxDepth);
+  vector<ConstrainedSolution> smtNarrowDefinedSearch(int printDepth = 0);
+  std::vector<ConstrainedTerm> smtNarrowDefinedSearch(int minDepth, int maxDepth, int printDepth = 0);
 
   std::vector<ConstrainedSolution> smtNarrowSearch(ConstrainedRewriteSystem &crs);
 

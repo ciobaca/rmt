@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 2.8.9)
 project(rmt C CXX)
 
 set(CMAKE_C_STANDARD_REQUIRED ON)

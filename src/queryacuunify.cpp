@@ -39,9 +39,7 @@ void QueryACUUnify::parse(string &s, int &w) {
 }
 
 void QueryACUUnify::execute() {
-  cout << "ACU-Unifying " << t1->toString() << " and " << t2->toString() << endl;
-
-  map<Term*, int> l, r;
+  Function *f = getFunction("f");
   function<void(Term*, map<Term*, int>&)> getCoefs = [&](Term *t, map<Term*, int> &M) {
     if(t->isVarTerm()) {
       ++M[t];
@@ -82,14 +80,6 @@ void QueryACUUnify::execute() {
     }
     return ans;
   };
-  getCoefs(t1, l);
-  getCoefs(t2, r);
-  delSameCoefs(l, r);
-  vector<int> a = fromMapToVector(l);
-  vector<int> b = fromMapToVector(r);
-  LDEGraphAlg graphAlg(a, b);
-  vector<pair<vector<int>, vector<int>>> result = graphAlg.solve();
-  Function *f = getFunction("f");
   auto createFuncWithSameVar = [&] (int cnt, Term* var) {
     if (!cnt) {
       return getFunTerm(getFunction("e"), {});
@@ -106,6 +96,19 @@ void QueryACUUnify::execute() {
     return ans;
   };
 
+  cout << "ACU-Unifying " << t1->toString() << " and " << t2->toString() << endl;
+  map<Term*, int> l, r;
+  getCoefs(t1, l);
+  getCoefs(t2, r);
+  delSameCoefs(l, r);
+  vector<int> a = fromMapToVector(l);
+  vector<int> b = fromMapToVector(r);
+  LDEGraphAlg graphAlg(a, b);
+  vector<pair<vector<int>, vector<int>>> result = graphAlg.solve();
+  if (!result.size()) {
+    cout << "No unification" << endl;
+    return;
+  }
   vector<Substitution> sigma;
   int varId = 0;
   for (auto sol : result) {
@@ -123,9 +126,26 @@ void QueryACUUnify::execute() {
       sigma.back().add(it.first->getAsVarTerm()->variable, createFuncWithSameVar(sol.second[index], z));
       ++index;
     }
-    cout << sigma.back().toString() << endl;
     ++varId;
   }
+
+  Substitution finalSubst;
+  for (auto it : l) {
+    Term *ans = getFunTerm(getFunction("e"), {});
+    for (auto subst : sigma) {
+      ans = getFunTerm(f, {ans, subst.image(it.first->getAsVarTerm()->variable)});
+    }
+    finalSubst.add(it.first->getAsVarTerm()->variable, ans);
+  }
+  for (auto it : r) {
+    Term *ans = getFunTerm(getFunction("e"), {});
+    for (auto subst : sigma) {
+      ans = getFunTerm(f, {ans, subst.image(it.first->getAsVarTerm()->variable)});
+    }
+    finalSubst.add(it.first->getAsVarTerm()->variable, ans);
+  }
+
+  cout << finalSubst.toString() << endl;
 }
 
 /*

@@ -66,33 +66,78 @@ constrained-rewrite-system flanguage
   (cons (fa N I A) LIST) /\ (bnot (mle I N)) => (cons A LIST),
   (cons (fa N I A) LIST) /\ (mle I N) => (cons (fa N (fplus I 1) (fplus A I)) LIST);
  
-//run in flanguage : (cons (fa 4 0 0) empty);
+//run in flanguage : (cons (fa 4 0 9) empty);
 
 //run in flanguage : (cons (f 4) empty);
 
 //!EOF!
 
-show-simulation [ 20, partial ] in flanguage and flanguage :
-    (pair
+// define reduce : Int Int List -> List by
+//  (reduce I N LIST) /\ (mgt I N) => LIST,
+//  (reduce I N LIST) /\ (mle I N) => (cons (fplus I HOLE)
+//                                       (reduce (mplus I 1) N LIST));
+
+/*
+
+// PARTIAL SIMULATION : works to show accumulator simulates non-accumulator
+
+show-simulation [ 100, partial ] in flanguage and flanguage :
+
+(pair
+      (cons (f N) empty)
+      (cons (fa N 0 0) empty)
+      ) /\ (mle 0 N)
+//  /\       (band (mle 0 N) (mle N 5))
+
+,
+
+(pair
+     (cons S (reduce I N empty))
+     (cons (fa N I S) empty)
+     )
+ /\ (band
+          (band (mle 0 N) true)
+          (band (mle I N) (mle 1 I)))
+
+, 
+(pair
+      (cons (f I) (reduce (mplus I 1) N empty))
+      (cons (fa N 0 0) empty)
+      )
+  /\ (band
+           (band (mle 0 N) true)
+           (band (mle (mplus I 1) N) (mle 0 I)))
+	   
+with-base
+      (pair (cons S empty) (cons S empty));
+*/
+
+show-simulation [ 100, partial ] in flanguage and flanguage :
+
+(pair
       (cons (fa N 0 0) empty)
       (cons (f N) empty)
       ) /\ (mle 0 N)
-  ///\       (band (mle 0 N) (mle N 2))
- ,
-   (pair
-    (cons (fa N I S) empty)
+//  /\       (band (mle 0 N) (mle N 5))
+
+,
+
+(pair
+     (cons (fa N I S) empty)
      (cons S (reduce I N empty))
      )
  /\ (band
           (band (mle 0 N) true)
           (band (mle I N) (mle 1 I)))
- /*
- ,
-     (pair
-      (reduce (mplus N 1) I (fc X))                       // N + ... + I + (fc X)
-      (  fc (fa X I N))  )
+
+, 
+(pair
+      (cons (fa N I A) empty)
+      (cons (f I) (reduce (mplus I 1) N empty))
+      )
   /\ (band
-           (band (mle 0 N) (mle N 5))
-           (band (mle I N) (mle 0 I))) */
+           (band (mle 0 N) true)
+           (band (mle (mplus I 1) N) (mle 0 I)))
+	   
 with-base
       (pair (cons S empty) (cons S empty));

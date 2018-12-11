@@ -123,6 +123,7 @@ Term *QueryProveSim::whenImpliesBase(ConstrainedTerm current) {
     Term *constraint = current.normalizeFunctions().whenImplies(base[i]);
     constraintResult = bOr(constraintResult, constraint);
   }
+  constraintResult = simplifyConstraint(constraintResult);
   return constraintResult;
 }
 
@@ -133,6 +134,7 @@ Term *QueryProveSim::whenImpliesCircularity(ConstrainedTerm current) {
     Term *constraint = current.normalizeFunctions().whenImplies(circularities[i]);
     constraintResult = bOr(constraintResult, constraint);
   }
+  constraintResult = simplifyConstraint(constraintResult);
   return constraintResult;
 }
 
@@ -288,12 +290,16 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
       unsolvedConstraint = simplifyConstraint(bAnd(unsolvedConstraint,
         bNot(bAnd(t.ct.constraint, baseCaseConstraint))));
 
-      if (isSatisfiable(bNot(bImplies(initialArgs.ct.constraint, bNot(unsolvedConstraint)))) == unsat) {
+      if (isSatisfiable(unsolvedConstraint) == unsat) {
         //problem is solved for the search space of this call to ExistsRight
         cout << spaces(t.depth) << "- proof successful exists right (no unsolved cases) " << unsolvedConstraint->toString() << endl;
         for (--t.depth; t.depth >= initialArgs.depth; --t.depth)
           cout << spaces(t.depth) << "- proof was successful for exists right" << endl;
         return NULL;
+      }
+
+      if (isSatisfiable(bNot(  bImplies(unsolvedConstraint, baseCaseConstraint)  )) == unsat) {
+	continue;
       }
 
       //re-adding unsolvedConstrained to current successor
@@ -306,14 +312,9 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
       rhsSuccessors.push_back(make_pair(it, true));
 
     if (rhsSuccessors.size() == 0) {
-      cout << spaces(t.depth) << "no rhs successors, taking defined symbols" << "(" << ConstrainedTerm(rhs, t.ct.constraint).toString() << ")" << endl;
+      //      cout << spaces(t.depth) << "no rhs successors, taking defined symbols" << "(" << ConstrainedTerm(rhs, t.ct.constraint).toString() << ")" << endl;
       for (const auto &it : ConstrainedTerm(rhs, t.ct.constraint).smtNarrowDefinedSearch(t.depth))
         rhsSuccessors.push_back(make_pair(it, t.progressRight));
-    }
-
-    if (rhsSuccessors.size() == 0) {
-      cout << spaces(t.depth) << "! proof failed (no successors) exists right " << t.ct.toString() << endl;
-      continue;
     }
 
     for (int i = 0; i < (int)rhsSuccessors.size(); ++i) {
@@ -323,7 +324,6 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
       afterStep = simplifyConstrainedTerm(afterStep);
       BFS_Q.push(proveSimulationExistsRight_arguments(afterStep, rhsSuccessors[i].second, t.depth + 1));
     }
-
   }
 
   return unsolvedConstraint;

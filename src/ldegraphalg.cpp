@@ -18,8 +18,8 @@ LDEGraphAlg::LDEGraphAlg(const vector<int> &a, const vector<int> &b, int c) {
   this->a = a;
   this->b = b;
   this->c = c;
-  this->offset = *max_element(a.begin(), a.end());
-  this->viz.resize(offset + max(*max_element(b.begin(), b.end()), c) + 1);
+  this->offset = max(*max_element(a.begin(), a.end()), abs(c));
+  this->viz.resize(offset + max(*max_element(b.begin(), b.end()), abs(c)) + 1);
   this->partialSol.resize(a.size() + b.size());
   this->sumPartialSol = 0;
 }

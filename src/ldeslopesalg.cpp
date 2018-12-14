@@ -109,7 +109,7 @@ vector<tuple<int, int, int>> LDESlopesAlg::solve(int a, int b, int c) {
 
 vector<tuple<int, int, int>> LDESlopesAlg::solve(int a, int b, int c, int v) {
   if (!v) {
-    return {{0, 0, 0}};
+    return solve(a, b, c);
   }
   vector<tuple<int, int, int>> basis;
   int gb = gcd(a, b);
@@ -124,41 +124,47 @@ vector<tuple<int, int, int>> LDESlopesAlg::solve(int a, int b, int c, int v) {
   int dz = gb / gabc;
   int dy = (c * mb / gabc) % ymax;
   int z = ((-v * getMc(a, b, c) / gabc) % dz + dz) % dz;
-  int y = ((-v - z * c) * mb / gb) % ymax;
+  int y = ((((-v - z * c) * mb / gb) % ymax) + ymax) % ymax;
   y += ymax * max(0, (-b * y - c * z - v + b * ymax + 1) / (b * ymax));
   int x = (b * y + c * z + v) / a;
-  vector<tuple<int, int, int>> sols = solve(ymax, ymax - 1, dy);
-  if (x >= 0 && y >= 0 && z >= 0) {
-    basis.emplace_back(x, y, z);
-  }
+
+  auto isLess = [&](tuple<int, int, int> &x, tuple<int, int, int> &y) {
+    return (get<0>(x) <= get<0>(y)) && (get<1>(x) <= get<1>(y)) && (get<2>(x) <= get<2>(y));
+  };
 
   if (v < 0) {
-    int ymin = 0;
-    if(b && !c) {
-      ymin = max(0, (-v + b - 1) / b);
-    }
-    int dxL = (-b * get<1>(sols.back()) + c * get<2>(sols.back()) * dz) / a;
-    int dxL1 = (-b * get<1>(sols[sols.size() - 2]) + c * get<2>(sols[sols.size() - 2]) * dz) / a;
-    int dzL = get<2>(sols.back());
-    int dx0 = (-b * get<1>(sols[0]) + c * get<2>(sols[0]) * dz) / a;
-    int dy0 = get<1>(sols[0]);
-    while (y > ymin) {
-      for (int i = 0; i < (int)sols.size(); ++i) {
-        dy = get<1>(sols[i]);
-        int k = get<2>(sols[i]);
-        int dx = (-b * dy + c * k * dz) / a;
-        int t0 = max(0, (-x - dxL1 + dxL - 1) / dxL);
-        int r0 = (y - dy) / ymax;
-        if (dx0) r0 = min(r0, (x + t0 * dxL + dx) / -dx0);
-        if (y - dy + dy0 * r0 < 0 || x + dx + dx0 * r0 + t0 * dxL < 0) continue;
-        y -= dy - dy0 * r0;
-        z += dz * k + t0 * dzL;
-        x += dx + dx0 * r0 + t0 * dxL;
-        basis.emplace_back(x, y, z);
-        break;
+    int coef = (-c * z - v - b * y) / (b * ymax) + ((-c * z - v - b * y) % (b * ymax) > 0);
+    coef = max(coef, -y / ymax);
+    y += coef * ymax;
+    tuple<int, int, int> now = make_tuple((b * y + c * z + v) / a, y, z);
+    basis.push_back(now);
+    int p = ymax;
+    zmax = max(zmax, -v);
+    while (z <= zmax && p > 0) {
+      if (y < p && z >= 0 && y >= 0) {
+        coef = (-c * z - v - b * y) / (b * ymax) + ((-c * z - v - b * y) % (b * ymax) > 0);
+        coef = max(coef, -y / ymax);
+        y += coef * ymax;
+        now = make_tuple((b * y + c * z + v) / a, y, z);
+        while(basis.size() && isLess(now, basis.back())) basis.pop_back();
+        if (!basis.size() || !isLess(basis.back(), now)) {
+          basis.push_back(now);
+        }
       }
+      z += dz;
+      y = (y - dy + ymax) % ymax;
+    }
+    coef = (-c * z - v - b * y) / (b * ymax) + ((-c * z - v - b * y) % (b * ymax) > 0);
+    coef = max(coef, -y / ymax);
+    y += coef * ymax;
+    now = make_tuple((b * y + c * z + v) / a, y, z);
+    while(basis.size() && isLess(now, basis.back())) basis.pop_back();
+    if (!basis.size() || !isLess(basis.back(), now)) {
+      basis.push_back(now);
     }
   } else {
+    vector<tuple<int, int, int>> sols = solve(ymax, ymax - 1, dy);
+    basis.emplace_back(x, y, z);
     for (int i = 0; i < (int)sols.size(); ++i) {
       dy = get<1>(sols[i]);
       if (!dy) {
@@ -169,7 +175,11 @@ vector<tuple<int, int, int>> LDESlopesAlg::solve(int a, int b, int c, int v) {
         y -= dy;
         z += k * dz;
         x += (-b * dy + c * k * dz) / a;
-        basis.emplace_back(x, y, z);
+        tuple<int, int, int> now = make_tuple(x, y, z);
+        while(basis.size() && isLess(now, basis.back())) basis.pop_back();
+        if (!basis.size() || !isLess(basis.back(), now)) {
+          basis.emplace_back(x, y, z);
+        }
       }
     }
   }
@@ -182,7 +192,12 @@ void LDESlopesAlg::lexEnum(int poz, int diff, int suma, int sumb) {
     return;
   }
   if (poz + 2 == partialSol.size()) {
-    vector<tuple<int, int, int>> sols = solve(a.back(), b[b.size() - 2], b.back(), diff);
+    vector<tuple<int, int, int>> sols;
+    if (!diff && suma + sumb) {
+      sols.emplace_back(0, 0, 0);
+    } else {
+      sols = solve(a.back(), b[b.size() - 2], b.back(), diff);
+    }
     for (auto it : sols) {
       int x, y, z;
       tie(x, y, z) = it;

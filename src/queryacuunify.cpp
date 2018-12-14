@@ -130,15 +130,17 @@ void QueryACUUnify::execute() {
   }
 
   Substitution finalSubst;
+  Substitution lastSubst = sigma.back();
+  sigma.pop_back();
   for (auto it : l) {
-    Term *ans = getFunTerm(getFunction("e"), {});
+    Term *ans = lastSubst.image(it.first->getAsVarTerm()->variable);
     for (auto subst : sigma) {
       ans = getFunTerm(f, {ans, subst.image(it.first->getAsVarTerm()->variable)});
     }
     finalSubst.add(it.first->getAsVarTerm()->variable, ans);
   }
   for (auto it : r) {
-    Term *ans = getFunTerm(getFunction("e"), {});
+    Term *ans = lastSubst.image(it.first->getAsVarTerm()->variable);
     for (auto subst : sigma) {
       ans = getFunTerm(f, {ans, subst.image(it.first->getAsVarTerm()->variable)});
     }
@@ -177,12 +179,12 @@ void QueryACUUnify::execute() {
   cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
 
   t1 = high_resolution_clock::now();
-  //result = lexAlg1.solve();
+  result = lexAlg1.solve();
   t2 = high_resolution_clock::now();
   cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
 
   t1 = high_resolution_clock::now();
-  //result = lexAlg2.solve();
+  result = lexAlg2.solve();
   t2 = high_resolution_clock::now();
   cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
 
@@ -191,12 +193,17 @@ void QueryACUUnify::execute() {
   result = slopesAlg.solve();
   t2 = high_resolution_clock::now();
   cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
-/*  for (auto it : result) {
+  for (auto it : result) {
+    if(min(*min_element(it.first.begin(), it.first.end()), *min_element(it.second.begin(), it.second.end())) < 0) {
+      cerr << "STOIAMBA\n";
+    }
+  }
+  for (auto it : result) {
     //cout << it.first[0] << ' ' << it.first[1] << ' ' << it.first[2] << ' ' << it.second[0] << ' ' << it.second[1] << ' ' << it.second[2] << ' ' << it.second[3] << '\n';
     cout << 1 * it.first[0] + 2 * it.first[1] + 3 * it.first[2] - 7 * it.second[0] - 5 * it.second[1] - 6 * it.second[2] - 4 * it.second[3] << '\n';
- }*//*
+ }
   vector<pair<vector<int>, vector<int>>> aux = result;
-/*  t1 = high_resolution_clock::now();
+  t1 = high_resolution_clock::now();
   result = compAlg0.solve();
   t2 = high_resolution_clock::now();
   cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
@@ -205,7 +212,7 @@ void QueryACUUnify::execute() {
   result = compAlg1.solve();
   t2 = high_resolution_clock::now();
   cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
-  */  /*
+
   t1 = high_resolution_clock::now();
   result = graphAlg.solve();
   t2 = high_resolution_clock::now();
@@ -213,11 +220,12 @@ void QueryACUUnify::execute() {
   sort(result.begin(), result.end());
   sort(aux.begin(), aux.end());
   if (aux == result) cout << "DA, SUNT EGALE\n";
-/*  for(int i = 0; i < (int)aux.size(); ++i) {
+  for(int i = 0; i < (int)aux.size(); ++i) {
     auto it = aux[i];
-    cout << it.first[0] << ' ' << it.first[1] << ' ' << it.first[2] << ' ' << it.second[0] << ' ' << it.second[1] << ' ' << it.second[2] << ' ' << it.second[3] << '\n';
+    cout << i << '\n';
+    cout << it.first[0] << ' ' << it.first[1] << ' ' << it.first[2] << ' ' << it.first[3] << ' ' << it.first[4] << ' ' << it.first[5] << ' ' << it.second[0] << ' ' << it.second[1] << ' ' << it.second[2] << ' ' << it.second[3] << ' ' << it.second[4] << ' ' << it.second[5] << '\n';
     it = result[i];
-    cout << it.first[0] << ' ' << it.first[1] << ' ' << it.first[2] << ' ' << it.second[0] << ' ' << it.second[1] << ' ' << it.second[2] << ' ' << it.second[3] << '\n';
+    cout << it.first[0] << ' ' << it.first[1] << ' ' << it.first[2] << ' ' << it.first[3] << ' ' << it.first[4] << ' ' << it.first[5] << ' ' << it.second[0] << ' ' << it.second[1] << ' ' << it.second[2] << ' ' << it.second[3] << ' ' << it.second[4] << ' ' << it.second[5] << '\n';
     cin.get();
-  }*/ 
-/*}*/
+  }
+}*/

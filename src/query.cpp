@@ -6,6 +6,7 @@
 #include "queryunify.h"
 #include "querycunify.h"
 #include "queryacuunify.h"
+#include "queryacunify.h"
 #include "querycompute.h"
 #include "queryrun.h"
 #include "querysearch.h"
@@ -90,6 +91,11 @@ Query *createQueryACUUnify()
   return new QueryACUUnify();
 }
 
+Query *createQueryACUnify()
+{
+  return new QueryACUnify();
+}
+
 Query *createQueryCompute()
 {
   return new QueryCompute();
@@ -153,6 +159,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["unify"] = createQueryUnify;
   (*map)["c-unify"] = createQueryCUnify;
   (*map)["acu-unify"] = createQueryACUUnify;
+  (*map)["ac-unify"] = createQueryACUnify;
   (*map)["implies"] = createQueryImplies;
   (*map)["instrument"] = createQueryInstrument;
   (*map)["cinstrument"] = createQueryInstrument_C;

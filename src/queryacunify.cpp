@@ -1,4 +1,4 @@
-#include "queryacuunify.h"
+#include "queryacunify.h"
 #include "parse.h"
 #include "factories.h"
 #include <string>
@@ -7,7 +7,7 @@
 #include <algorithm>
 #include <vector>
 #include <tuple>
-#include <chrono>
+#include <queue>
 #include <functional>
 #include "factories.h"
 #include "variable.h"
@@ -20,14 +20,14 @@
 
 using namespace std;
 
-QueryACUUnify::QueryACUUnify() {}
+QueryACUnify::QueryACUnify() {}
   
-Query *QueryACUUnify::create() {
-  return new QueryACUUnify();
+Query *QueryACUnify::create() {
+  return new QueryACUnify();
 }
   
-void QueryACUUnify::parse(string &s, int &w) {
-  matchString(s, w, "acu-unify");
+void QueryACUnify::parse(string &s, int &w) {
+  matchString(s, w, "ac-unify");
   skipWhiteSpace(s, w);
   t1 = parseTerm(s, w);
   skipWhiteSpace(s, w);
@@ -37,7 +37,7 @@ void QueryACUUnify::parse(string &s, int &w) {
   t1->vars(); t2->vars();
 }
 
-void QueryACUUnify::execute() {
+void QueryACUnify::execute() {
   Function *f = getFunction("f");
   function<void(Term*, map<Term*, int>&)> getCoefs = [&](Term *t, map<Term*, int> &M) {
     if(t->isVarTerm()) {
@@ -95,7 +95,7 @@ void QueryACUUnify::execute() {
     return ans;
   };
 
-  cout << "ACU-Unifying " << t1->toString() << " and " << t2->toString() << endl;
+  cout << "AC-Unifying " << t1->toString() << " and " << t2->toString() << endl;
   map<Term*, int> l, r;
   getCoefs(t1, l);
   getCoefs(t2, r);
@@ -108,6 +108,12 @@ void QueryACUUnify::execute() {
     cout << "No unification" << endl;
     return;
   }
+
+  if (result.size() > 64) {
+    cout << "Sorry, but the answer might be too large." << endl;
+    return;
+  }
+
   vector<Substitution> sigma;
   int varId = 0;
   for (auto sol : result) {
@@ -128,28 +134,69 @@ void QueryACUUnify::execute() {
     ++varId;
   }
 
-  Substitution finalSubst;
-  Term* unityElement = getFunTerm(getFunction("e"), {});
-  for (auto it : l) {
-    Term *ans = NULL;
-    for (auto subst : sigma) {
-      Term *aux = subst.image(it.first->getAsVarTerm()->variable);
-      if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
-        ans = ans ? getFunTerm(f, {ans, aux}) : aux;
+  using uint64 = unsigned long long;
+  function<bool(uint64, Substitution&)> getSubstFromMask = [&](uint64 mask, Substitution &subst) {
+    for (auto it : l) {
+      Term *ans = NULL;
+      for (int i = 0; i < (int)sigma.size(); ++i) {
+        if (mask & (1LL << i)) {
+          continue;
+        }
+        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
+        if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+          ans = ans ? getFunTerm(f, {ans, aux}) : aux;
+        }
+      }
+      if (ans) {
+        subst.add(it.first->getAsVarTerm()->variable, ans);
+      } else {
+        return false;
       }
     }
-    finalSubst.add(it.first->getAsVarTerm()->variable, ans ? ans : unityElement);
-  }
-  for (auto it : r) {
-    Term *ans = NULL;
-    for (auto subst : sigma) {
-      Term *aux = subst.image(it.first->getAsVarTerm()->variable);
-      if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
-        ans = ans ? getFunTerm(f, {ans, aux}) : aux;
+    for (auto it : r) {
+      Term *ans = NULL;
+      for (int i = 0; i < (int)sigma.size(); ++i) {
+        if (mask & (1LL << i)) {
+          continue;
+        }
+        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
+        if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+          ans = ans ? getFunTerm(f, {ans, aux}) : aux;
+        }
+      }
+      if (ans) {
+        subst.add(it.first->getAsVarTerm()->variable, ans);
+      } else {
+        return false;
       }
     }
-    finalSubst.add(it.first->getAsVarTerm()->variable, ans ? ans : unityElement);
+    return true;
+  };
+
+  vector<Substitution> minSubstSet;
+  minSubstSet.push_back(Substitution());
+  if (!getSubstFromMask(0, minSubstSet.back())) {
+    cout << "No unification" << endl;
+    return;
   }
 
-  cout << finalSubst.toString() << endl;
+  queue<uint64> q;
+  for (q.push(0); !q.empty(); q.pop()) {
+    uint64 now = q.front();
+    for (int i = 0; i < (int)sigma.size(); ++i) {
+      if (!(now & (1LL << i))) {
+        Substitution subst;
+        if (getSubstFromMask(now | (1LL << i), subst)) {
+          minSubstSet.push_back(subst);
+          q.push(now | (1LL << i));
+        }
+      }
+    }
+  }
+
+  sort(minSubstSet.begin(), minSubstSet.end());
+  minSubstSet.erase(unique(minSubstSet.begin(), minSubstSet.end()), minSubstSet.end());
+  for (auto &subst : minSubstSet) {
+    cout << subst.toString() << endl;
+  }
 }

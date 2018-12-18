@@ -19,7 +19,6 @@
 #include "ldeslopesalg.h"
 
 using namespace std;
-using namespace std::chrono;
 
 QueryACUUnify::QueryACUUnify() {}
   
@@ -130,102 +129,33 @@ void QueryACUUnify::execute() {
   }
 
   Substitution finalSubst;
-  Substitution lastSubst = sigma.back();
-  sigma.pop_back();
+  Term* unityElement = getFunTerm(getFunction("e"), {});
   for (auto it : l) {
-    Term *ans = lastSubst.image(it.first->getAsVarTerm()->variable);
+    Term *ans = NULL;
     for (auto subst : sigma) {
-      ans = getFunTerm(f, {ans, subst.image(it.first->getAsVarTerm()->variable)});
+      Term *aux = subst.image(it.first->getAsVarTerm()->variable);
+      if(aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+        ans = ans ? getFunTerm(f, {ans, aux}) : aux;
+      }
+    }
+    if (!ans) {
+      ans = unityElement;
     }
     finalSubst.add(it.first->getAsVarTerm()->variable, ans);
   }
   for (auto it : r) {
-    Term *ans = lastSubst.image(it.first->getAsVarTerm()->variable);
+    Term *ans = NULL;
     for (auto subst : sigma) {
-      ans = getFunTerm(f, {ans, subst.image(it.first->getAsVarTerm()->variable)});
+      Term *aux = subst.image(it.first->getAsVarTerm()->variable);
+      if(aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+        ans = ans ? getFunTerm(f, {ans, aux}) : aux;
+      }
+    }
+    if (!ans) {
+      ans = unityElement;
     }
     finalSubst.add(it.first->getAsVarTerm()->variable, ans);
   }
 
   cout << finalSubst.toString() << endl;
 }
-
-/*
-void QueryACUUnify::execute() {
-  cout << "ACU-Unifying " << t1->toString() << " and " << t2->toString() << endl;
-
-//  vector<int> a = {2, 2, 2, 3, 3, 3};
-//  vector<int> b = {2, 2, 2, 3, 3, 3};
-  vector<int> a = {1, 3, 5, 7, 9, 11};
-  vector<int> b = {2, 4, 6, 8, 10, 12};
-
-  LDELexAlg lexAlg0(a, b, 0, 0);
-  LDELexAlg lexAlg1(a, b, 0, 1);
-  LDELexAlg lexAlg2(a, b, 0, 2);
-
-  LDECompAlg compAlg0(a, b, 0, 0);
-  LDECompAlg compAlg1(a, b, 0, 1);
-
-  LDEGraphAlg graphAlg(a, b, 0);
-
-  LDESlopesAlg slopesAlg(a, b, 0);
-
-  vector<pair<vector<int>, vector<int>>> result;
-  high_resolution_clock::time_point t1, t2;
-
-  t1 = high_resolution_clock::now();
-  //result = lexAlg0.solve();
-  t2 = high_resolution_clock::now();
-  cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
-
-  t1 = high_resolution_clock::now();
-  result = lexAlg1.solve();
-  t2 = high_resolution_clock::now();
-  cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
-
-  t1 = high_resolution_clock::now();
-  result = lexAlg2.solve();
-  t2 = high_resolution_clock::now();
-  cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
-
-  cout << "Slopes\n";
-  t1 = high_resolution_clock::now();
-  result = slopesAlg.solve();
-  t2 = high_resolution_clock::now();
-  cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
-  for (auto it : result) {
-    if(min(*min_element(it.first.begin(), it.first.end()), *min_element(it.second.begin(), it.second.end())) < 0) {
-      cerr << "STOIAMBA\n";
-    }
-  }
-  for (auto it : result) {
-    //cout << it.first[0] << ' ' << it.first[1] << ' ' << it.first[2] << ' ' << it.second[0] << ' ' << it.second[1] << ' ' << it.second[2] << ' ' << it.second[3] << '\n';
-    cout << 1 * it.first[0] + 2 * it.first[1] + 3 * it.first[2] - 7 * it.second[0] - 5 * it.second[1] - 6 * it.second[2] - 4 * it.second[3] << '\n';
- }
-  vector<pair<vector<int>, vector<int>>> aux = result;
-  t1 = high_resolution_clock::now();
-  result = compAlg0.solve();
-  t2 = high_resolution_clock::now();
-  cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
-
-  t1 = high_resolution_clock::now();
-  result = compAlg1.solve();
-  t2 = high_resolution_clock::now();
-  cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
-
-  t1 = high_resolution_clock::now();
-  result = graphAlg.solve();
-  t2 = high_resolution_clock::now();
-  cout << result.size() << ' ' << duration_cast<microseconds>(t2 - t1).count() / 1e6 << endl;
-  sort(result.begin(), result.end());
-  sort(aux.begin(), aux.end());
-  if (aux == result) cout << "DA, SUNT EGALE\n";
-  for(int i = 0; i < (int)aux.size(); ++i) {
-    auto it = aux[i];
-    cout << i << '\n';
-    cout << it.first[0] << ' ' << it.first[1] << ' ' << it.first[2] << ' ' << it.first[3] << ' ' << it.first[4] << ' ' << it.first[5] << ' ' << it.second[0] << ' ' << it.second[1] << ' ' << it.second[2] << ' ' << it.second[3] << ' ' << it.second[4] << ' ' << it.second[5] << '\n';
-    it = result[i];
-    cout << it.first[0] << ' ' << it.first[1] << ' ' << it.first[2] << ' ' << it.first[3] << ' ' << it.first[4] << ' ' << it.first[5] << ' ' << it.second[0] << ' ' << it.second[1] << ' ' << it.second[2] << ' ' << it.second[3] << ' ' << it.second[4] << ' ' << it.second[5] << '\n';
-    cin.get();
-  }
-}*/

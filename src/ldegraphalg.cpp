@@ -10,7 +10,7 @@ using namespace std;
 LDEGraphAlg::LDEGraphAlg() {}
 
 LDEGraphAlg::LDEGraphAlg(const vector<int> &a, const vector<int> &b, int c) {
-  if ((this->a.size() && *min_element(a.begin(), a.end()) <= 0) || (this->b.size() && *min_element(b.begin(), b.end()) <= 0)) {
+  if ((a.size() && *min_element(a.begin(), a.end()) <= 0) || (b.size() && *min_element(b.begin(), b.end()) <= 0)) {
     cout << "Wrong parameters: 'a' or 'b' contains a coefficient less or equal to zero" << endl;
     exit(0);
   }
@@ -18,9 +18,15 @@ LDEGraphAlg::LDEGraphAlg(const vector<int> &a, const vector<int> &b, int c) {
   this->a = a;
   this->b = b;
   this->c = c;
-  this->offset = max(*max_element(a.begin(), a.end()), abs(c));
-  this->viz.resize(offset + max(*max_element(b.begin(), b.end()), abs(c)) + 1);
-  this->partialSol.resize(a.size() + b.size());
+  if (!this->a.size()) {
+    this->a.push_back(0);
+  }
+  if (!this->b.size()) {
+    this->b.push_back(0);
+  }
+  this->offset = max(*max_element(this->a.begin(), this->a.end()), abs(c));
+  this->viz.resize(offset + max(*max_element(this->b.begin(), this->b.end()), abs(c)));
+  this->partialSol.resize(this->a.size() + this->b.size());
   this->sumPartialSol = 0;
 }
 

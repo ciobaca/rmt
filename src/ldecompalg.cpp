@@ -9,7 +9,7 @@ using namespace std;
 LDECompAlg::LDECompAlg() {}
 
 LDECompAlg::LDECompAlg(const vector<int> &a, const vector<int> &b, int c, bool withOrderOnComputations) {
-  if ((this->a.size() && *min_element(a.begin(), a.end()) <= 0) || (this->b.size() && *min_element(b.begin(), b.end()) <= 0)) {
+  if ((a.size() && *min_element(a.begin(), a.end()) <= 0) || (b.size() && *min_element(b.begin(), b.end()) <= 0)) {
     cout << "Wrong parameters: 'a' or 'b' contains a coefficient less or equal to zero" << endl;
     exit(0);
   }

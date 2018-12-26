@@ -287,8 +287,13 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
       Term *baseCaseConstraint = proveBaseCase(t.ct, progressLeft, t.progressRight, t.depth + 1);
 
       //solved the problem for ( baseCaseConstraint /\ t.ct.constraint )
+      Term *solvedConstraint = bAnd(t.ct.constraint, baseCaseConstraint);
+      if (isSatisfiable(solvedConstraint) == unsat) {
+        //optimization to have simpler constraints in output
+        solvedConstraint = bFalse();
+      }
       unsolvedConstraint = simplifyConstraint(bAnd(unsolvedConstraint,
-        bNot(bAnd(t.ct.constraint, baseCaseConstraint))));
+        bNot(solvedConstraint)));
 
       if (isSatisfiable(unsolvedConstraint) == unsat) {
         //problem is solved for the search space of this call to ExistsRight

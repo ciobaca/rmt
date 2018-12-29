@@ -109,11 +109,6 @@ void QueryACUnify::execute() {
     return;
   }
 
-  if (result.size() > 64) {
-    cout << "Sorry, but the answer might be too large." << endl;
-    return;
-  }
-
   vector<Substitution> sigma;
   int varId = 0;
   for (auto sol : result) {
@@ -134,12 +129,11 @@ void QueryACUnify::execute() {
     ++varId;
   }
 
-  using uint64 = unsigned long long;
-  function<bool(uint64, Substitution&)> getSubstFromMask = [&](uint64 mask, Substitution &subst) {
+  function<bool(const vector<bool>&, Substitution&)> getSubstFromMask = [&](const vector<bool> &mask, Substitution &subst) {
     for (auto it : l) {
       Term *ans = NULL;
       for (int i = 0; i < (int)sigma.size(); ++i) {
-        if (mask & (1LL << i)) {
+        if (mask[i]) {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
@@ -156,7 +150,7 @@ void QueryACUnify::execute() {
     for (auto it : r) {
       Term *ans = NULL;
       for (int i = 0; i < (int)sigma.size(); ++i) {
-        if (mask & (1LL << i)) {
+        if (mask[i]) {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
@@ -175,27 +169,31 @@ void QueryACUnify::execute() {
 
   vector<Substitution> minSubstSet;
   minSubstSet.push_back(Substitution());
-  if (!getSubstFromMask(0, minSubstSet.back())) {
+  vector<bool> initMask(result.size());
+  if (!getSubstFromMask(initMask, minSubstSet.back())) {
     cout << "No unification" << endl;
     return;
   }
 
-  queue<uint64> q;
-  for (q.push(0); !q.empty(); q.pop()) {
-    uint64 now = q.front();
+  queue<vector<bool>> q;
+  for (q.push(initMask); !q.empty(); q.pop()) {
+    vector<bool> now = q.front();
+    vector<bool> nextMask = now;
     for (int i = 0; i < (int)sigma.size(); ++i) {
-      if (!(now & (1LL << i))) {
+      if (!now[i]) {
         Substitution subst;
-        if (getSubstFromMask(now | (1LL << i), subst)) {
+        nextMask[i] = true;
+        if (getSubstFromMask(nextMask, subst)) {
           minSubstSet.push_back(subst);
-          q.push(now | (1LL << i));
+          q.push(nextMask);
         }
+        nextMask[i] = false;
+      } else {
+        break;
       }
     }
   }
 
-  sort(minSubstSet.begin(), minSubstSet.end());
-  minSubstSet.erase(unique(minSubstSet.begin(), minSubstSet.end()), minSubstSet.end());
   for (auto &subst : minSubstSet) {
     cout << subst.toString() << endl;
   }

@@ -1,4 +1,4 @@
-#include "queryacunify.h"
+#include "queryaccunify.h"
 #include "parse.h"
 #include "factories.h"
 #include <string>
@@ -20,14 +20,14 @@
 
 using namespace std;
 
-QueryACUnify::QueryACUnify() {}
+QueryACCUnify::QueryACCUnify() {}
   
-Query *QueryACUnify::create() {
-  return new QueryACUnify();
+Query *QueryACCUnify::create() {
+  return new QueryACCUnify();
 }
   
-void QueryACUnify::parse(string &s, int &w) {
-  matchString(s, w, "ac-unify");
+void QueryACCUnify::parse(string &s, int &w) {
+  matchString(s, w, "acc-unify");
   skipWhiteSpace(s, w);
   t1 = parseTerm(s, w);
   skipWhiteSpace(s, w);
@@ -37,15 +37,24 @@ void QueryACUnify::parse(string &s, int &w) {
   t1->vars(); t2->vars();
 }
 
-void QueryACUnify::execute() {
+void QueryACCUnify::execute() {
   Function *f = getFunction("f");
-  function<void(Term*, map<Term*, int>&)> getCoefs = [&](Term *t, map<Term*, int> &M) {
+  function<void(Term*, map<Term*, int>&, map<string, string>&)> getCoefs = [&](Term *t, auto &M, auto &constToVar) {
     if(t->isVarTerm()) {
       ++M[t];
       return;
     }
-    for(auto term : t->getAsFunTerm()->arguments) {
-      getCoefs(term, M);
+    FunTerm *funTerm = t->getAsFunTerm();
+    if(!funTerm->arguments.size()) {
+      if(!constToVar.count(funTerm->function->name)) {
+        constToVar[funTerm->function->name] = createFreshVariable((Sort*) getSort("State"))->name;
+      }
+      Term *constVar = getVarTerm(getVariable(constToVar[funTerm->function->name]));
+      ++M[constVar];
+      return;
+    }
+    for(auto term : funTerm->arguments) {
+      getCoefs(term, M, constToVar);
     }
   };
   auto delSameCoefs = [&](map<Term*, int> &l, map<Term*, int> &r) {
@@ -93,10 +102,11 @@ void QueryACUnify::execute() {
     return ans;
   };
 
-  cout << "AC-Unifying " << t1->toString() << " and " << t2->toString() << endl;
+  cout << "(with constants) AC-Unifying " << t1->toString() << " and " << t2->toString() << endl;
   map<Term*, int> l, r;
-  getCoefs(t1, l);
-  getCoefs(t2, r);
+  map<string, string> constToVar;
+  getCoefs(t1, l, constToVar);
+  getCoefs(t2, r, constToVar);
   delSameCoefs(l, r);
   vector<int> a = fromMapToVector(l);
   vector<int> b = fromMapToVector(r);
@@ -123,6 +133,29 @@ void QueryACUnify::execute() {
     }
   }
 
+  auto checkConstConstraints = [&](Substitution &subst) -> bool {
+    map<Term*, string> constSubst;
+    for (const auto &it : constToVar) {
+      Function *constant = getFunction(it.first);
+      Variable *var = getVariable(it.second);
+      if (subst.inDomain(var)) {
+        Term *t = subst.image(var);
+        if(t->isFunTerm() && t->getAsFunTerm()->function->name != it.second) {
+          return false;
+        }
+        if(t->isVarTerm()) {
+          if(constSubst.count(t) && constSubst[t] != it.first) {
+            return false;
+          }
+          constSubst[t] = it.first;
+        }
+      }
+    }
+    for (const auto &it : constSubst) {
+      subst.force(it.first->getAsVarTerm()->variable, getFunTerm(getFunction(it.second), {}));
+    }
+    return true;
+  };
   auto getSubstFromMask = [&](const vector<bool> &mask, Substitution &subst) -> bool {
     for (auto it : l) {
       Term *ans = nullptr;
@@ -158,15 +191,14 @@ void QueryACUnify::execute() {
         return false;
       }
     }
-    return true;
+    return checkConstConstraints(subst);
   };
 
   vector<Substitution> minSubstSet;
   minSubstSet.push_back(Substitution());
   vector<bool> initMask(result.size());
   if (!getSubstFromMask(initMask, minSubstSet.back())) {
-    cout << "No unification" << endl;
-    return;
+    minSubstSet.pop_back();
   }
 
   queue<vector<bool>> q;
@@ -181,13 +213,25 @@ void QueryACUnify::execute() {
       nextMask[i] = true;
       if (getSubstFromMask(nextMask, subst)) {
         minSubstSet.push_back(subst);
-        q.push(nextMask);
       }
+      q.push(nextMask);
       nextMask[i] = false;
     }
   }
 
+  map<string, string> invConstToVar;
+  for(const auto &it : constToVar) {
+    invConstToVar[it.second] = it.first;
+  }
+
   for (auto &subst : minSubstSet) {
-    cout << subst.toString() << endl;
+    Substitution normalizedSubst;
+    for (const auto &it : subst) {
+      Term *aux = getVarTerm(it.first);
+      if (!invConstToVar.count(it.first->name) && (l.count(aux) || r.count(aux))) {
+        normalizedSubst.force(it.first, it.second);
+      }
+    }
+    cout << normalizedSubst.toString() << endl;
   }
 }

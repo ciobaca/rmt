@@ -589,7 +589,7 @@ Term *simplifyConstraint(Term *constraint)
 
 Term *simplifyTerm(Term *term)
 {
-  if (term->isFunTerm()) {
+  if (term->isFunTerm) {
     FunTerm *funterm = term->getAsFunTerm();
     Function *function = funterm->function;
     if (function->hasInterpretation) {
@@ -601,12 +601,12 @@ Term *simplifyTerm(Term *term)
     } else {
       vector<Term *> arguments = funterm->arguments;
       for (int i = 0; i < static_cast<int>(arguments.size()); ++i) {
-  arguments[i] = simplifyTerm(arguments[i]);
+        arguments[i] = simplifyTerm(arguments[i]);
       }
       return getFunTerm(function, arguments);
     }
   } else {
-    assert(term->isVarTerm());
+    assert(term->isVarTerm);
     return term;
   }
 }

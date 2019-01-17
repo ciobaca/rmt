@@ -28,6 +28,8 @@ struct Term
   virtual Sort *getSort() = 0;
 
   bool hasDefinedFunctions;
+  bool isVarTerm;
+  bool isFunTerm;
 
   bool computedVars;
   bool computedUniqueVars;
@@ -109,12 +111,6 @@ struct Term
   // \sigma(parameter)). If the result is true, then the second
   // parameter will contain the witness substitution.
   virtual bool isInstanceOf(Term *, Substitution &);
-
-  // Checks if the term consists of a single variable.
-  virtual bool isVarTerm() = 0;
-
-  // Checks if the term is a function symbol applied to some other terms.
-  virtual bool isFunTerm() = 0;
 
   // Converts the term "this" to a VarTerm.
   // Assumes that isVariable() is true.

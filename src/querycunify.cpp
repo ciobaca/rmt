@@ -36,7 +36,7 @@ void QueryCUnify::execute() {
   cout << "C-Unifying " << t1->toString() << " and " << t2->toString() << endl;
 
   function<int(Term*)> countNumberOfCFunTerm = [&](Term *t) {
-    if(t->isVarTerm()) {
+    if(t->isVarTerm) {
       return 0;
     }
     int cnt = t->getAsFunTerm()->function->isCommutative;
@@ -47,7 +47,7 @@ void QueryCUnify::execute() {
   };
 
   function<void(Term*&)> getIdentityPermutation = [&](Term *&t) {
-    if(t->isVarTerm()) {
+    if(t->isVarTerm) {
       return;
     }
 
@@ -64,7 +64,7 @@ void QueryCUnify::execute() {
   };
 
   function<bool(Term*&)> applyNextPermutation = [&](Term *&t) {
-    if(t->isVarTerm()) {
+    if(t->isVarTerm) {
       return false;
     }
 

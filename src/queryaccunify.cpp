@@ -41,7 +41,7 @@ void QueryACCUnify::execute() {
   Function *f = getFunction("f");
   Term* unityElement = getFunTerm(f->unityElement, {});
   function<void(Term*, map<Term*, int>&, map<Term*, Term*>&)> getCoefs = [&](Term *t, auto &M, auto &constToVar) {
-    if(t->isVarTerm()) {
+    if(t->isVarTerm) {
       ++M[t];
       return;
     }
@@ -139,10 +139,10 @@ void QueryACCUnify::execute() {
       Variable *var = it.second->getAsVarTerm()->variable;
       if (subst.inDomain(var)) {
         Term *t = subst.image(var);
-        if(t->isFunTerm() && t != it.second) {
+        if(t->isFunTerm && t != it.second) {
           return false;
         }
-        if(t->isVarTerm()) {
+        if(t->isVarTerm) {
           if(constSubst.count(t) && constSubst[t] != it.first) {
             return false;
           }
@@ -163,7 +163,7 @@ void QueryACCUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux != unityElement) {
+        if (aux->isVarTerm || aux != unityElement) {
           flag = true;
           break;
         }
@@ -179,7 +179,7 @@ void QueryACCUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux != unityElement) {
+        if (aux->isVarTerm || aux != unityElement) {
           flag = true;
           break;
         }
@@ -199,7 +199,7 @@ void QueryACCUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux != unityElement) {
+        if (aux->isVarTerm || aux != unityElement) {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }
@@ -212,7 +212,7 @@ void QueryACCUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux != unityElement) {
+        if (aux->isVarTerm || aux != unityElement) {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }

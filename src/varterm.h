@@ -20,8 +20,6 @@ struct VarTerm : public Term
   virtual bool unifyWithFunTerm(FunTerm *, Substitution &);
   virtual bool unifyWithVarTerm(VarTerm *, Substitution &);
 
-  virtual bool isVarTerm();
-  virtual bool isFunTerm();
   virtual VarTerm *getAsVarTerm();
   virtual FunTerm *getAsFunTerm();
 

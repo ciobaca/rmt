@@ -41,7 +41,7 @@ void QueryACUnify::execute() {
   Function *f = getFunction("f");
   Term *unityElement = getFunTerm(f->unityElement, {});
   function<void(Term*, map<Term*, int>&)> getCoefs = [&](Term *t, map<Term*, int> &M) {
-    if(t->isVarTerm()) {
+    if(t->isVarTerm) {
       ++M[t];
       return;
     }
@@ -132,7 +132,7 @@ void QueryACUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux != unityElement) {
+        if (aux->isVarTerm || aux != unityElement) {
           flag = true;
           break;
         }
@@ -148,7 +148,7 @@ void QueryACUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux != unityElement) {
+        if (aux->isVarTerm || aux != unityElement) {
           flag = true;
           break;
         }
@@ -167,7 +167,7 @@ void QueryACUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux != unityElement) {
+        if (aux->isVarTerm || aux != unityElement) {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }
@@ -180,7 +180,7 @@ void QueryACUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux != unityElement) {
+        if (aux->isVarTerm || aux != unityElement) {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }

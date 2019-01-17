@@ -405,7 +405,7 @@ void parseFunctions(string &s, int &w)
     skipWhiteSpace(s, w);
     bool isCommutative = false;
     bool isAssociative = false;
-    Function *unityElement = NULL;
+    Function *unityElement = nullptr;
     if (lookAhead(s, w, "[")) {
       matchString(s, w, "[");
       skipWhiteSpace(s, w);

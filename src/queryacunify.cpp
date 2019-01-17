@@ -39,6 +39,7 @@ void QueryACUnify::parse(string &s, int &w) {
 
 void QueryACUnify::execute() {
   Function *f = getFunction("f");
+  Term *unityElement = getFunTerm(f->unityElement, {});
   function<void(Term*, map<Term*, int>&)> getCoefs = [&](Term *t, map<Term*, int> &M) {
     if(t->isVarTerm()) {
       ++M[t];
@@ -123,7 +124,42 @@ void QueryACUnify::execute() {
     }
   }
 
-  auto getSubstFromMask = [&](const vector<bool> &mask, Substitution &subst) -> bool {
+  auto checkMask = [&](const vector<bool> &mask) -> bool {
+    for (auto it : l) {
+      bool flag = false;
+      for (int i = 0; i < (int)sigma.size(); ++i) {
+        if (mask[i]) {
+          continue;
+        }
+        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
+        if (aux->isVarTerm() || aux != unityElement) {
+          flag = true;
+          break;
+        }
+      }
+      if(!flag) {
+        return false;
+      }
+    }
+    for (auto it : r) {
+      bool flag = false;
+      for (int i = 0; i < (int)sigma.size(); ++i) {
+        if (mask[i]) {
+          continue;
+        }
+        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
+        if (aux->isVarTerm() || aux != unityElement) {
+          flag = true;
+          break;
+        }
+      }
+      if (!flag) {
+        return false;
+      }
+    }
+    return true;
+  };
+  auto getSubstFromMask = [&](const vector<bool> &mask, Substitution &subst) {
     for (auto it : l) {
       Term *ans = nullptr;
       for (int i = 0; i < (int)sigma.size(); ++i) {
@@ -131,15 +167,11 @@ void QueryACUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+        if (aux->isVarTerm() || aux != unityElement) {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }
-      if (ans) {
-        subst.add(it.first->getAsVarTerm()->variable, ans);
-      } else {
-        return false;
-      }
+      subst.add(it.first->getAsVarTerm()->variable, ans);
     }
     for (auto it : r) {
       Term *ans = nullptr;
@@ -148,25 +180,22 @@ void QueryACUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+        if (aux->isVarTerm() || aux != unityElement) {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }
-      if (ans) {
-        subst.add(it.first->getAsVarTerm()->variable, ans);
-      } else {
-        return false;
-      }
+      subst.add(it.first->getAsVarTerm()->variable, ans);
     }
-    return true;
   };
 
   vector<Substitution> minSubstSet;
   minSubstSet.push_back(Substitution());
   vector<bool> initMask(result.size());
-  if (!getSubstFromMask(initMask, minSubstSet.back())) {
+  if (!checkMask(initMask)) {
     cout << "No unification" << endl;
     return;
+  } else {
+    getSubstFromMask(initMask, minSubstSet.back());
   }
 
   queue<vector<bool>> q;
@@ -177,9 +206,10 @@ void QueryACUnify::execute() {
       if (now[i]) {
         break;
       }
-      Substitution subst;
       nextMask[i] = true;
-      if (getSubstFromMask(nextMask, subst)) {
+      if (checkMask(nextMask)) {
+        Substitution subst;
+        getSubstFromMask(nextMask, subst);
         minSubstSet.push_back(subst);
         q.push(nextMask);
       }

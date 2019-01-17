@@ -38,7 +38,7 @@ struct Function
 
 private:
 
-  Function(string name, vector<Sort *> arguments, Sort *result, bool isCommutative = false, bool isAssociative = false, Function *unityElement = NULL)
+  Function(string name, vector<Sort *> arguments, Sort *result, bool isCommutative = false, bool isAssociative = false, Function *unityElement = nullptr)
   {
     this->name = name;
     this->arguments = arguments;

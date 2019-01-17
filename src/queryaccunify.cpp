@@ -39,18 +39,18 @@ void QueryACCUnify::parse(string &s, int &w) {
 
 void QueryACCUnify::execute() {
   Function *f = getFunction("f");
-  function<void(Term*, map<Term*, int>&, map<string, string>&)> getCoefs = [&](Term *t, auto &M, auto &constToVar) {
+  Term* unityElement = getFunTerm(f->unityElement, {});
+  function<void(Term*, map<Term*, int>&, map<Term*, Term*>&)> getCoefs = [&](Term *t, auto &M, auto &constToVar) {
     if(t->isVarTerm()) {
       ++M[t];
       return;
     }
     FunTerm *funTerm = t->getAsFunTerm();
     if(!funTerm->arguments.size()) {
-      if(!constToVar.count(funTerm->function->name)) {
-        constToVar[funTerm->function->name] = createFreshVariable((Sort*) getSort("State"))->name;
+      if(!constToVar.count(funTerm)) {
+        constToVar[funTerm] = getVarTerm(createFreshVariable((Sort*) getSort("State")));
       }
-      Term *constVar = getVarTerm(getVariable(constToVar[funTerm->function->name]));
-      ++M[constVar];
+      ++M[constToVar[funTerm]];
       return;
     }
     for(auto term : funTerm->arguments) {
@@ -104,7 +104,7 @@ void QueryACCUnify::execute() {
 
   cout << "(with constants) AC-Unifying " << t1->toString() << " and " << t2->toString() << endl;
   map<Term*, int> l, r;
-  map<string, string> constToVar;
+  map<Term*, Term*> constToVar;
   getCoefs(t1, l, constToVar);
   getCoefs(t2, r, constToVar);
   delSameCoefs(l, r);
@@ -134,13 +134,12 @@ void QueryACCUnify::execute() {
   }
 
   auto checkConstConstraints = [&](Substitution &subst) -> bool {
-    map<Term*, string> constSubst;
+    map<Term*, Term*> constSubst;
     for (const auto &it : constToVar) {
-      Function *constant = getFunction(it.first);
-      Variable *var = getVariable(it.second);
+      Variable *var = it.second->getAsVarTerm()->variable;
       if (subst.inDomain(var)) {
         Term *t = subst.image(var);
-        if(t->isFunTerm() && t->getAsFunTerm()->function->name != it.second) {
+        if(t->isFunTerm() && t != it.second) {
           return false;
         }
         if(t->isVarTerm()) {
@@ -152,11 +151,47 @@ void QueryACCUnify::execute() {
       }
     }
     for (const auto &it : constSubst) {
-      subst.force(it.first->getAsVarTerm()->variable, getFunTerm(getFunction(it.second), {}));
+      subst.force(it.first->getAsVarTerm()->variable, it.second);
+    }
+    return true;
+  };
+  auto checkMask = [&](const vector<bool> &mask) -> bool {
+    for (auto it : l) {
+      bool flag = false;
+      for (int i = 0; i < (int)sigma.size(); ++i) {
+        if (mask[i]) {
+          continue;
+        }
+        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
+        if (aux->isVarTerm() || aux != unityElement) {
+          flag = true;
+          break;
+        }
+      }
+      if (!flag) {
+        return false;
+      }
+    }
+    for (auto it : r) {
+      bool flag = false;
+      for (int i = 0; i < (int)sigma.size(); ++i) {
+        if (mask[i]) {
+          continue;
+        }
+        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
+        if (aux->isVarTerm() || aux != unityElement) {
+          flag = true;
+          break;
+        }
+      }
+      if (!flag) {
+        return false;
+      }
     }
     return true;
   };
   auto getSubstFromMask = [&](const vector<bool> &mask, Substitution &subst) -> bool {
+    Term* unityElement = getFunTerm(getFunction("e"), {});
     for (auto it : l) {
       Term *ans = nullptr;
       for (int i = 0; i < (int)sigma.size(); ++i) {
@@ -164,15 +199,11 @@ void QueryACCUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+        if (aux->isVarTerm() || aux != unityElement) {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }
-      if (ans) {
-        subst.add(it.first->getAsVarTerm()->variable, ans);
-      } else {
-        return false;
-      }
+      subst.add(it.first->getAsVarTerm()->variable, ans);
     }
     for (auto it : r) {
       Term *ans = nullptr;
@@ -181,15 +212,11 @@ void QueryACCUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+        if (aux->isVarTerm() || aux != unityElement) {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }
-      if (ans) {
-        subst.add(it.first->getAsVarTerm()->variable, ans);
-      } else {
-        return false;
-      }
+      subst.add(it.first->getAsVarTerm()->variable, ans);
     }
     return checkConstConstraints(subst);
   };
@@ -197,7 +224,7 @@ void QueryACCUnify::execute() {
   vector<Substitution> minSubstSet;
   minSubstSet.push_back(Substitution());
   vector<bool> initMask(result.size());
-  if (!getSubstFromMask(initMask, minSubstSet.back())) {
+  if (!checkMask(initMask) || !getSubstFromMask(initMask, minSubstSet.back())) {
     minSubstSet.pop_back();
   }
 
@@ -209,17 +236,19 @@ void QueryACCUnify::execute() {
       if (now[i]) {
         break;
       }
-      Substitution subst;
       nextMask[i] = true;
-      if (getSubstFromMask(nextMask, subst)) {
-        minSubstSet.push_back(subst);
+      if (checkMask(nextMask)) {
+        Substitution subst;
+        if (getSubstFromMask(nextMask, subst)) {
+          minSubstSet.push_back(subst);
+        }
       }
       q.push(nextMask);
       nextMask[i] = false;
     }
   }
 
-  map<string, string> invConstToVar;
+  map<Term*, Term*> invConstToVar;
   for(const auto &it : constToVar) {
     invConstToVar[it.second] = it.first;
   }
@@ -228,7 +257,7 @@ void QueryACCUnify::execute() {
     Substitution normalizedSubst;
     for (const auto &it : subst) {
       Term *aux = getVarTerm(it.first);
-      if (!invConstToVar.count(it.first->name) && (l.count(aux) || r.count(aux))) {
+      if (!invConstToVar.count(getVarTerm(it.first)) && (l.count(aux) || r.count(aux))) {
         normalizedSubst.force(it.first, it.second);
       }
     }

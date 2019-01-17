@@ -49,9 +49,7 @@ void QueryACUUnify::execute() {
     }
   };
   auto delSameCoefs = [&](map<Term*, int> &l, map<Term*, int> &r) {
-    bool swaped = false;
     if (l.size() > r.size()) {
-      swaped = true;
       l.swap(r);
     }
     vector<Term*> toDel;
@@ -79,7 +77,7 @@ void QueryACUUnify::execute() {
     }
     return ans;
   };
-  auto createFuncWithSameVar = [&] (int cnt, Term* var) {
+  auto createFuncWithSameVar = [&](int cnt, Term* var) {
     if (!cnt) {
       return getFunTerm(getFunction("e"), {});
     }
@@ -109,13 +107,10 @@ void QueryACUUnify::execute() {
     return;
   }
   vector<Substitution> sigma;
-  int varId = 0;
-  for (auto sol : result) {
+  for (const auto &sol : result) {
     int index = 0;
     sigma.push_back(Substitution());
-    string varName = "_Z_" + to_string(varId);
-    createVariable(varName, (Sort*)getSort("State"));
-    Term *z = getVarTerm(getVariable(varName));
+    Term *z = getVarTerm(createFreshVariable((Sort*)getSort("State")));
     for (auto it : l) {
       sigma.back().add(it.first->getAsVarTerm()->variable, createFuncWithSameVar(sol.first[index], z));
       ++index;
@@ -125,13 +120,12 @@ void QueryACUUnify::execute() {
       sigma.back().add(it.first->getAsVarTerm()->variable, createFuncWithSameVar(sol.second[index], z));
       ++index;
     }
-    ++varId;
   }
 
   Substitution finalSubst;
   Term* unityElement = getFunTerm(getFunction("e"), {});
   for (auto it : l) {
-    Term *ans = NULL;
+    Term *ans = nullptr;
     for (auto subst : sigma) {
       Term *aux = subst.image(it.first->getAsVarTerm()->variable);
       if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
@@ -141,7 +135,7 @@ void QueryACUUnify::execute() {
     finalSubst.add(it.first->getAsVarTerm()->variable, ans ? ans : unityElement);
   }
   for (auto it : r) {
-    Term *ans = NULL;
+    Term *ans = nullptr;
     for (auto subst : sigma) {
       Term *aux = subst.image(it.first->getAsVarTerm()->variable);
       if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {

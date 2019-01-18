@@ -104,7 +104,7 @@ void QueryACCUnify::execute() {
 
   cout << "(with constants) AC-Unifying " << t1->toString() << " and " << t2->toString() << endl;
   map<Term*, int> l, r;
-  map<string, string> constToVar;
+  map<string, string> constToVar; // Optimizare: map de la (Function *) la (Variable *)?
   getCoefs(t1, l, constToVar);
   getCoefs(t2, r, constToVar);
   delSameCoefs(l, r);
@@ -156,6 +156,7 @@ void QueryACCUnify::execute() {
     }
     return true;
   };
+  Term *unity = getFunTerm(getFunction("e"), {});
   auto getSubstFromMask = [&](const vector<bool> &mask, Substitution &subst) -> bool {
     for (auto it : l) {
       Term *ans = nullptr;
@@ -164,7 +165,7 @@ void QueryACCUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+	if (aux->isVarTerm() || aux != unity) { // ->getAsFunTerm()->toString() != "e") {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }
@@ -181,7 +182,7 @@ void QueryACCUnify::execute() {
           continue;
         }
         Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+	if (aux->isVarTerm() || aux != unity) { // ->getAsFunTerm()->toString() != "e") {
           ans = ans ? getFunTerm(f, {ans, aux}) : aux;
         }
       }
@@ -196,6 +197,10 @@ void QueryACCUnify::execute() {
 
   vector<Substitution> minSubstSet;
   minSubstSet.push_back(Substitution());
+
+  cout << "result.size() = " << result.size() << endl;
+  //  return;
+  
   vector<bool> initMask(result.size());
   if (!getSubstFromMask(initMask, minSubstSet.back())) {
     minSubstSet.pop_back();

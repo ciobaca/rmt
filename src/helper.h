@@ -5,6 +5,7 @@
 #include <vector>
 #include <algorithm>
 #include <string>
+#include <unordered_map>
 
 /* #ifndef NDEBUG */
 /* #define NDEBUG */
@@ -34,6 +35,11 @@ using namespace std;
 template<typename A, typename B> bool contains(map<A, B> &container, A elem)
 {
   return container.find(elem) != container.end();
+}
+
+template<typename A, typename B> bool contains(unordered_map<A, B> &container, A elem)
+{
+  return container.count(elem);
 }
 
 template<typename T> bool contains(vector<T> &container, T &elem)

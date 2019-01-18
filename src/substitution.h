@@ -1,13 +1,13 @@
 #ifndef SUBSTITUTION_H__
 #define SUBSTITUTION_H__
 
-#include <map>
+#include <unordered_map>
 #include <string>
 
 struct Term;
 struct Variable;
 
-struct Substitution : public std::map<Variable *, Term *>
+struct Substitution : public std::unordered_map<Variable *, Term *>
 {
   Substitution();
   void apply(Substitution &);

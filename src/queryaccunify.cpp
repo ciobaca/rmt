@@ -223,6 +223,10 @@ void QueryACCUnify::execute() {
 
   vector<Substitution> minSubstSet;
   minSubstSet.push_back(Substitution());
+
+  cout << "result.size() = " << result.size() << endl;
+  //  return;
+  
   vector<bool> initMask(result.size());
   if (!checkMask(initMask) || !getSubstFromMask(initMask, minSubstSet.back())) {
     minSubstSet.pop_back();

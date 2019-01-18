@@ -26,7 +26,7 @@ Term *TriangularSubstitution::image(Variable *v) {
   if (ans != this->end()) {
     return ans->second;
   }
-  throw exception("Triangular Substitution does not contain needed variable");
+  throw std::runtime_error("Triangular Substitution does not contain needed variable");
 }
 
 string TriangularSubstitution::toString() {

@@ -153,32 +153,32 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
       continue;
     }
     bool simplifiedConstraint = false;
-    if (lhsTerm->isVarTerm()) {
+    if (lhsTerm->isVarTerm) {
       Log(DEBUG7) << "Left-hand side is a variable." << endl;
       Variable *var = lhsTerm->getAsVarTerm()->variable;
       Log(DEBUG7) << "Variable " << var->name << " in domain of simplifyingSubst: " << simplifyingSubst.inDomain(var) << endl;
       Log(DEBUG7) << "Term " << rhsTerm->toString() << " has variable " << var->name << ": " << rhsTerm->hasVariable(var) << endl;
       Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
       if ((!(simplifyingSubst.inDomain(var)))) {
-	      if ((!(rhsTerm->hasVariable(var)))) {
-	        if ((!(abstractingSubstitution.inRange(var)))) {
-	          Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << rhsTerm->toString() << "." << endl;
-	          simplifiedConstraint = true;
-	          simplifyingSubst.add(var, rhsTerm);
-	        }
-	      }
+        if ((!(rhsTerm->hasVariable(var)))) {
+          if ((!(abstractingSubstitution.inRange(var)))) {
+            Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << rhsTerm->toString() << "." << endl;
+            simplifiedConstraint = true;
+            simplifyingSubst.add(var, rhsTerm);
+          }
+        }
       }
     }
-    if (!simplifiedConstraint && rhsTerm->isVarTerm()) {
+    if (!simplifiedConstraint && rhsTerm->isVarTerm) {
       Log(DEBUG7) << "Right-hand side is a variable." << endl;
       Variable *var = rhsTerm->getAsVarTerm()->variable;
       Log(DEBUG7) << "Variable " << var->name << " in domain of simplifyingSubst: " << simplifyingSubst.inDomain(var) << endl;
       Log(DEBUG7) << "Term " << lhsTerm->toString() << " has variable " << var->name << ": " << lhsTerm->hasVariable(var) << endl;
       Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
       if (!simplifyingSubst.inDomain(var) && !lhsTerm->hasVariable(var) && !abstractingSubstitution.inRange(var)) {
-	      Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << lhsTerm->toString() << "." << endl;
-	      simplifiedConstraint = true;
-	      simplifyingSubst.add(var, lhsTerm);
+        Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << lhsTerm->toString() << "." << endl;
+        simplifiedConstraint = true;
+        simplifyingSubst.add(var, lhsTerm);
       }
     }
     if (!simplifiedConstraint) {
@@ -235,7 +235,7 @@ bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Te
       resultSubstitution = sol.subst; // TODO: compus cu simplifyingSubst?;
       resultConstraint = sol.constraint->substitute(sol.simplifyingSubst);
       for (Substitution::iterator it = sol.simplifyingSubst.begin(); it != sol.simplifyingSubst.end(); ++it) {
-	      resultSubstitution.force(it->first, it->second);
+        resultSubstitution.force(it->first, it->second);
       }
       return true;
     } else {

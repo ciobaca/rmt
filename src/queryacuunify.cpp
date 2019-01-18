@@ -39,8 +39,9 @@ void QueryACUUnify::parse(string &s, int &w) {
 
 void QueryACUUnify::execute() {
   Function *f = getFunction("f");
+  Term* unityElement = getFunTerm(f->unityElement, {});
   function<void(Term*, map<Term*, int>&)> getCoefs = [&](Term *t, map<Term*, int> &M) {
-    if(t->isVarTerm()) {
+    if(t->isVarTerm) {
       ++M[t];
       return;
     }
@@ -123,12 +124,11 @@ void QueryACUUnify::execute() {
   }
 
   Substitution finalSubst;
-  Term* unityElement = getFunTerm(getFunction("e"), {});
   for (auto it : l) {
     Term *ans = nullptr;
     for (auto subst : sigma) {
       Term *aux = subst.image(it.first->getAsVarTerm()->variable);
-      if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+      if (aux->isVarTerm || aux != unityElement) {
         ans = ans ? getFunTerm(f, {ans, aux}) : aux;
       }
     }
@@ -138,7 +138,7 @@ void QueryACUUnify::execute() {
     Term *ans = nullptr;
     for (auto subst : sigma) {
       Term *aux = subst.image(it.first->getAsVarTerm()->variable);
-      if (aux->isVarTerm() || aux->getAsFunTerm()->toString() != "e") {
+      if (aux->isVarTerm || aux != unityElement) {
         ans = ans ? getFunTerm(f, {ans, aux}) : aux;
       }
     }

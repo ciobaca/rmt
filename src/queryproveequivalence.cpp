@@ -112,12 +112,12 @@ Term *QueryProveEquivalence::whenImpliesCircularity(ConstrainedTerm current)
 
 void decomposeConstrainedTermEq(ConstrainedTerm ct, Term *&lhs, Term *&rhs)
 {
-  if (!ct.term->isFunTerm()) {
+  if (!ct.term->isFunTerm) {
     Log(ERROR) << "Expecting a pair as top-most function symbol (found variable instead)." << endl;
     Log(ERROR) << ct.toString() << endl;
     abort();
   }
-  assert(ct.term->isFunTerm());
+  assert(ct.term->isFunTerm);
   FunTerm *term = ct.term->getAsFunTerm();
   if (term->arguments.size() != 2) {
     Log(ERROR) << "Expecting a pair as top-most function symbol in base equivalence (found function symbol of wrong arity instead)." << endl;
@@ -340,7 +340,7 @@ void QueryProveEquivalence::execute()
   pairFun = 0;
   for (int i = 0; i < (int)base.size(); ++i) {
     Log(DEBUG6) << base[i].toString() << endl;
-    if (!base[i].term->isFunTerm()) {
+    if (!base[i].term->isFunTerm) {
       Log(ERROR) << "Base terms must start with a pairing symbol (is variable now)." << endl;
       Log(ERROR) << base[i].toString() << endl;
       abort();

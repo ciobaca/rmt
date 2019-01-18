@@ -1,5 +1,6 @@
 #include "funterm.h"
 #include "varterm.h"
+#include "term.h"
 #include "log.h"
 #include "factories.h"
 #include "helper.h"
@@ -15,6 +16,8 @@ FunTerm::FunTerm(Function *function, vector<Term *> arguments) :
   function(function),
   arguments(arguments)
 {
+  isVarTerm = false;
+  isFunTerm = true;
   hasDefinedFunctions = function->isDefined;
   assert(this->arguments.size() == function->arguments.size());
   if (!hasDefinedFunctions) {
@@ -232,20 +235,10 @@ bool FunTerm::unifyWithFunTerm(FunTerm *t, Substitution &subst)
   }
 }
 
-bool FunTerm::isVarTerm()
-{
-  return false;
-}
-
 VarTerm *FunTerm::getAsVarTerm()
 {
   assert(0);
   return 0;
-}
-
-bool FunTerm::isFunTerm()
-{
-  return true;
 }
 
 FunTerm *FunTerm::getAsFunTerm()

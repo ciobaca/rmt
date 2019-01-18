@@ -1,8 +1,8 @@
 sorts State;
 
 signature
-  f : State State -> State [ a c u(e) ],
   e : -> State,
+  f : State State -> State [ a c u(e) ],
   ff : State State -> State [ a c u(e)],
   g : State State -> State,
   c : -> State,
@@ -23,6 +23,6 @@ acu-unify (f X1 X2) (f X3 X4);
 acu-unify (f X1 X2) (f X1 (f X2 X1));
 ac-unify (f X1 X2) (f X3 X4);
 ac-unify (f X3 X4) (f X1 X2);
-// ac-unify (f (f X1 X1) (f X2 X3)) (f (f Y1 Y1) Y2);
+ac-unify (f (f X1 X1) (f X2 X3)) (f (f Y1 Y1) Y2);
 acc-unify (f X1 X2) (f X3 c);
 acc-unify (f (f X1 X1) (f X2 a)) (f (f c c) Y1);

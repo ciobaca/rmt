@@ -269,3 +269,37 @@ ConstrainedTerm parseConstrainedTerm(string &s, int &w)
   }
   return ConstrainedTerm(term, constraint);
 }
+
+ConstrainedPair parseConstrainedPair(string &s, int &w) {
+  Log(DEBUG) << "Parsing constrained term pair" << endl;
+  skipWhiteSpace(s, w);
+  Term *lhs = parseTerm(s, w);
+  Log(DEBUG) << "Parsed lhs term: " << lhs->toString() << endl;
+  Term *rhs = parseTerm(s, w);
+  Log(DEBUG) << "Parsed rhs term: " << rhs->toString() << endl;
+  Term *constraint;
+  skipWhiteSpace(s, w);
+  if (lookAhead(s, w, "/\\")) {
+    matchString(s, w, "/\\");
+    skipWhiteSpace(s, w);
+    constraint = parseTerm(s, w);
+    Log(DEBUG) << "Parsed constraint term: " << constraint->toString() << endl;
+  }
+  else {
+    constraint = bTrue();
+    assert(constraint);
+    Log(DEBUG) << "Implicit constraint: " << constraint->toString() << endl;
+  }
+  return ConstrainedPair(lhs, rhs, constraint);
+}
+
+ConstrainedRewriteSystem parseCRSfromName(string &s, int &w) {
+  skipWhiteSpace(s, w);
+  string crsName = getIdentifier(s, w);
+  skipWhiteSpace(s, w);
+  if (!existsConstrainedRewriteSystem(crsName)) {
+    Log(ERROR) << "No CRS exists with name " << crsName << endl;
+    expected("Existing CRS", w, s);
+  }
+  return getConstrainedRewriteSystem(crsName);
+}

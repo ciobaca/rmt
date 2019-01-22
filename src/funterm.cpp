@@ -68,7 +68,7 @@ Z3_ast FunTerm::toSmt()
 
   if (isQuantifierFunction(function)) {
     assert(arguments.size() == 2);
-    assert(arguments[0]->isVarTerm());
+    assert(arguments[0]->isVarTerm);
     VarTerm *t = arguments[0]->getAsVarTerm();
     assert(t->variable->sort->hasInterpretation);
     // oss << "exists ";

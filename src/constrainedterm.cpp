@@ -201,3 +201,13 @@ vector<Function *> ConstrainedTerm::getDefinedFunctions()
   std::copy(where.begin(), where.end(), std::back_inserter(result));
   return result;
 }
+
+string ConstrainedPair::toString() {
+  ostringstream oss;
+  oss << lhs->toString() << " " << rhs->toString();
+  if (constraint) {
+    oss << " /\\ ";
+    oss << constraint->toString();
+  }
+  return oss.str();
+}

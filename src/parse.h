@@ -21,5 +21,7 @@ int getNumber(string &s, int &pos);
 Term *parseTerm(string &s, int &pos);
 void expected(string what, int &where, string text);
 void parseError(string error, int &where, string text);
+ConstrainedRewriteSystem parseCRSfromName(string &s, int &w);
+ConstrainedPair parseConstrainedPair(string &s, int &w);
 
 #endif

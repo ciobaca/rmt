@@ -33,6 +33,8 @@ struct Z3Theory
 
 Z3Result isSatisfiable(Term *constraint);
 
+bool isValid(Term *constraint);
+
 void parse_z3_prelude(std::string);
 void start_z3_api();
 void test_z3_api();

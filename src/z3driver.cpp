@@ -514,6 +514,10 @@ Z3Result isSatisfiable(Term *constraint)
   return theory.isSatisfiable();
 }
 
+bool isValid(Term *constraint) {
+  return isSatisfiable(bNot(constraint)) == unsat;
+}
+
 Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
 {
   Log(DEBUG8) << "UnZ3-ing " << Z3_ast_to_string(z3context, ast) << "." << endl;

@@ -23,7 +23,7 @@ struct QueryProveSim2 : public Query {
 
   Term *prove(ConstrainedPair PQphi, int depth);
   Term *baseCase(ConstrainedPair PQphi, vector<ConstrainedPair> &base, int ldepth, int depth, int stepsRequired);
-  Term *QueryProveSim2::whenBase(ConstrainedPair PQphi, vector<ConstrainedPair> &base);
+  Term *whenBase(ConstrainedPair PQphi, vector<ConstrainedPair> &base);
 
   //auxiliary functions
   void expandCircDefined(int from, int to);

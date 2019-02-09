@@ -96,7 +96,7 @@ show-simulation2 in flanguage and flanguage :
      (cons (fa N I S) empty)
  /\ (band
           (band (mle 0 N) true)
-          (band (mle I N) (mle 0 I)))
+          (band (mle I N) (mle 1 I)))
 
 , 
       (cons (f I) (reduce (mplus I 1) N empty))

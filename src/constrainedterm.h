@@ -50,6 +50,8 @@ struct ConstrainedTerm
   ConstrainedTerm fresh();
 };
 
+vector<ConstrainedTerm> solutionsToSuccessors(vector<ConstrainedSolution> &solutions);
+
 struct ConstrainedPair {
   Term *lhs, *rhs, *constraint;
   ConstrainedPair() : lhs(NULL), rhs(NULL), constraint(NULL) {}

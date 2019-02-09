@@ -88,7 +88,7 @@ Term *QueryProveSim2::baseCase(ConstrainedPair PQphi, vector<ConstrainedPair> &b
     }
   }
 
-  cout << spaces(depth) << "+ searching base " << PQphi.toString() << endl;
+  cout << spaces(depth) << "+ searching for base " << PQphi.toString() << endl;
 
   Term *psi = bFalse();
 
@@ -101,18 +101,19 @@ Term *QueryProveSim2::baseCase(ConstrainedPair PQphi, vector<ConstrainedPair> &b
 
   ConstrainedTerm rhs = ConstrainedTerm(PQphi.rhs, PQphi.constraint);
 
-  vector<ConstrainedSolution> successors = rhs.smtNarrowSearch(crsRight);
+  vector<ConstrainedSolution> solutions = rhs.smtNarrowSearch(crsRight);
   --stepsRequired;
-  if (successors.empty()) {
+  if (solutions.empty()) {
     cout << spaces(depth) << "no successors, taking defined symbols" << "(" << rhs.toString() << ")" << endl;
-    successors = rhs.smtNarrowDefinedSearch(depth);
+    solutions = rhs.smtNarrowDefinedSearch(depth);
     ++stepsRequired;
   }
+  vector<ConstrainedTerm> successors = solutionsToSuccessors(solutions);
 
-  for (const auto &sol : successors) {
+  for (const auto &succ : successors) {
     psi = simplifyConstraint(bOr(psi,
       baseCase(ConstrainedPair(
-        PQphi.lhs, sol.term, bAnd(PQphi.constraint, sol.constraint)
+        PQphi.lhs, succ.term, bAnd(PQphi.constraint, succ.constraint)
       ), base, ldepth, depth + 1, stepsRequired)));
   }
 
@@ -138,16 +139,17 @@ Term *QueryProveSim2::prove(ConstrainedPair PQphi, int depth) {
 
   ConstrainedTerm lhs = ConstrainedTerm(PQphi.lhs, PQphi.constraint);
 
-  vector<ConstrainedSolution> successors = lhs.smtNarrowSearch(crsLeft);
-  if (successors.empty()) {
+  vector<ConstrainedSolution> solutions = lhs.smtNarrowSearch(crsLeft);
+  if (solutions.empty()) {
     cout << spaces(depth) << "no successors, taking defined symbols" << "(" << lhs.toString() << ")" << endl;
-    successors = lhs.smtNarrowDefinedSearch(depth);
+    solutions = lhs.smtNarrowDefinedSearch(depth);
   }
+  vector<ConstrainedTerm> successors = solutionsToSuccessors(solutions);
 
-  for (const auto &sol : successors) {
+  for (const auto &succ : successors) {
     phi_succs = simplifyConstraint(bAnd(phi_succs,
       prove(ConstrainedPair(
-        sol.term, PQphi.rhs, bAnd(PQphi.constraint, sol.constraint)
+        succ.term, PQphi.rhs, bAnd(PQphi.constraint, succ.constraint)
       ), depth + 1)));
   }
 

@@ -81,6 +81,16 @@ vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteS
   return sols;
 }
 
+vector<ConstrainedTerm> solutionsToSuccessors(vector<ConstrainedSolution> &solutions) {
+  vector<ConstrainedTerm> successors;
+  for (ConstrainedSolution &sol : solutions) {
+    ConstrainedTerm ct = ConstrainedTerm(sol.term, sol.constraint);
+    successors.push_back(
+      simplifyConstrainedTerm(ct.substitute(sol.subst).substitute(sol.simplifyingSubst)));
+  }
+  return successors;
+}
+
 void ConstrainedTerm::smtNarrowSearchHelper(ConstrainedRewriteSystem &crs,
 							       int minDepth, int maxDepth, int depth,
 							       vector<ConstrainedTerm> &result)

@@ -68,13 +68,12 @@ Term *QueryProveSim2::whenBase(ConstrainedPair PQphi, vector<ConstrainedPair> &b
   ConstrainedTerm Q = ConstrainedTerm(PQphi.rhs, PQphi.constraint).normalizeFunctions();
   Term *psi = bFalse();
   for(const auto &circ : base) {
-    Term *constraint = bAnd(
+    Term *constraint = simplifyConstraint(bAnd(
       P.whenImplies(ConstrainedTerm(circ.lhs, circ.constraint)),
-      Q.whenImplies(ConstrainedTerm(circ.rhs, circ.constraint))
+      Q.whenImplies(ConstrainedTerm(circ.rhs, circ.constraint)))
     );
-    psi = bOr(psi, constraint);
+    psi = simplifyConstraint(bOr(psi, constraint));
   }
-  psi = simplifyConstraint(psi);
   return psi;
 }
 
@@ -113,7 +112,7 @@ Term *QueryProveSim2::baseCase(ConstrainedPair PQphi, vector<ConstrainedPair> &b
   for (const auto &succ : successors) {
     psi = simplifyConstraint(bOr(psi,
       baseCase(ConstrainedPair(
-        PQphi.lhs, succ.term, bAnd(PQphi.constraint, succ.constraint)
+        PQphi.lhs, succ.term, simplifyConstraint(bAnd(PQphi.constraint, succ.constraint))
       ), base, ldepth, depth + 1, stepsRequired)));
   }
 
@@ -149,7 +148,7 @@ Term *QueryProveSim2::prove(ConstrainedPair PQphi, int depth) {
   for (const auto &succ : successors) {
     phi_succs = simplifyConstraint(bAnd(phi_succs,
       prove(ConstrainedPair(
-        succ.term, PQphi.rhs, bAnd(PQphi.constraint, succ.constraint)
+        succ.term, PQphi.rhs, simplifyConstraint(bAnd(PQphi.constraint, succ.constraint))
       ), depth + 1)));
   }
 
@@ -175,7 +174,7 @@ void QueryProveSim2::expandCircDefined(int from, int to) {
           continue;
         }
         ConstrainedTerm *L = &csols_lhs[j], *R = &csols_rhs[k];
-        ConstrainedPair newCirc(L->term, R->term, bAnd(L->constraint, R->constraint));
+        ConstrainedPair newCirc(L->term, R->term, simplifyConstraint(bAnd(L->constraint, R->constraint)));
         Log(INFO) << "Adding new circ (not necessary to prove) " << newCirc.toString() << endl;
         circularities.push_back(newCirc);
       }

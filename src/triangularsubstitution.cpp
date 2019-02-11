@@ -22,7 +22,7 @@ bool TriangularSubstitution::inRange(Variable *v) {
 }
 
 Term *TriangularSubstitution::image(Variable *v) {
-  auto ans = find_if(this->begin(), this->end(), [&](const pair<Variable*, Term*> &it) { return it.second->hasVariable(v); });
+  auto ans = find_if(this->begin(), this->end(), [&](const pair<Variable*, Term*> &it) { return it.first == v; });
   if (ans != this->end()) {
     return ans->second;
   }

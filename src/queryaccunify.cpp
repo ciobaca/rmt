@@ -9,6 +9,7 @@
 #include <tuple>
 #include <queue>
 #include <functional>
+#include <chrono>
 #include "factories.h"
 #include "variable.h"
 #include "varterm.h"
@@ -19,6 +20,7 @@
 #include "ldeslopesalg.h"
 
 using namespace std;
+using namespace std::chrono;
 
 QueryACCUnify::QueryACCUnify() {}
   
@@ -103,6 +105,10 @@ void QueryACCUnify::execute() {
   };
 
   cout << "(with constants) AC-Unifying " << t1->toString() << " and " << t2->toString() << endl;
+  // TIMEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+  high_resolution_clock::time_point time1, time2;
+  time1 = high_resolution_clock::now();
+
   map<Term*, int> l, r;
   map<Term*, Term*> constToVar;
   getCoefs(t1, l, constToVar);
@@ -133,6 +139,19 @@ void QueryACCUnify::execute() {
     }
   }
 
+  vector<vector<Term*>> sigmaImage(sigma.size(), vector<Term*>(l.size() + r.size()));
+  for(int i = 0; i < (int)sigma.size(); ++i) {
+    int index = 0;
+    for(auto it : l) {
+      sigmaImage[i][index] = sigma[i].image(it.first->getAsVarTerm()->variable);
+      ++index;
+    }
+    for(auto it : r) {
+      sigmaImage[i][index] = sigma[i].image(it.first->getAsVarTerm()->variable);
+      ++index;
+    }
+  }
+
   auto checkConstConstraints = [&](Substitution &subst) -> bool {
     map<Term*, Term*> constSubst;
     for (const auto &it : constToVar) {
@@ -156,67 +175,52 @@ void QueryACCUnify::execute() {
     return true;
   };
   auto checkMask = [&](const vector<bool> &mask) -> bool {
-    for (auto it : l) {
-      bool flag = false;
-      for (int i = 0; i < (int)sigma.size(); ++i) {
-        if (mask[i]) {
-          continue;
-        }
-        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm || aux != unityElement) {
-          flag = true;
-          break;
-        }
+    vector<bool> ans(sigma.size());
+    int n = sigma.size();
+    int m = sigmaImage[0].size();
+    int cnt = 0;
+    for (int i = 0; i < n; ++i) {
+      if (mask[i]) {
+        continue;
       }
-      if (!flag) {
-        return false;
+      for (int j = 0; j < m; ++j) {
+        if (!ans[j]) {
+          Term *aux = sigmaImage[i][j];
+          if (aux->isVarTerm || aux != unityElement) {
+            ans[j] = true;
+            ++cnt;
+            if (cnt == m) {
+              return true;
+            }
+          }
+        }
       }
     }
-    for (auto it : r) {
-      bool flag = false;
-      for (int i = 0; i < (int)sigma.size(); ++i) {
-        if (mask[i]) {
-          continue;
-        }
-        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm || aux != unityElement) {
-          flag = true;
-          break;
-        }
-      }
-      if (!flag) {
-        return false;
-      }
-    }
-    return true;
+    return false;
   };
   auto getSubstFromMask = [&](const vector<bool> &mask, Substitution &subst) -> bool {
-    Term* unityElement = getFunTerm(getFunction("e"), {});
-    for (auto it : l) {
-      Term *ans = nullptr;
-      for (int i = 0; i < (int)sigma.size(); ++i) {
-        if (mask[i]) {
-          continue;
-        }
-        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
+    int n = sigma.size();
+    int m = sigmaImage[0].size();
+    vector<Term*> ans(m);
+    for (int i = 0; i < n; ++i) {
+      if (mask[i]) {
+        continue;
+      }
+      for (int j = 0; j < m; ++j) {
+        Term *aux = sigmaImage[i][j];
         if (aux->isVarTerm || aux != unityElement) {
-          ans = ans ? getFunTerm(f, {ans, aux}) : aux;
+          ans[j] = ans[j] ? getFunTerm(f, {ans[j], aux}) : aux;
         }
       }
-      subst.add(it.first->getAsVarTerm()->variable, ans);
+    }
+    int index = 0;
+    for (auto it : l) {
+      subst.add(it.first->getAsVarTerm()->variable, ans[index]);
+      ++index;
     }
     for (auto it : r) {
-      Term *ans = nullptr;
-      for (int i = 0; i < (int)sigma.size(); ++i) {
-        if (mask[i]) {
-          continue;
-        }
-        Term *aux = sigma[i].image(it.first->getAsVarTerm()->variable);
-        if (aux->isVarTerm || aux != unityElement) {
-          ans = ans ? getFunTerm(f, {ans, aux}) : aux;
-        }
-      }
-      subst.add(it.first->getAsVarTerm()->variable, ans);
+      subst.add(it.first->getAsVarTerm()->variable, ans[index]);
+      ++index;
     }
     return checkConstConstraints(subst);
   };
@@ -224,9 +228,6 @@ void QueryACCUnify::execute() {
   vector<Substitution> minSubstSet;
   minSubstSet.push_back(Substitution());
 
-  cout << "result.size() = " << result.size() << endl;
-  //  return;
-  
   vector<bool> initMask(result.size());
   if (!checkMask(initMask) || !getSubstFromMask(initMask, minSubstSet.back())) {
     minSubstSet.pop_back();
@@ -235,20 +236,16 @@ void QueryACCUnify::execute() {
   queue<vector<bool>> q;
   for (q.push(initMask); !q.empty(); q.pop()) {
     vector<bool> &now = q.front();
-    vector<bool> nextMask = now;
-    for (int i = 0; i < (int)sigma.size(); ++i) {
-      if (now[i]) {
-        break;
-      }
-      nextMask[i] = true;
-      if (checkMask(nextMask)) {
+    for (int i = 0; i < (int)sigma.size() && !now[i]; ++i) {
+      now[i] = true;
+      if (checkMask(now)) {
         Substitution subst;
-        if (getSubstFromMask(nextMask, subst)) {
+        if (getSubstFromMask(now, subst)) {
           minSubstSet.push_back(subst);
         }
       }
-      q.push(nextMask);
-      nextMask[i] = false;
+      q.push(now);
+      now[i] = false;
     }
   }
 
@@ -257,11 +254,17 @@ void QueryACCUnify::execute() {
     invConstToVar[it.second] = it.first;
   }
 
+  time2 = high_resolution_clock::now();
+  cerr << result.size() << ' ' << minSubstSet.size() << ' ' << duration_cast<microseconds>(time2 - time1).count() / 1e6 << endl;
+
+  if (!minSubstSet.size()) {
+    cout << "No unification\n";
+  }
   for (auto &subst : minSubstSet) {
     Substitution normalizedSubst;
     for (const auto &it : subst) {
       Term *aux = getVarTerm(it.first);
-      if (!invConstToVar.count(getVarTerm(it.first)) && (l.count(aux) || r.count(aux))) {
+      if (!invConstToVar.count(aux) && (l.count(aux) || r.count(aux))) {
         normalizedSubst.force(it.first, it.second);
       }
     }

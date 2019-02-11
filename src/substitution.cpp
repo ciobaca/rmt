@@ -3,61 +3,50 @@
 #include "term.h"
 #include <cassert>
 #include <sstream>
+#include <iostream>
 
 using namespace std;
 
-Substitution::Substitution()
-{
+Substitution::Substitution() {
 }
 
-void Substitution::add(Variable *v, Term *t)
-{
-  (*this)[v] = t;
+void Substitution::add(Variable *v, Term *t) {
+  this->emplace_back(v, t);
 }
 
-void Substitution::apply(Substitution &s)
-{
-  for (Substitution::iterator it = this->begin(); it != this->end(); ++it) {
-    it->second = it->second->substitute(s);
+void Substitution::apply(Substitution &s) {
+  for (auto &it : *this) {
+    it.second = it.second->substitute(s);
   }
 }
 
-void Substitution::force(Variable *v, Term *t)
-{
+void Substitution::force(Variable *v, Term *t) {
   Substitution temp;
   temp.add(v, t);
   apply(temp);
   add(v, t);
 }
 
-bool Substitution::inDomain(Variable *v)
-{
-  return contains(*this, v);
+bool Substitution::inDomain(Variable *v) {
+  return find_if(this->begin(), this->end(), [&](const pair<Variable*, Term*> &it) { return it.first == v; }) != this->end();
 }
 
-bool Substitution::inRange(Variable *v)
-{
-  for (Substitution::iterator it = this->begin(); it != this->end(); ++it) {
-    if (it->second->hasVariable(v)) {
-      return true;
-    }
+bool Substitution::inRange(Variable *v) {
+  return find_if(this->begin(), this->end(), [&](const pair<Variable*, Term*> &it) { return it.second->hasVariable(v); }) != this->end();
+}
+
+Term *Substitution::image(Variable *v) {
+  auto ans = find_if(this->begin(), this->end(), [&](const pair<Variable*, Term*> &it) { return it.first == v; });
+  if (ans != this->end()) {
+    return ans->second;
   }
-  return false;
+  throw std::runtime_error("Substitution does not contain needed variable");
 }
 
-Term *Substitution::image(Variable *v)
-{
-  assert(contains(*this, v));
-  return (*this)[v];
-}
-
-string Substitution::toString()
-{
-  ostringstream oss;
-  oss << "( ";
-  for (Substitution::iterator it = this->begin(); it != this->end(); ++it) {
-    oss << it->first->name << " |-> " << it->second->toString() << " ";
+string Substitution::toString() {
+  ostringstream oss("( ");
+  for (const auto &it : *this) {
+    oss << it.first->name << " |-> " << it.second->toString() << (it == *prev(this->end())  ? " )" : " | ");
   }
-  oss << ")";
   return oss.str();
 }

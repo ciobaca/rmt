@@ -3,9 +3,11 @@
 
 #include <map>
 #include <vector>
+#include <utility>
 #include <algorithm>
 #include <string>
 #include <unordered_map>
+#include <functional>
 
 /* #ifndef NDEBUG */
 /* #define NDEBUG */
@@ -40,6 +42,10 @@ template<typename A, typename B> bool contains(map<A, B> &container, A elem)
 template<typename A, typename B> bool contains(unordered_map<A, B> &container, A elem)
 {
   return container.count(elem);
+}
+
+template<typename A, typename B> bool contains(vector<pair<A, B>> &container, A elem) {
+  return find_if(container.begin(), container.end(), [&](const pair<A, B> &it) { return it.first == elem; }) != container.end();
 }
 
 template<typename T> bool contains(vector<T> &container, T &elem)

@@ -18,17 +18,6 @@ Query *QueryProveSim::create() {
   return new QueryProveSim();
 }
 
-ConstrainedRewriteSystem parseCRSfromName(string &s, int &w) {
-  skipWhiteSpace(s, w);
-  string crsName = getIdentifier(s, w);
-  skipWhiteSpace(s, w);
-  if (!existsConstrainedRewriteSystem(crsName)) {
-    Log(ERROR) << "No CRS exists with name " << crsName << endl;
-    expected("Existing CRS", w, s);
-  }
-  return getConstrainedRewriteSystem(crsName);
-}
-
 void QueryProveSim::parse(std::string &s, int &w) {
   matchString(s, w, "show-simulation");
   skipWhiteSpace(s, w);
@@ -388,7 +377,7 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
 bool QueryProveSim::proveSimulation(ConstrainedTerm ct, int depth) {
   ct = ct.normalizeFunctions();
   cout << spaces(depth) << "Proving simulation circularity " << ct.toString() << endl;
-  bool result = proveSimulationForallLeft(ct, false, depth + 1);
+  bool result = proveSimulationForallLeft(ct, false, depth + 1); //needProgressRight = true;
   if (result) {
     cout << spaces(depth) << "Proof succeeded." << endl;
   }

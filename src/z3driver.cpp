@@ -30,6 +30,7 @@ map<Z3_symbol, Z3_func_decl> symbol_to_func_decl;
 map<Z3_func_decl, Function *> func_decl_to_function;
 vector<Z3_ast> z3asserts;
 Z3_params simplifyParams;
+Z3_tactic simplifyTactic;
 
 Z3_string z3_sort_to_string(Z3_sort s) {
   return Z3_sort_to_string(z3context, s);
@@ -44,8 +45,27 @@ Z3_ast z3_make_constant(Variable *variable)
 }
 
 Z3_ast z3_simplify(Term *term)
-{  
-  return Z3_simplify_ex(z3context, term->toSmt(), simplifyParams);
+{
+  Z3_ast toSimplify = term->toSmt();
+  if (term->getSort() == getBoolSort()) {
+    Z3_goal goal = Z3_mk_goal(z3context, false, false, false);
+    Z3_goal_assert(z3context, goal, term->toSmt());
+    Z3_apply_result res = Z3_tactic_apply(z3context, simplifyTactic, goal);
+    vector<Z3_ast> clauses;
+    int nrgoals = Z3_apply_result_get_num_subgoals(z3context, res);
+    for (int i = 0; i < nrgoals; ++i) {
+      Z3_goal g = Z3_apply_result_get_subgoal(z3context, res, i);
+      int sz = Z3_goal_size(z3context, g);
+      for (int j = 0; j < sz; ++j)
+        clauses.push_back(Z3_goal_formula(z3context, g, j));
+    }
+    Z3_ast result = clauses.empty() ? Z3_mk_false(z3context) : (
+      (clauses.size() == 1) ? clauses[0] :
+      Z3_mk_and(z3context, clauses.size(), &clauses[0])
+      );
+    toSimplify = result;
+  }
+  return Z3_simplify_ex(z3context, toSimplify, simplifyParams);
 }
 
 Z3_sort z3_bool()
@@ -367,6 +387,11 @@ void start_z3_api()
   Z3_params_set_bool(z3context, simplifyParams, Z3_mk_string_symbol(z3context, "sort_store"), true);
   Z3_params_inc_ref(z3context, simplifyParams);
 
+  simplifyTactic = Z3_mk_tactic(z3context, "ctx-solver-simplify");
+  Z3_tactic_inc_ref(z3context, simplifyTactic);
+  //simplifyTactic = Z3_tactic_using_params(z3context, simplifyTactic, simplifyParams);
+
+
   z3BoolSort = Z3_mk_bool_sort(z3context);
   z3IntSort = Z3_mk_int_sort(z3context);
 
@@ -512,6 +537,10 @@ Z3Result isSatisfiable(Term *constraint)
   }
   theory.addConstraint(constraint);
   return theory.isSatisfiable();
+}
+
+bool isValid(Term *constraint) {
+  return isSatisfiable(bNot(constraint)) == unsat;
 }
 
 Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)

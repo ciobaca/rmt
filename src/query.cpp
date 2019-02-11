@@ -22,6 +22,7 @@
 #include "querysatisfiability.h"
 #include "querysimplification.h"
 #include "queryprovesim.h"
+#include "queryprovesim2.h"
 
 #include <string>
 #include <map>
@@ -143,6 +144,11 @@ Query *createQueryProveSim()
   return new QueryProveSim();
 }
 
+Query *createQueryProveSim2()
+{
+  return new QueryProveSim2();
+}
+
 Query *createQuerySatisfiability()
 {
   return new QuerySatisfiability();
@@ -180,6 +186,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["prove"] = createQueryProveReachability;
   (*map)["show-equivalent"] = createQueryProveEquivalence;
   (*map)["show-simulation"] = createQueryProveSim;
+  (*map)["show-simulation2"] = createQueryProveSim2;
   (*map)["run"] = createQueryRun;
   (*map)["compute"] = createQueryCompute;
 

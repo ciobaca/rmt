@@ -81,6 +81,17 @@ vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteS
   return sols;
 }
 
+vector<ConstrainedTerm> solutionsToSuccessors(vector<ConstrainedSolution> &solutions) {
+  vector<ConstrainedTerm> successors;
+  for (ConstrainedSolution &sol : solutions) {
+    ConstrainedTerm ct =
+      simplifyConstrainedTerm(ConstrainedTerm(sol.term, sol.constraint));
+    successors.push_back(
+      simplifyConstrainedTerm(ct.substitute(sol.subst).substitute(sol.simplifyingSubst)));
+  }
+  return successors;
+}
+
 void ConstrainedTerm::smtNarrowSearchHelper(ConstrainedRewriteSystem &crs,
 							       int minDepth, int maxDepth, int depth,
 							       vector<ConstrainedTerm> &result)
@@ -200,4 +211,14 @@ vector<Function *> ConstrainedTerm::getDefinedFunctions()
   vector<Function *> result;
   std::copy(where.begin(), where.end(), std::back_inserter(result));
   return result;
+}
+
+string ConstrainedPair::toString() {
+  ostringstream oss;
+  oss << lhs->toString() << " " << rhs->toString();
+  if (constraint) {
+    oss << " /\\ ";
+    oss << constraint->toString();
+  }
+  return oss.str();
 }

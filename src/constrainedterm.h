@@ -50,4 +50,14 @@ struct ConstrainedTerm
   ConstrainedTerm fresh();
 };
 
+vector<ConstrainedTerm> solutionsToSuccessors(vector<ConstrainedSolution> &solutions);
+
+struct ConstrainedPair {
+  Term *lhs, *rhs, *constraint;
+  ConstrainedPair() : lhs(NULL), rhs(NULL), constraint(NULL) {}
+  ConstrainedPair(Term *lhs, Term *rhs, Term *constraint)
+    : lhs(lhs), rhs(rhs), constraint(constraint) {}
+  std::string toString();
+};
+
 #endif

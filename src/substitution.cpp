@@ -11,7 +11,9 @@ Substitution::Substitution() {
 }
 
 void Substitution::add(Variable *v, Term *t) {
-  this->emplace_back(v, t);
+  if (!inDomain(v)) {
+    this->emplace_back(v, t);
+  }
 }
 
 void Substitution::apply(Substitution &s) {
@@ -44,9 +46,14 @@ Term *Substitution::image(Variable *v) {
 }
 
 string Substitution::toString() {
-  ostringstream oss("( ");
+  if (!this->size()) {
+    return "( )";
+  }
+  ostringstream oss;
+  oss << "( ";
+  auto lastItem = *(this->rbegin());
   for (const auto &it : *this) {
-    oss << it.first->name << " |-> " << it.second->toString() << (it == *prev(this->end())  ? " )" : " | ");
+    oss << it.first->name << " |-> " << it.second->toString() << (it == lastItem  ? " )" : " | ");
   }
   return oss.str();
 }

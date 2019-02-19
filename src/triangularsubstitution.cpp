@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iterator>
 #include <algorithm>
+#include <iostream>
 
 using namespace std;
 
@@ -30,9 +31,14 @@ Term *TriangularSubstitution::image(Variable *v) {
 }
 
 string TriangularSubstitution::toString() {
-  ostringstream oss("( ");
+  if (!this->size()) {
+    return "( )";
+  }
+  ostringstream oss;
+  oss << "( ";
+  auto lastItem = *(this->rbegin());
   for (const auto &it : *this) {
-    oss << it.first->name << " |-> " << it.second->toString() << (it == *prev(this->end())  ? " )" : " | ");
+    oss << it.first->name << " |-> " << it.second->toString() << (it == lastItem  ? " )" : " | ");
   }
   return oss.str();
 }

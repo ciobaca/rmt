@@ -175,7 +175,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["axiom"] = createQueryAxiom;
   (*map)["circ"] = createQueryCirc;
   (*map)["unify"] = createQueryUnify;
-  (*map)["unifymodulotheories"] = createQueryUnifyModuloTheories;
+  (*map)["unifyModuloTheories"] = createQueryUnifyModuloTheories;
   (*map)["c-unify"] = createQueryCUnify;
   (*map)["acu-unify"] = createQueryACUUnify;
   (*map)["ac-unify"] = createQueryACUnify;

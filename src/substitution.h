@@ -1,6 +1,5 @@
 #ifndef SUBSTITUTION_H__
 #define SUBSTITUTION_H__
-
 #include <vector>
 #include <string>
 #include <utility>
@@ -8,8 +7,7 @@
 struct Term;
 struct Variable;
 
-struct Substitution : public std::vector<std::pair<Variable *, Term *>>
-{
+struct Substitution : public std::vector<std::pair<Variable *, Term *>> {
   Substitution();
   void apply(Substitution &);
   void force(Variable *v, Term *t);
@@ -19,5 +17,4 @@ struct Substitution : public std::vector<std::pair<Variable *, Term *>>
   Term *image(Variable *v);
   std::string toString();
 };
-
 #endif

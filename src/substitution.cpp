@@ -1,17 +1,25 @@
 #include "substitution.h"
 #include "helper.h"
 #include "term.h"
+#include "varterm.h"
 #include <cassert>
 #include <sstream>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
 Substitution::Substitution() {
 }
 
+Substitution::Substitution(Variable *v, Term *t) {
+  if (!(t->isVarTerm && v == t->getAsVarTerm()->variable)) {
+    this->emplace_back(v, t);
+  }
+}
+
 void Substitution::add(Variable *v, Term *t) {
-  if (!inDomain(v)) {
+  if (!inDomain(v) || (t->isVarTerm && v == t->getAsVarTerm()->variable)) {
     this->emplace_back(v, t);
   }
 }
@@ -27,6 +35,21 @@ void Substitution::force(Variable *v, Term *t) {
   temp.add(v, t);
   apply(temp);
   add(v, t);
+}
+
+void Substitution::compose(Substitution s) {
+  auto &v = *this;
+  s.apply(v);
+  for (int i = 0; i < (int)v.size(); ++i) {
+    if (s.inDomain(v[i].first)) {
+      std::swap(v[i], v[v.size() - 1]);
+      v.pop_back();
+      --i;
+    }
+  }
+  for (auto &it : s) {
+    v.add(it.first, it.second);
+  }
 }
 
 bool Substitution::inDomain(Variable *v) {

@@ -45,8 +45,10 @@ string TriangularSubstitution::toString() {
 
 Substitution TriangularSubstitution::getSubstitution() {
   Substitution subst;
+  cerr << "START:       " << this->toString() << '\n';
   for (const auto &it : *this) {
-    subst.force(it.first, it.second);
+    subst.compose(Substitution(it.first, it.second));
+    cerr << "LOOOOOOL:       " << subst.toString() << '\n';
   }
   return subst;
 }

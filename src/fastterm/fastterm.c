@@ -311,6 +311,26 @@ FastTerm applySubst(FastTerm term, FastSubst subst)
   }
 }
 
+FastTerm applyUnitySubst(FastTerm term, FastVar v, FastTerm t)
+{
+  if (isVariable(term)) {
+    if (term == v) {
+      return t;
+    }
+    return term;
+  } else {
+    assert(isFuncTerm(term));
+    FastFunc func = funcSymbol(term);
+    FastTerm result = newFuncTerm(func, args(term));
+    FastTerm *arguments = args(result);
+    for (int i = 0; i < arities[func]; ++i) {
+      *arguments = applyUnitySubst(*arguments, v, t);
+      arguments++;
+    }
+    return result;
+  }
+}
+
 bool unifyHelper(FastTerm, FastTerm, FastSubst);
 
 bool unifyHelperList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst subst)
@@ -321,6 +341,18 @@ bool unifyHelperList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst subst
     }
   }
   return true;
+}
+
+void composeSubst(FastSubst subst, FastVar v, FastTerm t)
+{
+  int count = substData[subst];
+  for (int i = 0; i < count; ++i) {
+    FastVar x = substData[subst + 1 + 2 * i];
+    FastTerm s = substData[subst + 2 + 2 * i];
+    assert(x != v);
+    substData[subst + 2 + 2 * i] = applyUnitySubst(s, v, t);
+  }
+  addToSubst(subst, v, t);
 }
 
 bool unifyHelper(FastTerm t1, FastTerm t2, FastSubst subst)
@@ -339,7 +371,7 @@ bool unifyHelper(FastTerm t1, FastTerm t2, FastSubst subst)
       t2 = temp;
     }
     assert(isVariable(t1));
-    addToSubst(subst, t1, t2);
+    composeSubst(subst, t1, t2);
     return true;
   }
 }
@@ -384,6 +416,7 @@ size_t printSubst(FastSubst subst, char *buffer, size_t size)
     assert(validFastTerm(substData[subst + 2 * i + 1]));
     assert(isVariable(substData[subst + 2 * i + 1]));
     uint32 printed = printTerm(substData[subst + 2 * i + 1], buffer, size);
+    buffer += printed;
     size -= printed;
     result += size;
     if (size >= 1) {
@@ -400,6 +433,7 @@ size_t printSubst(FastSubst subst, char *buffer, size_t size)
     }
     assert(validFastTerm(substData[subst + 2 * i + 2]));
     printed = printTerm(substData[subst + 2 * i + 2], buffer, size);
+    buffer += printed;
     size -= printed;
     result += size;
   }

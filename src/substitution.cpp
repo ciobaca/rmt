@@ -38,18 +38,29 @@ void Substitution::force(Variable *v, Term *t) {
 }
 
 void Substitution::compose(Substitution s) {
-  auto &v = *this;
-  s.apply(v);
-  for (int i = 0; i < (int)v.size(); ++i) {
-    if (s.inDomain(v[i].first)) {
-      std::swap(v[i], v[v.size() - 1]);
-      v.pop_back();
+  s.apply(*this);
+  for (int i = 0; i < (int)this->size(); ++i) {
+    if (s.inDomain((*this)[i].first)) {
+      std::swap((*this)[i], (*this)[this->size() - 1]);
+      this->pop_back();
       --i;
     }
   }
   for (auto &it : s) {
-    v.add(it.first, it.second);
+    this->add(it.first, it.second);
   }
+}
+
+void Substitution::compose(pair<Variable*, Term*> s) {
+  s.second = s.second->substitute(*this);
+  for (int i = 0; i < (int)this->size(); ++i) {
+    if (s.first == (*this)[i].first) {
+      std::swap((*this)[i], (*this)[this->size() - 1]);
+      this->pop_back();
+      --i;
+    }
+  }
+  this->add(s.first, s.second);
 }
 
 bool Substitution::inDomain(Variable *v) {
@@ -76,7 +87,7 @@ string Substitution::toString() {
   oss << "( ";
   auto lastItem = *(this->rbegin());
   for (const auto &it : *this) {
-    oss << it.first->name << " |-> " << it.second->toString() << (it == lastItem  ? " )" : " | ");
+    oss << it.first->name << " |-> " << it.second->toString() << (it == lastItem  ? " )" : "; ");
   }
   return oss.str();
 }

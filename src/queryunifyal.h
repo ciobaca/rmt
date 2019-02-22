@@ -28,6 +28,7 @@ private:
   Term* getEqClass(Term *s);
   int getSize(Term *s);
   std::vector<Variable*> getVars(Term *s);
+  std::string getSubst();
 
   std::map<Term*, int> sz;
   std::map<Term*, std::vector<Variable*>> vars;

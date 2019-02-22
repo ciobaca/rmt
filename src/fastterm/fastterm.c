@@ -263,7 +263,26 @@ inline FastTerm *args(FastTerm term)
   return &termData[index + 1];
 }
 
-bool inRange(FastVar var, FastSubst subst)
+bool occurs(FastVar var, FastTerm term)
+{
+  if (term == var) {
+    return true;
+  }
+  if (isFuncTerm(term)) {
+    FastFunc func = funcSymbol(term);
+    FastTerm *arguments = args(term);
+    for (int i = 0; i < arities[func]; ++i) {
+      if (occurs(var, *arguments)) {
+	return true;
+      }
+      arguments++;
+    }
+    return false;
+  }
+  return false;
+}
+
+bool inDomain(FastVar var, FastSubst subst)
 {
   uint32 index = subst + 1;
   uint32 size = substData[subst];
@@ -278,7 +297,7 @@ bool inRange(FastVar var, FastSubst subst)
 
 FastTerm range(FastVar var, FastSubst subst)
 {
-  assert(inRange(var, subst));
+  assert(inDomain(var, subst));
   uint32 index = subst + 1;
   uint32 size = substData[subst];
   for (int i = 0; i < size; i++) {
@@ -294,7 +313,7 @@ FastTerm range(FastVar var, FastSubst subst)
 FastTerm applySubst(FastTerm term, FastSubst subst)
 {
   if (isVariable(term)) {
-    if (inRange(term, subst)) {
+    if (inDomain(term, subst)) {
       return range(term, subst);
     }
     return term;
@@ -371,7 +390,12 @@ bool unifyHelper(FastTerm t1, FastTerm t2, FastSubst subst)
       t2 = temp;
     }
     assert(isVariable(t1));
-    composeSubst(subst, t1, t2);
+    if (!isVariable(t2) && occurs(t1, t2)) {
+      return false;
+    }
+    if (t1 != t2) {
+      composeSubst(subst, t1, t2);
+    }
     return true;
   }
 }

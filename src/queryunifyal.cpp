@@ -32,7 +32,13 @@ void QueryUnifyAL::execute() {
   cout << "Unifying " << t1->toString() << " and " << t2->toString() << endl;
   if (unifClosure(t1, t2) && findSolution(t1)) {
     reverse(subst.begin(), subst.end());
-    cout << "Substitution: " << getSubst() << endl;
+    cout << subst.toString() << '\n';
+    Substitution sbst = subst.getSubstitution();
+    if (t1->substitute(sbst) == t2->substitute(sbst)) {
+      cout << "Substitution: " << subst.getSubstitution().toString() << endl;
+    } else {
+      cout << "No unification." << endl;
+    }
   } else {
     cout << "No unification." << endl;
   }
@@ -81,7 +87,10 @@ Term* QueryUnifyAL::getEqClass(Term* s) {
 vector<Variable*> QueryUnifyAL::getVars(Term* s) {
   auto it = vars.find(s);
   if (it == vars.end()) {
-    return vars[s] = s->uniqueVars();
+    if (s->isVarTerm) {
+      vars[s] = {s->getAsVarTerm()->variable};
+    }
+    return vars[s];
   }
   return it->second;
 }

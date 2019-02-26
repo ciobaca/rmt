@@ -4,6 +4,7 @@
 #include "queryinstrument.h"
 #include "queryinstrument_c.h"
 #include "queryunify.h"
+#include "queryunifypatweg.h"
 #include "queryunifyal.h"
 #include "queryunifymodulotheories.h"
 #include "querycunify.h"
@@ -88,6 +89,11 @@ Query *createQueryUnify()
 Query *createQueryUnifyAL()
 {
   return new QueryUnifyAL();
+}
+
+Query *createQueryUnifyPatWeg()
+{
+  return new QueryUnifyPatWeg();
 }
 
 Query *createQueryUnifyModuloTheories()
@@ -181,6 +187,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["axiom"] = createQueryAxiom;
   (*map)["circ"] = createQueryCirc;
   (*map)["n*unify"] = createQueryUnifyAL;
+  (*map)["pat-weg-unify"] = createQueryUnifyPatWeg;
   (*map)["unify"] = createQueryUnify;
   (*map)["unifyModuloTheories"] = createQueryUnifyModuloTheories;
   (*map)["c-unify"] = createQueryCUnify;

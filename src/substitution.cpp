@@ -37,32 +37,6 @@ void Substitution::force(Variable *v, Term *t) {
   add(v, t);
 }
 
-void Substitution::compose(Substitution s) {
-  s.apply(*this);
-  for (int i = 0; i < (int)this->size(); ++i) {
-    if (s.inDomain((*this)[i].first)) {
-      std::swap((*this)[i], (*this)[this->size() - 1]);
-      this->pop_back();
-      --i;
-    }
-  }
-  for (auto &it : s) {
-    this->add(it.first, it.second);
-  }
-}
-
-void Substitution::compose(pair<Variable*, Term*> s) {
-  s.second = s.second->substitute(*this);
-  for (int i = 0; i < (int)this->size(); ++i) {
-    if (s.first == (*this)[i].first) {
-      std::swap((*this)[i], (*this)[this->size() - 1]);
-      this->pop_back();
-      --i;
-    }
-  }
-  this->add(s.first, s.second);
-}
-
 bool Substitution::inDomain(Variable *v) {
   return find_if(this->begin(), this->end(), [&](const pair<Variable*, Term*> &it) { return it.first == v; }) != this->end();
 }

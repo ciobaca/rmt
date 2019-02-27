@@ -17,7 +17,5 @@ struct Substitution : public std::vector<std::pair<Variable *, Term *>> {
   bool inRange(Variable *v);
   Term *image(Variable *v);
   std::string toString();
-  void compose(Substitution s);
-  void compose(std::pair<Variable*, Term*> s);
 };
 #endif

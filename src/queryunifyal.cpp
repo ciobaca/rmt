@@ -32,40 +32,15 @@ void QueryUnifyAL::execute() {
   cout << "Unifying " << t1->toString() << " and " << t2->toString() << endl;
   if (unifClosure(t1, t2) && findSolution(t1)) {
     reverse(subst.begin(), subst.end());
-    cout << subst.toString() << '\n';
     Substitution sbst = subst.getSubstitution();
     if (t1->substitute(sbst) == t2->substitute(sbst)) {
-      cout << "Substitution: " << subst.getSubstitution().toString() << endl;
+      cout << "Substitution: " << sbst.toString() << endl;
     } else {
       cout << "No unification." << endl;
     }
   } else {
     cout << "No unification." << endl;
   }
-}
-
-string QueryUnifyAL::getSubst() {
-  int n = subst.size();
-  string ans;
-  for (int i = 0; i < n; ++i) {
-    Substitution now(subst[i].first, subst[i].second);
-    if (t1->substitute(now) == t2->substitute(now)) {
-      string aux = now.toString();
-      if (!ans.size() || aux.size() < ans.size()) {
-        ans.swap(aux);
-      }
-    }
-    for (int j = i + 1; j < n; ++j) {
-      now.compose(subst[j]);
-      if (t1->substitute(now) == t2->substitute(now)) {
-        string aux = now.toString();
-        if (!ans.size() || aux.size() < ans.size()) {
-          ans.swap(aux);
-        }
-      }
-    }
-  }
-  return ans;
 }
 
 Term* QueryUnifyAL::getSchemaTerm(Term* s) {

@@ -46,7 +46,7 @@ string TriangularSubstitution::toString() {
 Substitution TriangularSubstitution::getSubstitution() {
   Substitution subst;
   for (const auto &it : *this) {
-    subst.compose(Substitution(it.first, it.second));
+    subst.force(it.first, it.second);
   }
   return subst;
 }

@@ -92,8 +92,8 @@ void QueryUnifyAL::joinClass(Term *s, Term *t) {
     schemaTerm[getEqClass(s)] = getSchemaTerm(getEqClass(t));
   }
   sz[s] += getSize(t);
-  vector<Variable*> &vs = getVars(s);
-  vector<Variable*> &ts = getVars(t);
+  vector<Variable*> vs = getVars(s);
+  vector<Variable*> ts = getVars(t);
   vs.insert(vs.end(), ts.begin(), ts.end());
   sort(vs.begin(), vs.end());
   vs.erase(unique(vs.begin(), vs.end()), vs.end());

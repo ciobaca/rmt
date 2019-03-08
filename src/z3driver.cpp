@@ -59,7 +59,7 @@ Z3_ast z3_simplify(Term *term)
       for (int j = 0; j < sz; ++j)
         clauses.push_back(Z3_goal_formula(z3context, g, j));
     }
-    Z3_ast result = clauses.empty() ? Z3_mk_false(z3context) : (
+    Z3_ast result = clauses.empty() ? Z3_mk_true(z3context) : (
       (clauses.size() == 1) ? clauses[0] :
       Z3_mk_and(z3context, clauses.size(), &clauses[0])
       );

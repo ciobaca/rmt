@@ -80,8 +80,9 @@ signature
 
 	F : ExpF -> CfgF,
 
-	contextexp : ValExpF -> ValExpF,
-	contextexp : NonValExpF -> NonValExpF,
+	contextexp : ExpF -> ExpF,
+//	contextexp : ValExpF -> ValExpF,
+//	contextexp : NonValExpF -> NonValExpF,
 	
 	pS1 : -> Stmt,
 	pE1 : -> NonValAExp,

@@ -25,7 +25,7 @@ struct QueryProveSim : public Query {
 
   /* query parameters */
   int maxDepth;
-  bool needProgressRight;
+  bool proveTotal;
   bool isBounded;
 
   /* holds information about which proofs failed */
@@ -52,6 +52,7 @@ struct QueryProveSim : public Query {
   Term *whenImpliesCircularity(ConstrainedTerm current);
   bool possibleCircularity(ConstrainedTerm ct);
   ConstrainedTerm pairC(Term *left, Term *right, Term *constraint);
+  bool canApplyCircularities(bool progressLeft, bool progressRight);
 
   static void decomposeConstrainedTermEq(ConstrainedTerm ct, Term *&lhs, Term *&rhs);
 };

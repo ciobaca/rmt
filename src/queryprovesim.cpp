@@ -23,7 +23,7 @@ void QueryProveSim::parse(std::string &s, int &w) {
   skipWhiteSpace(s, w);
 
   /* defaults */
-  needProgressRight = false;
+  proveTotal = false;
   maxDepth = 100;
   isBounded = false;
 
@@ -41,11 +41,11 @@ void QueryProveSim::parse(std::string &s, int &w) {
       skipWhiteSpace(s, w);
       if (lookAhead(s, w, "partial")) {
         matchString(s, w, "partial");
-        needProgressRight = false;
+        proveTotal = false;
       }
       else if (lookAhead(s, w, "total")) {
         matchString(s, w, "total");
-        needProgressRight = true;
+        proveTotal = true;
       }
       else {
         expected("Type of simulation must be either 'partial' or 'total'", w, s);
@@ -136,6 +136,13 @@ bool QueryProveSim::possibleCircularity(ConstrainedTerm ct) {
   return false;
 }
 
+bool QueryProveSim::canApplyCircularities(bool progressLeft, bool progressRight) {
+  if (isBounded) return false;
+  bool condition = progressLeft;
+  if (!proveTotal) condition = condition || progressRight;
+  return condition;
+}
+
 void QueryProveSim::decomposeConstrainedTermEq(ConstrainedTerm ct, Term *&lhs, Term *&rhs) {
   if (!ct.term->isFunTerm) {
     Log(ERROR) << "Expected a pair as top-most function symbol (found variable instead)." << endl;
@@ -222,7 +229,7 @@ Term *QueryProveSim::proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool p
   cout << spaces(depth) << "Instance of base only when " + baseConstraint->toString() << endl;
 
   Term *circConstraint = bFalse();
-  if (progressLeft && progressRight && !isBounded) {
+  if (canApplyCircularities(progressLeft, progressRight)) {
     Log(DEBUG5) << spaces(depth) << "Testing for circularity" << endl;
     circConstraint = simplifyConstraint(whenImpliesCircularity(ct));
     if (isSatisfiable(bNot(circConstraint)) == unsat) {
@@ -271,7 +278,7 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
     QueryProveSim::decomposeConstrainedTermEq(t.ct, lhs, rhs);
 
     cout << spaces(t.depth) << "+ prove exists right " << t.ct.toString() << endl;
-    if ((possibleLhsBase(lhs) && possibleRhsBase(rhs)) || (progressLeft && t.progressRight && possibleCircularity(t.ct))) {
+    if ((possibleLhsBase(lhs) && possibleRhsBase(rhs)) || (canApplyCircularities(progressLeft, t.progressRight) && possibleCircularity(t.ct))) {
       Log(DEBUG5) << spaces(t.depth) << "possible rhs base" << endl;
       Term *baseCaseConstraint = proveBaseCase(t.ct, progressLeft, t.progressRight, t.depth + 1);
 
@@ -335,9 +342,10 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
   Log(DEBUG5) << spaces(depth) << "possible lhs base " << possibleLhsBase(lhs) << endl;
   Log(DEBUG5) << spaces(depth) << "progressLeft " << progressLeft << "; possibleLhsCircularity " << possibleLhsCircularity(lhs) << endl;
   Term *unsolvedConstraint = bTrue();
-  if (possibleLhsBase(lhs) || (progressLeft && possibleLhsCircularity(lhs))) {
+  if (possibleLhsBase(lhs) ||
+    (canApplyCircularities(progressLeft, true /*I COULD have progress right*/) && possibleLhsCircularity(lhs))) {
     Log(DEBUG5) << spaces(depth) << "possible lhs base or circularity" << endl;
-    unsolvedConstraint = proveSimulationExistsRight(proveSimulationExistsRight_arguments(ct, !needProgressRight, depth + 1), progressLeft);
+    unsolvedConstraint = proveSimulationExistsRight(proveSimulationExistsRight_arguments(ct, false, depth + 1), progressLeft);
     if (unsolvedConstraint == NULL) {
       cout << spaces(depth) << "- proof succeeded forall left " << ct.toString() << endl;
       return true;

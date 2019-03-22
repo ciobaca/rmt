@@ -219,7 +219,11 @@ define substitute : VarF ExpF ExpF -> ExpF by
 
 
 constrained-rewrite-system flanguage
-	(contextexp (fplus FNV FEXP)) => (fplus (contextexp FNV) FEXP),
+
+// TODO: de mers cu stil stiva
+// (cons (fplus FNV FEXP) LIST) => (cons FNV (cons (fplus HOLE FEXP) LIST))...
+
+  	(contextexp (fplus FNV FEXP)) => (fplus (contextexp FNV) FEXP),
 	(fplus (contextexp I) FEXP) => (contextexp (fplus I FEXP)),
 	(contextexp (fplus I FNV)) => (fplus I (contextexp FNV)),
 	(fplus I (contextexp J)) => (contextexp (fplus I J)),
@@ -274,7 +278,7 @@ show-simulation [100, partial] in flanguage and flanguage :
 
 	(F (contextexp (app (app (
 	miu (fvar 2) (
-		lam (fvar 0) (lam (fvar 1)
+		lam (fvar 0) (lam (fvar 1) // TODO: trei parametri aici
 			(fite (fle 0 (fvar 0))
 				(app (app (fvar 2) (fminus (fvar 0) 1)) (fplus (fvar 1) (fvar 0)))
 				(fvar 1)

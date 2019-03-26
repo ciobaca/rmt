@@ -3,7 +3,7 @@ import time
 import os
 import sys
 
-exes = [ "./ldegraphmain", "./slopesV7i" ]
+exes = [ "ldegraphmain.exe", "slopesV7i.exe" ]
 
 filename = sys.argv[1]
 label = sys.argv[2] # "fig:comparison1"
@@ -20,28 +20,26 @@ Coefficients & LDEGraph & Slopes & Result \\\\
 with open(filename, "r") as f:
     lines = f.readlines()
     for line in lines:
-        if line != "":
-            rt = []
-            sols = []
-            for exe in exes:
-#                print("echo \"%s\" | %s 1>/dev/null 2>/dev/null" % (line[:-1], exe))
-                times = []
-                for repeat in range(10):
-                    start = time.process_time()
-                    os.system("echo \"%s\" | %s 1>temp.txt 2>/dev/null" % (line[:-1], exe))
-                    end = time.process_time()
-                    times.append(end - start)
-                    with open("temp.txt", "r") as g:
-                        sols.append(int(g.readline()))
-                times.sort()
-                rt.append(sum(times[2:-2]) / 6)
-            if len(set(sols)) != 1:
-                print("ERROR in solution sizes.")
-            print("%s & %.4lf & %.4lf & %d \\\\" % (line[:-1], rt[0], rt[1], sols[0]))
+        if not line.strip():
+          continue
+        rt, sols = [], []
+        for exe in exes:
+            times = []
+            for _ in range(10):
+                start = time.process_time()
+                os.system("echo %s | %s 1>temp.txt" % (line.strip(), exe))
+                end = time.process_time()
+                times.append(end - start)
+                sols.append(int(open('temp.txt', 'r').readline()))
+            times.sort()
+            rt.append(sum(times[2:-2]) / 6)
+        if len(set(sols)) != 1:
+            print("ERROR in solution sizes.")
+        print("%s & %.4lf & %.4lf & %d \\\\" % (line[:-1], rt[0], rt[1], sols[0]))
 print("""
-  \hline
+\hline
 \end{tabular}
 \caption{\label{%s}%s}
-  \end{center}
+\end{center}
 \end{figure}""" % (label, title))
 

@@ -6,7 +6,7 @@
 /*---------------------------------------------------------------------------*\
 
    Copyright (c) 1991--2000 Ana Paula Tomas, Miguel Filgueiras /
-	DCC-FC & LIACC, Universidade do Porto
+  DCC-FC & LIACC, Universidade do Porto
 
 #    This program is free software; you can redistribute it and/or modify
 #      it under the terms of the GNU General Public License as published by
@@ -38,7 +38,6 @@
 #define VERSION "Slopes-V7i"
 
 #include <stdio.h>
-#include "timer.h" 
 
 /* Comment/uncomment next line to not count/count candidates */
 /* #define COUNTCAND 1 */
@@ -165,23 +164,23 @@ void ordercoeffs()
     for (i=0; i<Ni-1; i++) {
       k = Coefs[i];  m = i;  c = 0;
       for (j=i+1; j<Ni; j++)
-	if (Coefs[j] > k) {
-	  k = Coefs[j];  m = j;  c = 1;
-	}
+  if (Coefs[j] > k) {
+    k = Coefs[j];  m = j;  c = 1;
+  }
       if (c) {
-	Coefs[m] = Coefs[i];  Coefs[i] = k;
-	k = InOrder[m];  InOrder[m] = InOrder[i];  InOrder[i] = k;
+  Coefs[m] = Coefs[i];  Coefs[i] = k;
+  k = InOrder[m];  InOrder[m] = InOrder[i];  InOrder[i] = k;
       }
     }
     for (i++; i<N-1; i++) {
       k = Coefs[i];  m = i;  c = 0;
       for (j=i+1; j<N; j++)
-	if (Coefs[j] < k) {
-	  k = Coefs[j];  m = j;  c = 1;
-	}
+  if (Coefs[j] < k) {
+    k = Coefs[j];  m = j;  c = 1;
+  }
       if (c) {
-	Coefs[m] = Coefs[i];  Coefs[i] = k;
-	k = InOrder[m];  InOrder[m] = InOrder[i];  InOrder[i] = k;
+  Coefs[m] = Coefs[i];  Coefs[i] = k;
+  k = InOrder[m];  InOrder[m] = InOrder[i];  InOrder[i] = k;
       }
     }
   }
@@ -257,16 +256,16 @@ int n, k, off, *ps, *psv;
     }
     if (v > off) {
       do {
-	Mask &= ~Bit[ConfVars[v]];  *ps -= Coefs[ConfVars[v--]];
+  Mask &= ~Bit[ConfVars[v]];  *ps -= Coefs[ConfVars[v--]];
       } while (v>=off && ConfVars[v]==n-k+v-off);
       if (v >= off) {
-	Mask &= ~Bit[ConfVars[v]];  *ps -= Coefs[ConfVars[v]];
-	Mask |= Bit[++ConfVars[v]];  *ps += Coefs[ConfVars[v]];
-	for (v++; v<k+off; v++) {
-	  Mask |= Bit[(ConfVars[v] = ConfVars[v-1]+1)];
-	  *ps += Coefs[ConfVars[v]];
-	}
-	return(1);
+  Mask &= ~Bit[ConfVars[v]];  *ps -= Coefs[ConfVars[v]];
+  Mask |= Bit[++ConfVars[v]];  *ps += Coefs[ConfVars[v]];
+  for (v++; v<k+off; v++) {
+    Mask |= Bit[(ConfVars[v] = ConfVars[v-1]+1)];
+    *ps += Coefs[ConfVars[v]];
+  }
+  return(1);
       }
     }
   }
@@ -291,13 +290,13 @@ void slopes()
      }
      while (ddy){
        while (dy-ddy > 0){
-	 dy -= ddy;  t += dt;
-	 /* paper notation:  dz = k*dz1, ymax*t <= dy1*k */
-	 dz = ((t*ymax)/XDyij + 1)*XDzij;   /* overflow! */
-	 v = -Eb*dy + Ec*dz;   SmDy = dy;
-	 while (y >= dy){
-	   YSlop[y] = dy;  VSlop[y] = v;  ZSlop[y--] = dz;
-	 }
+   dy -= ddy;  t += dt;
+   /* paper notation:  dz = k*dz1, ymax*t <= dy1*k */
+   dz = ((t*ymax)/XDyij + 1)*XDzij;   /* overflow! */
+   v = -Eb*dy + Ec*dz;   SmDy = dy;
+   while (y >= dy){
+     YSlop[y] = dy;  VSlop[y] = v;  ZSlop[y--] = dz;
+   }
        }
        k = ddy/dy;  ddy = ddy%dy;  dt += k*t;
      }
@@ -322,19 +321,19 @@ int i, j, dz, dy, z2, y1;
       y1 -= dy;  z += dz;
       x = Sols[NSols][Eix] = (Eb*y1+Ec*z)/Ea;
       if ((Sols[NSols][i] = y1) == 1)
-	if ((Sols[NSols][j] = z) == 1)
-	  if (x == 1)  DeadConfs[Dead++] = Mask;
-	  else {
-	    EDeadCs[EDead++] = Mask;
-	    LMaxs[Eix] = newel(x,Mask,LMaxs[Eix]);
-	  }
-	else {
-	  ELMaxs[j] = newel(z,Mask,ELMaxs[j]);
-	  if (x == 1)  LMaxs[j] = newel(z,Mask,LMaxs[j]);
-	}
+  if ((Sols[NSols][j] = z) == 1)
+    if (x == 1)  DeadConfs[Dead++] = Mask;
+    else {
+      EDeadCs[EDead++] = Mask;
+      LMaxs[Eix] = newel(x,Mask,LMaxs[Eix]);
+    }
+  else {
+    ELMaxs[j] = newel(z,Mask,ELMaxs[j]);
+    if (x == 1)  LMaxs[j] = newel(z,Mask,LMaxs[j]);
+  }
       else if ((Sols[NSols][j] = z) == 1) {
-	ELMaxs[i] = newel(y1,Mask,ELMaxs[i]);
-	if (x == 1)  LMaxs[i] = newel(y1,Mask,LMaxs[i]);
+  ELMaxs[i] = newel(y1,Mask,ELMaxs[i]);
+  if (x == 1)  LMaxs[i] = newel(y1,Mask,LMaxs[i]);
       }
       NZSol[NSols++] = Mask;
     } 
@@ -370,13 +369,13 @@ int i, j, y, z;
     if (Sols[*pcs][i] <= y && Sols[*pcs][j] <= z) {
       ge = 1;  nz = NZSol+*pcs;
       for (c=0, pvr=ConfVars, pvl=ConfVals; c<CVars; c++, pvr++, pvl++)
-	if ((*nz&Bit[*pvr]) && Sols[*pcs][*pvr] > *pvl) {
-	  ge = 0;
-	  break;
-	}
+  if ((*nz&Bit[*pvr]) && Sols[*pcs][*pvr] > *pvl) {
+    ge = 0;
+    break;
+  }
 #ifdef COUNTCAND
       if (ge) {
-	RejF++;  return(0);
+  RejF++;  return(0);
       }
 #else
       if (ge) return(0);
@@ -386,25 +385,25 @@ int i, j, y, z;
     if (NextCmpSol == ALL)  NextCmpSol = EL2Sol;
     for (nz=NZSol+NextCmpSol; NextCmpSol<CLSol; NextCmpSol++, nz++)
       if ((Mask | *nz) == Mask) {
-	if (!(*nz&bi))  Sols[NextCmpSol][i] = 0;
-	if (!(*nz&bj))  Sols[NextCmpSol][j] = 0;
-	*pcs++ = NextCmpSol;  LastCmpSol++;
-	if (Sols[NextCmpSol][i] <= y && Sols[NextCmpSol][j] <= z) {
-	  ge = 1;
-	  for (c=0, pvr=ConfVars, pvl=ConfVals; c<CVars; c++, pvr++, pvl++)
-	    if ((*nz&Bit[*pvr]) && Sols[NextCmpSol][*pvr] > *pvl) {
-	      ge = 0;
-	      break;
-	    }
-	  if (ge) {
+  if (!(*nz&bi))  Sols[NextCmpSol][i] = 0;
+  if (!(*nz&bj))  Sols[NextCmpSol][j] = 0;
+  *pcs++ = NextCmpSol;  LastCmpSol++;
+  if (Sols[NextCmpSol][i] <= y && Sols[NextCmpSol][j] <= z) {
+    ge = 1;
+    for (c=0, pvr=ConfVars, pvl=ConfVals; c<CVars; c++, pvr++, pvl++)
+      if ((*nz&Bit[*pvr]) && Sols[NextCmpSol][*pvr] > *pvl) {
+        ge = 0;
+        break;
+      }
+    if (ge) {
 #ifdef COUNTCAND
-	    RejF++;  
+      RejF++;  
 #endif
-	    if (NextCmpSol == CLSol)  NextCmpSol = NONE;
-	    else  NextCmpSol++;
-	    return(0);
-	  }
-	}
+      if (NextCmpSol == CLSol)  NextCmpSol = NONE;
+      else  NextCmpSol++;
+      return(0);
+    }
+  }
       }
     NextCmpSol = NONE;
   }
@@ -511,10 +510,10 @@ void ax0bjyj()
     for (j=i+1, bj=Bit+i+1, pmxz=EMax+i+1; j<ENj; j++, pmxz++) {
       Mask = msk|*bi|*bj++;
       if (aliveineq()) {
-	Ec = Coefs[j];	t = GCDa2[i][j] = gcdmult(Ec,gb,&(MultA2[i][j]));
-	s = Dz[i][j] = gb/t;  v = Ec*mb/t;  MODASS(v,(*pmxy));  Dy[i][j] = v;
-	XGCDAj = GCD[Eix][j];  XGCDa2ij = t;
-	apt(i,j,s,v,*pmxz,*pmxy);
+  Ec = Coefs[j];  t = GCDa2[i][j] = gcdmult(Ec,gb,&(MultA2[i][j]));
+  s = Dz[i][j] = gb/t;  v = Ec*mb/t;  MODASS(v,(*pmxy));  Dy[i][j] = v;
+  XGCDAj = GCD[Eix][j];  XGCDa2ij = t;
+  apt(i,j,s,v,*pmxz,*pmxy);
       }
     }
   }
@@ -526,31 +525,31 @@ void ax0bjyj()
       nsk = msk|*bi++;  Eb = Coefs[i];
       XMaxi = EMax[i];  XMultAi = Mult[Eix][i];  XGCDai = GCD[Eix][i];
       for (j=i+1, bj=Bit+i+1; j<n; j++) {
-	Mask = nsk|*bj++;
-	if (aliveineq()) {
-	  XMaxj = EMax[j];  Ec = Coefs[j];
-	  XDzij = Dz[i][j];  XDyij = Dy[i][j];
-	  XGCDa2ij = GCDa2[i][j];  XMultA2ij = MultA2[i][j];
-	  XGCDAj = GCD[Eix][j];  XMultAj = Mult[Eix][j];
-	  s = 0;  ESV = CVars;
-	  slopes();
-	  for (k=0, t=j+1; k<CVars; k++, t++) {
-	    ConfVars[k] = t;  ConfVals[k] = 1;
-	    s += Coefs[t];  Mask |= Bit[t];
-	  }
-	  do
-	    if (aliveineq()) {
-	      NextCmpSol = ALL;  LastCmpSol = 0;
-	      CMaxj = maxvaleq(j);  CMaxi = maxvaleq(i);  CCSol = NSols;
-	      for (k=0; k<CVars; k++)  CMaxs[k] = maxvaleq(ConfVars[k]);
-	      /* k must be non-zero here ! */
-	      do
-		if ((v = s%Ea) && !(v % XGCDa2ij))
-		  k = aptfilter(i,j,v);
-	      while (k && newval(0,CVars,&s,&ESV,Ea));
-	    }
-	  while (newconfig(ENj,CVars,0,&s,&ESV));
-	}
+  Mask = nsk|*bj++;
+  if (aliveineq()) {
+    XMaxj = EMax[j];  Ec = Coefs[j];
+    XDzij = Dz[i][j];  XDyij = Dy[i][j];
+    XGCDa2ij = GCDa2[i][j];  XMultA2ij = MultA2[i][j];
+    XGCDAj = GCD[Eix][j];  XMultAj = Mult[Eix][j];
+    s = 0;  ESV = CVars;
+    slopes();
+    for (k=0, t=j+1; k<CVars; k++, t++) {
+      ConfVars[k] = t;  ConfVals[k] = 1;
+      s += Coefs[t];  Mask |= Bit[t];
+    }
+    do
+      if (aliveineq()) {
+        NextCmpSol = ALL;  LastCmpSol = 0;
+        CMaxj = maxvaleq(j);  CMaxi = maxvaleq(i);  CCSol = NSols;
+        for (k=0; k<CVars; k++)  CMaxs[k] = maxvaleq(ConfVars[k]);
+        /* k must be non-zero here ! */
+        do
+    if ((v = s%Ea) && !(v % XGCDa2ij))
+      k = aptfilter(i,j,v);
+        while (k && newval(0,CVars,&s,&ESV,Ea));
+      }
+    while (newconfig(ENj,CVars,0,&s,&ESV));
+  }
       }
     }
   }
@@ -576,7 +575,7 @@ int i, j, y, z, x;
     if (Sols[*pcs][i] <= y && Sols[*pcs][j] <= z && Sols[*pcs][Eix] <= x) {
       nz = NZSol+*pcs;
       for (c=0, pvr=ConfVars, pvl=ConfVals; c<CVars; c++, pvr++, pvl++)
-	if ((*nz&Bit[*pvr]) && Sols[*pcs][*pvr] > *pvl)  goto nxtcsol;
+  if ((*nz&Bit[*pvr]) && Sols[*pcs][*pvr] > *pvl)  goto nxtcsol;
 #ifdef COUNTCAND
       RejF++; 
 #endif
@@ -587,22 +586,22 @@ int i, j, y, z, x;
     if (NextCmpSol == ALL)  NextCmpSol = 0;
     for (nz=NZSol+NextCmpSol; NextCmpSol<CLSol; NextCmpSol++, nz++)
       if ((Mask | *nz) == Mask) {
-	if (!(*nz&bx))  Sols[NextCmpSol][Eix] = 0;
-	if (!(*nz&bi))  Sols[NextCmpSol][i] = 0;
-	if (!(*nz&bj))  Sols[NextCmpSol][j] = 0;
-	*pcs++ = NextCmpSol;  LastCmpSol++;
-	if (Sols[NextCmpSol][i] <= y && Sols[NextCmpSol][j] <= z &&
-	    Sols[NextCmpSol][Eix] <= x) {
-	  for (c=0, pvr=ConfVars, pvl=ConfVals; c<CVars; c++, pvr++, pvl++)
-	    if ((*nz&Bit[*pvr]) && Sols[NextCmpSol][*pvr] > *pvl)
-	      goto nxtssol;
+  if (!(*nz&bx))  Sols[NextCmpSol][Eix] = 0;
+  if (!(*nz&bi))  Sols[NextCmpSol][i] = 0;
+  if (!(*nz&bj))  Sols[NextCmpSol][j] = 0;
+  *pcs++ = NextCmpSol;  LastCmpSol++;
+  if (Sols[NextCmpSol][i] <= y && Sols[NextCmpSol][j] <= z &&
+      Sols[NextCmpSol][Eix] <= x) {
+    for (c=0, pvr=ConfVars, pvl=ConfVals; c<CVars; c++, pvr++, pvl++)
+      if ((*nz&Bit[*pvr]) && Sols[NextCmpSol][*pvr] > *pvl)
+        goto nxtssol;
 #ifdef COUNTCAND
-	  RejF++;  
+    RejF++;  
 #endif
-	  if (NextCmpSol == CLSol)  NextCmpSol = NONE;
-	  else  NextCmpSol++;
-	  return(0);
-	}
+    if (NextCmpSol == CLSol)  NextCmpSol = NONE;
+    else  NextCmpSol++;
+    return(0);
+  }
       nxtssol:;
       }
     NextCmpSol = NONE;
@@ -685,9 +684,9 @@ int i, j, vS0;
       k = (-VLgDz-vS0-1)/czmax + 1;
       if ( (z0 += k*XMaxj) >= maxz ) {
 #ifdef COUNTCAND
-	Rej0++;
+  Rej0++;
 #endif
-	return (1);
+  return (1);
       }
       vS0 += k*czmax;   
     }
@@ -747,7 +746,7 @@ int i, j, r;
   do{
     do {
       if (y < maxy && RhsSV+z+y <= LhsSup) {
-	if (deadsfilter(i,j,y,z,Eb*y+Ec*z+r)) return(0);
+  if (deadsfilter(i,j,y,z,Eb*y+Ec*z+r)) return(0);
       }
 #ifdef COUNTCAND
       else  Rej0++;
@@ -774,43 +773,43 @@ void axbjyj()
       Eb = Coefs[i];  XGCDai = GCD[Eix][i];  XMultAi = Mult[Eix][i];
       XMaxi = *pmxy;
       for (j=i+1, bj=Bit+i+1, pmxz=EMax+i+1; j<n; j++, pmxz++) {
-	Mask = nsk|*bj++;
-	if (alive()) {
-	  if ((Ec = Coefs[j]) > Eb)  maxbc = Ec;
-	  else  maxbc = Eb;
-	  XMaxj = *pmxz;  XGCDa2ij = gcdmult(Ec,XGCDai,&XMultA2ij);
-	  XDzij = XGCDai/XGCDa2ij;
-	  XDyij = Ec*XMultAi/XGCDa2ij;  MODASS(XDyij,XMaxi);
-	  XGCDAj = GCD[Eix][j];  XMultAj = Mult[Eix][j];
-	  s = 0;  RhsSV = rhscv;
-	  slopes();
-	  for (k=LhsL, t=j+1; k<CVars; k++, t++) {
-	    ConfVars[k] = t;  ConfVals[k] = 1;
-	    s += Coefs[t];  Mask |= Bit[t];
-	  }
-	  do
-	    if (alive()) {
-	      NextCmpSol = ALL;  LastCmpSol = 0;
-	      CCSol = NSols;  RhsSup = maxbc;
-	      CMaxi = maxval(i);  CMaxj = maxval(j);
-	      for (k=0; k<LhsL; k++)  CMaxs[k] = maxval(ConfVars[k]);
-	      for (; k<CVars; k++) {
-		CMaxs[k] = maxval(ConfVars[k]);
-		if (Coefs[ConfVars[k]] > RhsSup)  RhsSup = Coefs[ConfVars[k]];
-	      }
-	      /* k not zero here */
-	      do
-		if (! ((t = s-LhsSum)%XGCDa2ij))
-		  if (t < 0)  k = saptfilter(i,j,t);
-		else if (t)  k = posaptfilter(i,j,t);
-	      while (k &&
-		       ((rhscv && newval(LhsL,CVars,&s,&RhsSV,LhsSup)) ||
-			newval(0,LhsL,&LhsSum,&LhsSV,RhsSup)));
-	      for (t=0; t<LhsL; t++)  ConfVals[t] = 1;
-	      LhsSum = sum;  LhsSV = LhsL;
-	    }
-	  while (newconfig(ENj,rhscv,LhsL,&s,&RhsSV));
-	}
+  Mask = nsk|*bj++;
+  if (alive()) {
+    if ((Ec = Coefs[j]) > Eb)  maxbc = Ec;
+    else  maxbc = Eb;
+    XMaxj = *pmxz;  XGCDa2ij = gcdmult(Ec,XGCDai,&XMultA2ij);
+    XDzij = XGCDai/XGCDa2ij;
+    XDyij = Ec*XMultAi/XGCDa2ij;  MODASS(XDyij,XMaxi);
+    XGCDAj = GCD[Eix][j];  XMultAj = Mult[Eix][j];
+    s = 0;  RhsSV = rhscv;
+    slopes();
+    for (k=LhsL, t=j+1; k<CVars; k++, t++) {
+      ConfVars[k] = t;  ConfVals[k] = 1;
+      s += Coefs[t];  Mask |= Bit[t];
+    }
+    do
+      if (alive()) {
+        NextCmpSol = ALL;  LastCmpSol = 0;
+        CCSol = NSols;  RhsSup = maxbc;
+        CMaxi = maxval(i);  CMaxj = maxval(j);
+        for (k=0; k<LhsL; k++)  CMaxs[k] = maxval(ConfVars[k]);
+        for (; k<CVars; k++) {
+    CMaxs[k] = maxval(ConfVars[k]);
+    if (Coefs[ConfVars[k]] > RhsSup)  RhsSup = Coefs[ConfVars[k]];
+        }
+        /* k not zero here */
+        do
+    if (! ((t = s-LhsSum)%XGCDa2ij))
+      if (t < 0)  k = saptfilter(i,j,t);
+    else if (t)  k = posaptfilter(i,j,t);
+        while (k &&
+           ((rhscv && newval(LhsL,CVars,&s,&RhsSV,LhsSup)) ||
+      newval(0,LhsL,&LhsSum,&LhsSV,RhsSup)));
+        for (t=0; t<LhsL; t++)  ConfVals[t] = 1;
+        LhsSum = sum;  LhsSV = LhsL;
+      }
+    while (newconfig(ENj,rhscv,LhsL,&s,&RhsSV));
+  }
       }
     }
   }
@@ -841,19 +840,17 @@ char *argv[];
     N = Ni+Nj;  OutOrder = 0;
     if (Nj < Ni) {
       for (i=0, pi=Coefs, pj=Coefs+Ni; i<Ni; i++) {
-	t = *pi;  *pi++ = *pj;  *pj++ = t;
+  t = *pi;  *pi++ = *pj;  *pj++ = t;
       }
       for (i=0, pi=Coefs+Nj, pj=Coefs+Ni; i<Ni; i++)  *pi++ = *pj++;
       t = Ni;  Ni = Nj;  Nj = t;
     }
-    /* start clock */
-    InitTime();
     for (t=0; t<times; t++) {
       LhsSup = RhsSup = 0;
       for (i=0, pi=Coefs; i<Ni; i++, pi++)
-	if (*pi > LhsSup)  LhsSup = *pi;
+  if (*pi > LhsSup)  LhsSup = *pi;
       for (; i<N; i++, pi++)
-	if (*pi > RhsSup)  RhsSup = *pi;
+  if (*pi > RhsSup)  RhsSup = *pi;
       ordercoeffs();
       NSols = Dead = 0;
 #ifdef COUNTCAND
@@ -862,52 +859,51 @@ char *argv[];
       pb = Bit+Ni;  pl = LMaxs+Ni;  pel = ELMaxs+Ni;  pmi = Max+Ni;
       msk = (1<<Ni);
       for (j=0; j<Nj; j++, msk=(msk<<1)) {
-	*pb++ = msk;  *pl++ = *pel++ = NULL;  *pmi++ = LhsSup;
+  *pb++ = msk;  *pl++ = *pel++ = NULL;  *pmi++ = LhsSup;
       }
       pb = Bit;  pl = LMaxs;  pel = ELMaxs;  pmi = Max;
       msk = 1;  nz = NZSol;  pi = Coefs;
       for (i=0; i<Ni; i++, pi++, pb++, msk=(msk<<1)) {
-	*pb = msk;  *pl++ = *pel++ = NULL;  *pmi++ = RhsSup;
-	for (j=Ni, pj=Coefs+Ni, pbj=Bit+Ni; j<N; j++, nz++) {
-	  *nz = *pb | *pbj++;
-	  k = GCD[i][j] = GCD[j][i] = gcdmult(*pj,*pi,&mm);
-	  Mult[i][j] = mm;  Mult[j][i] = (k-mm**pj)/(*pi);
-	  mi = *pi/k;  mm = *pj++/k;
-	  if ((Sols[NSols][i] = mm) == 1) {
-	    if ((Sols[NSols][j] = mi) == 1) {
-	      DeadConfs[Dead++] = *nz;
-	    } else {
-	      LMaxs[j] = newel(mi,*nz,LMaxs[j]);
-	    }
-	  } else if ((Sols[NSols][j] = mi) == 1) {
-	    LMaxs[i] = newel(mm,*nz,LMaxs[i]);
-	  }
-	  NSols++;
-	}
+  *pb = msk;  *pl++ = *pel++ = NULL;  *pmi++ = RhsSup;
+  for (j=Ni, pj=Coefs+Ni, pbj=Bit+Ni; j<N; j++, nz++) {
+    *nz = *pb | *pbj++;
+    k = GCD[i][j] = GCD[j][i] = gcdmult(*pj,*pi,&mm);
+    Mult[i][j] = mm;  Mult[j][i] = (k-mm**pj)/(*pi);
+    mi = *pi/k;  mm = *pj++/k;
+    if ((Sols[NSols][i] = mm) == 1) {
+      if ((Sols[NSols][j] = mi) == 1) {
+        DeadConfs[Dead++] = *nz;
+      } else {
+        LMaxs[j] = newel(mi,*nz,LMaxs[j]);
+      }
+    } else if ((Sols[NSols][j] = mi) == 1) {
+      LMaxs[i] = newel(mm,*nz,LMaxs[i]);
+    }
+    NSols++;
+  }
       }
       L2Sol = NSols;
       if (Ni > 1) {
-	E0 = 0;  ENj = Ni;  ERhsL = Ni;
-	for (Eix=Ni; Eix<N; Eix++)  ax0bjyj();
+  E0 = 0;  ENj = Ni;  ERhsL = Ni;
+  for (Eix=Ni; Eix<N; Eix++)  ax0bjyj();
       }
       E0 = Ni;  ENj = N;  ERhsL = Nj;
       for (Eix=0; Eix<Ni; Eix++)  ax0bjyj();
       for (LhsL=1; LhsL<Ni; LhsL++)  /* LhsL: lhs cvars */
-	for (Eix=0, pb=Bit; Eix<Ni-LhsL; Eix++) {
-	  LhsSum = 0;  Mask = *pb++;  LhsSV = LhsL;  Ea = Coefs[Eix];
-	  for (mj=0, j=Eix+1, pbj=Bit+Eix+1; mj<LhsL; mj++, j++) {
-	    ConfVars[mj] = j;  ConfVals[mj] = 1;
-	    LhsSum += Coefs[j];  Mask |= *pbj++;
-	  }
-	  do {
-	    LhsSup = Ea;
-	    for (mj=0; mj<LhsL; mj++)
-	      if (Coefs[ConfVars[mj]] > LhsSup)  LhsSup = Coefs[ConfVars[mj]];
-	    msk = Mask;  axbjyj();  Mask = msk;
-	  } while (newconfig(Ni,LhsL,0,&LhsSum,&LhsSV));
-	}
+  for (Eix=0, pb=Bit; Eix<Ni-LhsL; Eix++) {
+    LhsSum = 0;  Mask = *pb++;  LhsSV = LhsL;  Ea = Coefs[Eix];
+    for (mj=0, j=Eix+1, pbj=Bit+Eix+1; mj<LhsL; mj++, j++) {
+      ConfVars[mj] = j;  ConfVals[mj] = 1;
+      LhsSum += Coefs[j];  Mask |= *pbj++;
     }
-    time = cputime();
+    do {
+      LhsSup = Ea;
+      for (mj=0; mj<LhsL; mj++)
+        if (Coefs[ConfVars[mj]] > LhsSup)  LhsSup = Coefs[ConfVars[mj]];
+      msk = Mask;  axbjyj();  Mask = msk;
+    } while (newconfig(Ni,LhsL,0,&LhsSum,&LhsSV));
+  }
+    }
     /* stop clock */
     if (sols)
       for (k=0; k<NSols; k++)  printsol(k);
@@ -922,7 +918,7 @@ char *argv[];
       //      printf("\tNo. lim. rejected = %f, No. filtered = %f\n",Rej0,RejF);
 #else
       //      printf("\n%s:\tNo. sols = %d,  cputime = %f/%d sec = %f\n",
-      //	     Version,NSols,time,times,time/times);
+      //       Version,NSols,time,times,time/times);
 #endif
       fflush(stdout);
     }

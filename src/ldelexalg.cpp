@@ -13,7 +13,6 @@ LDELexAlg::LDELexAlg(const vector<int> &a, const vector<int> &b, int c, int boun
     cout << "Wrong parameters: 'a' or 'b' contains a coefficient less or equal to zero" << endl;
     exit(0);
   }
-
   this->a = a;
   this->b = b;
   this->c = c;
@@ -115,20 +114,12 @@ void LDELexAlg::lexAlg2(int poz, int diff, int suma, int sumb) {
   if (poz < (int)a.size()) {
     for (int val = 0; suma + val <= maxb; ++val) {
       partialSol[poz] = val;
-      lexAlg1(poz + 1, diff - val * vab[poz], suma + val, sumb);
+      lexAlg2(poz + 1, diff - val * vab[poz], suma + val, sumb);
     }
   } else {
-    int bound = 0;
-    if (poz == (int)a.size()) {
-      for (int i = 0; i < poz; ++i) {
-        if (partialSol[i]) {
-          bound = max(bound, a[i]);
-        }
-      }
-    }
-    for (int val = 0; sumb + val <= bound; ++val) {
+    for (int val = 0; sumb + val <= maxa; ++val) {
       partialSol[poz] = val;
-      lexAlg1(poz + 1, diff - val * vab[poz], suma, sumb + val);
+      lexAlg2(poz + 1, diff - val * vab[poz], suma, sumb + val);
     }
   }
 }

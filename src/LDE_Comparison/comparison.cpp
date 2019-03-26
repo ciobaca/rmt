@@ -2,9 +2,9 @@
 #include <vector>
 #include <cstring>
 #include <fstream>
-#include "ldeslopesalg.h"
-#include "ldegraphalg.h"
-#include "ldealg.h"
+#include "../ldeslopesalg.h"
+#include "../ldegraphalg.h"
+#include "../ldealg.h"
 
 using namespace std;
 
@@ -28,15 +28,14 @@ int main(int argc, char **argv)
     }
     if (test == atoi(argv[2])) {
       if (strchr(argv[1], 'g')) {
-	LDEGraphAlg Alg1(l, r);
-	auto ans1 = Alg1.solve();
-	cout << "C&F: " << ans1.size() << endl;
+        LDEGraphAlg Alg1(l, r);
+        auto ans1 = Alg1.solve();
+        cout << "C&F: " << ans1.size() << endl;
       }
-
       if (strchr(argv[1], 's')) {
-	LDESlopesAlg Alg2(l, r);
-	auto ans2 = Alg2.solve();
-	cout << "Slopes: " << ans2.size() << endl;
+        LDESlopesAlg Alg2(l, r);
+        auto ans2 = Alg2.solve();
+        cout << "Slopes: " << ans2.size() << endl;
       }
     }
   }

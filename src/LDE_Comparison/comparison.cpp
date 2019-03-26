@@ -2,44 +2,38 @@
 #include <vector>
 #include <cstring>
 #include <fstream>
+#include <chrono>
+#include <iomanip>
+#include <algorithm>
+
 #include "../ldeslopesalg.h"
 #include "../ldegraphalg.h"
 #include "../ldealg.h"
 
 using namespace std;
 
-int main(int argc, char **argv)
-{
-  ifstream input("tests.txt");
-  int countTests;
-  input >> countTests;
-  for (int test = 0; test < countTests; ++test) {
-    int n, m;
-    cout << "Test #" << test << endl;
-    input >> n >> m;
-    cout << "n = " << n << " m = " << m << endl;
+int main() {
+  ifstream input("fullTests.txt");
+  ofstream output("graphResults.txt");
+  int n, m, test = 1;
+  while (input >> n >> m) {
     vector<int> l(n);
-    for (auto &x : l) {
-      input >> x;
-    }
     vector<int> r(m);
-    for (auto &x : r) {
+    for (int &x : l) {
       input >> x;
     }
-    if (test == atoi(argv[2])) {
-      if (strchr(argv[1], 'g')) {
-        LDEGraphAlg Alg1(l, r);
-        auto ans1 = Alg1.solve();
-        cout << "C&F: " << ans1.size() << endl;
-      }
-      if (strchr(argv[1], 's')) {
-        LDESlopesAlg Alg2(l, r);
-        auto ans2 = Alg2.solve();
-        cout << "Slopes: " << ans2.size() << endl;
-      }
+    for (int &x : r) {
+      input >> x;
     }
+    cout << "Test #" << test++ << '\n';
+    cout << n << ' ' << m << ' ' << max(*max_element(l.begin(), l.end()), *max_element(r.begin(), r.end())) << '\n';
+    LDEGraphAlg alg(l, r);
+    chrono::high_resolution_clock::time_point t1, t2;
+    t1 = chrono::high_resolution_clock::now();
+    auto ans = alg.solve();
+    t2 = chrono::high_resolution_clock::now();
+    output << fixed << setprecision(12) << chrono::duration_cast<chrono::microseconds>(t2 - t1).count() / 1e6 << '\n';
   }
-  
   return 0;
 }
 

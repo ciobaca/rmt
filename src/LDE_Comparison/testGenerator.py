@@ -8,11 +8,11 @@ def hardcodedTests():
   print "2 5\n14 107\n89 95 93 22 31"
 
 
-def genTests(n, m, mxVal, cntTests=100):
+def genTests(n, m, mxVal, cntTests=10):
   while cntTests > 0:
     cntTests -= 1
     print n, m
-    print ' '.join(str(randint(1, mxVal)) for _ in range(n))
+    print ' '.join([str(mxVal)] + [str(randint(1, mxVal)) for _ in range(n - 1)])
     print ' '.join(str(randint(1, mxVal)) for _ in range(m))
 
 
@@ -24,4 +24,10 @@ if __name__ == '__main__':
   mxVals = [2, 3, 5, 13, 29, 39, 107, 503, 1021]
   for n, m in nms:
     for mxVal in mxVals:
-      genTests(n, m, mxVal, min(mxVal ** (n + m), 100))
+      if n * m > 8 and mxVal > 500:
+        continue
+      if n * m > 10 and mxVal > 150:
+        continue
+      if n * m > 16 and mxVal > 50:
+        break
+      genTests(n, m, mxVal)

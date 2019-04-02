@@ -34,25 +34,10 @@ string ConstrainedTerm::toPrettyString()
 ConstrainedRewriteSystem ConstrainedTerm::getDefinedFunctionsSystem(int printDepth)
 {
   vector<Function *> definedFunctions = this->getDefinedFunctions();
-  ConstrainedRewriteSystem crsFinal;
 
   cout << spaces(printDepth) << "Constrained term " << this->toString() << " has " << definedFunctions.size() << " defined symbols." << endl;
-  
-  for (int i = 0; i < static_cast<int>(definedFunctions.size()); ++i) {
-    Function *f = definedFunctions[i];
-    if (!f) {
-      abortWithMessage(string("Function ") + f->name + " not found.");
-    }
-    if (!f->isDefined) {
-      abortWithMessage(string("Function ") + f->name + " is not a defined function.");
-    }
-    ConstrainedRewriteSystem crs = f->crewrite;
-    for (int j = 0; j < static_cast<int>(crs.size()); ++j) {
-      crsFinal.addRule(crs[j].first, crs[j].second);
-    }
-  }
 
-  return crsFinal;
+  return ::getDefinedFunctionsSystem(definedFunctions);
 }
 
 vector<ConstrainedTerm> ConstrainedTerm::smtNarrowDefinedSearch(int minDepth, int maxDepth, int printDepth)

@@ -670,3 +670,30 @@ Term *introduceExists(Term *constraint, vector<Variable *> vars)
   }
   return constraint;
 }
+
+vector<Function*> getDefinedFunctions() {
+  vector<Function*> ans;
+  for (const auto &it : functions)
+    if (it.second->isDefined) ans.push_back(it.second);
+  return ans;
+}
+
+ConstrainedRewriteSystem getDefinedFunctionsSystem(vector<Function *> definedFunctions) {
+  ConstrainedRewriteSystem crsFinal;
+
+  for (int i = 0; i < static_cast<int>(definedFunctions.size()); ++i) {
+    Function *f = definedFunctions[i];
+    if (!f) {
+      abortWithMessage(string("Function ") + f->name + " not found.");
+    }
+    if (!f->isDefined) {
+      abortWithMessage(string("Function ") + f->name + " is not a defined function.");
+    }
+    ConstrainedRewriteSystem crs = f->crewrite;
+    for (int j = 0; j < static_cast<int>(crs.size()); ++j) {
+      crsFinal.addRule(crs[j].first, crs[j].second);
+    }
+  }
+
+  return crsFinal;
+}

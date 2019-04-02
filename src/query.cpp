@@ -13,6 +13,7 @@
 #include "queryaccunify.h"
 #include "querycompute.h"
 #include "queryrun.h"
+#include "queryrundefined.h"
 #include "querysearch.h"
 #include "querydefinedsearch.h"
 #include "queryder.h"
@@ -43,6 +44,9 @@ Query *Query::lookAheadQuery(std::string &s, int &w)
     
   for(it_type it = (*commands).begin(); it != (*commands).end(); it++) {
     string command = it->first;
+    if (command == "run") {
+      int sadga = 4;
+    }
     if (lookAhead(s, w, command)) {
       QueryCreator nqc = it->second;
       return nqc();
@@ -176,6 +180,11 @@ Query *createQueryRun()
   return new QueryRun();
 }
 
+Query *createQueryRunDefined()
+{
+  return new QueryRunDefined();
+}
+
 std::map<std::string, QueryCreator> *registerQueries()
 {
   std::map<std::string, QueryCreator> *map;
@@ -202,6 +211,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["show-simulation"] = createQueryProveSim;
   (*map)["show-simulation2"] = createQueryProveSim2;
   (*map)["run"] = createQueryRun;
+  (*map)["rundefined"] = createQueryRunDefined;
   (*map)["compute"] = createQueryCompute;
 
   // SMT related queries

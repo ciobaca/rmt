@@ -107,4 +107,7 @@ Term *simplifyTerm(Term *);
 Term *simplifyConstraint(Term *);
 ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm);
 
+vector<Function*> getDefinedFunctions();
+ConstrainedRewriteSystem getDefinedFunctionsSystem(vector<Function *> definedFunctions);
+
 #endif

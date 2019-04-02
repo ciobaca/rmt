@@ -60,13 +60,26 @@ signature
 	lam : VarF ExpF -> ValExpF,
 
 	fplus : ExpF ExpF -> NonValExpF,
+	fplushl : ExpF -> NonValExpF,
+	fplushr : ExpF -> NonValExpF,
 	fminus : ExpF ExpF -> NonValExpF,
+	fminushl : ExpF -> NonValExpF,
+	fminushr : ExpF -> NonValExpF,
 	fle : ExpF ExpF -> NonValExpF,
+	flehl : ExpF -> NonValExpF,
+	flehr : ExpF -> NonValExpF,
 	fless : ExpF ExpF -> NonValExpF,
+	flesshl : ExpF -> NonValExpF,
+	flesshr : ExpF -> NonValExpF,
 	fite : ExpF ExpF ExpF -> NonValExpF,
+	fitehc : ExpF ExpF -> NonValExpF,
+	fitehl : ExpF ExpF -> NonValExpF,
+	fitehr : ExpF ExpF -> NonValExpF,
 //	flet : Var ExpF ExpF -> NonValExpF,
 
 	app : ExpF ExpF -> NonValExpF,
+	apphl : ExpF -> NonValExpF,
+	apphr : ExpF -> NonValExpF,
 
 	F : ExpF -> CfgF,
 
@@ -116,7 +129,7 @@ signature
 
 	// computation stack
 	done : -> CompStack,
-	push : Code CompStack -> CompStack,
+	push : AExp CompStack -> CompStack,
 
 	// configuration
 	IC : CompStack Map -> CfgI,
@@ -223,50 +236,53 @@ constrained-rewrite-system flanguage
 // TODO: de mers cu stil stiva
 // (cons (fplus FNV FEXP) LIST) => (cons FNV (cons (fplus HOLE FEXP) LIST))...
 
-  	(contextexp (fplus FNV FEXP)) => (fplus (contextexp FNV) FEXP),
-	(fplus (contextexp I) FEXP) => (contextexp (fplus I FEXP)),
-	(contextexp (fplus I FNV)) => (fplus I (contextexp FNV)),
-	(fplus I (contextexp J)) => (contextexp (fplus I J)),
-	(contextexp (fplus I J)) => (contextexp (mplus I J)),
+	(F (push (fplus FNV FEXP) REST)) => (F (push FNV (push (fplushl FEXP) REST))),
+	(F (push I (push (fplushl FEXP) REST))) => (F (push (fplus I FEXP) REST)),
+	(F (push (fplus I FNV) REST)) => (F (push FNV (push (fplushr I) REST))),
+	(F (push J (push (fplushr I) REST))) => (F (push (fplus I J) REST)),
+	(F (push (fplus I J) REST)) => (F (push (mplus I J) REST)),
 
-	(contextexp (fminus FNV FEXP)) => (fminus (contextexp FNV) FEXP),
-	(fminus (contextexp I) FEXP) => (contextexp (fminus I FEXP)),
-	(contextexp (fminus I FNV)) => (fminus I (contextexp FNV)),
-	(fminus I (contextexp J)) => (contextexp (fminus I J)),
-	(contextexp (fminus I J)) => (contextexp (mminus I J)),
-	
-	(contextexp (fless FNV FEXP)) => (fless (contextexp FNV) FEXP),
-	(fless (contextexp I) FEXP) => (contextexp (fless I FEXP)),
-	(contextexp (fless I FNV)) => (fless I (contextexp FNV)),
-	(fless I (contextexp J)) => (contextexp (fless I J)),
-	(contextexp (fless I J)) => (contextexp (mless I J)),
-	
-	(contextexp (fle FNV FEXP)) => (fle (contextexp FNV) FEXP),
-	(fle (contextexp I) FEXP) => (contextexp (fle I FEXP)),
-	(contextexp (fle I FNV)) => (fle I (contextexp FNV)),
-	(fle I (contextexp J)) => (contextexp (fle I J)),
-	(contextexp (fle I J)) => (contextexp (mle I J)),
+	(F (push (fminus FNV FEXP) REST)) => (F (push FNV (push (fminushl FEXP) REST))),
+	(F (push I (push (fminushl FEXP) REST))) => (F (push (fminus I FEXP) REST)),
+	(F (push (fminus I FNV) REST)) => (F (push FNV (push (fminushr I) REST))),
+	(F (push J (push (fminushr I) REST))) => (F (push (fminus I J) REST)),
+	(F (push (fminus I J) REST)) => (F (push (mminus I J) REST)),
 
-	(contextexp (fite FNV FEXP1 FEXP2)) => (fite (contextexp FNV) FEXP1 FEXP2),
-	(fite (contextexp B) FEXP1 FEXP2) => (contextexp (fite B FEXP1 FEXP2)),
-	(contextexp (fite true FEXP1 FEXP2)) => (contextexp FEXP1),
-	(contextexp (fite false FEXP1 FEXP2)) => (contextexp FEXP2),
+	(F (push (fless FNV FEXP) REST)) => (F (push FNV (push (flesshl FEXP) REST))),
+	(F (push I (push (flesshl FEXP) REST))) => (F (push (fless I FEXP) REST)),
+	(F (push (fless I FNV) REST)) => (F (push FNV (push (flesshr I) REST))),
+	(F (push J (push (flesshr I) REST))) => (F (push (fless I J) REST)),
+	(F (push (fless I J) REST)) => (F (push (mless I J) REST)),
 
-	(contextexp (app FNV FEXP)) => (app (contextexp FNV) FEXP),
-	(app (contextexp (lam (fvar X) FEXP1)) FEXP2) => (contextexp (app (lam (fvar X) FEXP1) FEXP2)),
-	(contextexp (app (lam (fvar X) FEXP1) FNV)) => (app (lam (fvar X) FEXP1) (contextexp FNV)),
-	(app (lam (fvar X) FEXP1) (contextexp VF)) => (contextexp (app (lam (fvar X) FEXP1) VF)),
-	(contextexp (app (lam (fvar X) FEXP1) VF)) => (contextexp (substitute (fvar X) VF FEXP1)),
-	
-	(contextexp (miu (fvar X) FEXP)) => (contextexp (substitute (fvar X) (miu (fvar X) FEXP) FEXP))
+	(F (push (fle FNV FEXP) REST)) => (F (push FNV (push (flehl FEXP) REST))),
+	(F (push I (push (flehl FEXP) REST))) => (F (push (fle I FEXP) REST)),
+	(F (push (fle I FNV) REST)) => (F (push FNV (push (flehr I) REST))),
+	(F (push J (push (flehr I) REST))) => (F (push (fle I J) REST)),
+	(F (push (fle I J) REST)) => (F (push (mle I J) REST)),
+
+	(F (push (fite FNV FEXP1 FEXP2) REST)) => (F (push FNV (push (fitehc FEXP1 FEXP2) REST))),
+	(F (push B (push (fitehc FEXP1 FEXP2) REST))) => (F (push (fite B FEXP1 FEXP2) REST)),
+	(F (push (fite B FNV FEXP2) REST)) => (F (push FNV (push (fitehl B FEXP2) REST))),
+	(F (push I (push (fitehl B FEXP2) REST))) => (F (push (fite B I FEXP2) REST)),
+	(F (push (fite B I FNV) REST)) => (F (push FNV (push (fitehr B I) REST))),
+	(F (push FNV (push (fitehr B I) REST))) => (F (push (fite B I J) REST)),
+	(F (push (fite true I J) REST)) => (F (push I REST)),
+	(F (push (fite false I J) REST)) => (F (push J REST)),
+
+	(F (push (app FNV FEXP) REST)) => (F (push FNV (push (apphl FEXP) REST))),
+	(F (push (lam (fvar X) FEXP1) (push (apphl FEXP) REST))) => (F (push (app (lam (fvar X) FEXP1) FEXP) REST)),
+	(F (push (app (lam (fvar X) FEXP1) FNV) REST)) => (F (push FNV (push (apphr (lam (fvar X) FEXP1)) REST))),
+	(F (push VF (push (apphr (lam (fvar X) FEXP1)) REST))) => (F (push (app (lam (fvar X) FEXP1) VF) REST)),
+	(F (push (app (lam (fvar X) FEXP1) VF) REST)) => (F (push (substitute (fvar X) VF FEXP1) REST)),
+
+	(F (push (miu (fvar X) FEXP) REST)) => (F (push (substitute (fvar X) (miu (fvar X) FEXP) FEXP) REST))
 ;
 
 //definedsearch [1,20] (F (app (contextexp (substitute (fvar 0) 2 (lam (fvar 1) (fplus (fvar 0) (fvar 1))))) 1));
 
-show-simulation [100, partial] in flanguage and flanguage :
-   (pair
+rundefined in flanguage :
 
-   	(F (contextexp (fplus I (app (
+(F (push (fplus 0 (app (
 	miu (fvar 2) (
 		lam (fvar 0)
 			(fite (fle 0 (fvar 0))
@@ -274,9 +290,23 @@ show-simulation [100, partial] in flanguage and flanguage :
 				0
 			)
 		)
-	) N ) )))
+	) 0 ) ) done))
+;
 
-	(F (contextexp (app (app (
+show-simulation [100, partial] in flanguage and flanguage :
+   (pair
+
+   	(F (push (fplus I (app (
+	miu (fvar 2) (
+		lam (fvar 0)
+			(fite (fle 0 (fvar 0))
+				(fplus (fvar 0) (app (fvar 2) (fminus (fvar 0) 1 )))
+				0
+			)
+		)
+	) N ) ) done))
+
+	(F (push (app (app (
 	miu (fvar 2) (
 		lam (fvar 0) (lam (fvar 1) // TODO: trei parametri aici
 			(fite (fle 0 (fvar 0))
@@ -284,11 +314,11 @@ show-simulation [100, partial] in flanguage and flanguage :
 				(fvar 1)
 			)
 		))
-	) N ) I )))
+	) N ) I ) done))
 
 	)
  with-base
-     (pair (F (contextexp SUM)) (F (contextexp SUM)));
+     (pair (F (push SUM done)) (F (push SUM done)));
 
 
 /*

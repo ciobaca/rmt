@@ -21,7 +21,7 @@
 (setq rmt-operators '(":" "->" "/" "=>" "<"))
 (setq rmt-operators-regexp (regexp-opt rmt-operators))
 
-(setq rmt-functions '("mplus" "mtimes" "mdiv" "mminus" "mle" "mequals" "bimplies" "bequals" "bnot" "band" "bor"))
+(setq rmt-functions '("mplus" "mtimes" "mdiv" "mminus" "mle" "mgt" "mequals" "bimplies" "bequals" "bnot" "band" "bor"))
 (setq rmt-functions-regexp (regexp-opt rmt-functions 'words))
 
 (setq rmt-constants '("true" "false" "mzero" "mone" "mtwo" ))

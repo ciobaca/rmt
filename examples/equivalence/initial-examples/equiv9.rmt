@@ -1,22 +1,10 @@
 // EQUIVALENCE OF TWO PROGRAMS
 // THAT BOTH COMPUTE THE COLLATZ SEQUENCE
-smt-prelude
-"(declare-fun uifun (Int Int) Int)
- (declare-datatypes () ((Var varX varY varZ varC1 varC2 varV1 varV2)))
- (declare-datatypes () ((VarF fvarX fvarY fvarZ fvarF)))
- (define-fun sumUpTo ((n Int)) Int
-    (div (* n (+ n 1)) 2)
- )
- (define-fun even ((n Int)) Bool
-    (= (mod n 2) 0)
- )
- (define-fun sum ((a Int) (b Int)) Int
-   (- (sumUpTo b) (sumUpTo (- a 1))))
-"
+
 
 sorts IntP,
       BoolP,
-      Var / "Var",
+      Var,
       AExp,
       BExp,
       NonValAExp,
@@ -24,16 +12,19 @@ sorts IntP,
       Stmt,
       Code,
       CompStack,
-      Map / "(Array Var Int)",
+      Map / "(Array Int Int)",
       CfgI,
       State,
       
-      VarF / "VarF",
+      VarF,
       ExpF,
       NonValExpF,
       ValExpF,
       CfgF
     ;
+
+builtins sum : Int Int -> Int, sumUpTo : Int -> Int, muifun : Int Int -> Int, iS1 : Int Int Int Int -> Int, iE1 : Int Int -> Int,
+	meven : Int -> Bool;
 
 // after declaring all sorts,
 // we must declare all subsort relations
@@ -59,24 +50,18 @@ subsort NonValExpF < ExpF;
 signature
 	pair : CfgI CfgF -> State,
 
-	meven : Int -> Bool / "even",
-
-	sum : Int Int -> Int / "sum",
-
 	mapequals : Map Map -> Bool / "=",
 
 	vfequals : VarF VarF -> Bool / "=",
+
+	var : Int -> Var,
+	fvar : Int -> VarF,
 
 	// functional language
 	miu : VarF ExpF -> NonValExpF,
 	lam : VarF ExpF -> ValExpF,
 
-	feven : ExpF -> NonValExpF,
-	fnot : ExpF -> NonValExpF,
-	fequals : ExpF ExpF -> NonValExpF,
 	fplus : ExpF ExpF -> NonValExpF,
-	fdiv : ExpF ExpF -> NonValExpF,
-	ftimes : ExpF ExpF -> NonValExpF,
 	fminus : ExpF ExpF -> NonValExpF,
 	fle : ExpF ExpF -> NonValExpF,
 	fless : ExpF ExpF -> NonValExpF,
@@ -87,58 +72,38 @@ signature
 
 	F : ExpF -> CfgF,
 
-	contextexp : ValExpF -> ValExpF,
-	contextexp : NonValExpF -> NonValExpF,
-
-	fvarX : -> VarF / "fvarX",
-	fvarY : -> VarF / "fvarY",
-	fvarZ : -> VarF / "fvarZ",
-	fvarF : -> VarF / "fvarF",
-	substitute : VarF ExpF ExpF -> ExpF / defined,
-
-	// some program variables
-	x : -> Var / "varX",
-	y : -> Var / "varY",
-	z : -> Var / "varZ",
-
-	pV1 : -> Var / "varV1",
-	pV2 : -> Var / "varV2",
-	pC1 : -> Var / "varC1",
-	pC2 : -> Var / "varC2",
-	
-	pS1 : -> Stmt,
-	pE1 : -> NonValAExp,
-	iS1 : Int Int Int Int -> Int / "iS1",
-	iE1 : Int Int -> Int / "iE1",
-
-	// helper functions
-	synEq : Var Var -> Bool / "=",
-
-	update : Map Var Int -> Map / "store",
-	lookup  : Map Var -> IntP / "select",
-
-	// equality
+	//equality
 	iequals : AExp AExp -> NonValBExp,
 	iequalshl : AExp -> BExp,
 	iequalshr : AExp -> BExp,
 
-	// arithmetic and boolean expressions
-	plus : AExp AExp -> NonValAExp,
-	plushl : AExp -> AExp,
-    	plushr : AExp -> AExp,
+	contextexp : ExpF -> ExpF,
+//	contextexp : ValExpF -> ValExpF,
+//	contextexp : NonValExpF -> NonValExpF,
+	
+	pS1 : -> Stmt,
+	pE1 : -> NonValAExp,
 
 	// arithmetic and boolean expressions
 	times : AExp AExp -> NonValAExp,
 	timeshl : AExp -> AExp,
     	timeshr : AExp -> AExp,
 
+	// helper functions
+	synEq : Var Var -> Bool / "=",
+
+	update : Map Int Int -> Map / "store",
+	lookup  : Map Int -> Int / "select",
+
 	// arithmetic and boolean expressions
+	plus : AExp AExp -> NonValAExp,
+	plushl : AExp -> AExp,
+    	plushr : AExp -> AExp,
+
+    // arithmetic and boolean expressions
 	div : AExp AExp -> NonValAExp,
 	divhl : AExp -> AExp,
     	divhr : AExp -> AExp,
-
-	// uninterpreted function Z3
-	muifun : Int Int -> Int / "uifun",
 
 	// uninterpreted function
 	uifun : AExp AExp -> NonValAExp,
@@ -150,10 +115,14 @@ signature
     	minushr : AExp -> AExp,
 
 	pred : AExp -> NonValAExp,
-	predh : -> AExp,
+	predh : -> Stmt,
+
+	fnot : ExpF -> NonValExpF,
+
+	fequals : ExpF ExpF -> NonValExpF,
 
 	succ : AExp -> NonValAExp,
-	succh : -> AExp,
+	succh : -> Stmt,
 
 	le   : AExp AExp -> NonValBExp,
     	lehl : AExp -> BExp,
@@ -163,11 +132,15 @@ signature
     	lesshl : AExp -> BExp,
     	lesshr : AExp -> BExp,
 
-	ieven : AExp -> NonValBExp,
-	ievenh : -> AExp,
+    fdiv : ExpF ExpF -> NonValExpF,
 
 	not : BExp -> NonValBExp,
-	noth : -> BExp,
+	noth : -> Stmt,
+
+	ieven : AExp -> NonValBExp,
+	ievenh : -> AExp,
+	ftimes : ExpF ExpF -> NonValExpF,
+	feven : ExpF -> NonValExpF,
 
 	// computation stack
 	done : -> CompStack,
@@ -196,9 +169,9 @@ signature
 /* next we must declare all variables */
 variables
 	// necessary variables
-	X : Var,
-	Y : Var,
-	Z : Var,
+	X : Int,
+	Y : Int,
+	Z : Int,
 
 	N : Int,
 	SUM : Int,
@@ -236,7 +209,6 @@ variables
 	ENV1 : Map,
 	ENV2 : Map,
 
-	XF : VarF,
 	FEXP : ExpF,
 	FEXP1 : ExpF,
 	FEXP2 : ExpF,
@@ -244,79 +216,53 @@ variables
 	FNV : NonValExpF,
 	VF : ValExpF;
 
-rewrite-system functions
-  (substitute XF FEXP I) => I,
-  (substitute XF FEXP B) => B,
-  (substitute XF FEXP XF) => FEXP,
-  (substitute fvarX FEXP fvarY) => fvarY,
-  (substitute fvarX FEXP fvarZ) => fvarZ,
-  (substitute fvarX FEXP fvarF) => fvarF,
 
-  (substitute fvarY FEXP fvarX) => fvarX,
-  (substitute fvarY FEXP fvarZ) => fvarZ,
-  (substitute fvarY FEXP fvarF) => fvarF,
+assert (_forallInt N
+         (mequals (sumUpTo N) (mdiv (mtimes N (mplus N 1)) 2)));
 
-  (substitute fvarZ FEXP fvarY) => fvarY,
-  (substitute fvarZ FEXP fvarZ) => fvarZ,
-  (substitute fvarZ FEXP fvarF) => fvarF,
+assert (_forallInt N
+         (mequals (meven N) (mequals (mmod N 2) 0)));
+
+assert (_forallInt X (_forallInt Y
+         (mequals (sum X Y) (mminus (sumUpTo Y) (sumUpTo (mminus X 1))))));
+
+
+define substitute : VarF ExpF ExpF -> ExpF by
+  (substitute (fvar X) FEXP I) => I,
+  (substitute (fvar X) FEXP B) => B,
+  (substitute (fvar X) FEXP (fvar X)) => FEXP,
+  (substitute (fvar X) FEXP (fvar Y)) /\ (bnot (mequals X Y)) => (fvar Y),
+
+  (substitute (fvar X) FEXP (fplus FEXP1 FEXP2)) => (fplus (substitute (fvar X) FEXP FEXP1) (substitute (fvar X) FEXP FEXP2)),
+  (substitute (fvar X) FEXP (fminus FEXP1 FEXP2)) => (fminus (substitute (fvar X) FEXP FEXP1) (substitute (fvar X) FEXP FEXP2)),
+  (substitute (fvar X) FEXP (fless FEXP1 FEXP2)) => (fless (substitute (fvar X) FEXP FEXP1) (substitute (fvar X) FEXP FEXP2)),
+  (substitute (fvar X) FEXP (fle FEXP1 FEXP2)) => (fle (substitute (fvar X) FEXP FEXP1) (substitute (fvar X) FEXP FEXP2)),
+  (substitute (fvar X) FEXP (fite FEXP1 FEXP2 FEXP3)) => (fite (substitute (fvar X) FEXP FEXP1) (substitute (fvar X) FEXP FEXP2) (substitute (fvar X) FEXP FEXP3)),
+
+  (substitute (fvar X) FEXP (fnot FEXP1)) => (fnot (substitute (fvar X) FEXP FEXP1)),
+
+  (substitute (fvar X) FEXP (ftimes FEXP1 FEXP2)) => (ftimes (substitute (fvar X) FEXP FEXP1) (substitute (fvar X) FEXP FEXP2)),
+  (substitute (fvar X) FEXP (feven FEXP1)) => (feven (substitute (fvar X) FEXP FEXP1)),
+
+  (substitute (fvar X) FEXP (fdiv FEXP1 FEXP2)) => (fdiv (substitute (fvar X) FEXP FEXP1) (substitute (fvar X) FEXP FEXP2)),
+
+  (substitute (fvar X) FEXP (fequals FEXP1 FEXP2)) => (fequals (substitute (fvar X) FEXP FEXP1) (substitute (fvar X) FEXP FEXP2)),
+
+  (substitute (fvar X) FEXP (app FEXP1 FEXP2)) => (app (substitute (fvar X) FEXP FEXP1) (substitute (fvar X) FEXP FEXP2)),
+
+  (substitute (fvar X) FEXP1 (lam (fvar X) FEXP)) => (lam (fvar X) FEXP),
+  (substitute (fvar X) FEXP1 (lam (fvar Y) FEXP)) /\ (bnot (mequals X Y)) => (lam (fvar Y) (substitute (fvar X) FEXP1 FEXP)),
+
+  (substitute (fvar X) FEXP1 (miu (fvar X) FEXP)) => (miu (fvar X) FEXP),
+  (substitute (fvar X) FEXP1 (miu (fvar Y) FEXP)) /\ (bnot (mequals X Y)) => (miu (fvar Y) (substitute (fvar X) FEXP1 FEXP))
+  ;
   
-  (substitute fvarF FEXP fvarX) => fvarX,
-  (substitute fvarF FEXP fvarY) => fvarY,
-  (substitute fvarF FEXP fvarZ) => fvarZ,
-
-  (substitute XF FEXP (feven FEXP1)) => (feven (substitute XF FEXP FEXP1)),
-  (substitute XF FEXP (fnot FEXP1)) => (fnot (substitute XF FEXP FEXP1)),
-  (substitute XF FEXP (fequals FEXP1 FEXP2)) => (fequals (substitute XF FEXP FEXP1) (substitute XF FEXP FEXP2)),
-  (substitute XF FEXP (fplus FEXP1 FEXP2)) => (fplus (substitute XF FEXP FEXP1) (substitute XF FEXP FEXP2)),
-  (substitute XF FEXP (ftimes FEXP1 FEXP2)) => (ftimes (substitute XF FEXP FEXP1) (substitute XF FEXP FEXP2)),
-  (substitute XF FEXP (fdiv FEXP1 FEXP2)) => (fdiv (substitute XF FEXP FEXP1) (substitute XF FEXP FEXP2)),
-  (substitute XF FEXP (fminus FEXP1 FEXP2)) => (fminus (substitute XF FEXP FEXP1) (substitute XF FEXP FEXP2)),
-  (substitute XF FEXP (fless FEXP1 FEXP2)) => (fless (substitute XF FEXP FEXP1) (substitute XF FEXP FEXP2)),
-  (substitute XF FEXP (fle FEXP1 FEXP2)) => (fle (substitute XF FEXP FEXP1) (substitute XF FEXP FEXP2)),
-  (substitute XF FEXP (fite FEXP1 FEXP2 FEXP3)) => (fite (substitute XF FEXP FEXP1) (substitute XF FEXP FEXP2) (substitute XF FEXP FEXP3)),
-
-  (substitute XF FEXP (app FEXP1 FEXP2)) => (app (substitute XF FEXP FEXP1) (substitute XF FEXP FEXP2)),
-
-  (substitute fvarX FEXP1 (lam fvarY FEXP)) => (lam fvarY (substitute fvarX FEXP1 FEXP)),
-  (substitute fvarX FEXP1 (lam fvarZ FEXP)) => (lam fvarZ (substitute fvarX FEXP1 FEXP)),
-  (substitute fvarX FEXP1 (lam fvarF FEXP)) => (lam fvarF (substitute fvarX FEXP1 FEXP)),
-
-  (substitute fvarY FEXP1 (lam fvarX FEXP)) => (lam fvarX (substitute fvarY FEXP1 FEXP)),
-  (substitute fvarY FEXP1 (lam fvarZ FEXP)) => (lam fvarZ (substitute fvarY FEXP1 FEXP)),
-  (substitute fvarY FEXP1 (lam fvarF FEXP)) => (lam fvarF (substitute fvarY FEXP1 FEXP)),
-
-  (substitute fvarZ FEXP1 (lam fvarX FEXP)) => (lam fvarX (substitute fvarZ FEXP1 FEXP)),
-  (substitute fvarZ FEXP1 (lam fvarY FEXP)) => (lam fvarY (substitute fvarZ FEXP1 FEXP)),
-  (substitute fvarZ FEXP1 (lam fvarF FEXP)) => (lam fvarF (substitute fvarZ FEXP1 FEXP)),
-
-  (substitute fvarF FEXP1 (lam fvarX FEXP)) => (lam fvarX (substitute fvarF FEXP1 FEXP)),
-  (substitute fvarF FEXP1 (lam fvarY FEXP)) => (lam fvarY (substitute fvarF FEXP1 FEXP)),
-  (substitute fvarF FEXP1 (lam fvarZ FEXP)) => (lam fvarZ (substitute fvarF FEXP1 FEXP)),
-
-  (substitute XF FEXP1 (lam XF FEXP)) => (lam XF FEXP),
-
-  (substitute fvarX FEXP1 (miu fvarY FEXP)) => (miu fvarY (substitute fvarX FEXP1 FEXP)),
-  (substitute fvarX FEXP1 (miu fvarZ FEXP)) => (miu fvarZ (substitute fvarX FEXP1 FEXP)),
-  (substitute fvarX FEXP1 (miu fvarF FEXP)) => (miu fvarF (substitute fvarX FEXP1 FEXP)),
   
-  (substitute fvarY FEXP1 (miu fvarX FEXP)) => (miu fvarX (substitute fvarY FEXP1 FEXP)),
-  (substitute fvarY FEXP1 (miu fvarZ FEXP)) => (miu fvarZ (substitute fvarY FEXP1 FEXP)),
-  (substitute fvarY FEXP1 (miu fvarF FEXP)) => (miu fvarF (substitute fvarY FEXP1 FEXP)),
-  
-  (substitute fvarZ FEXP1 (miu fvarX FEXP)) => (miu fvarX (substitute fvarZ FEXP1 FEXP)),
-  (substitute fvarZ FEXP1 (miu fvarY FEXP)) => (miu fvarY (substitute fvarZ FEXP1 FEXP)),
-  (substitute fvarZ FEXP1 (miu fvarF FEXP)) => (miu fvarF (substitute fvarZ FEXP1 FEXP)),
-
-  (substitute fvarF FEXP1 (miu fvarX FEXP)) => (miu fvarX (substitute fvarF FEXP1 FEXP)),
-  (substitute fvarF FEXP1 (miu fvarY FEXP)) => (miu fvarY (substitute fvarF FEXP1 FEXP)),
-  (substitute fvarF FEXP1 (miu fvarZ FEXP)) => (miu fvarZ (substitute fvarF FEXP1 FEXP)),
-  
-  (substitute XF FEXP1 (miu XF FEXP)) => (miu XF FEXP);
 
 /* next declare all rewrite rules */
 constrained-rewrite-system language
 // language
- 	(IC (push X              REST) ENV) =>
+ 	(IC (push (var X)              REST) ENV) =>
  	(IC (push (lookup ENV X) REST) ENV),
 
 	(IC (push (pred N)            REST) ENV) =>
@@ -328,7 +274,6 @@ constrained-rewrite-system language
 	(IC (push N (push predh REST)) ENV) =>
 	(IC (push (pred N)       REST)  ENV),
 
-
 	(IC (push (not B)  REST) ENV) =>
 	(IC (push (bnot B) REST) ENV),
 
@@ -337,16 +282,6 @@ constrained-rewrite-system language
 
 	(IC (push B (push noth REST)) ENV) =>
 	(IC (push (not B)       REST)  ENV),
-
-
-	(IC (push (ieven N) REST) ENV) =>
-	(IC (push (meven N) REST) ENV),
-
-	(IC (push (ieven NVAE)       REST)  ENV) =>
-	(IC (push NVAE (push ievenh REST)) ENV),
-
-	(IC (push N (push ievenh REST)) ENV) =>
-	(IC (push (ieven N)       REST)  ENV),
 
 
 	(IC (push (succ N)           REST) ENV) =>
@@ -358,14 +293,14 @@ constrained-rewrite-system language
 	(IC (push N (push succh REST)) ENV) =>
 	(IC (push (succ N)       REST)  ENV),
 
-	(IC (push (assign X N) REST) ENV) =>
+	(IC (push (assign (var X) N) REST) ENV) =>
         (IC REST       (update ENV X N)),
     
- 	(IC (push (assign X NVAE)       REST)  ENV) =>
- 	(IC (push NVAE (push (assignh X) REST)) ENV),
+ 	(IC (push (assign (var X) NVAE)       REST)  ENV) =>
+ 	(IC (push NVAE (push (assignh (var X)) REST)) ENV),
 
-     	(IC (push N (push (assignh X) REST)) ENV) =>
-     	(IC (push (assign X N)        REST)  ENV),
+     	(IC (push N (push (assignh (var X)) REST)) ENV) =>
+     	(IC (push (assign (var X) N)        REST)  ENV),
 
 // sequential composition
 	(IC (push (seq S1 S2) REST)  ENV) =>
@@ -388,6 +323,60 @@ constrained-rewrite-system language
  	(IC (push (ite false S1 S2) REST) ENV) =>
  	(IC (push S2                 REST) ENV),
 
+	(IC (push (ieven N) REST) ENV) =>
+	(IC (push (meven N) REST) ENV),
+
+// equality operator
+
+ 	(IC (push (iequals N M)  REST) ENV) =>
+ 	(IC (push (mequals N M) REST) ENV),
+
+ 	(IC (push (iequals NVAE1 AE2)        REST)  ENV) =>
+ 	(IC (push NVAE1 (push (iequalshl AE2) REST)) ENV),
+
+ 	(IC (push N (push (iequalshl AE2) REST)) ENV) =>
+ 	(IC (push (iequals N AE2)        REST)  ENV),
+
+ 	(IC (push (iequals N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (iequalshr N) REST)) ENV),
+  
+ 	(IC (push M (push (iequalshr N) REST)) ENV) =>
+ 	(IC (push (iequals N M)       REST)  ENV),
+
+// multiplication operator
+ 	(IC (push (times N M)     REST) ENV) =>
+ 	(IC (push (mtimes N M)    REST) ENV),
+
+	(IC (push (times NVAE1 AE2)        REST)  ENV) =>
+	(IC (push NVAE1 (push (timeshl AE2) REST)) ENV),
+  
+ 	(IC (push N (push (timeshl AE2) REST)) ENV) =>
+ 	(IC (push (times N AE2)        REST)  ENV),
+
+ 	(IC (push (times N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (timeshr N) REST)) ENV),
+
+ 	(IC (push M (push (timeshr N) REST)) ENV) =>
+ 	(IC (push (times N M)        REST)  ENV),
+
+
+// division operator
+ 	(IC (push (div N M)     REST) ENV) =>
+ 	(IC (push (mdiv N M)    REST) ENV),
+
+	(IC (push (div NVAE1 AE2)        REST)  ENV) =>
+	(IC (push NVAE1 (push (divhl AE2) REST)) ENV),
+  
+ 	(IC (push N (push (divhl AE2) REST)) ENV) =>
+ 	(IC (push (div N AE2)        REST)  ENV),
+
+ 	(IC (push (div N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (divhr N) REST)) ENV),
+
+ 	(IC (push M (push (divhr N) REST)) ENV) =>
+ 	(IC (push (div N M)        REST)  ENV),
+
+
 // while statement
  	(IC (push (while BE S)                        REST) ENV) =>
  	(IC (push (ite BE (seq S (while BE S)) skip) REST) ENV),
@@ -408,54 +397,6 @@ constrained-rewrite-system language
  	(IC (push M (push (plushr N) REST)) ENV) =>
  	(IC (push (plus N M)        REST)  ENV),
 
-// multiplication operator
- 	(IC (push (times N M)     REST) ENV) =>
- 	(IC (push (mtimes N M)    REST) ENV),
-
-	(IC (push (times NVAE1 AE2)        REST)  ENV) =>
-	(IC (push NVAE1 (push (timeshl AE2) REST)) ENV),
-  
- 	(IC (push N (push (timeshl AE2) REST)) ENV) =>
- 	(IC (push (times N AE2)        REST)  ENV),
-
- 	(IC (push (times N NVAE2)        REST)  ENV) =>
- 	(IC (push NVAE2 (push (timeshr N) REST)) ENV),
-
- 	(IC (push M (push (timeshr N) REST)) ENV) =>
- 	(IC (push (times N M)        REST)  ENV),
-
-// division operator
- 	(IC (push (div N M)     REST) ENV) =>
- 	(IC (push (mdiv N M)    REST) ENV),
-
-	(IC (push (div NVAE1 AE2)        REST)  ENV) =>
-	(IC (push NVAE1 (push (divhl AE2) REST)) ENV),
-  
- 	(IC (push N (push (divhl AE2) REST)) ENV) =>
- 	(IC (push (div N AE2)        REST)  ENV),
-
- 	(IC (push (div N NVAE2)        REST)  ENV) =>
- 	(IC (push NVAE2 (push (divhr N) REST)) ENV),
-
- 	(IC (push M (push (divhr N) REST)) ENV) =>
- 	(IC (push (div N M)        REST)  ENV),
-
-// uninterpreted function
- 	(IC (push (uifun N M)     REST) ENV) =>
- 	(IC (push (muifun N M)    REST) ENV),
-
-	(IC (push (uifun NVAE1 AE2)        REST)  ENV) =>
-	(IC (push NVAE1 (push (uifunhl AE2) REST)) ENV),
-  
- 	(IC (push N (push (uifunhl AE2) REST)) ENV) =>
- 	(IC (push (uifun N AE2)        REST)  ENV),
-
- 	(IC (push (uifun N NVAE2)        REST)  ENV) =>
- 	(IC (push NVAE2 (push (uifunhr N) REST)) ENV),
-
- 	(IC (push M (push (uifunhr N) REST)) ENV) =>
- 	(IC (push (uifun N M)        REST)  ENV),
-
 // subtraction operator
  	(IC (push (minus N M)     REST) ENV) =>
  	(IC (push (mminus N M)    REST) ENV),
@@ -473,40 +414,23 @@ constrained-rewrite-system language
  	(IC (push (minus N M)        REST)  ENV),
 
 // for statement
- 	(IC (push (for X NVAE1 NVAE2 S)        REST ) ENV) =>
- 	(IC (push NVAE1 (push (forhl X NVAE2 S) REST)) ENV),
+ 	(IC (push (for (var X) NVAE1 NVAE2 S)        REST ) ENV) =>
+ 	(IC (push NVAE1 (push (forhl (var X) NVAE2 S) REST)) ENV),
 
- 	(IC (push N (push (forhl X NVAE2 S) REST)) ENV) =>
- 	(IC (push (for X N NVAE2 S)        REST)  ENV),
+ 	(IC (push N (push (forhl (var X) NVAE2 S) REST)) ENV) =>
+ 	(IC (push (for (var X) N NVAE2 S)        REST)  ENV),
 
- 	(IC (push (for X N NVAE2 S)            REST ) ENV) =>
- 	(IC (push NVAE2 (push (forhr X N S)     REST)) ENV),
+ 	(IC (push (for (var X) N NVAE2 S)            REST ) ENV) =>
+ 	(IC (push NVAE2 (push (forhr (var X) N S)     REST)) ENV),
 
- 	(IC (push M (push (forhr X N S) REST)) ENV) =>
- 	(IC (push (for X N M S)        REST)  ENV),
+ 	(IC (push M (push (forhr (var X) N S) REST)) ENV) =>
+ 	(IC (push (for (var X) N M S)        REST)  ENV),
 
-	(IC (push (for X N M S)                                         REST) ENV) /\ (mle N M) =>
-	(IC (push (seq (assign X N) S) (push (for X (mplus N 1) M S) REST)) ENV),
+	(IC (push (for (var X) N M S)                                         REST) ENV) /\ (mle N M) =>
+	(IC (push (seq (assign (var X) N) S) (push (for (var X) (mplus N 1) M S) REST)) ENV),
 
-	(IC (push (for X N M S) REST) ENV) /\ (bnot (mle N M)) =>
-	(IC                       REST ENV),
-
-// equality operator
-
- 	(IC (push (iequals N M)  REST) ENV) =>
- 	(IC (push (mequals N M) REST) ENV),
-
- 	(IC (push (iequals NVAE1 AE2)        REST)  ENV) =>
- 	(IC (push NVAE1 (push (iequalshl AE2) REST)) ENV),
-
- 	(IC (push N (push (iequalshl AE2) REST)) ENV) =>
- 	(IC (push (iequals N AE2)        REST)  ENV),
-
- 	(IC (push (iequals N NVAE2)        REST)  ENV) =>
- 	(IC (push NVAE2 (push (iequalshr N) REST)) ENV),
-  
- 	(IC (push M (push (iequalshr N) REST)) ENV) =>
- 	(IC (push (iequals N M)       REST)  ENV),
+	(IC (push (for (var X) N M S) REST) ENV) /\ (bnot (mle N M)) =>
+	(IC (push (assign (var X) N)  REST) ENV),
 
 // less than or equal to operator2
 
@@ -525,6 +449,22 @@ constrained-rewrite-system language
  	(IC (push M (push (lehr N) REST)) ENV) =>
  	(IC (push (le N M)       REST)  ENV),
 
+// uninterpreted function
+ 	(IC (push (uifun N M)     REST) ENV) =>
+ 	(IC (push (muifun N M)    REST) ENV),
+
+	(IC (push (uifun NVAE1 AE2)        REST)  ENV) =>
+	(IC (push NVAE1 (push (uifunhl AE2) REST)) ENV),
+  
+ 	(IC (push N (push (uifunhl AE2) REST)) ENV) =>
+ 	(IC (push (uifun N AE2)        REST)  ENV),
+
+ 	(IC (push (uifun N NVAE2)        REST)  ENV) =>
+ 	(IC (push NVAE2 (push (uifunhr N) REST)) ENV),
+
+ 	(IC (push M (push (uifunhr N) REST)) ENV) =>
+ 	(IC (push (uifun N M)        REST)  ENV),
+
 // strictly less than
 
  	(IC (push (less N M)  REST) ENV) =>
@@ -540,41 +480,36 @@ constrained-rewrite-system language
  	(IC (push NVAE2 (push (lesshr N) REST)) ENV),
   
  	(IC (push M (push (lesshr N) REST)) ENV) =>
- 	(IC (push (less N M)       REST)  ENV)
+ 	(IC (push (less N M)       REST)  ENV),
+
+// symbolic variables statements and expressions
+    (IC (push pE1 REST) ENV) =>
+	(IC (push (iE1 (lookup ENV 4) (lookup ENV 2)) REST) ENV),
+
+	(IC (push pS1 REST) ENV) =>
+	(IC REST (update ENV 3 (iS1 (lookup ENV 3) (lookup ENV 4) (lookup ENV 1) (lookup ENV 2))))
 ;
 
 constrained-rewrite-system flanguage
-	(contextexp (feven FNV)) => (feven (contextexp FNV)),
-	(feven (contextexp I)) => (contextexp (feven I)),
-	(contextexp (feven I)) => (contextexp (meven I)),
-
-	(contextexp (fnot FNV)) => (fnot (contextexp FNV)),
-	(fnot (contextexp B)) => (contextexp (fnot B)),
-	(contextexp (fnot B)) => (contextexp (bnot B)),
-
 	(contextexp (fplus FNV FEXP)) => (fplus (contextexp FNV) FEXP),
 	(fplus (contextexp I) FEXP) => (contextexp (fplus I FEXP)),
 	(contextexp (fplus I FNV)) => (fplus I (contextexp FNV)),
 	(fplus I (contextexp J)) => (contextexp (fplus I J)),
 	(contextexp (fplus I J)) => (contextexp (mplus I J)),
 
-	(contextexp (fdiv FNV FEXP)) => (fdiv (contextexp FNV) FEXP),
-	(fdiv (contextexp I) FEXP) => (contextexp (fdiv I FEXP)),
-	(contextexp (fdiv I FNV)) => (fdiv I (contextexp FNV)),
-	(fdiv I (contextexp J)) => (contextexp (fdiv I J)),
-	(contextexp (fdiv I J)) => (contextexp (mdiv I J)),
-
-	(contextexp (ftimes FNV FEXP)) => (ftimes (contextexp FNV) FEXP),
-	(ftimes (contextexp I) FEXP) => (contextexp (ftimes I FEXP)),
-	(contextexp (ftimes I FNV)) => (ftimes I (contextexp FNV)),
-	(ftimes I (contextexp J)) => (contextexp (ftimes I J)),
-	(contextexp (ftimes I J)) => (contextexp (mtimes I J)),
+	(contextexp (fnot FNV)) => (fnot (contextexp FNV)),
+	(fnot (contextexp B)) => (contextexp (fnot B)),
+	(contextexp (fnot B)) => (contextexp (bnot B)),
 
 	(contextexp (fminus FNV FEXP)) => (fminus (contextexp FNV) FEXP),
 	(fminus (contextexp I) FEXP) => (contextexp (fminus I FEXP)),
 	(contextexp (fminus I FNV)) => (fminus I (contextexp FNV)),
 	(fminus I (contextexp J)) => (contextexp (fminus I J)),
 	(contextexp (fminus I J)) => (contextexp (mminus I J)),
+
+	(contextexp (feven FNV)) => (feven (contextexp FNV)),
+	(feven (contextexp I)) => (contextexp (feven I)),
+	(contextexp (feven I)) => (contextexp (meven I)),
 	
 	(contextexp (fless FNV FEXP)) => (fless (contextexp FNV) FEXP),
 	(fless (contextexp I) FEXP) => (contextexp (fless I FEXP)),
@@ -582,69 +517,83 @@ constrained-rewrite-system flanguage
 	(fless I (contextexp J)) => (contextexp (fless I J)),
 	(contextexp (fless I J)) => (contextexp (mless I J)),
 	
-	(contextexp (fequals FNV FEXP)) => (fequals (contextexp FNV) FEXP),
-	(fequals (contextexp I) FEXP) => (contextexp (fequals I FEXP)),
-	(contextexp (fequals I FNV)) => (fequals I (contextexp FNV)),
-	(fequals I (contextexp J)) => (contextexp (fequals I J)),
-	(contextexp (fequals I J)) => (contextexp (mequals I J)),
-	
 	(contextexp (fle FNV FEXP)) => (fle (contextexp FNV) FEXP),
 	(fle (contextexp I) FEXP) => (contextexp (fle I FEXP)),
 	(contextexp (fle I FNV)) => (fle I (contextexp FNV)),
 	(fle I (contextexp J)) => (contextexp (fle I J)),
 	(contextexp (fle I J)) => (contextexp (mle I J)),
 
+	(contextexp (ftimes FNV FEXP)) => (ftimes (contextexp FNV) FEXP),
+	(ftimes (contextexp I) FEXP) => (contextexp (ftimes I FEXP)),
+	(contextexp (ftimes I FNV)) => (ftimes I (contextexp FNV)),
+	(ftimes I (contextexp J)) => (contextexp (ftimes I J)),
+	(contextexp (ftimes I J)) => (contextexp (mtimes I J)),
+
+
 	(contextexp (fite FNV FEXP1 FEXP2)) => (fite (contextexp FNV) FEXP1 FEXP2),
 	(fite (contextexp B) FEXP1 FEXP2) => (contextexp (fite B FEXP1 FEXP2)),
 	(contextexp (fite true FEXP1 FEXP2)) => (contextexp FEXP1),
 	(contextexp (fite false FEXP1 FEXP2)) => (contextexp FEXP2),
 
+	(contextexp (fequals FNV FEXP)) => (fequals (contextexp FNV) FEXP),
+	(fequals (contextexp I) FEXP) => (contextexp (fequals I FEXP)),
+	(contextexp (fequals I FNV)) => (fequals I (contextexp FNV)),
+	(fequals I (contextexp J)) => (contextexp (fequals I J)),
+	(contextexp (fequals I J)) => (contextexp (mequals I J)),
+
 	(contextexp (app FNV FEXP)) => (app (contextexp FNV) FEXP),
-	(app (contextexp (lam XF FEXP1)) FEXP2) => (contextexp (app (lam XF FEXP1) FEXP2)),
-	(contextexp (app (lam XF FEXP1) FNV)) => (app (lam XF FEXP1) (contextexp FNV)),
-	(app (lam XF FEXP1) (contextexp VF)) => (contextexp (app (lam XF FEXP1) VF)),
-	(contextexp (app (lam XF FEXP1) VF)) => (contextexp (substitute XF VF FEXP1)),
+	(app (contextexp (lam (fvar X) FEXP1)) FEXP2) => (contextexp (app (lam (fvar X) FEXP1) FEXP2)),
+	(contextexp (app (lam (fvar X) FEXP1) FNV)) => (app (lam (fvar X) FEXP1) (contextexp FNV)),
+	(app (lam (fvar X) FEXP1) (contextexp VF)) => (contextexp (app (lam (fvar X) FEXP1) VF)),
+	(contextexp (app (lam (fvar X) FEXP1) VF)) => (contextexp (substitute (fvar X) VF FEXP1)),
+
+	(contextexp (fdiv FNV FEXP)) => (fdiv (contextexp FNV) FEXP),
+	(fdiv (contextexp I) FEXP) => (contextexp (fdiv I FEXP)),
+	(contextexp (fdiv I FNV)) => (fdiv I (contextexp FNV)),
+	(fdiv I (contextexp J)) => (contextexp (fdiv I J)),
+	(contextexp (fdiv I J)) => (contextexp (mdiv I J)),
+
 	
-	(contextexp (miu XF FEXP)) => (contextexp (substitute XF (miu XF FEXP) FEXP))
+	(contextexp (miu (fvar X) FEXP)) => (contextexp (substitute (fvar X) (miu (fvar X) FEXP) FEXP))
 ;
 
-show-equivalent in language and flanguage :
+show-simulation [100] in language and flanguage :
 
 (pair 
 
-(IC (push (while (not (iequals x 1)) 
-              (seq (assign y (plus y 1)) 
-	          (ite (ieven x) (assign x (div x 2)) 
-		                (assign x (plus (times x 3) 1))))) 
-	done) ENV) 
+(IC (push (while (not (iequals (var 0) 1)) 
+              (seq (assign (var 1) (plus (var 1) 1)) 
+	          (ite (ieven (var 0)) (assign (var 0) (div (var 0) 2)) 
+		                (assign (var 0) (plus (times (var 0) 3) 1))))) 
+	done) ENV)
 
 (F (contextexp 
    (fite (fnot (fequals N 1)) 
         (fite (feven N) 
 	     (app (app 
 
-(miu fvarF (lam fvarX (lam fvarY 
-   (fite (fnot (fequals fvarX 1)) 
-        (fite (feven fvarX) 
-	     (app (app fvarF (fdiv fvarX 2)) (fplus fvarY 1)) 
-	     (app (app fvarF (fplus (ftimes fvarX 3) 1)) (fplus fvarY 1))) 
-	fvarY)))) 
+(miu (fvar 2) (lam (fvar 0) (lam (fvar 1) 
+   (fite (fnot (fequals (fvar 0) 1)) 
+        (fite (feven (fvar 0)) 
+	     (app (app (fvar 2) (fdiv (fvar 0) 2)) (fplus (fvar 1) 1)) 
+	     (app (app (fvar 2) (fplus (ftimes (fvar 0) 3) 1)) (fplus (fvar 1) 1))) 
+	(fvar 1))))) 
              (fdiv N 2)) (fplus I 1)) 
 	     
 	     (app (app 
-(miu fvarF (lam fvarX (lam fvarY 
-   (fite (fnot (fequals fvarX 1)) 
-        (fite (feven fvarX) 
-	     (app (app fvarF (fdiv fvarX 2)) (fplus fvarY 1)) 
-	     (app (app fvarF (fplus (ftimes fvarX 3) 1)) (fplus fvarY 1))) 
-	fvarY)))) 
+(miu (fvar 2) (lam (fvar 0) (lam (fvar 1) 
+   (fite (fnot (fequals (fvar 0) 1)) 
+        (fite (feven (fvar 0)) 
+	     (app (app (fvar 2) (fdiv (fvar 0) 2)) (fplus (fvar 1) 1)) 
+	     (app (app (fvar 2) (fplus (ftimes (fvar 0) 3) 1)) (fplus (fvar 1) 1))) 
+	(fvar 1))))) 
 	
 	     (fplus (ftimes N 3) 1)) (fplus I 1))) 
 	I))))
 	                    
-/\ (band (mequals (lookup ENV x) N)
-        (mequals (lookup ENV y) I))
+/\ (band (mequals (lookup ENV 0) N)
+        (mequals (lookup ENV 1) I))
 
 with-base
 
-(pair (IC done ENV) (F (contextexp N))) /\ (mequals (lookup ENV y) N);
+(pair (IC done ENV) (F (contextexp N))) /\ (mequals (lookup ENV 1) N);

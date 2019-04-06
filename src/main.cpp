@@ -602,32 +602,48 @@ Entry point to the RMT tool.
 */
 int main(int argc, char **argv)
 {
-  char *filename = argv[0];
-  if (argc != 2) {
-    if (argc == 4) {
-      if (strcmp(argv[1], "-v") != 0) {
-        abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
-      }
+  bool readFromStdin = false;
+  char *filename = argv[argc - 1];
+  for (int i = 1; i < argc; ++i) {
+    if (i < argc - 1 && strcmp(argv[i], "-v") == 0) {
       char *end;
       Log(INFO) << "Got verbosity level " << argv[2] << "." << endl;
-      Log::debug_level = strtol(argv[2], &end, 10);
+      Log::debug_level = strtol(argv[i + 1], &end, 10);
       if (*end) {
         abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
       }
-      filename = argv[3];
     }
-    else {
-      abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
+    if (strcmp(argv[i], "--in") == 0) {
+      readFromStdin = true;
     }
   }
-  else {
-    filename = argv[1];
-  }
+  // if (argc != 2) {
+  //   if (argc == 4) {
+  //     if (strcmp(argv[1], "-v") != 0) {
+  //       abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
+  //     }
+  //     char *end;
+  //     Log(INFO) << "Got verbosity level " << argv[2] << "." << endl;
+  //     Log::debug_level = strtol(argv[2], &end, 10);
+  //     if (*end) {
+  //       abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
+  //     }
+  //     filename = argv[3];
+  //   } else {
+  //     abortWithMessage("Syntax: ./rmt [-v <level>] file.in");
+  //   }
+  // } else {
+  //   filename = argv[1];
+  // }
 
-  ifstream input(filename);
-  if (!input.is_open()) {
-    abortWithMessage(string("Cannot open file ") + filename + ".");
+  ifstream inputf;
+  if (!readFromStdin) {
+    inputf.open(filename);
+    if (!inputf.is_open()) {
+      abortWithMessage(string("Cannot open file ") + filename + ".");
+    }
   }
+  istream &input = readFromStdin ? cin : inputf;
   string s;
   int w = 0;
 
@@ -637,7 +653,9 @@ int main(int argc, char **argv)
     s += tmp;
     s += "\n";
   }
-  input.close();
+  if (!readFromStdin) {
+    inputf.close();
+  }
 
   start_z3_api();
 

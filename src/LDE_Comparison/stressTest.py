@@ -4,7 +4,7 @@ import os
 import sys
 from random import randint
 
-exes = [ "ldegraphmain.exe", "slopesV7i.exe" ]
+exes = [ "./ldegraphmain", "./slopesV7i" ]
 
 def genTest(n, m, mxVal):
   return ' '.join(str(randint(1, mxVal)) for _ in range(n)) + ' 0 ' + ' '.join([str(mxVal)] + [str(randint(1, mxVal)) for _ in range(m - 1)]) + ' 0'
@@ -12,10 +12,16 @@ def genTest(n, m, mxVal):
 label = sys.argv[1] # "fig:comparison1"
 title = sys.argv[2] # "Comparison of LDEGraph and Slopes."
 
-nms = [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9)]
-nms += [(2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8)]
-nms += [(3, 3), (3, 4), (3, 5), (3, 6), (4, 4), (4, 5)]
-mxVals = [2, 3, 5, 13, 29, 39, 107, 503, 1021]
+nms = []
+nms += [(2, 2), (2, 3), (2, 4)]
+
+#nms += [(1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9)]
+#nms += [(2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8)]
+#nms += [(3, 3), (3, 4), (3, 5), (3, 6), (4, 4), (4, 5)]
+
+#mxVals = [2, 3, 5, 13, 29, 39, 107, 503, 1021]
+
+mxVals = [29, 39, 107]
 
 print("""
 \\begin{figure}
@@ -42,9 +48,9 @@ for n, m in nms:
       for exe in exes:
           times = []
           for __ in range(10):
-              start = time.process_time()
+              start = time.perf_counter()
               os.system("echo %s | %s 1>temp.txt" % (test, exe))
-              end = time.process_time()
+              end = time.perf_counter()
               times.append(end - start)
               sols.append(int(open('temp.txt', 'r').readline()))
           times.sort()
@@ -52,8 +58,10 @@ for n, m in nms:
       if len(set(sols)) != 1:
           print("ERROR in solution sizes.")
           print(sols)
-      if abs(rt[0] - rt[1]) < 1e-5:
-        graph, slopes = graph + 1, slopes + 1
+#      print("Graph: %.4lf    Slopes: %.4lf" % (rt[0], rt[1]))
+      if abs(rt[0] - rt[1]) < 1e-2:
+        pass
+#        graph, slopes = graph + 1, slopes + 1
       elif rt[0] < rt[1]:
         graph += 1
       else:

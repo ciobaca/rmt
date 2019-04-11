@@ -1,0 +1,279 @@
+sorts
+    Var,  // sort of program variables
+
+    Nexp, // sort of non-value expressions
+    Exp,  // sort of expressions
+
+    Stmt, // sort of program statements
+
+    Code, // either statements or expressions
+    
+    CodeStack, // a list of code to execute in order
+    
+    Map / "(Array Int Int)", // environment (maps
+    // variables into their integer value)
+
+    CfgI, // the sort of program configurations
+
+    State; // pairs of configurations -- used for
+    // pair programs
+
+subsort Var < Nexp;
+
+subsort Nexp < Exp;
+subsort Int < Exp;
+
+subsort Exp < Code;
+
+subsort Stmt < Code;
+
+signature
+    skip : -> Stmt,
+
+    plus : Exp Exp -> Nexp, // ast node for summation
+    hexp : -> Exp, // the HOLE
+
+    mapequals : Map Map -> Bool / "=",
+    var : Int -> Var,
+    store : Map Int Int -> Map / "store",
+    select : Map Int -> Int / "select",
+
+
+    assign : Var Exp -> Stmt,
+
+    ite : Exp Stmt Stmt -> Stmt,
+
+    seq : Stmt Stmt -> Stmt,
+
+    done : -> CodeStack,
+    cons : Code CodeStack -> CodeStack,
+    
+    I : CodeStack Map -> CfgI,
+    
+    pair : CfgI CfgI -> State,
+
+    final : -> CfgI;
+
+variables
+    X : Int,
+    Y : Int,
+    V : Int,
+    V1 : Int,
+    V2 : Int,
+    
+    S : CodeStack,
+    S1 : Stmt,
+    S2 : Stmt,
+
+    E1 : Exp,
+    E2 : Exp,
+    NE : Nexp,
+    NE1 : Nexp,
+    NE2 : Nexp,
+    
+    ENV : Map,
+    ENV1 : Map,
+    ENV2 : Map,
+    EMPTY : Map;
+
+constrained-rewrite-system language
+  // assignment statement
+  (I (cons (assign (var X) NE) S) ENV)
+  =>
+  (I (cons NE (cons (assign (var X) hexp) S)) ENV)
+  ,
+
+  (I (cons V (cons (assign (var X) hexp) S)) ENV)
+  =>
+  (I (cons (assign (var X) V) S) ENV)
+  ,
+
+  (I (cons (assign (var X) V) S) ENV)
+  =>
+  (I (cons skip S) (store ENV X V))
+  ,
+
+  // addition operator
+  (I (cons (plus NE1 E2) S) ENV)
+  =>
+  (I (cons NE1 (cons (plus hexp E2) S)) ENV)
+  ,
+
+  (I (cons V1 (cons (plus hexp E2) S)) ENV)
+  =>
+  (I (cons (plus V1 E2) S) ENV)
+  ,
+
+  (I (cons (plus V1 NE2) S) ENV)
+  =>
+  (I (cons NE2 (cons (plus V1 hexp) S)) ENV)
+  ,
+
+  (I (cons V2 (cons (plus V1 hexp) S)) ENV)
+  =>
+  (I (cons (plus V1 V2) S) ENV)
+  ,
+
+  // (I (cons (plus V1 V2) S) ENV)
+  // =>
+  // (I (cons (mplus V1 V2) S) ENV)
+  // ,
+
+  // // less-than operator
+  // (I (cons (less NE1 E2) S) ENV)
+  // =>
+  // (I (cons NE1 (cons (less hexp E2) S)) ENV)
+  // ,
+
+  // (I (cons V1 (cons (less hexp E2) S)) ENV)
+  // =>
+  // (I (cons (less V1 E2) S) ENV)
+  // ,
+
+  // (I (cons (less V1 NE2) S) ENV)
+  // =>
+  // (I (cons NE2 (cons (less V1 hexp) S)) ENV)
+  // ,
+
+  // (I (cons V2 (cons (less V1 hexp) S)) ENV)
+  // =>
+  // (I (cons (less V1 V2) S) ENV)
+  // ,
+
+  // (I (cons (less V1 V2) S) ENV) /\ (mle V1 (mplus V2 1))
+  // =>
+  // (I (cons 1 S) ENV)
+  // ,
+
+  // (I (cons (less V1 V2) S) ENV) /\ (bnot (mle V1 (mplus V2 1)))
+  // =>
+  // (I (cons 0 S) ENV)
+  // ,
+
+  // // conditional
+  // (I (cons (ite NE S1 S2) S) ENV)
+  // =>
+  // (I (cons NE (cons (ite hexp S1 S2) S)) ENV),
+
+  // (I (cons V (cons (ite hexp S1 S2) S)) ENV)
+  // =>
+  // (I (cons (ite V S1 S2) S) ENV),
+
+  // (I (cons (ite V S1 S2) S) ENV) /\ (bnot (mequals 0 V))
+  // =>
+  // (I (cons S1 S) ENV),
+
+  // (I (cons (ite V S1 S2) S) ENV) /\ (mequals 0 V)
+  // =>
+  // (I (cons S2 S) ENV),
+
+  // skip
+  (I (cons skip S) ENV)
+  =>
+  (I S ENV)
+  ;
+
+// run in language : (I (cons (assign (var 0) 10) (cons (assign (var 0) 11) done)) EMPTY);
+
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons skip done) EMPTY)
+//         (I (cons skip done) EMPTY)
+//     )	 	   
+// with-base
+//     (pair (I done ENV) (I done ENV));
+
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons (assign (var 0) 10) done) EMPTY)
+//         (I (cons (assign (var 0) 10) done) EMPTY)
+//     )	 	   
+// with-base
+//     (pair (I done ENV) (I done ENV));
+
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons (assign (var 1) 11) (cons (assign (var 0) 10) done)) EMPTY)
+//         (I (cons (assign (var 0) 10) (cons (assign (var 1) 11) done)) EMPTY)
+//     )
+// with-base
+//     (pair (I done ENV) (I done ENV));
+
+
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons (assign (var X) 11) (cons (assign (var X) 10) done)) EMPTY)
+//         (I (cons (assign (var X) 10) (cons (assign (var X) 10) done)) EMPTY)
+//     )
+// with-base
+//     (pair (I done ENV) (I done ENV));
+
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons (assign (var X) 11) (cons (assign (var Y) 10) done)) EMPTY)
+//         (I (cons (assign (var Y) 10) (cons (assign (var X) 11) done)) EMPTY)
+//     ) // FAIL WITHOUT CONSTRAINT /\ (bnot (mequals X Y))
+// with-base
+//     (pair (I done ENV) (I done ENV));
+
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons (assign (var X) 11)
+// 	   (cons (assign (var Y) 10)
+// 	   done)) EMPTY)
+//         (I (cons (assign (var Y) 10)
+// 	   (cons (assign (var X) 11)
+// 	   done)) EMPTY)
+//     ) /\ (bnot (mequals X Y))
+// with-base
+//     (pair (I done ENV) (I done ENV));
+
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons (assign (var 0) 11) // 0 = a
+// 	   (cons (assign (var 1) 10) // 1 = b
+// 	   (cons (assign (var 2) 1)  // 2 = c
+// 	   (cons (assign (var 3) 0)  // 3 = i
+// 	   done))))
+// 	   EMPTY)
+//         (I (cons (assign (var 0) 11)
+// 	   (cons (assign (var 1) 10)
+// 	   (cons (assign (var 2) 0)
+// 	   (cons (assign (var 3) 0)
+// 	   done))))
+// 	   EMPTY)
+//     ) /\ (bnot (mequals X Y))
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (band
+//          (mequals (select ENV1 0) (select ENV2 0))
+//          (mequals (select ENV1 1) (select ENV2 1)));
+
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons (assign (var 0) 11) // 0 = a
+// 	   (cons (assign (var 1) 10) // 1 = b
+// 	   (cons (assign (var 2) 1)  // 2 = c
+// 	   (cons (assign (var 3) 0)  // 3 = i
+// 	   (cons (ite (less (var 3) (var 0))
+// 	      (seq (assign (var 2) (plus (var 2) (var 1)))
+// 	           (assign (var 3) (plus (var 3) 1)))
+//               (skip))
+// 	   done)))))
+// 	   EMPTY)
+//         (I (cons (assign (var 0) 11)
+// 	   (cons (assign (var 1) 10)
+// 	   (cons (assign (var 2) 0)
+// 	   (cons (assign (var 3) 0)
+// 	   (cons (ite (less (var 3) (var 0))
+// 	      (seq (assign (var 2) (plus (var 2) (var 1)))
+// 	           (assign (var 3) (plus (var 3) 1)))
+//               (skip))
+// 	   done)))))
+// 	   EMPTY)
+//     ) /\ (bnot (mequals X Y))
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (band
+//          (mequals (select ENV1 0) (select ENV2 0))
+//          (mequals (select ENV1 1) (select ENV2 1)));

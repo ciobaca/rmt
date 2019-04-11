@@ -1,12 +1,5 @@
-sorts IntP, BoolP,
-      Var, AExp, BExp,
-      NonValAExp, NonValBExp,
-      Stmt, Code,
-      CompStack,
-      Map,
-      MapItem,
-      CfgI,
-      State;
+sorts IntP, BoolP, Var, AExp, BExp, NonValAExp, NonValBExp,
+      Stmt, Code, CompStack, Map, MapItem, CfgI, State;
 
 subsort Int < IntP;
 subsort IntP < AExp;
@@ -23,15 +16,6 @@ signature
 	x : -> Var,
 	y : -> Var,
 	z : -> Var,
-
-	pV1 : -> Var,
-	pC1 : -> Var,
-	pC2 : -> Var,
-	pV2 : -> Var,
-	pS1 : -> Stmt,
-	pE1 : -> NonValAExp,
-	iS1 : Var Var Var Var -> IntP,
-	iE1 : Var Var -> IntP,
 
 	// helper functions
 	synEq : Var Var -> BoolP,
@@ -118,59 +102,15 @@ constrained-rewrite-system language
 	(synEq x x) => true,
 	(synEq y y) => true,
 	(synEq z z) => true,
-	(synEq pV1 pV1) => true,
-	(synEq pV2 pV2) => true,
-	(synEq pC1 pC1) => true,
-	(synEq pC2 pC2) => true,
 
 	(synEq x y) => false,
 	(synEq x z) => false,
-	(synEq x pV1) => false,
-	(synEq x pV2) => false,
-	(synEq x pC1) => false,
-	(synEq x pC2) => false,
 	
 	(synEq y z) => false,
 	(synEq y x) => false,
-	(synEq y pV1) => false,
-	(synEq y pV2) => false,
-	(synEq y pC1) => false,
-	(synEq y pC2) => false,
 
 	(synEq z y) => false,
 	(synEq z x) => false,
-	(synEq z pV1) => false,
-	(synEq z pV2) => false,
-	(synEq z pC1) => false,
-	(synEq z pC2) => false,
-
-	(synEq pV1 x) => false,
-	(synEq pV1 y) => false,
-	(synEq pV1 z) => false,
-	(synEq pV1 pV2) => false,
-	(synEq pV1 pC1) => false,
-	(synEq pV1 pC2) => false,
-
-	(synEq pV2 x) => false,
-	(synEq pV2 y) => false,
-	(synEq pV2 z) => false,
-	(synEq pV2 pV1) => false,
-	(synEq pV2 pC1) => false,
-	(synEq pV2 pC2) => false,
-
-	(synEq pC1 x) => false,
-	(synEq pC1 y) => false,
-	(synEq pC1 z) => false,
-	(synEq pC1 pV1) => false,
-	(synEq pC1 pV2) => false,
-	(synEq pC1 pC2) => false,
-
-	(synEq pC2 x) => false,
-	(synEq pC2 y) => false,
-	(synEq pC2 z) => false,
-	(synEq pC2 pV1) => false,
-	(synEq pC2 pV2) => false,
-	(synEq pC2 pC1) => false,
 
 	(I (push (update X N emp)   REST) ENV) =>
 	(I (push (cons (mi X N) emp) REST) ENV),

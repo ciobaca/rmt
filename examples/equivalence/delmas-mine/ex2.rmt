@@ -44,6 +44,8 @@ signature
 
     ite : Exp Stmt Stmt -> Stmt,
 
+    while : Exp Stmt -> Stmt,
+
     seq : Stmt Stmt -> Stmt,
 
     done : -> CodeStack,
@@ -56,6 +58,8 @@ signature
     final : -> CfgI;
 
 variables
+    A : Int,
+    B : Int,
     X : Int,
     Y : Int,
     V : Int,
@@ -92,6 +96,12 @@ constrained-rewrite-system language
   (I (cons (assign (var X) V) S) ENV)
   =>
   (I (cons skip S) (store ENV X V))
+  ,
+
+  // lookup
+  (I (cons (var X) S) ENV)
+  =>
+  (I (cons (select ENV X) S) ENV)
   ,
 
   // addition operator
@@ -141,12 +151,12 @@ constrained-rewrite-system language
   (I (cons (less V1 V2) S) ENV)
   ,
 
-  (I (cons (less V1 V2) S) ENV) /\ (mle V1 (mplus V2 1))
+  (I (cons (less V1 V2) S) ENV) /\ (mle (mplus V1 1) V2)
   =>
   (I (cons 1 S) ENV)
   ,
 
-  (I (cons (less V1 V2) S) ENV) /\ (bnot (mle V1 (mplus V2 1)))
+  (I (cons (less V1 V2) S) ENV) /\ (bnot (mle (mplus V1 1) V2))
   =>
   (I (cons 0 S) ENV)
   ,
@@ -172,6 +182,12 @@ constrained-rewrite-system language
   (I (cons S2 S) ENV)
   ,
 
+  // loop
+  (I (cons (while E1 S1) S) ENV)
+  =>
+  (I (cons (ite E1 (seq S1 (while E1 S1)) skip) S) ENV)
+  ,
+
   // seq
   (I (cons (seq S1 S2) S) ENV)
   =>
@@ -190,7 +206,7 @@ constrained-rewrite-system language
 //     (pair
 //         (I (cons skip done) EMPTY)
 //         (I (cons skip done) EMPTY)
-//     )	 	   
+//     )                   
 // with-base
 //     (pair (I done ENV) (I done ENV));
 
@@ -198,7 +214,7 @@ constrained-rewrite-system language
 //     (pair
 //         (I (cons (assign (var 0) 10) done) EMPTY)
 //         (I (cons (assign (var 0) 10) done) EMPTY)
-//     )	 	   
+//     )                   
 // with-base
 //     (pair (I done ENV) (I done ENV));
 
@@ -230,11 +246,11 @@ constrained-rewrite-system language
 // show-simulation [ 100, partial ] in language and language :
 //     (pair
 //         (I (cons (assign (var X) 11)
-// 	   (cons (assign (var Y) 10)
-// 	   done)) EMPTY)
+//         (cons (assign (var Y) 10)
+//         done)) EMPTY)
 //         (I (cons (assign (var Y) 10)
-// 	   (cons (assign (var X) 11)
-// 	   done)) EMPTY)
+//         (cons (assign (var X) 11)
+//         done)) EMPTY)
 //     ) /\ (bnot (mequals X Y))
 // with-base
 //     (pair (I done ENV) (I done ENV));
@@ -242,17 +258,17 @@ constrained-rewrite-system language
 // show-simulation [ 100, partial ] in language and language :
 //     (pair
 //         (I (cons (assign (var 0) 11) // 0 = a
-// 	   (cons (assign (var 1) 10) // 1 = b
-// 	   (cons (assign (var 2) 1)  // 2 = c
-// 	   (cons (assign (var 3) 0)  // 3 = i
-// 	   done))))
-// 	   EMPTY)
+//         (cons (assign (var 1) 10) // 1 = b
+//         (cons (assign (var 2) 1)  // 2 = c
+//         (cons (assign (var 3) 0)  // 3 = i
+//         done))))
+//         EMPTY)
 //         (I (cons (assign (var 0) 11)
-// 	   (cons (assign (var 1) 10)
-// 	   (cons (assign (var 2) 0)
-// 	   (cons (assign (var 3) 0)
-// 	   done))))
-// 	   EMPTY)
+//         (cons (assign (var 1) 10)
+//         (cons (assign (var 2) 0)
+//         (cons (assign (var 3) 0)
+//         done))))
+//         EMPTY)
 //     ) /\ (bnot (mequals X Y))
 // with-base
 //     (pair (I done ENV1) (I done ENV2))
@@ -263,19 +279,19 @@ constrained-rewrite-system language
 // show-simulation [ 100, partial ] in language and language :
 //     (pair
 //         (I (cons (seq (assign (var 0) 11) // 0 = a
-// 	         (seq (assign (var 1) 10) // 1 = b
-// 	   	 (seq (assign (var 2) 1)  // 2 = c
-// 	   	      (assign (var 3) 0)
-// 		 )))// 3 = i
-// 	   done)
-// 	   EMPTY)
+//               (seq (assign (var 1) 10) // 1 = b
+//               (seq (assign (var 2) 1)  // 2 = c
+//                    (assign (var 3) 0)
+//               )))// 3 = i
+//         done)
+//         EMPTY)
 //         (I (cons (seq (assign (var 0) 11) // 0 = a
-// 	         (seq (assign (var 1) 10) // 1 = b
-// 	   	 (seq (assign (var 2) 0)  // 2 = c
-// 	   	      (assign (var 3) 0)
-// 		 )))// 3 = i
-// 	   done)
-// 	   EMPTY)
+//               (seq (assign (var 1) 10) // 1 = b
+//               (seq (assign (var 2) 0)  // 2 = c
+//                    (assign (var 3) 0)
+//               )))// 3 = i
+//         done)
+//         EMPTY)
 //     ) /\ (bnot (mequals X Y))
 // with-base
 //     (pair (I done ENV1) (I done ENV2))
@@ -283,31 +299,293 @@ constrained-rewrite-system language
 //          (mequals (select ENV1 0) (select ENV2 0))
 //          (mequals (select ENV1 1) (select ENV2 1)));
 
-show-simulation [ 100, partial ] in language and language :
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons (ite (less 1 0)
+//                  (assign (var 1) 0)
+//                  (assign (var 1) 1))
+//         done)
+//         EMPTY)
+//         (I (cons (ite (less 0 2)
+//                  (assign (var 1) 1)
+//                  (assign (var 1) 0))
+//         done)
+//         EMPTY)
+//     )
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (mequals (select ENV1 1) (select ENV2 1));
+
+// run in language :
+//         (I (cons (assign (var 0) 11) // 0 = a
+//         (cons (assign (var 1) 10) // 1 = b
+//         (cons (assign (var 2) 1)  // 2 = c
+//         (cons (assign (var 3) 0)  // 3 = i
+//         (cons (ite (less (var 3) (var 0))
+//            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                 (assign (var 3) (plus (var 3) 1)))
+//               skip)
+//         done)))))
+//         EMPTY)
+// ;
+
+// run in language :
+//         (I (cons (seq (assign (var 0) 11) // 0 = a
+//               (seq (assign (var 1) 10) // 1 = b
+//               (seq (assign (var 2) 1)  // 2 = c
+//               (seq (assign (var 3) 0)  // 3 = i
+//                    (ite (less (var 3) (var 0))
+//                         (seq (assign (var 2) (plus (var 2) (var 1)))
+//                              (assign (var 3) (plus (var 3) 1)))
+//                            skip)))))
+//         done)
+//         EMPTY)
+// ;
+
+// !EOF!
+
+// show-simulation [ 100, partial ] in language and language :
+//     (pair
+//         (I (cons (seq (assign (var 0) 11) // 0 = a
+//               (seq (assign (var 1) 10) // 1 = b
+//               (seq (assign (var 2) 1)  // 2 = c
+//               (seq (assign (var 3) 0)  // 3 = i
+//                    (ite (less (var 3) (var 0))
+//                         (seq (assign (var 2) (plus (var 2) (var 1)))
+//                              (assign (var 3) (plus (var 3) 1)))
+//                            skip)))))
+//         done)
+//         EMPTY)
+//         (I (cons (seq (assign (var 0) 11)
+//               (seq (assign (var 1) 10)
+//               (seq (assign (var 2) 0)
+//               (seq (assign (var 3) 0)
+//                    (ite (less (var 3) (var 0))
+//                         (seq (assign (var 2) (plus (var 2) (var 1)))
+//                              (assign (var 3) (plus (var 3) 1)))
+//                            skip)))))
+//         done)
+//         EMPTY)
+//     )
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (band
+//          (mequals (select ENV1 0) (select ENV2 0))
+//          (mequals (select ENV1 1) (select ENV2 1)));
+
+// run in language :
+//         (I (cons (seq (assign (var 0) 11) // 0 = a
+//                  (seq (assign (var 1) 10) // 1 = b
+//                  (seq (assign (var 2) 1)  // 2 = c
+//                  (seq (assign (var 3) 0)  // 3 = i
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+//                       (assign (var 4) (var 2)))
+//                  ))))
+//            done)
+//            EMPTY)
+// ;
+
+// run in language :
+//         (I (cons (seq (assign (var 0) 11)
+//                  (seq (assign (var 1) 10)
+//                  (seq (assign (var 2) 0)
+//                  (seq (assign (var 3) 0)
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+// 	              (assign (var 4) (plus (var 2) 1)))
+// 	         ))))
+//            done)
+//            EMPTY)
+// ;
+
+// // ATTENTION: succeeds when bound = 200 (not when = 100)
+// // concrete execution with while unrolled 1 time into an if statement
+// show-simulation [ 200, partial ] in language and language :
+//     (pair
+//         (I (cons (seq (assign (var 0) 11) // 0 = a
+//                  (seq (assign (var 1) 10) // 1 = b
+//                  (seq (assign (var 2) 1)  // 2 = c
+//                  (seq (assign (var 3) 0)  // 3 = i
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+//                       (assign (var 4) (var 2)))
+//                  ))))
+//            done)
+//            EMPTY)
+//         (I (cons (seq (assign (var 0) 11)
+//                  (seq (assign (var 1) 10)
+//                  (seq (assign (var 2) 0)
+//                  (seq (assign (var 3) 0)
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+// 	              (assign (var 4) (plus (var 2) 1)))
+// 	         ))))
+//            done)
+//            EMPTY)
+//     )
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (mequals (select ENV1 4) (select ENV2 4));
+
+// // ATTENTION: succeeds when bound = 200 (not when = 100)
+// // concrete execution with while unrolled 1 time into an if statement (reverse condition)
+// show-simulation [ 200, partial ] in language and language :
+//     (pair
+//         (I (cons (seq (assign (var 0) 11) // 0 = a
+//                  (seq (assign (var 1) 13) // 1 = b
+//                  (seq (assign (var 2) 1)  // 2 = c
+//                  (seq (assign (var 3) 0)  // 3 = i
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+//                       (assign (var 4) (var 2)))
+//                  ))))
+//            done)
+//            EMPTY)
+//         (I (cons (seq (assign (var 0) 11)
+//                  (seq (assign (var 1) 13)
+//                  (seq (assign (var 2) 0)
+//                  (seq (assign (var 3) 0)
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+// 	              (assign (var 4) (plus (var 2) 1)))
+// 	         ))))
+//            done)
+//            EMPTY)
+//     )
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (mequals (select ENV1 4) (select ENV2 4));
+
+// // ATTENTION: succeeds when bound = 200 (not when = 100)
+// // example of first symbolic execution
+// show-simulation [ 200, partial ] in language and language :
+//     (pair
+//         (I (cons (seq (assign (var 0) A) // 0 = a
+//                  (seq (assign (var 1) B) // 1 = b
+//                  (seq (assign (var 2) 1)  // 2 = c
+//                  (seq (assign (var 3) 0)  // 3 = i
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+//                       (assign (var 4) (var 2)))
+//                  ))))
+//            done)
+//            EMPTY)
+//         (I (cons (seq (assign (var 0) A)
+//                  (seq (assign (var 1) B)
+//                  (seq (assign (var 2) 0)
+//                  (seq (assign (var 3) 0)
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+// 	              (assign (var 4) (plus (var 2) 1)))
+// 	         ))))
+//            done)
+//            EMPTY)
+//     )
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (mequals (select ENV1 4) (select ENV2 4));
+
+// // ATTENTION: succeeds when bound = 200 (not when = 100)
+// // example of first symbolic execution (left cfg <-> right cfg)
+// show-simulation [ 200, partial ] in language and language :
+//     (pair
+//         (I (cons (seq (assign (var 0) A)
+//                  (seq (assign (var 1) B)
+//                  (seq (assign (var 2) 0)
+//                  (seq (assign (var 3) 0)
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+// 	              (assign (var 4) (plus (var 2) 1)))
+// 	         ))))
+//            done)
+//            EMPTY)
+//         (I (cons (seq (assign (var 0) A) // 0 = a
+//                  (seq (assign (var 1) B) // 1 = b
+//                  (seq (assign (var 2) 1)  // 2 = c
+//                  (seq (assign (var 3) 0)  // 3 = i
+//                  (seq (ite (less (var 3) (var 0))
+//                            (seq (assign (var 2) (plus (var 2) (var 1)))
+//                                 (assign (var 3) (plus (var 3) 1)))
+//                            skip)
+//                       (assign (var 4) (var 2)))
+//                  ))))
+//            done)
+//            EMPTY)
+//     )
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (mequals (select ENV1 4) (select ENV2 4));
+
+// ATTENTION: succeeds when bound = 200 (not when = 100)
+// example of first symbolic execution (left cfg <-> right cfg)
+show-simulation [ 300, total ] in language and language :
     (pair
-        (I (cons (assign (var 0) 11) // 0 = a
-	   (cons (assign (var 1) 10) // 1 = b
-	   (cons (assign (var 2) 1)  // 2 = c
-	   (cons (assign (var 3) 0)  // 3 = i
-	   (cons (ite (less (var 3) (var 0))
-	      (seq (assign (var 2) (plus (var 2) (var 1)))
-	           (assign (var 3) (plus (var 3) 1)))
-              skip)
-	   done)))))
-	   EMPTY)
-        (I (cons (assign (var 0) 11)
-	   (cons (assign (var 1) 10)
-	   (cons (assign (var 2) 0)
-	   (cons (assign (var 3) 0)
-	   (cons (ite (less (var 3) (var 0))
-	      (seq (assign (var 2) (plus (var 2) (var 1)))
-	           (assign (var 3) (plus (var 3) 1)))
-              skip)
-	   done)))))
-	   EMPTY)
-    )
+        (I (cons (seq (assign (var 0) A)
+                 (seq (assign (var 1) B)
+                 (seq (assign (var 2) 0)
+                 (seq (assign (var 3) 0)
+                 (seq (while (less (var 3) (var 0))
+                           (seq (assign (var 2) (plus (var 2) (var 1)))
+                                (assign (var 3) (plus (var 3) 1))))
+	              (assign (var 4) (plus (var 2) 1)))
+	         ))))
+           done)
+           EMPTY)
+        (I (cons (seq (assign (var 0) A) // 0 = a
+                 (seq (assign (var 1) B) // 1 = b
+                 (seq (assign (var 2) 1)  // 2 = c
+                 (seq (assign (var 3) 0)  // 3 = i
+                 (seq (while (less (var 3) (var 0))
+                           (seq (assign (var 2) (plus (var 2) (var 1)))
+                                (assign (var 3) (plus (var 3) 1))))
+                      (assign (var 4) (var 2)))
+                 ))))
+           done)
+           EMPTY)
+    ) // /\ (band (mle 0 A)
+      //          (mle A 1))
+,
+    (pair
+        (I (cons (while (less (var 3) (var 0))
+                           (seq (assign (var 2) (plus (var 2) (var 1)))
+                                (assign (var 3) (plus (var 3) 1))))
+	   (cons (assign (var 4) (plus (var 2) 1))
+           done))
+           ENV1)
+        (I (cons (while (less (var 3) (var 0))
+                           (seq (assign (var 2) (plus (var 2) (var 1)))
+                                (assign (var 3) (plus (var 3) 1))))
+           (cons (assign (var 4) (var 2))
+           done))
+           ENV2)
+    ) /\  // (band 
+    (band (band (band
+                (mequals (select ENV1 3) (select ENV2 3))
+                (mequals (select ENV1 0) (select ENV2 0)))
+                (mequals (select ENV1 1) (select ENV2 1)))
+                (mequals (mplus (select ENV1 2) 1) (select ENV2 2)))
+                // (band (mle 0 (select ENV1 0))
+                //       (mle (select ENV1 0) 1))
+		      //)
 with-base
     (pair (I done ENV1) (I done ENV2))
-    /\ (band
-         (mequals (select ENV1 0) (select ENV2 0))
-         (mequals (select ENV1 1) (select ENV2 1)));
+    /\ (mequals (select ENV1 4) (select ENV2 4));

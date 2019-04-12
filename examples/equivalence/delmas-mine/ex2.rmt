@@ -231,70 +231,143 @@ constrained-rewrite-system language
   (I S ENV)
   ;
 
-// Example in Figure 6
-run in language :
-    (I (cons (seq (assign (var 0) 2) // var 0 = x
-                  (ite (less (var 0) 0)
-		       (assign (var 0) (mminus 0 1))
-		       (ite (less 1 (var 0)) // 1 < x == x >= 2
-		            skip
-			    (seq
-			         (while (eq (var 0) 2) (assign (var 0) 2))
-				 (assign (var 0) 3)))))
-    done) EMPTY)
-;
+// // Example in Figure 6 - lhs
+// run in language :
+//     (I (cons (seq (assign (var 0) 2) // var 0 = x -- no value loops forever
+//                   (ite (less (var 0) 0)
+// 		       (assign (var 0) (mminus 0 1))
+// 		       (ite (less 1 (var 0)) // 1 < x == x >= 2
+// 		            skip
+// 			    (seq
+// 			         (while (eq (var 0) 2) (assign (var 0) 2))
+// 				 (assign (var 0) 3)))))
+//     done) EMPTY)
+// ;
 
-!EOF!
+// !EOF!
+
+// // Example in Figure 6 - rhs
+// run in language :
+//     (I (cons (seq (assign (var 0) 4) // var 0 = x -- a value of 2 will loop forever
+//                   (ite (less (var 0) 0)
+// 		       (assign (var 0) (mminus 0 1))
+// 		       (ite (less 3 (var 0)) // 3 < x == x >= 4
+// 		            skip
+// 			    (seq
+// 			         (while (eq (var 0) 2) (assign (var 0) 2))
+// 				 (assign (var 0) 3)))))
+//     done) EMPTY)
+// ;
+
+// !EOF!
+
+// // bounded proof works with contraint
+// //        /\ (band (mle (mminus 0 3) A)
+// //                (band (mle A 5) (bnot (mequals A 2))))
+// show-simulation [ 300, total ] in language and language :
+//     (pair
+//     (I (cons (seq (assign (var 0) A) // var 0 = x -- starts with a symbolic value A
+//                   (ite (less (var 0) 0)
+// 		       (assign (var 0) (mminus 0 1))
+// 		       (ite (less 3 (var 0)) // 3 < x == x >= 4
+// 		            skip
+// 			    (seq
+// 			         (while (eq (var 0) 2) (assign (var 0) 2))
+// 				 (assign (var 0) 3)))))
+//     done) EMPTY)
+//     (I (cons (seq (assign (var 0) A) // var 0 = x -- starts with a symbolic value A
+//                   (ite (less (var 0) 0)
+// 		       (assign (var 0) (mminus 0 1))
+// 		       (ite (less 1 (var 0)) // 1 < x == x >= 2
+// 		            skip
+// 			    (seq
+// 			         (while (eq (var 0) 2) (assign (var 0) 2))
+// 				 (assign (var 0) 3)))))
+//     done) EMPTY)
+//     )
+//        /\ (band (mle (mminus 0 3) A)
+//                 (band (mle A 5) (bnot (mequals A 2))))
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (mequals (select ENV1 0) (select ENV2 0));
+
+// // bounded proof works with contraint (reverse direction)
+// //        /\ (band (mle (mminus 0 3) A)
+// //                (band (mle A 5) (bnot (mequals A 2))))
+// show-simulation [ 300, partial ] in language and language :
+//     (pair
+//     (I (cons (seq (assign (var 0) A) // var 0 = x -- starts with a symbolic value A
+//                   (ite (less (var 0) 0)
+// 		       (assign (var 0) (mminus 0 1))
+// 		       (ite (less 1 (var 0)) // 1 < x == x >= 2
+// 		            skip
+// 			    (seq
+// 			         (while (eq (var 0) 2) (assign (var 0) 2))
+// 				 (assign (var 0) 3)))))
+//     done) EMPTY)
+//     (I (cons (seq (assign (var 0) A) // var 0 = x -- starts with a symbolic value A
+//                   (ite (less (var 0) 0)
+// 		       (assign (var 0) (mminus 0 1))
+// 		       (ite (less 3 (var 0)) // 3 < x == x >= 4
+// 		            skip
+// 			    (seq
+// 			         (while (eq (var 0) 2) (assign (var 0) 2))
+// 				 (assign (var 0) 3)))))
+//     done) EMPTY)
+//     )
+//        /\ (band (mle (mminus 0 3) A)
+//                 (band (mle A 5) (mequals A 2)))
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (mequals (select ENV1 0) (select ENV2 0));
 
 show-simulation [ 300, total ] in language and language :
-    (pair
-        (I (cons (seq (assign (var 0) A)
-                 (seq (assign (var 1) B)
-                 (seq (assign (var 2) 0)
-                 (seq (assign (var 3) 0)
-                 (seq (while (less (var 3) (var 0))
-                           (seq (assign (var 2) (plus (var 2) (var 1)))
-                                (assign (var 3) (plus (var 3) 1))))
-	              (assign (var 4) (plus (var 2) 1)))
-	         ))))
-           done)
-           EMPTY)
-        (I (cons (seq (assign (var 0) A) // 0 = a
-                 (seq (assign (var 1) B) // 1 = b
-                 (seq (assign (var 2) 1)  // 2 = c
-                 (seq (assign (var 3) 0)  // 3 = i
-                 (seq (while (less (var 3) (var 0))
-                           (seq (assign (var 2) (plus (var 2) (var 1)))
-                                (assign (var 3) (plus (var 3) 1))))
-                      (assign (var 4) (var 2)))
-                 ))))
-           done)
-           EMPTY)
-    ) // /\ (band (mle 0 A)
-      //          (mle A 1))
-,
-    (pair
-        (I (cons (while (less (var 3) (var 0))
-                           (seq (assign (var 2) (plus (var 2) (var 1)))
-                                (assign (var 3) (plus (var 3) 1))))
-	   (cons (assign (var 4) (plus (var 2) 1))
-           done))
-           ENV1)
-        (I (cons (while (less (var 3) (var 0))
-                           (seq (assign (var 2) (plus (var 2) (var 1)))
-                                (assign (var 3) (plus (var 3) 1))))
-           (cons (assign (var 4) (var 2))
-           done))
-           ENV2)
-    ) /\  // (band 
-    (band (band (band
-                (mequals (select ENV1 3) (select ENV2 3))
-                (mequals (select ENV1 0) (select ENV2 0)))
-                (mequals (select ENV1 1) (select ENV2 1)))
-                (mequals (mplus (select ENV1 2) 1) (select ENV2 2)))
-                // (band (mle 0 (select ENV1 0))
-                //       (mle (select ENV1 0) 1))
-		      //)
+  (pair
+     (I (cons (while 1 skip) done) EMPTY)
+     (I done EMPTY)
+  )
 with-base
-    (pair (I done ENV1) (I done ENV2))
-    /\ (mequals (select ENV1 4) (select ENV2 4));
+  (pair (I done ENV1) (I done ENV2)) /\
+  (mequals (select ENV1 0) (select ENV2 0));
+;
+
+// // unbounded proof of partial equivalence
+// show-simulation [ 300, total ] in language and language :
+//     (pair
+//     (I (cons (seq (assign (var 0) A) // var 0 = x -- starts with a symbolic value A
+//                   (ite (less (var 0) 0)
+// 		       (assign (var 0) (mminus 0 1))
+// 		       (ite (less 3 (var 0)) // 3 < x == x >= 4
+// 		            skip
+// 			    (seq
+// 			         (while (eq (var 0) 2) (assign (var 0) 2))
+// 				 (assign (var 0) 3)))))
+//     done) EMPTY)
+//     (I (cons (seq (assign (var 0) A) // var 0 = x -- starts with a symbolic value A
+//                   (ite (less (var 0) 0)
+// 		       (assign (var 0) (mminus 0 1))
+// 		       (ite (less 1 (var 0)) // 1 < x == x >= 2
+// 		            skip
+// 			    (seq
+// 			         (while (eq (var 0) 2) (assign (var 0) 2))
+// 				 (assign (var 0) 3)))))
+//     done) EMPTY)
+//     )
+//        /\ (band (mle (mminus 0 3) A)
+//                 (band (mle A 5) (bnot (mequals A 2))))
+// ,
+//     (pair
+//     (I (cons (while (eq (var 0) 2) (assign (var 0) 2))
+// 	     (cons (assign (var 0) 3)
+//                    done))
+//     EMPTY)
+//     (I (cons (while (eq (var 0) 2) (assign (var 0) 2))
+// 		(cons (assign (var 0) 3)
+//       done))
+//     EMPTY)
+//     )
+//        /\ (band (mle (mminus 0 3) A)
+//                 (band (mle A 5) (bnot (mequals A 2))))
+// with-base
+//     (pair (I done ENV1) (I done ENV2))
+//     /\ (mequals (select ENV1 0) (select ENV2 0));

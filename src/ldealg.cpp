@@ -21,25 +21,43 @@ bool LDEAlg::isLeq(const pair<vector<int>, vector<int>> &x, const vector<int> &y
   return true;
 }
 
-void LDEAlg::addSolution(const vector<int> &sol) {
-  if (sol != vector<int>(sol.size(), 0)) {
-    vector<int> x = vector<int>(sol.begin(), sol.begin() + a.size());
-    vector<int> y = vector<int>(sol.begin() + a.size(), sol.end());
-    basis.emplace_back(x, y);
-  }
-}
-
-bool LDEAlg::isMinimal(const vector<int> &sol, int lastPoz) {
-  if (lastPoz == -1) {
-    lastPoz = basis.size();
-  }
-
-  for (int i = 0; i < lastPoz; ++i) {
-    if (isLeq(basis[i], sol)) {
+bool LDEAlg::isLeq(const vector<int> &x, const vector<int> &y) {
+  for (int i = 0; i < (int)x.size(); ++i) {
+    if (x[i] > y[i]) {
       return false;
     }
   }
+  return true;
+}
 
+int LDEAlg::getBitMaskFromVector(const vector<int> &sol) {
+  int mask = 0;
+  for (int i = 0; i < (int)sol.size(); ++i) {
+    if (sol[i]) {
+      mask |= (1 << i);
+    }
+  }
+  return mask;
+}
+
+void LDEAlg::addSolution(const vector<int> &sol) {
+  if (*max_element(sol.begin(), sol.end()) != 0) {
+    vector<int> x = vector<int>(sol.begin(), sol.begin() + a.size());
+    vector<int> y = vector<int>(sol.begin() + a.size(), sol.end());
+    basis.emplace_back(x, y);
+    basisByMask[getBitMaskFromVector(sol)].push_back(sol);
+  }
+}
+
+bool LDEAlg::isMinimal(const vector<int> &sol) {
+  int firstMask = getBitMaskFromVector(sol);
+  for (int mask = firstMask; mask; mask = (mask - 1) & firstMask) {
+    for (auto &v : basisByMask[mask]) {
+      if (isLeq(v, sol)) {
+        return false;
+      }
+    }
+  }
   return true;
 }
 

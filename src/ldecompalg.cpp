@@ -13,7 +13,6 @@ LDECompAlg::LDECompAlg(const vector<int> &a, const vector<int> &b, int c, bool w
     cout << "Wrong parameters: 'a' or 'b' contains a coefficient less or equal to zero" << endl;
     exit(0);
   }
-
   this->a = a;
   this->b = b;
   this->c = c;
@@ -34,7 +33,6 @@ void LDECompAlg::compAlg0() {
 
   while (p.size()) {
     vector<pair<vector<int>, int>> newp;
-    int lastBasisIndex = basis.size();
     for (auto &it : p) {
       if (it.second < 0) {
         for (int i = 0; i < (int)b.size(); ++i) {
@@ -43,7 +41,7 @@ void LDECompAlg::compAlg0() {
           if (it.second == -b[i]) {
             addSolution(aux);
           } else {
-            if (isMinimal(aux, lastBasisIndex)) {
+            if (isMinimal(aux)) {
               newp.emplace_back(aux, it.second + b[i]);
             }
           }
@@ -55,7 +53,7 @@ void LDECompAlg::compAlg0() {
           if (it.second == a[i]) {
             addSolution(aux);
           } else {
-            if (isMinimal(aux, lastBasisIndex)) {
+            if (isMinimal(aux)) {
               newp.emplace_back(aux, it.second - a[i]);
             }
           }
@@ -83,8 +81,6 @@ void LDECompAlg::compAlg1() {
 
   while (p.size()) {
     vector<pair<vector<int>, int>> newp;
-    int lastBasisIndex = basis.size();
-
     for (auto &it : p) {
       if (it.second < 0) {
         for (int i = (int)b.size() - 1; i >= 0; --i) {
@@ -93,7 +89,7 @@ void LDECompAlg::compAlg1() {
           if (it.second == -b[i]) {
             addSolution(aux);
           } else {
-            if (isMinimal(aux, lastBasisIndex)) {
+            if (isMinimal(aux)) {
               newp.emplace_back(aux, it.second + b[i]);
             }
           }
@@ -109,7 +105,7 @@ void LDECompAlg::compAlg1() {
           if (it.second == a[i]) {
             addSolution(aux);
           } else {
-            if (isMinimal(aux, lastBasisIndex)) {
+            if (isMinimal(aux)) {
               newp.emplace_back(aux, it.second - a[i]);
             }
           }
@@ -134,6 +130,5 @@ vector<pair<vector<int>, vector<int>>> LDECompAlg::solve() {
   } else {
     compAlg1();
   }
-
   return this->basis;
 }

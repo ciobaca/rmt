@@ -10,24 +10,29 @@ using namespace std;
 LDEGraphAlg::LDEGraphAlg() {}
 
 LDEGraphAlg::LDEGraphAlg(const vector<int> &a, const vector<int> &b, int c) {
+  if (!a.size() || !b.size()) {
+    cout << "Wrong parameters: 'a' or 'b' is empty" << endl;
+    exit(0);
+  }
   if ((a.size() && *min_element(a.begin(), a.end()) <= 0) || (b.size() && *min_element(b.begin(), b.end()) <= 0)) {
     cout << "Wrong parameters: 'a' or 'b' contains a coefficient less or equal to zero" << endl;
     exit(0);
   }
-
   this->a = a;
   this->b = b;
   this->c = c;
-  if (!this->a.size()) {
-    this->a.push_back(0);
-  }
-  if (!this->b.size()) {
-    this->b.push_back(0);
-  }
   this->offset = max(*max_element(this->a.begin(), this->a.end()), abs(c));
   this->viz.resize(offset + max(*max_element(this->b.begin(), this->b.end()), abs(c)));
   this->partialSol.resize(this->a.size() + this->b.size());
   this->sumPartialSol = 0;
+}
+
+void LDEGraphAlg::addSolution(const vector<int> &sol) {
+  if (*max_element(sol.begin(), sol.end()) != 0) {
+    vector<int> x = vector<int>(sol.begin(), sol.begin() + a.size());
+    vector<int> y = vector<int>(sol.begin() + a.size(), sol.end());
+    basis.emplace_back(x, y);
+  }
 }
 
 bool LDEGraphAlg::isMinimal(int diff, int apos, int bpos) {

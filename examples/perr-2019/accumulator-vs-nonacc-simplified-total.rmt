@@ -14,6 +14,7 @@ signature
   fminus : Exp Exp -> Nexp,
 
   f : Exp -> Nexp,
+  g : Exp -> Nexp,
 
   fa : Exp Exp Exp -> Nexp,
 
@@ -43,7 +44,7 @@ constrained-rewrite-system flanguage
   (cons (fplus I NE2) LIST) => (cons NE2 (cons (fplus I HOLE) LIST)),
   (cons J (cons (fplus I HOLE) LIST)) => (cons (fplus I J) LIST),
   (cons (fplus I J) LIST) => (cons (mplus I J) LIST),
-  
+
   (cons (fminus NE1 E2) LIST) => (cons NE1 (cons (fminus HOLE E2) LIST)),
   (cons I (cons (fminus HOLE E2) LIST)) => (cons (fminus I E2) LIST),
   (cons (fminus I NE2) LIST) => (cons NE2 (cons (fminus I HOLE) LIST)),
@@ -53,7 +54,13 @@ constrained-rewrite-system flanguage
   (cons (f NE) LIST) => (cons NE (cons (f HOLE) LIST)),
   (cons I (cons (f HOLE) LIST)) => (cons (f I) LIST),
   (cons (f I) LIST) /\ (bnot (mle I 0)) => (cons (fplus I (f (fminus I 1))) LIST),
-  (cons (f I) LIST) /\ (mle I 0) => (cons 0 LIST),
+  (cons (f I) LIST) /\ (mle I 0) => (cons (g 3) LIST),
+
+  (cons (g NE) LIST) => (cons NE (cons (g HOLE) LIST)),
+  (cons I (cons (g HOLE) LIST)) => (cons (f I) LIST),
+  (cons (f I) LIST) /\ (bnot (mle I 0)) => (cons (fplus I (f (fminus I 1))) LIST),
+
+// f n = if n > 0 then n + f (n - 1) else g 3
 
   (cons (fa NE1 E2 E3) LIST) => (cons NE1 (cons (fa HOLE E2 E3) LIST)),
   (cons N (cons (fa HOLE E2 E3) LIST)) => (cons (fa N E2 E3) LIST),

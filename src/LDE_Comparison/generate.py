@@ -1,6 +1,7 @@
 #!/opt/local/bin/python3
 import subprocess
 
+"""
 res = subprocess.Popen("py -3 comparison.py test4.txt \"fig:comparison1\" \"Comparison of Lexicographic, Completion, Graph and Slopes algorithms on the four examples in paper~\\cite{filgueiras1995fast}.\" > table1.tex", shell=True)
 if res.wait() != 0:
   print("Cam Trist1")
@@ -10,3 +11,7 @@ if res.wait() != 0:
 res = subprocess.Popen("py -3 stressTest.py \"fig:comparison3\" \"Comparison of Graph and Slopes.\" > table3.tex", shell=True)
 if res.wait() != 0:
   print("Cam Trist3")
+"""
+res = subprocess.Popen("py -3 stessTestCompGraph.py \"fig:comparison4\" \"Comparison of Graph and Comp.\" > table4.tex", shell=True)
+if res.wait() != 0:
+  print("Cam Trist4")

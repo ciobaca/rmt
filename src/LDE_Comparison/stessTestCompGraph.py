@@ -5,7 +5,7 @@ import subprocess
 import sys
 from random import randint, seed
 
-exes = ["ldegraphmain.exe", "slopesV7i.exe"]
+exes = ["ldegraphmain.exe", "ldecompmain.exe"]
 
 def genTest(n, m, mxVal):
   return ' '.join(map(str, sorted(randint(1, mxVal) for _ in range(n)))) + ' 0 ' + ' '.join(map(str, sorted([mxVal] + [randint(1, mxVal) for _ in range(m - 1)])[::-1])) + ' 0'
@@ -27,16 +27,29 @@ print("""
 N & M \\\\
 \hline""")
 
-winG, winS, cntClasses = 0, 0, 0
+winG, winC, cntClasses = 0, 0, 0
 for n, m in nms:
   if n == m:
     print("\\hline")
   toPrint = "%d & %d" % (n, m)
   for mxVal in mxVals:
-    if mxVal > 500 and ((m > 4 and n > 1) or (n == 1 and m > 7)) or mxVal > 1000 and n > 1 and m > 4:
-      toPrint += " & "
-      continue
-    graph, slopes, stars = 0, 0, 0
+    if n == 1:
+      if m > 5 and mxVal > 500 or mxVal > 100 and m > 7:
+        toPrint += " & "
+        continue
+    if n == 2:
+      if m > 4 and mxVal > 500 or mxVal > 100 and m > 7:
+        toPrint += " & "
+        continue
+    if n == 3:
+      if mxVal > 500 or mxVal > 100 and m > 5:
+        toPrint += " & "
+        continue
+    if n == 4:
+      if mxVal > 500 or mxVal > 100 and m > 4:
+        toPrint += " & "
+        continue
+    graph, comp, stars = 0, 0, 0
     for __ in range(10):
       test = genTest(n, m, mxVal)
       rt, sols = [], []
@@ -59,19 +72,19 @@ for n, m in nms:
           else:
             times.sort()
             rt.append(sum(times[1:-1]) / 3)
-      if abs(rt[0] - rt[1]) < 1e-6:
+      if abs(rt[0] - rt[1]) < 1e-2:
         pass
       elif rt[0] < rt[1]:
         graph += 1
       else:
-        slopes += 1
+        comp += 1
       stars += len(set(sols)) != 1
-    toPrint += (" & %d:%d" % (graph, slopes)) + ('*' * stars) + ' '
+    toPrint += (" & %d:%d" % (graph, comp)) + ('*' * stars) + ' '
     cntClasses += 1
     if graph > 7:
       winG += 1
-    if slopes > 7:
-      winS += 1
+    if comp > 7:
+      winC += 1
   print(toPrint, '\\\\')
 
 print("""
@@ -80,4 +93,4 @@ print("""
 \caption{\label{%s}%s}
 \end{center}
 \end{figure}""" % (label, title))
-print('%% %d %d / %d' % (winG, winS, cntClasses))
+print('%% %d %d / %d' % (winG, winC, cntClasses))

@@ -72,9 +72,7 @@ signature
 	flesshl : ExpF -> NonValExpF,
 	flesshr : ExpF -> NonValExpF,
 	fite : ExpF ExpF ExpF -> NonValExpF,
-	fitehc : ExpF ExpF -> NonValExpF,
-	fitehl : ExpF ExpF -> NonValExpF,
-	fitehr : ExpF ExpF -> NonValExpF,
+	fiteh : ExpF ExpF -> NonValExpF,
 //	flet : Var ExpF ExpF -> NonValExpF,
 
 	app : ExpF ExpF -> NonValExpF,
@@ -260,14 +258,14 @@ constrained-rewrite-system flanguage
 	(F (push J (push (flehr I) REST))) => (F (push (fle I J) REST)),
 	(F (push (fle I J) REST)) => (F (push (mle I J) REST)),
 
-	(F (push (fite FNV FEXP1 FEXP2) REST)) => (F (push FNV (push (fitehc FEXP1 FEXP2) REST))),
-	(F (push B (push (fitehc FEXP1 FEXP2) REST))) => (F (push (fite B FEXP1 FEXP2) REST)),
-	(F (push (fite B FNV FEXP2) REST)) => (F (push FNV (push (fitehl B FEXP2) REST))),
-	(F (push I (push (fitehl B FEXP2) REST))) => (F (push (fite B I FEXP2) REST)),
-	(F (push (fite B I FNV) REST)) => (F (push FNV (push (fitehr B I) REST))),
-	(F (push FNV (push (fitehr B I) REST))) => (F (push (fite B I J) REST)),
-	(F (push (fite true I J) REST)) => (F (push I REST)),
-	(F (push (fite false I J) REST)) => (F (push J REST)),
+	(F (push (fite FNV FEXP1 FEXP2) REST)) => (F (push FNV (push (fiteh FEXP1 FEXP2) REST))),
+	(F (push B (push (fiteh FEXP1 FEXP2) REST))) => (F (push (fite B FEXP1 FEXP2) REST)),
+	//(F (push (fite B FNV FEXP2) REST)) => (F (push FNV (push (fitehl B FEXP2) REST))),
+	//(F (push I (push (fitehl B FEXP2) REST))) => (F (push (fite B I FEXP2) REST)),
+	//(F (push (fite B I FNV) REST)) => (F (push FNV (push (fitehr B I) REST))),
+	//(F (push FNV (push (fitehr B I) REST))) => (F (push (fite B I J) REST)),
+	(F (push (fite true FEXP1 FEXP2) REST)) => (F (push FEXP1 REST)),
+	(F (push (fite false FEXP1 FEXP2) REST)) => (F (push FEXP2 REST)),
 
 	(F (push (app FNV FEXP) REST)) => (F (push FNV (push (apphl FEXP) REST))),
 	(F (push (lam (fvar X) FEXP1) (push (apphl FEXP) REST))) => (F (push (app (lam (fvar X) FEXP1) FEXP) REST)),
@@ -280,31 +278,58 @@ constrained-rewrite-system flanguage
 
 //definedsearch [1,20] (F (app (contextexp (substitute (fvar 0) 2 (lam (fvar 1) (fplus (fvar 0) (fvar 1))))) 1));
 
+
 rundefined in flanguage :
 
-(F (push (fplus 0 (app (
-	miu (fvar 2) (
-		lam (fvar 0)
+(F (push 
+	(app
+		(miu (fvar 1)
+			(lam (fvar 0)
 			(fite (fle 0 (fvar 0))
-				(fplus (fvar 0) (app (fvar 2) (fminus (fvar 0) 1 )))
+				(fplus (fvar 0)
+					(app (fvar 1) (fminus (fvar 0) 1)))
 				0
-			)
-		)
-	) 0 ) ) done))
+				)))
+		5)
+ done))
 ;
+
+!EOF!
+
+
+rundefined in flanguage :
+
+(F (push 
+	(app (app (app
+		(miu (fvar 3)
+			(lam (fvar 0) (lam (fvar 1) (lam (fvar 2)
+			(fite (fle (fvar 1) (fvar 0))
+				(app (app (app (fvar 3) (fvar 0)) (fplus (fvar 1) 1)) (fplus (fvar 2) (fvar 1)))
+				//(fplus (fvar 0)
+				//	(app (fvar 1) (fminus (fvar 0) 1)))
+				(fvar 2)
+				)))))
+		5) 0) 0)
+ done))
+;
+
+!EOF!
+
 
 show-simulation [100, partial] in flanguage and flanguage :
    (pair
 
-   	(F (push (fplus I (app (
-	miu (fvar 2) (
-		lam (fvar 0)
-			(fite (fle 0 (fvar 0))
-				(fplus (fvar 0) (app (fvar 2) (fminus (fvar 0) 1 )))
-				0
-			)
-		)
-	) N ) ) done))
+   	(F (push 
+		(app
+			(miu (fvar 3)
+				(lam (fvar 0)
+				(fite (fle 0 (fvar 0))
+					(fplus (fvar 0)
+						(app (fvar 4) (fminus (fvar 0) 1)))
+					0
+					)))
+			3)
+ 	done))
 
 	(F (push (app (app (
 	miu (fvar 2) (

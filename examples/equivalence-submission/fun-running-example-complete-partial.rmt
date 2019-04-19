@@ -279,25 +279,84 @@ constrained-rewrite-system flanguage
 //definedsearch [1,20] (F (app (contextexp (substitute (fvar 0) 2 (lam (fvar 1) (fplus (fvar 0) (fvar 1))))) 1));
 
 
-rundefined in flanguage :
+// rundefined in flanguage :
+
+// (F (push 
+// 	(app
+// 		(miu (fvar 1)
+// 			(lam (fvar 0)
+// 			(fite (fle 0 (fvar 0))
+// 				(fplus (fvar 0)
+// 					(app (fvar 1) (fminus (fvar 0) 1)))
+// 				0
+// 				)))
+// 		5)
+//  done))
+// ;
+
+// !EOF!
+
+// rundefined in flanguage :
+
+// (F (push 
+// 	(app (app (app
+// 		(miu (fvar 3)
+// 			(lam (fvar 0) (lam (fvar 1) (lam (fvar 2)
+// 			(fite (fle (fvar 1) (fvar 0))
+// 				(app (app (app (fvar 3) (fvar 0)) (fplus (fvar 1) 1)) (fplus (fvar 2) (fvar 1)))
+// 				//(fplus (fvar 0)
+// 				//	(app (fvar 1) (fminus (fvar 0) 1)))
+// 				(fvar 2)
+// 				)))))
+// 		5) 0) 0)
+//  done))
+// ;
+
+// !EOF!
+
+
+show-simulation [200, total] in flanguage and flanguage :
+   (pair
 
 (F (push 
-	(app
-		(miu (fvar 1)
-			(lam (fvar 0)
-			(fite (fle 0 (fvar 0))
-				(fplus (fvar 0)
-					(app (fvar 1) (fminus (fvar 0) 1)))
-				0
-				)))
-		5)
+		(fplus 2 3)
+ 	done))
+
+(F (push 
+	(fplus (app (miu (fvar 3) (lam (fvar 2) (fite (fle 5 3) (app (fvar 3) 0) (fplus (fvar 2) 1)))) 2) 2)
  done))
-;
+
+	// (F (push (app (app (
+	// miu (fvar 2) (
+	// 	lam (fvar 0) (lam (fvar 1) // TODO: trei parametri aici
+	// 		(fite (fle 0 (fvar 0))
+	// 			(app (app (fvar 2) (fminus (fvar 0) 1)) (fplus (fvar 1) (fvar 0)))
+	// 			(fvar 1)
+	// 		)
+	// 	))
+	// ) N ) I ) done))
+
+
+	)
+ with-base
+     (pair (F (push SUM done)) (F (push SUM done)));
 
 !EOF!
 
+show-simulation [200, total] in flanguage and flanguage :
+   (pair
 
-rundefined in flanguage :
+(F (push 
+		(app
+			(miu (fvar 3)
+				(lam (fvar 0)
+				(fite (fle 0 (fvar 0))
+					(fplus (fvar 0)
+						(app (fvar 3) (fminus (fvar 0) 1)))
+					0
+					)))
+			1)
+ 	done))
 
 (F (push 
 	(app (app (app
@@ -309,37 +368,18 @@ rundefined in flanguage :
 				//	(app (fvar 1) (fminus (fvar 0) 1)))
 				(fvar 2)
 				)))))
-		5) 0) 0)
+		1) 0) 0)
  done))
-;
 
-!EOF!
-
-
-show-simulation [100, partial] in flanguage and flanguage :
-   (pair
-
-   	(F (push 
-		(app
-			(miu (fvar 3)
-				(lam (fvar 0)
-				(fite (fle 0 (fvar 0))
-					(fplus (fvar 0)
-						(app (fvar 4) (fminus (fvar 0) 1)))
-					0
-					)))
-			3)
- 	done))
-
-	(F (push (app (app (
-	miu (fvar 2) (
-		lam (fvar 0) (lam (fvar 1) // TODO: trei parametri aici
-			(fite (fle 0 (fvar 0))
-				(app (app (fvar 2) (fminus (fvar 0) 1)) (fplus (fvar 1) (fvar 0)))
-				(fvar 1)
-			)
-		))
-	) N ) I ) done))
+	// (F (push (app (app (
+	// miu (fvar 2) (
+	// 	lam (fvar 0) (lam (fvar 1) // TODO: trei parametri aici
+	// 		(fite (fle 0 (fvar 0))
+	// 			(app (app (fvar 2) (fminus (fvar 0) 1)) (fplus (fvar 1) (fvar 0)))
+	// 			(fvar 1)
+	// 		)
+	// 	))
+	// ) N ) I ) done))
 
 	)
  with-base

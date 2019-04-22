@@ -1,6 +1,3 @@
-#include "queryaccunify.h"
-#include "parse.h"
-#include "factories.h"
 #include <string>
 #include <map>
 #include <iostream>
@@ -9,7 +6,9 @@
 #include <tuple>
 #include <queue>
 #include <functional>
-#include <chrono>
+#include "queryaccunify.h"
+#include "parse.h"
+#include "factories.h"
 #include "factories.h"
 #include "variable.h"
 #include "varterm.h"
@@ -20,7 +19,6 @@
 #include "ldeslopesalg.h"
 
 using namespace std;
-using namespace std::chrono;
 
 QueryACCUnify::QueryACCUnify() {}
   
@@ -105,9 +103,6 @@ void QueryACCUnify::execute() {
   };
 
   cout << "(with constants) AC-Unifying " << t1->toString() << " and " << t2->toString() << endl;
-  // TIMEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-  high_resolution_clock::time_point time1, time2;
-  time1 = high_resolution_clock::now();
 
   map<Term*, int> l, r;
   map<Term*, Term*> constToVar;
@@ -174,13 +169,13 @@ void QueryACCUnify::execute() {
     }
     return true;
   };
-  auto checkMask = [&](const vector<bool> &mask) -> bool {
+  auto checkMask = [&](const int &mask) -> bool {
     vector<bool> ans(sigma.size());
     int n = sigma.size();
     int m = sigmaImage[0].size();
     int cnt = 0;
     for (int i = 0; i < n; ++i) {
-      if (mask[i]) {
+      if (mask & (1 << i)) {
         continue;
       }
       for (int j = 0; j < m; ++j) {
@@ -198,12 +193,12 @@ void QueryACCUnify::execute() {
     }
     return false;
   };
-  auto getSubstFromMask = [&](const vector<bool> &mask, Substitution &subst) -> bool {
+  auto getSubstFromMask = [&](const int &mask, Substitution &subst) -> bool {
     int n = sigma.size();
     int m = sigmaImage[0].size();
     vector<Term*> ans(m);
     for (int i = 0; i < n; ++i) {
-      if (mask[i]) {
+      if (mask & (1 << i)) {
         continue;
       }
       for (int j = 0; j < m; ++j) {
@@ -227,25 +222,16 @@ void QueryACCUnify::execute() {
 
   vector<Substitution> minSubstSet;
   minSubstSet.push_back(Substitution());
-
-  vector<bool> initMask(result.size());
-  if (!checkMask(initMask) || !getSubstFromMask(initMask, minSubstSet.back())) {
+  if (!checkMask(0) || !getSubstFromMask(0, minSubstSet.back())) {
     minSubstSet.pop_back();
   }
 
-  queue<vector<bool>> q;
-  for (q.push(initMask); !q.empty(); q.pop()) {
-    vector<bool> &now = q.front();
-    for (int i = 0; i < (int)sigma.size() && !now[i]; ++i) {
-      now[i] = true;
-      if (checkMask(now)) {
-        Substitution subst;
-        if (getSubstFromMask(now, subst)) {
-          minSubstSet.push_back(subst);
-        }
+  for (int mask = 1; mask < (1 << sigma.size()); ++mask) {
+    if (checkMask(mask)) {
+      Substitution subst;
+      if (getSubstFromMask(mask, subst)) {
+        minSubstSet.push_back(subst);
       }
-      q.push(now);
-      now[i] = false;
     }
   }
 
@@ -253,9 +239,6 @@ void QueryACCUnify::execute() {
   for(const auto &it : constToVar) {
     invConstToVar[it.second] = it.first;
   }
-
-  time2 = high_resolution_clock::now();
-  cerr << result.size() << ' ' << minSubstSet.size() << ' ' << duration_cast<microseconds>(time2 - time1).count() / 1e6 << endl;
 
   if (!minSubstSet.size()) {
     cout << "No unification\n";

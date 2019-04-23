@@ -14,6 +14,14 @@
 using namespace std;
 
 QueryACUnify::QueryACUnify() {}
+
+QueryACUnify::QueryACUnify(Term *t1, Term *t2) {
+  if (t1->isFunTerm && t2->isVarTerm) {
+    swap(t1, t2);
+  }
+  this->t1 = t1;
+  this->t2 = t2;
+}
   
 Query *QueryACUnify::create() {
   return new QueryACUnify();
@@ -28,26 +36,23 @@ void QueryACUnify::parse(string &s, int &w) {
   skipWhiteSpace(s, w);
   matchString(s, w, ";");
   t1->vars(); t2->vars();
+  if (t1->isFunTerm && t2->isVarTerm) {
+    swap(t1, t2);
+  }
 }
 
 vector<Substitution> QueryACUnify::solve() {
+  if (t1 == t2) {
+    return vector<Substitution> ({Substitution()});
+  }
   if (t1->isFunTerm && t2->isFunTerm) {
     if (t1->getAsFunTerm()->function != t2->getAsFunTerm()->function) {
-     return {};
+      return {};
     }
     vector<Substitution> minSubstSet;
     return minSubstSet;
   }
-  if (t1->isVarTerm && t2->isVarTerm) {
-    if (t1 == t2) {
-      return vector<Substitution> ({Substitution()});
-    }
-    return vector<Substitution> ({Substitution(t1->getAsVarTerm()->variable, t2)});
-  }
-  if (t1->isFunTerm) {
-    swap(t1, t2);
-  }
-  if (t2->hasVariable(t1->getAsVarTerm()->variable)) {
+  if (t2->isFunTerm && t2->hasVariable(t1->getAsVarTerm()->variable)) {
     return {};
   }
   return vector<Substitution> ({Substitution(t1->getAsVarTerm()->variable, t2)});

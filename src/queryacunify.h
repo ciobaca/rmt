@@ -13,6 +13,7 @@ struct QueryACUnify : public Query {
   Term *t2;
 
   QueryACUnify();
+  QueryACUnify(Term *t1, Term *t2);
   virtual Query *create();
   virtual void parse(std::string &s, int &w);
   virtual void execute();

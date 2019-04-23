@@ -1,27 +1,14 @@
 #include <iostream>
+#include <queue>
 #include "queryacunify.h"
 #include "parse.h"
-#include "factories.h"
-#include "factories.h"
-#include "variable.h"
 #include "varterm.h"
-#include "funterm.h"
-#include "ldecompalg.h"
-#include "ldelexalg.h"
-#include "ldegraphalg.h"
-#include "ldeslopesalg.h"
+#include "unifeq.h"
+#include "unifeqsystem.h"
 
 using namespace std;
 
 QueryACUnify::QueryACUnify() {}
-
-QueryACUnify::QueryACUnify(Term *t1, Term *t2) {
-  if (t1->isFunTerm && t2->isVarTerm) {
-    swap(t1, t2);
-  }
-  this->t1 = t1;
-  this->t2 = t2;
-}
   
 Query *QueryACUnify::create() {
   return new QueryACUnify();
@@ -41,26 +28,36 @@ void QueryACUnify::parse(string &s, int &w) {
   }
 }
 
-vector<Substitution> QueryACUnify::solve() {
-  if (t1 == t2) {
-    return vector<Substitution> ({Substitution()});
-  }
-  if (t1->isFunTerm && t2->isFunTerm) {
-    if (t1->getAsFunTerm()->function != t2->getAsFunTerm()->function) {
-      return {};
+bool QueryACUnify::solvedForm(const UnifEqSystem &ues) {
+  for (const auto &eq1 : ues) {
+    if (eq1.t1->isFunTerm) {
+      return false;
     }
-    vector<Substitution> minSubstSet;
-    return minSubstSet;
+    for (const auto &eq2 : ues) {
+      if (eq2.t2->hasVariable(eq1.t1->getAsVarTerm()->variable)) {
+        return false;
+      }
+    }
   }
-  if (t2->isFunTerm && t2->hasVariable(t1->getAsVarTerm()->variable)) {
-    return {};
+  return true;
+}
+
+vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
+  vector<Substitution> substSet;
+  queue<UnifEqSystem> q;
+  for (q.push(move(ues)); !q.empty(); q.pop()) {
+    ues = move(q.front());
+    Substitution subst;
+    while (ues.size()) {
+      
+    }
   }
-  return vector<Substitution> ({Substitution(t1->getAsVarTerm()->variable, t2)});
+  return substSet;
 }
 
 void QueryACUnify::execute() {
   cout << "AC-Unifying " << t1->toString() << " and " << t2->toString() << endl;
-  vector<Substitution> minSubstSet = solve();
+  vector<Substitution> minSubstSet = solve(UnifEqSystem(t1, t2));
   for (auto &subst : minSubstSet) {
     cout << subst.toString() << endl;
   }

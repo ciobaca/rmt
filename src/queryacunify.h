@@ -7,17 +7,18 @@
 #include "term.h"
 #include "constrainedterm.h"
 #include "substitution.h"
+#include "unifeqsystem.h"
 
 struct QueryACUnify : public Query {
   Term *t1;
   Term *t2;
 
   QueryACUnify();
-  QueryACUnify(Term *t1, Term *t2);
   virtual Query *create();
   virtual void parse(std::string &s, int &w);
   virtual void execute();
-  std::vector<Substitution> solve();
+  std::vector<Substitution> solve(UnifEqSystem ues);
+  bool solvedForm(const UnifEqSystem &ues);
 };
 
 #endif

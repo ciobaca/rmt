@@ -31,6 +31,7 @@ struct ConstrainedTerm
   
   vector<ConstrainedSolution> smtNarrowDefinedSearch(int printDepth = 0);
   std::vector<ConstrainedTerm> smtNarrowDefinedSearch(int minDepth, int maxDepth, int printDepth = 0);
+  vector<ConstrainedSolution> smtRewriteDefined(int printDepth);
 
   std::vector<ConstrainedSolution> smtNarrowSearch(ConstrainedRewriteSystem &crs);
 

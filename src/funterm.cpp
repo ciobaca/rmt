@@ -504,3 +504,20 @@ void FunTerm::getDefinedFunctions(std::set<Function *> &where)
     arguments[i]->getDefinedFunctions(where);
   }
 }
+
+Term *FunTerm::unsubstitute(vector<Term *> cts, vector<Variable *> vs)
+{
+  for (int i = 0; i < (int)cts.size(); ++i) {
+    if (cts[i] == this) {
+      return getVarTerm(vs[i]);
+    }
+  }
+  Function *fun = this->function;
+  vector<Term *> args = this->arguments;
+
+  for (int i = 0; i < (int)args.size(); ++i) {
+    args[i] = args[i]->unsubstitute(cts, vs);
+  }
+  
+  return getFunTerm(fun, args);
+}

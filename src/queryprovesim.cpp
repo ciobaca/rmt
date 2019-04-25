@@ -314,8 +314,22 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
 
     if (rhsSuccessors.size() == 0) {
       //      cout << spaces(t.depth) << "no rhs successors, taking defined symbols" << "(" << ConstrainedTerm(rhs, t.ct.constraint).toString() << ")" << endl;
-      for (const auto &it : ConstrainedTerm(rhs, t.ct.constraint).smtNarrowDefinedSearch(t.depth))
-        rhsSuccessors.push_back(make_pair(it, t.progressRight));
+      ConstrainedTerm ct = ConstrainedTerm(rhs, t.ct.constraint);
+      ConstrainedSolution *sol;
+      bool step = false;
+      do {
+	vector<ConstrainedSolution> sols = ct.smtRewriteDefined(t.depth);
+	vector<ConstrainedTerm> ctsuccs = solutionsToSuccessors(sols);
+	step = false;
+	if (ctsuccs.size() == 1) {
+	  ct = ctsuccs[0];
+	  sol = new ConstrainedSolution(sols[0]);
+	  step = true;
+	}
+      } while (step);
+      if (step) {
+	rhsSuccessors.push_back(make_pair(*sol, t.progressRight));
+      }
     }
 
     for (int i = 0; i < (int)rhsSuccessors.size(); ++i) {

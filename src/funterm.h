@@ -51,6 +51,7 @@ struct FunTerm : public Term
   virtual Term *compute();
 
   virtual void getDefinedFunctions(std::set<Function *> &);
+  virtual Term *unsubstitute(std::vector<Term *> cts, std::vector<Variable *> vs);
 };
 
 #endif

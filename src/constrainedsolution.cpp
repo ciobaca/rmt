@@ -47,3 +47,14 @@ Term *ConstrainedSolution::getFullConstraint()
   // }
   // return result;
 }
+
+ConstrainedSolution ConstrainedSolution::unsubstitute(vector<Term *> cts, vector<Variable *> vs)
+{
+  ConstrainedSolution result = *this;
+  result.term = result.term->unsubstitute(cts, vs);
+  result.constraint = result.constraint->unsubstitute(cts, vs);
+  result.lhsTerm = result.lhsTerm->unsubstitute(cts, vs);
+  result.subst = result.subst.unsubstitute(cts, vs);
+  result.simplifyingSubst = result.simplifyingSubst.unsubstitute(cts, vs);
+  return result;
+}

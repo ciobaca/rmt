@@ -259,3 +259,8 @@ void VarTerm::getDefinedFunctions(std::set<Function *> &)
 {
   // intentionally empty; no defined functions in a variable term
 }
+
+Term *VarTerm::unsubstitute(vector<Term *>, vector<Variable *>)
+{
+  return this;
+}

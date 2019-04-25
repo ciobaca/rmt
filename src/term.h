@@ -268,6 +268,9 @@ struct Term
 
   // return all defined function occuring in term
   virtual void getDefinedFunctions(std::set<Function *> &) = 0;
+
+  // replace all constants by corresponding variables
+  virtual Term *unsubstitute(vector<Term *> cts, vector<Variable *> vs) = 0;
 };
 
 bool unabstractSolution(Substitution, ConstrainedSolution &);

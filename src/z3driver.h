@@ -213,6 +213,16 @@ class z3_ct_15 : public Z3Function {
   virtual Z3_ast operator()(std::vector<Term *> args);
 };
 
+class z3_fresh : public Z3Function {
+ private:
+  Sort *sort;
+  Z3_symbol fresh_symbol;
+ public:
+  z3_fresh(Sort *sort);
+  void setTerm(Term *);
+  virtual Z3_ast operator()(std::vector<Term *> args);
+};
+
 class z3_ct : public Z3Function {
 private:
   int num;

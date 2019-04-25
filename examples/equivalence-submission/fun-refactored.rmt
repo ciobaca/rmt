@@ -65,7 +65,6 @@ signature
   lam : Var Exp -> ValExp
 ;
 
-
 variables
   X : Int,
   Y : Int,
@@ -88,6 +87,15 @@ variables
   FNV : NonValExp,
   VF : ValExp;
 
+/*
+define eqId : Id Id -> Bool by
+  eqId x x = true,
+  eqId y y = true,
+  eqId z z = true,
+  eqId x y = false,
+  eqId x z = false,
+   ...
+*/
 
 define substitute : Var Exp Exp -> Exp by
   (substitute (var X) EXP I) => I,
@@ -169,7 +177,7 @@ constrained-rewrite-system language
   (P (push VF (push (seqh EXP2) REST)) ENV) => (P (push (seq I EXP2) REST) ENV),
 
   (P (push (while EXP1 EXP2) REST) ENV) => (P (push (ite EXP1 (seq EXP2 (while EXP1 EXP2)) skip) REST) ENV),
-  (P (push skip REST) ENV) => (P REST ENV),
+  (P (push skip REST) ENV) => (P (push 0 REST) ENV),
 
   (P (push (app FNV EXP) REST) ENV) => (P (push FNV (push (apphl EXP) REST)) ENV),
   (P (push (lam (var X) EXP1) (push (apphl EXP) REST)) ENV) => (P (push (app (lam (var X) EXP1) EXP) REST) ENV),

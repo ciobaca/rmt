@@ -80,10 +80,9 @@ constrained-rewrite-system flanguage
 //                                       (reduce (mplus I 1) N LIST));
 
 
-/*
 // PARTIAL SIMULATION : works to show accumulator simulates non-accumulator
 
-show-simulation [ 100, partial ] in flanguage and flanguage :
+show-simulation [ 200, partial ] in flanguage and flanguage :
 
 (pair
       (cons (f N) empty)
@@ -113,8 +112,7 @@ show-simulation [ 100, partial ] in flanguage and flanguage :
 with-base
       (pair (cons S empty) (cons S empty));
 
-//!EOF!
-*/
+!EOF!
 
 // PARTIAL SIMULATION : works to show non-accumulator simulates accumulator
 

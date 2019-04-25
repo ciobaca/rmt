@@ -28,6 +28,7 @@ struct Term
   virtual Sort *getSort() = 0;
 
   bool hasDefinedFunctions;
+  int countDefinedFunctions;
   bool isVarTerm;
   bool isFunTerm;
 
@@ -40,6 +41,7 @@ struct Term
     computedVars = false;
     computedUniqueVars = false;
     hasDefinedFunctions = false;
+    countDefinedFunctions = 0;
   }
 
   // Returns the set of variables that appear in the term.  The result

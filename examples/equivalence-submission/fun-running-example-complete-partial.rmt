@@ -314,7 +314,6 @@ constrained-rewrite-system flanguage
 
 // !EOF!
 
-
 show-simulation [200, total] in flanguage and flanguage :
    (pair
 

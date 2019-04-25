@@ -80,7 +80,6 @@ constrained-rewrite-system flanguage
 //                                       (reduce (mplus I 1) N LIST));
 
 
-/*
 // TOTAL SIMULATION : works to show accumulator simulates non-accumulator
 
 show-simulation [ 100, total ] in flanguage and flanguage :
@@ -114,7 +113,6 @@ with-base
       (pair (cons S empty) (cons S empty));
 
 !EOF!
-*/
 
 // TOTAL SIMULATION : does not work to show non-accumulator simulates accumulator
 

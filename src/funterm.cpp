@@ -19,15 +19,16 @@ FunTerm::FunTerm(Function *function, vector<Term *> arguments) :
   isVarTerm = false;
   isFunTerm = true;
   hasDefinedFunctions = function->isDefined;
+  countDefinedFunctions = function->isDefined;
   assert(this->arguments.size() == function->arguments.size());
-  if (!hasDefinedFunctions) {
+  //  if (!hasDefinedFunctions) {
     for (vector<Term *>::iterator it = arguments.begin(); it != arguments.end(); ++it) {
       if ((*it)->hasDefinedFunctions) {
         hasDefinedFunctions = true;
-        break;
+	countDefinedFunctions += (*it)->countDefinedFunctions;
       }
     }
-  }
+    //  }
 }
 
 vector<Variable *> FunTerm::computeVars()

@@ -317,17 +317,19 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
       ConstrainedTerm ct = ConstrainedTerm(rhs, t.ct.constraint);
       ConstrainedSolution *sol;
       bool step = false;
+      bool flag = false;
       do {
 	vector<ConstrainedSolution> sols = ct.smtRewriteDefined(t.depth);
 	vector<ConstrainedTerm> ctsuccs = solutionsToSuccessors(sols);
 	step = false;
-	if (ctsuccs.size() == 1) {
+	if (ctsuccs.size() == ct.term->countDefinedFunctions && ctsuccs.size() > 0) {
 	  ct = ctsuccs[0];
 	  sol = new ConstrainedSolution(sols[0]);
 	  step = true;
+	  flag = true;
 	}
       } while (step);
-      if (step) {
+      if (flag) {
 	rhsSuccessors.push_back(make_pair(*sol, t.progressRight));
       }
     }

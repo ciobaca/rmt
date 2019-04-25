@@ -12,6 +12,7 @@ VarTerm::VarTerm(Variable *variable) :
   variable(variable)
 {
   hasDefinedFunctions = false;
+  countDefinedFunctions = 0;
   isVarTerm = true;
   isFunTerm = false;
 }

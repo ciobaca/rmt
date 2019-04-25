@@ -9,6 +9,7 @@
 #include "queryunifymodulotheories.h"
 #include "querycunify.h"
 #include "queryacuunify.h"
+#include "queryacsunify.h"
 #include "queryacunify.h"
 #include "queryaccunify.h"
 #include "querycompute.h"
@@ -115,6 +116,11 @@ Query *createQueryACUUnify()
   return new QueryACUUnify();
 }
 
+Query *createQueryACSUnify()
+{
+  return new QueryACSUnify();
+}
+
 Query *createQueryACUnify()
 {
   return new QueryACUnify();
@@ -200,8 +206,9 @@ std::map<std::string, QueryCreator> *registerQueries()
   (*map)["unify"] = createQueryUnify;
   (*map)["unifyModuloTheories"] = createQueryUnifyModuloTheories;
   (*map)["c-unify"] = createQueryCUnify;
-  (*map)["acu-unify"] = createQueryACUUnify;
   (*map)["ac-unify"] = createQueryACUnify;
+  (*map)["acu-unify"] = createQueryACUUnify;
+  (*map)["acs-unify"] = createQueryACSUnify;
   (*map)["acc-unify"] = createQueryACCUnify;
   (*map)["implies"] = createQueryImplies;
   (*map)["instrument"] = createQueryInstrument;

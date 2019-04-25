@@ -27,24 +27,34 @@ ac-unify (f X3 X4) (f X1 X2);
 ac-unify (f (f X1 X1) (f X2 X3)) (f (f Y1 Y1) Y2);
 acc-unify (f X1 X2) (f X3 c);
 acc-unify (f (f X1 X1) (f X2 a)) (f (f c c) Y1);
-unify (f (f X Y) Z) (f Z (f X Y));
+acs-unify (f X1 (f X2 X3)) (f X4 (f X5 X6));*/
+
+ac-unify (f (f X Y) Z) (f Z (f X Y));
+//unify (f (f X Y) Z) (f Z (f X Y));
 n*unify (f (f X Y) Z) (f Z (f X Y));
 pat-weg-unify (f (f X Y) Z) (f Z (f X Y));
-unify (f X Y) (f Y X);
+
+ac-unify (f X Y) (f Y X);
+//unify (f X Y) (f Y X);
 n*unify (f X Y) (f Y X);
 pat-weg-unify (f X Y) (f Y X);
-unify (f X Y) (f Y (f Z Y));
+
+ac-unify (f X Y) (f Y (f Z Y));
+//unify (f X Y) (f Y (f Z Y));
 n*unify (f X Y) (f Y (f Z Y));
 pat-weg-unify (f X Y) (f Y (f Z Y));
-unify (f X X1) (f Y Y1);
+
+ac-unify (f X X1) (f Y Y1);
+//unify (f X X1) (f Y Y1);
 n*unify (f X X1) (f Y Y1);
 pat-weg-unify (f X X1) (f Y Y1);
-unify (tt X X X) (tt (tg (tg a)) (tg (tg Z)) (tg Y));
+
+ac-unify (tt X X X) (tt (tg (tg a)) (tg (tg Z)) (tg Y));
+//unify (tt X X X) (tt (tg (tg a)) (tg (tg Z)) (tg Y));
 n*unify (tt X X X) (tt (tg (tg a)) (tg (tg Z)) (tg Y));
 pat-weg-unify (tt X X X) (tt (tg (tg a)) (tg (tg Z)) (tg Y));
-unify (tg X) (tg Y);
+
+ac-unify (tg X) (tg Y);
+//unify (tg X) (tg Y);
 n*unify (tg X) (tg Y);
 pat-weg-unify (tg X) (tg Y);
-pat-weg-unify X (tg X);
-pat-weg-unify Y (tg X);
-acs-unify (f X1 (f X2 X3)) (f X4 (f X5 X6));*/

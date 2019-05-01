@@ -18,6 +18,7 @@ struct QueryACUnify : public Query {
   virtual void parse(std::string &s, int &w);
   virtual void execute();
   std::vector<Substitution> solve(UnifEqSystem ues);
+  std::vector<Substitution> solveAC(UnifEq ues);
   bool solvedForm(const UnifEqSystem &ues);
   Substitution getSubstFromSolvedForm(const UnifEqSystem &ues);
 };

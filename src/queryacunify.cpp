@@ -51,8 +51,13 @@ Substitution QueryACUnify::getSubstFromSolvedForm(const UnifEqSystem &ues) {
   return subst;
 }
 
+vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
+  return {};
+}
+
 vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
   vector<Substitution> substSet;
+  vector<vector<Substitution>> toCombineSubst;
   queue<UnifEqSystem> q;
   for (q.push(move(ues)); !q.empty(); q.pop()) {
     ues = move(q.front());
@@ -83,6 +88,12 @@ vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
       if (eq.t1->isFunTerm && eq.t2->isFunTerm) {
         if (eq.t1->getAsFunTerm()->function != eq.t2->getAsFunTerm()->function) {
           break;
+        }
+        auto func = eq.t1->getAsFunTerm()->function;
+        if (func->isAssociative && func->isCommutative) {
+          toCombineSubst.push_back(solveAC(eq));
+          ues.pop_back();
+          continue;
         }
         UnifEq toDecomp = move(eq);
         ues.pop_back();

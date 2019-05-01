@@ -439,7 +439,7 @@ void parseFunctions(string &s, int &w)
     if (hasInterpretation) {
       createInterpretedFunction(f, arguments, result, interpretation);
     } else {
-      if (isCommutative && isAssociative && argumets.size() != 2) {
+      if (isCommutative && isAssociative && arguments.size() != 2) {
         parseError("AC-functions must have two arguments.", w, s);
       }
       createUninterpretedFunction(f, arguments, result, isCommutative, isAssociative, unityElement);

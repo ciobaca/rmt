@@ -425,7 +425,6 @@ void parseFunctions(string &s, int &w)
             } else {
               parseError("(while parsing unity element) '(' is missing", w, s);
             }
-
             if (lookAhead(s, w, ")")) {
               matchString(s, w, ")");
             } else {
@@ -440,6 +439,9 @@ void parseFunctions(string &s, int &w)
     if (hasInterpretation) {
       createInterpretedFunction(f, arguments, result, interpretation);
     } else {
+      if (isCommutative && isAssociative && argumets.size() != 2) {
+        parseError("AC-functions must have two arguments.", w, s);
+      }
       createUninterpretedFunction(f, arguments, result, isCommutative, isAssociative, unityElement);
     }
     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {

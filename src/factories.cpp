@@ -191,7 +191,7 @@ Function *getFreshConstant(Sort *sort)
   ostringstream oss;
   oss << "_" << number++;
   string freshName = oss.str();
-  z3_fresh *fresh;
+  z3_fresh *fresh = NULL;
   if (sort->hasInterpretation) {
     fresh = new z3_fresh(getIntSort());
     createInterpretedFunction(freshName, vector<Sort *>(), sort, fresh);

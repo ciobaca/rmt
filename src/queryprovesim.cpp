@@ -299,8 +299,8 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
         return NULL;
       }
 
-      if (isSatisfiable(bNot(  bImplies(unsolvedConstraint, baseCaseConstraint)  )) == unsat) {
-	continue;
+      if (isSatisfiable(bNot(bImplies(unsolvedConstraint, baseCaseConstraint))) == unsat) {
+        continue;
       }
 
       //re-adding unsolvedConstrained to current successor
@@ -315,22 +315,22 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
     if (rhsSuccessors.size() == 0) {
       //      cout << spaces(t.depth) << "no rhs successors, taking defined symbols" << "(" << ConstrainedTerm(rhs, t.ct.constraint).toString() << ")" << endl;
       ConstrainedTerm ct = ConstrainedTerm(rhs, t.ct.constraint);
-      ConstrainedSolution *sol;
+      ConstrainedSolution *sol = NULL;
       bool step = false;
       bool flag = false;
       do {
-	vector<ConstrainedSolution> sols = ct.smtRewriteDefined(t.depth);
-	vector<ConstrainedTerm> ctsuccs = solutionsToSuccessors(sols);
-	step = false;
-	if (ctsuccs.size() == ct.term->countDefinedFunctions && ctsuccs.size() > 0) {
-	  ct = ctsuccs[0];
-	  sol = new ConstrainedSolution(sols[0]);
-	  step = true;
-	  flag = true;
-	}
+        vector<ConstrainedSolution> sols = ct.smtRewriteDefined(t.depth);
+        vector<ConstrainedTerm> ctsuccs = solutionsToSuccessors(sols);
+        step = false;
+        if (ctsuccs.size() == ct.term->countDefinedFunctions && ctsuccs.size() > 0) {
+          ct = ctsuccs[0];
+          sol = new ConstrainedSolution(sols[0]);
+          step = true;
+          flag = true;
+        }
       } while (step);
       if (flag) {
-	rhsSuccessors.push_back(make_pair(*sol, t.progressRight));
+        rhsSuccessors.push_back(make_pair(*sol, t.progressRight));
       }
     }
 

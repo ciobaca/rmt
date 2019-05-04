@@ -1624,5 +1624,5 @@ void z3_fresh::setTerm(Term *term)
 Z3_ast z3_fresh::operator()(std::vector<Term *> args)
 {
   assert(args.size() == 0);
-  Z3_mk_const(z3context, fresh_symbol, sort->interpretation); 
+  return Z3_mk_const(z3context, fresh_symbol, sort->interpretation); 
 }

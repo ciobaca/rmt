@@ -308,38 +308,20 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
       Log(DEBUG5) << spaces(t.depth) << "+ continuing exists right for case " << unsolvedConstraint->toString() << endl;
     }
 
-    vector< pair<ConstrainedSolution, bool> > rhsSuccessors;
+    vector< pair<ConstrainedSolution, bool> > rhsSolutions;
     for (const auto &it : ConstrainedTerm(rhs, t.ct.constraint).smtNarrowSearch(crsRight))
-      rhsSuccessors.push_back(make_pair(it, true));
+      rhsSolutions.push_back(make_pair(it, true));
 
-    if (rhsSuccessors.size() == 0) {
-      //      cout << spaces(t.depth) << "no rhs successors, taking defined symbols" << "(" << ConstrainedTerm(rhs, t.ct.constraint).toString() << ")" << endl;
-      ConstrainedTerm ct = ConstrainedTerm(rhs, t.ct.constraint);
-      ConstrainedSolution *sol = NULL;
-      bool step = false;
-      bool flag = false;
-      do {
-        vector<ConstrainedSolution> sols = ct.smtRewriteDefined(t.depth);
-        vector<ConstrainedTerm> ctsuccs = solutionsToSuccessors(sols);
-        step = false;
-        if (ctsuccs.size() == ct.term->countDefinedFunctions && ctsuccs.size() > 0) {
-          ct = ctsuccs[0];
-          sol = new ConstrainedSolution(sols[0]);
-          step = true;
-          flag = true;
-        }
-      } while (step);
-      if (flag) {
-        rhsSuccessors.push_back(make_pair(*sol, t.progressRight));
-      }
+    if (rhsSolutions.size() == 0) {
+      addDefinedSuccessors(rhsSolutions, rhs, t.ct.constraint, t.progressRight, t.depth);
     }
 
-    for (int i = 0; i < (int)rhsSuccessors.size(); ++i) {
-      ConstrainedSolution sol = rhsSuccessors[i].first;
+    for (int i = 0; i < (int)rhsSolutions.size(); ++i) {
+      ConstrainedSolution sol = rhsSolutions[i].first;
       ConstrainedTerm afterStep = pairC(lhs, sol.term, bAnd(t.ct.constraint, sol.constraint));
       afterStep = afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst);
       afterStep = simplifyConstrainedTerm(afterStep);
-      BFS_Q.push(proveSimulationExistsRight_arguments(afterStep, rhsSuccessors[i].second, t.depth + 1));
+      BFS_Q.push(proveSimulationExistsRight_arguments(afterStep, rhsSolutions[i].second, t.depth + 1));
     }
   }
 
@@ -371,24 +353,22 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
 
   ct = ConstrainedTerm(ct.term, simplifyConstraint(bAnd(ct.constraint, unsolvedConstraint)));
 
-  vector< pair<ConstrainedSolution, bool> > lhsSuccessors;
+  vector< pair<ConstrainedSolution, bool> > lhsSolutions;
   for (const auto &it : ConstrainedTerm(lhs, ct.constraint).smtNarrowSearch(crsLeft))
-    lhsSuccessors.push_back(make_pair(it, true));
-  if (lhsSuccessors.size() == 0) {
-    cout << spaces(depth) << "no lhs successors, taking defined symbols" << "(" << ConstrainedTerm(lhs, ct.constraint).toString() << ")" << endl;
-    for (const auto &it : ConstrainedTerm(lhs, ct.constraint).smtNarrowDefinedSearch(depth))
-      lhsSuccessors.push_back(make_pair(it, (progressLeft || false)));
+    lhsSolutions.push_back(make_pair(it, true));
+  if (lhsSolutions.size() == 0) {
+    addDefinedSuccessors(lhsSolutions, lhs, ct.constraint, progressLeft, depth);
   }
-  for (int i = 0; i < (int)lhsSuccessors.size(); ++i) {
-    ConstrainedSolution sol = lhsSuccessors[i].first;
+  for (int i = 0; i < (int)lhsSolutions.size(); ++i) {
+    ConstrainedSolution sol = lhsSolutions[i].first;
     ConstrainedTerm afterStep = pairC(sol.term, rhs, bAnd(ct.constraint, sol.constraint));
     afterStep = simplifyConstrainedTerm(afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst));
-    if (!proveSimulationForallLeft(afterStep, lhsSuccessors[i].second, depth + 1)) {
+    if (!proveSimulationForallLeft(afterStep, lhsSolutions[i].second, depth + 1)) {
       cout << spaces(depth) << "! proof failed (" << i << "th successor) forall left " << ct.toString() << endl;
       return false;
     }
   }
-  if (lhsSuccessors.size() > 0) {
+  if (lhsSolutions.size() > 0) {
     cout << spaces(depth) << "- proof succeeded forall left " << ct.toString() << endl;
     return true;
   }

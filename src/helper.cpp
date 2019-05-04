@@ -68,3 +68,24 @@ string string_from_int(int number)
   return oss.str();
 }
 
+void addDefinedSuccessors(vector< pair<ConstrainedSolution, bool> > &successors,
+  Term *term, Term *constraint, bool progress, int depth) {
+  ConstrainedTerm ct = ConstrainedTerm(term, constraint);
+  ConstrainedSolution *sol = NULL;
+  bool step = false;
+  bool flag = false;
+  do {
+    vector<ConstrainedSolution> sols = ct.smtRewriteDefined(depth);
+    vector<ConstrainedTerm> ctsuccs = solutionsToSuccessors(sols);
+    step = false;
+    if (ctsuccs.size() == ct.term->countDefinedFunctions && ctsuccs.size() > 0) {
+      ct = ctsuccs[0];
+      sol = new ConstrainedSolution(sols[0]);
+      step = true;
+      flag = true;
+    }
+  } while (step);
+  if (flag) {
+    successors.push_back(make_pair(*sol, progress));
+  }
+}

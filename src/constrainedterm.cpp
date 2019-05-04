@@ -36,7 +36,7 @@ ConstrainedRewriteSystem ConstrainedTerm::getDefinedFunctionsSystem(int printDep
 {
   vector<Function *> definedFunctions = this->getDefinedFunctions();
 
-  cout << spaces(printDepth) << "Constrained term " << this->toString() << " has " << definedFunctions.size() << " defined symbols." << endl;
+  Log(DEBUG) << spaces(printDepth) << "Constrained term " << this->toString() << " has " << definedFunctions.size() << " defined symbols." << endl;
 
   return ::getDefinedFunctionsSystem(definedFunctions);
 }

@@ -37,7 +37,7 @@ Substitution createSubstitution(map<Variable *, Variable *> r)
 {
   Substitution subst;
   for (map<Variable *, Variable *>::iterator it = r.begin();
-       it != r.end(); ++it) {
+    it != r.end(); ++it) {
     subst.add(it->first, getVarTerm(it->second));
   }
   return subst;
@@ -73,19 +73,20 @@ void addDefinedSuccessors(vector< pair<ConstrainedSolution, bool> > &successors,
   ConstrainedTerm ct = ConstrainedTerm(term, constraint);
   ConstrainedSolution *sol = NULL;
   bool step = false;
-  bool flag = false;
   do {
     vector<ConstrainedSolution> sols = ct.smtRewriteDefined(depth);
     vector<ConstrainedTerm> ctsuccs = solutionsToSuccessors(sols);
     step = false;
-    if (ctsuccs.size() == ct.term->countDefinedFunctions && ctsuccs.size() > 0) {
+    if ((ctsuccs.size() > 0) &&
+      ((sol == NULL) /*force at least one defined step*/ ||
+        (ctsuccs.size() == ct.term->countDefinedFunctions))) {
       ct = ctsuccs[0];
       sol = new ConstrainedSolution(sols[0]);
       step = true;
-      flag = true;
     }
+
   } while (step);
-  if (flag) {
+  if (sol != NULL) {
     successors.push_back(make_pair(*sol, progress));
   }
 }

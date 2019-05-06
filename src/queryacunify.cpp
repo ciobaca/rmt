@@ -51,18 +51,49 @@ Substitution QueryACUnify::getSubstFromSolvedForm(const UnifEqSystem &ues) {
   return subst;
 }
 
-vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
+bool QueryACUnify::checkElementarity(Term *t) {
+  Function *f = t->getAsFunTerm()->function;
+  queue<Term*> q;
+  for (q.push(t); !q.empty(); q.pop()) {
+    t = q.front();
+    if (t->isFunTerm) {
+      FunTerm *funTerm = t->getAsFunTerm();
+      for (Term *term : funTerm->arguments) {
+        if (term->isFunTerm) {
+          if (term->getAsFunTerm()->function != f) {
+            return false;
+          }
+          q.push(term);
+        }
+      }
+    }
+  }
+  return true;
+}
+
+vector<Substitution> QueryACUnify::solveACC(UnifEq ueq) {
   return {};
 }
 
+vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
+  if (!checkElementarity(ueq.t1) || !checkElementarity(ueq.t2)) {
+    return solveACC(ueq);
+  }
+  return {};
+}
+
+vector<Substitution> QueryACUnify::combineAllSubst(const vector<vector<Substitution>> &vecSubstLayer) {
+  return vecSubstLayer[0];
+}
+
 vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
-  vector<Substitution> substSet;
   vector<vector<Substitution>> toCombineSubst;
+  toCombineSubst.push_back({});
   queue<UnifEqSystem> q;
   for (q.push(move(ues)); !q.empty(); q.pop()) {
     ues = move(q.front());
     if (solvedForm(ues)) {
-      substSet.push_back(getSubstFromSolvedForm(ues));
+      toCombineSubst[0].push_back(getSubstFromSolvedForm(ues));
       continue;
     }
     Substitution subst;
@@ -101,10 +132,10 @@ vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
       }
     }
     if (!ues.size()) {
-      substSet.push_back(subst);
+      toCombineSubst[0].push_back(subst);
     }
   }
-  return substSet;
+  return combineAllSubst(toCombineSubst);
 }
 
 void QueryACUnify::execute() {

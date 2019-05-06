@@ -19,8 +19,13 @@ struct QueryACUnify : public Query {
   virtual void execute();
   std::vector<Substitution> solve(UnifEqSystem ues);
   std::vector<Substitution> solveAC(UnifEq ues);
+  std::vector<Substitution> solveACC(UnifEq ues);
+  std::vector<Substitution> combineAllSubst(const vector<vector<Substitution>> &vecSubstLayer);
   bool solvedForm(const UnifEqSystem &ues);
   Substitution getSubstFromSolvedForm(const UnifEqSystem &ues);
+
+private:
+  bool checkElementarity(Term *t);
 };
 
 #endif

@@ -79,6 +79,7 @@ void updateDefinedFunction(std::string name, ConstrainedRewriteSystem &);
 void createUninterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, bool isCommutative = false, bool isAssociative = false, Function *unityElement = NULL);
 void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, std::string interpretation);
 void createInterpretedFunction(std::string name, std::vector<Sort *> arguments, Sort *result, Z3_func_decl);
+void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, Z3Function *interpretation);
 
 Name *getName(std::string name);
 void createName(std::string name);
@@ -90,6 +91,8 @@ Term *getNamTerm(Name *n);
 bool variableExists(std::string);
 bool sortExists(std::string);
 bool isBuiltinSort(std::string);
+
+Function *getFreshConstant(Sort *sort);
 
 Variable *createFreshVariable(Sort *);
 
@@ -109,5 +112,9 @@ ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm);
 
 vector<Function*> getDefinedFunctions();
 ConstrainedRewriteSystem getDefinedFunctionsSystem(vector<Function *> definedFunctions);
+
+std::vector<Term *> vector0();
+std::vector<Term *> vector1(Term *term);
+std::vector<Term *> vector2(Term *term1, Term *term2);
 
 #endif

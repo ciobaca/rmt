@@ -8,6 +8,7 @@
 #include <string>
 #include <unordered_map>
 #include <functional>
+#include "constrainedsolution.h"
 
 /* #ifndef NDEBUG */
 /* #define NDEBUG */
@@ -89,5 +90,8 @@ string string_from_int(int);
 extern int VERBOSITY;
 
 void abortWithMessage(std::string error);
+
+void addDefinedSuccessors(std::vector< std::pair<ConstrainedSolution, bool> > &successors,
+  Term *term, Term *constraint, bool progress, int depth);
 
 #endif

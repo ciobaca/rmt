@@ -174,6 +174,7 @@ private:
   friend void createUninterpretedFunction(string, vector<Sort *>, Sort *, bool, bool, Function*);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, string);
   friend void createInterpretedFunction(string, vector<Sort *>, Sort *, Z3_func_decl);
+  friend void createInterpretedFunction(string, vector<Sort *>, Sort *, Z3Function *);
 };
 
 #endif

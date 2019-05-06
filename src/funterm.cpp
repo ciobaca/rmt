@@ -19,15 +19,16 @@ FunTerm::FunTerm(Function *function, vector<Term *> arguments) :
   isVarTerm = false;
   isFunTerm = true;
   hasDefinedFunctions = function->isDefined;
+  countDefinedFunctions = function->isDefined;
   assert(this->arguments.size() == function->arguments.size());
-  if (!hasDefinedFunctions) {
+  //  if (!hasDefinedFunctions) {
     for (vector<Term *>::iterator it = arguments.begin(); it != arguments.end(); ++it) {
       if ((*it)->hasDefinedFunctions) {
         hasDefinedFunctions = true;
-        break;
+	countDefinedFunctions += (*it)->countDefinedFunctions;
       }
     }
-  }
+    //  }
 }
 
 vector<Variable *> FunTerm::computeVars()
@@ -503,4 +504,21 @@ void FunTerm::getDefinedFunctions(std::set<Function *> &where)
   for (int i = 0; i < static_cast<int>(arguments.size()); ++i) {
     arguments[i]->getDefinedFunctions(where);
   }
+}
+
+Term *FunTerm::unsubstitute(vector<Term *> cts, vector<Variable *> vs)
+{
+  for (int i = 0; i < (int)cts.size(); ++i) {
+    if (cts[i] == this) {
+      return getVarTerm(vs[i]);
+    }
+  }
+  Function *fun = this->function;
+  vector<Term *> args = this->arguments;
+
+  for (int i = 0; i < (int)args.size(); ++i) {
+    args[i] = args[i]->unsubstitute(cts, vs);
+  }
+  
+  return getFunTerm(fun, args);
 }

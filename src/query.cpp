@@ -17,6 +17,7 @@
 #include "queryrundefined.h"
 #include "querysearch.h"
 #include "querydefinedsearch.h"
+#include "querydefinedrewrite.h"
 #include "queryder.h"
 #include "querysubs.h"
 #include "queryaxiom.h"
@@ -44,11 +45,8 @@ Query *Query::lookAheadQuery(std::string &s, int &w)
   typedef std::map<std::string, QueryCreator>::iterator it_type;
     
   for(it_type it = (*commands).begin(); it != (*commands).end(); it++) {
-    string command = it->first;
-    if (command == "run") {
-      int sadga = 4;
-    }
-    if (lookAhead(s, w, command)) {
+    string command = it->first; 
+   if (lookAhead(s, w, command)) {
       QueryCreator nqc = it->second;
       return nqc();
     }
@@ -84,6 +82,11 @@ Query *createQuerySearch()
 Query *createQueryDefinedSearch()
 {
   return new QueryDefinedSearch();
+}
+
+Query *createQueryDefinedRewrite()
+{
+  return new QueryDefinedRewrite();
 }
 
 Query *createQueryUnify()
@@ -197,6 +200,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   map = new std::map<std::string, QueryCreator>;
   (*map)["search"] = createQuerySearch;
   (*map)["definedsearch"] = createQueryDefinedSearch;
+  (*map)["definedrewrite"] = createQueryDefinedRewrite;
   (*map)["der"] = createQueryDer;
   (*map)["subs"] = createQuerySubs;
   (*map)["axiom"] = createQueryAxiom;

@@ -175,14 +175,36 @@ Variable *getInternalVariable(string name, Sort *sort)
   return getVariable(name);
 }
 
+static int number = 0;
+
 Variable *createFreshVariable(Sort *sort)
 {
-  static int number = 0;
   ostringstream oss;
   oss << "_" << number++;
   string freshName = oss.str();
   createVariable(freshName, sort);
   return getVariable(freshName);
+}
+
+Function *getFreshConstant(Sort *sort)
+{
+  ostringstream oss;
+  oss << "_" << number++;
+  string freshName = oss.str();
+  z3_fresh *fresh = NULL;
+  if (sort->hasInterpretation) {
+    fresh = new z3_fresh(getIntSort());
+    createInterpretedFunction(freshName, vector<Sort *>(), sort, fresh);
+  } else {
+    createUninterpretedFunction(freshName, vector<Sort *>(), sort, false, false, 0);
+  }
+  if (contains(functions, freshName)) {
+    fresh->setTerm(getFunTerm(functions[freshName], vector0()));
+    return functions[freshName];
+  } else {
+    assert(0);
+    return 0;
+  }
 }
 
 Function *getFunction(string name)
@@ -280,6 +302,22 @@ void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *resu
   int arity = arguments.size();
   Log log(INFO);
   log << "Creating interpreted function " << name << " (as " << interpretation << ") : ";
+  for (int i = 0; i < arity; ++i) {
+    log << arguments[i]->name << " ";
+  }
+  log << " -> " << result->name << endl;
+  functions[name] = new Function(name, arguments, result, interpretation);
+}
+
+void createInterpretedFunction(string name, vector<Sort *> arguments, Sort *result, Z3Function *interpretation)
+{
+#ifndef NDEBUG
+  Function *f = getFunction(name);
+  assert(f == 0);
+#endif
+  int arity = arguments.size();
+  Log log(INFO);
+  log << "Creating interpreted function " << name << ": ";
   for (int i = 0; i < arity; ++i) {
     log << arguments[i]->name << " ";
   }

@@ -16,6 +16,7 @@ struct Substitution : public std::vector<std::pair<Variable *, Term *>> {
   bool inDomain(Variable *v);
   bool inRange(Variable *v);
   Term *image(Variable *v);
+  Substitution unsubstitute(std::vector<Term *> cts, std::vector<Variable *> vs);
   std::string toString();
 };
 #endif

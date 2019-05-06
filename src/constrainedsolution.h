@@ -30,6 +30,8 @@ struct ConstrainedSolution
   ConstrainedSolution(Term *term, Term *constraint, Substitution subst, Term *lhsTerm);
   ConstrainedSolution(Term *term, Substitution subst, Term *lhsTerm);
 
+  ConstrainedSolution unsubstitute(std::vector<Term *>, std::vector<Variable *>);
+  
   Term *getFullConstraint(); // returns the full constraint, including the simplifyingSubstitution, assuming search started from the constrained term given as argument
 
   std::string toString();

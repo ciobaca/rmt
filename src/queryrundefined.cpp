@@ -63,8 +63,15 @@ void QueryRunDefined::execute()
     }
     newTerm = oldTerm->rewriteOneStep(crs, subst);
     if (newTerm == oldTerm) {
+      vector< pair< ConstrainedSolution, bool > > v;
       Log(DEBUG) << "No successors " << newTerm->toString() << " taking defined functions" << endl;
-      newTerm = oldTerm->rewriteOneStep(definedFunctions, subst);
+      addDefinedSuccessors(v, newTerm, bTrue(), false, 0);
+      if (!v.empty()) {
+        ConstrainedSolution sol = v[0].first;
+        ConstrainedTerm afterStep = ConstrainedTerm(sol.term, sol.constraint);
+        afterStep = simplifyConstrainedTerm(afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst));
+        newTerm = afterStep.term;
+      }
     }
     steps++;
   } while (newTerm != oldTerm);

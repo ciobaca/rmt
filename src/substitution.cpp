@@ -65,3 +65,13 @@ string Substitution::toString() {
   }
   return oss.str();
 }
+
+Substitution Substitution::unsubstitute(vector<Term *> cts, vector<Variable *> vs)
+{
+  Substitution result = *this;
+  for (int i = 0; i < (int)result.size(); ++i) {
+    result[i].second = result[i].second->unsubstitute(cts, vs);
+  }
+  return result;
+}
+

@@ -6,6 +6,7 @@
 #include <sstream>
 #include <cassert>
 #include <set>
+#include <algorithm>
 
 using namespace std;
 
@@ -35,7 +36,7 @@ ConstrainedRewriteSystem ConstrainedTerm::getDefinedFunctionsSystem(int printDep
 {
   vector<Function *> definedFunctions = this->getDefinedFunctions();
 
-  cout << spaces(printDepth) << "Constrained term " << this->toString() << " has " << definedFunctions.size() << " defined symbols." << endl;
+  Log(DEBUG) << spaces(printDepth) << "Constrained term " << this->toString() << " has " << definedFunctions.size() << " defined symbols." << endl;
 
   return ::getDefinedFunctionsSystem(definedFunctions);
 }
@@ -50,6 +51,27 @@ vector<ConstrainedSolution> ConstrainedTerm::smtNarrowDefinedSearch(int printDep
 {
   ConstrainedRewriteSystem rs = this->getDefinedFunctionsSystem(printDepth);
   return this->smtNarrowSearch(rs);
+}
+
+vector<ConstrainedSolution> ConstrainedTerm::smtRewriteDefined(int printDepth)
+{
+  ConstrainedRewriteSystem rs = this->getDefinedFunctionsSystem(printDepth);
+  vector<Variable *> vs = this->vars();
+  sort(vs.begin(), vs.end());
+  vs.resize(distance(vs.begin(), unique(vs.begin(), vs.end())));
+  vector<Term *> cts;
+  Substitution subst;
+  for (int i = 0; i < (int)vs.size(); ++i) {
+    cts.push_back(getFunTerm(getFreshConstant(vs[i]->sort), vector0()));
+    subst.add(vs[i], cts[i]);
+  }
+  ConstrainedTerm newct = this->substitute(subst);
+  Log(DEBUG5) << "Narrowing search for " << newct.toString() << endl;
+  vector<ConstrainedSolution> result = newct.smtNarrowSearch(rs);
+  for (int i = 0; i < (int)result.size(); ++i) {
+    result[i] = result[i].unsubstitute(cts, vs);
+  }
+  return result;
 }
 
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs)

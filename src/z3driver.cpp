@@ -26,6 +26,7 @@ using namespace std;
 unsigned z3_symbol_count = 0;
 
 map<Z3_symbol, Variable *> z3_const_to_var;
+map<Z3_symbol, Term *> z3_const_to_const;
 map<Z3_symbol, Z3_func_decl> symbol_to_func_decl;
 map<Z3_func_decl, Function *> func_decl_to_function;
 vector<Z3_ast> z3asserts;
@@ -549,18 +550,23 @@ Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
   switch (Z3_get_ast_kind(z3context, ast)) {
   case Z3_APP_AST:
   {
+    Log(DEBUG8) << "UnZ3: entering Z3_APP_AST." << endl;
     Z3_app app = Z3_to_app(z3context, ast);
     Z3_func_decl func_decl = Z3_get_app_decl(z3context, app);
     switch (Z3_get_decl_kind(z3context, func_decl)) {
     case Z3_OP_UNINTERPRETED:
     {
+      Log(DEBUG8) << "UnZ3: entering Z3_OP_UNINTERPRETED." << endl;
       Z3_symbol symbol = Z3_get_decl_name(z3context, func_decl);
       if (z3_const_to_var.find(symbol) != z3_const_to_var.end()) {
         Term *resultUnZ3 = getVarTerm(z3_const_to_var[symbol]);
         Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
         return resultUnZ3;
-      }
-      else {
+      } else if (z3_const_to_const.find(symbol) != z3_const_to_const.end()) {
+        Term *resultUnZ3 = z3_const_to_const[symbol];
+        Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
+        return resultUnZ3;
+      } else {
         assert(symbol_to_func_decl.find(symbol) != symbol_to_func_decl.end());
         Z3_func_decl func = symbol_to_func_decl[symbol];
         assert(func_decl_to_function.find(func) != func_decl_to_function.end());
@@ -1548,6 +1554,9 @@ Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
   case Z3_UNKNOWN_AST:
     abortWithMessage("Cannot unz3 an ast of kind Z3_UNKNOWN_AST.");
     break;
+  default:
+    Log(DEBUG8) << "unZ3: undefined case." << endl;
+    break;
   }
   assert(0);
   Term *resultUnZ3 = 0;
@@ -1595,4 +1604,25 @@ Z3_ast z3forall(Variable *variable, Term *term)
   assert(Z3_get_ast_kind(z3context, variable->interpretation) == Z3_APP_AST);
   bound[0] = Z3_to_app(z3context, variable->interpretation);
   return Z3_mk_forall_const(z3context, 0, 1, bound, 0, patterns, term->toSmt());
+}
+
+z3_fresh::z3_fresh(Sort *sort) :
+  sort(sort)
+{
+  if (sort == getIntSort()) {
+    fresh_symbol = Z3_mk_int_symbol(z3context, z3_symbol_count++);
+  } else {
+    assert(0);
+  }
+}
+
+void z3_fresh::setTerm(Term *term)
+{
+  z3_const_to_const[fresh_symbol] = term;
+}
+
+Z3_ast z3_fresh::operator()(std::vector<Term *> args)
+{
+  assert(args.size() == 0);
+  return Z3_mk_const(z3context, fresh_symbol, sort->interpretation); 
 }

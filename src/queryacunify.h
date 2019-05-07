@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include "query.h"
 #include "term.h"
 #include "constrainedterm.h"
@@ -26,6 +27,9 @@ struct QueryACUnify : public Query {
 
 private:
   bool checkElementarity(Term *t);
+  void delSameCoeffs(std::map<Term*, int> &l, std::map<Term*, int> &r);
+  std::vector<int> fromMapToVector(const std::map<Term*, int> &M);
+  Term* createFuncWithSameVar(int cnt, Term *var, Function *f, Term *unityElement = nullptr);
 };
 
 #endif

@@ -78,7 +78,7 @@ void QueryACSUnify::execute() {
     }
     return ans;
   };
-  auto createFuncWithSameVar = [&](int cnt, Term* var) {
+  auto createFuncWithSameVar = [&](int cnt, Term *var) {
     if (!cnt) {
       return getFunTerm(getFunction("e"), {});
     }

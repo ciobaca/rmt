@@ -86,7 +86,7 @@ void QueryACCUnify::execute() {
     }
     return ans;
   };
-  auto createFuncWithSameVar = [&](int cnt, Term* var) {
+  auto createFuncWithSameVar = [&](int cnt, Term *var) {
     if (!cnt) {
       return getFunTerm(getFunction("e"), {});
     }
@@ -146,7 +146,6 @@ void QueryACCUnify::execute() {
       ++index;
     }
   }
-
   auto checkConstConstraints = [&](Substitution &subst) -> bool {
     map<Term*, Term*> constSubst;
     for (const auto &it : constToVar) {
@@ -169,24 +168,24 @@ void QueryACCUnify::execute() {
     }
     return true;
   };
-  auto checkMask = [&](const int &mask) -> bool {
-    vector<bool> ans(sigma.size());
+  auto checkMask = [&](int mask) -> bool {
     int n = sigma.size();
     int m = sigmaImage[0].size();
-    int cnt = 0;
+    int used = 0;
+    const int allBits = (1 << m) - 1;
     for (int i = 0; i < n; ++i) {
       if (mask & (1 << i)) {
         continue;
       }
       for (int j = 0; j < m; ++j) {
-        if (!ans[j]) {
-          Term *aux = sigmaImage[i][j];
-          if (aux->isVarTerm || aux != unityElement) {
-            ans[j] = true;
-            ++cnt;
-            if (cnt == m) {
-              return true;
-            }
+        if (used & (1 << j)) {
+          continue;
+        }
+        Term *aux = sigmaImage[i][j];
+        if (aux->isVarTerm || aux) {
+          used |= 1 << j;
+          if (used == allBits) {
+            return true;
           }
         }
       }
@@ -247,7 +246,7 @@ void QueryACCUnify::execute() {
     Substitution normalizedSubst;
     for (const auto &it : subst) {
       Term *aux = getVarTerm(it.first);
-      if (!invConstToVar.count(aux) && (l.count(aux) || r.count(aux))) {
+      if (!invConstToVar.count(aux) && l.count(aux) + r.count(aux) > 0) {
         normalizedSubst.force(it.first, it.second);
       }
     }

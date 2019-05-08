@@ -182,7 +182,7 @@ void QueryACCUnify::execute() {
           continue;
         }
         Term *aux = sigmaImage[i][j];
-        if (aux->isVarTerm || aux) {
+        if (aux->isVarTerm || aux != unityElement) {
           used |= 1 << j;
           if (used == allBits) {
             return true;

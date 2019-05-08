@@ -13,13 +13,13 @@ Substitution::Substitution() {
 }
 
 Substitution::Substitution(Variable *v, Term *t) {
-  if (!(t->isVarTerm && v == t->getAsVarTerm()->variable)) {
+  if (!inDomain(v) || !(t->isVarTerm && v == t->getAsVarTerm()->variable)) {
     this->emplace_back(v, t);
   }
 }
 
 void Substitution::add(Variable *v, Term *t) {
-  if (!inDomain(v) || (t->isVarTerm && v == t->getAsVarTerm()->variable)) {
+  if (!inDomain(v) || !(t->isVarTerm && v == t->getAsVarTerm()->variable)) {
     this->emplace_back(v, t);
   }
 }
@@ -31,8 +31,7 @@ void Substitution::apply(Substitution &s) {
 }
 
 void Substitution::force(Variable *v, Term *t) {
-  Substitution temp;
-  temp.add(v, t);
+  Substitution temp(v, t);
   apply(temp);
   add(v, t);
 }

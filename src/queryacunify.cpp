@@ -117,6 +117,24 @@ Term* QueryACUnify::createFuncWithSameVar(int cnt, Term *var, Function *f, Term 
   return ans;
 }
 
+vector<Substitution> QueryACUnify::combineSubsts(const vector<Substitution> &substs1, const vector<Substitution> &substs2) {
+  if (!substs1.size() || !substs2.size()) {
+    return substs1.size() ? substs1 : substs2;
+  }
+  vector<Substitution> combinedSubsts;
+  for (const auto &subst1 : substs1) {
+    for (const auto &subst2 : substs2) {
+      // TO DO: check if subst1 and subst2 are compatible?? HOW???
+      Substitution currSubst = subst1;
+      for (auto it : subst2) {
+          currSubst.force(it.first, it.second);
+      }
+      combinedSubsts.push_back(move(currSubst));
+    }
+  }
+  return combinedSubsts;
+}
+
 vector<Substitution> QueryACUnify::solveACC(UnifEq ueq) {
   Function *f = ueq.t1->getAsFunTerm()->function;
   Term *unityElement = getFunTerm(f->unityElement, {});
@@ -213,7 +231,7 @@ vector<Substitution> QueryACUnify::solveACC(UnifEq ueq) {
           continue;
         }
         Term *aux = sigmaImage[i][j];
-        if (aux->isVarTerm || aux) {
+        if (aux->isVarTerm || aux != unityElement) {
           used |= 1 << j;
           if (used == allBits) {
             return true;
@@ -302,6 +320,9 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
   getCoeffs(ueq.t1, l);
   getCoeffs(ueq.t2, r);
   delSameCoeffs(l, r);
+  if (l.size() + r.size() == 0) {
+    return {Substitution()};
+  }
   vector<int> a = fromMapToVector(l);
   vector<int> b = fromMapToVector(r);
   LDEGraphAlg graphAlg(a, b);
@@ -350,7 +371,7 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
           continue;
         }
         Term *aux = sigmaImage[i][j];
-        if (aux->isVarTerm || aux) {
+        if (aux) {
           used |= 1 << j;
           if (used == allBits) {
             return true;
@@ -370,7 +391,7 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
       }
       for (int j = 0; j < m; ++j) {
         Term *aux = sigmaImage[i][j];
-        if (aux->isVarTerm || aux) {
+        if (aux) {
           ans[j] = ans[j] ? getFunTerm(f, {ans[j], aux}) : aux;
         }
       }
@@ -403,60 +424,48 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
   return minSubstSet;
 }
 
-vector<Substitution> QueryACUnify::combineAllSubst(const vector<vector<Substitution>> &vecSubstLayer) {
-  return vecSubstLayer[0];
-}
-
 vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
-  vector<vector<Substitution>> toCombineSubst;
-  toCombineSubst.push_back({Substitution()});
-  queue<UnifEqSystem> q;
-  for (q.push(move(ues)); !q.empty(); q.pop()) {
-    ues = move(q.front());
-    if (solvedForm(ues)) {
-      toCombineSubst[0].push_back(getSubstFromSolvedForm(ues));
+  if (solvedForm(ues)) {
+    return {getSubstFromSolvedForm(ues)};
+  }
+  vector<Substitution> minSubstSet;
+  Substitution subst;
+  while (ues.size()) {
+    UnifEq &eq = ues.back();
+    if (eq.t1 == eq.t2) {
+      ues.pop_back();
       continue;
     }
-    Substitution subst;
-    while (ues.size()) {
-      UnifEq &eq = ues.back();
-      if (eq.t1 == eq.t2) {
-        ues.pop_back();
-        continue;
+    if (eq.t1->isVarTerm) {
+      if (eq.t2->isFunTerm && eq.t2->hasVariable(eq.t1->getAsVarTerm()->variable)) {
+        return {};
       }
-      if (eq.t1->isVarTerm) {
-        if (eq.t2->isFunTerm && eq.t2->hasVariable(eq.t1->getAsVarTerm()->variable)) {
-          break;
-        }
-        subst.force(eq.t1->getAsVarTerm()->variable, eq.t2);
-        Substitution aux(eq.t1->getAsVarTerm()->variable, eq.t2);
-        ues.pop_back();
-        for (auto &it : ues) {
-          it.t1 = it.t1->substitute(aux);
-          it.t2 = it.t2->substitute(aux);
-        }
-        continue;
+      subst.force(eq.t1->getAsVarTerm()->variable, eq.t2);
+      Substitution aux(eq.t1->getAsVarTerm()->variable, eq.t2);
+      ues.pop_back();
+      for (auto &it : ues) {
+        it.t1 = it.t1->substitute(aux);
+        it.t2 = it.t2->substitute(aux);
       }
-      if (eq.t1->isFunTerm && eq.t2->isFunTerm) {
-        if (eq.t1->getAsFunTerm()->function != eq.t2->getAsFunTerm()->function) {
-          break;
-        }
-        auto func = eq.t1->getAsFunTerm()->function;
-        if (func->isAssociative && func->isCommutative) {
-          toCombineSubst.push_back(solveAC(eq));
-          ues.pop_back();
-          continue;
-        }
-        UnifEq toDecomp = move(eq);
-        ues.pop_back();
-        ues.decomp(toDecomp.t1->getAsFunTerm(), toDecomp.t2->getAsFunTerm());
-      }
+      continue;
     }
-    if (!ues.size()) {
-      toCombineSubst[0].push_back(subst);
+    if (eq.t1->isFunTerm && eq.t2->isFunTerm) {
+      auto func1 = eq.t1->getAsFunTerm()->function;
+      auto func2 = eq.t2->getAsFunTerm()->function;
+      if (func1 != func2) {
+        return {};
+      }
+      if (func1->isAssociative && func1->isCommutative) {
+        minSubstSet = combineSubsts(minSubstSet, solveAC(eq));
+        ues.pop_back();
+        continue;
+      }
+      UnifEq toDecomp = move(eq);
+      ues.pop_back();
+      ues.decomp(toDecomp.t1->getAsFunTerm(), toDecomp.t2->getAsFunTerm());
     }
   }
-  return combineAllSubst(toCombineSubst);
+  return combineSubsts({subst}, minSubstSet);
 }
 
 void QueryACUnify::execute() {

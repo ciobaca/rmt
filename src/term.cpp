@@ -7,6 +7,7 @@
 #include "varterm.h"
 #include "constrainedterm.h"
 #include "substitution.h"
+#include <ctime>
 
 using namespace std;
 
@@ -135,6 +136,9 @@ Term *Term::rewriteTopMost(pair<ConstrainedTerm, Term *> crewriteRule, Substitut
 
 bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolution &solution)
 {
+  
+  clock_t t0 = clock();
+
   Log(DEBUG7) << "unabstractSolution" << endl;
   
   Log(DEBUG7) << "Term = " << solution.term->toString() << endl;
@@ -206,12 +210,18 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
   }
   theory.addConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst)->normalizeFunctions());
   Log(DEBUG7) << "Sending to SMT solver." << endl;
+  bool retval = false;
+
   if (theory.isSatisfiable() != unsat) {
     Log(DEBUG7) << "Possibly satisfiable." << endl;
-    return true;
+    retval = true;
   }
-  Log(DEBUG7) << "Surely unsatisfiable." << endl;
-  return false;
+  else {
+    Log(DEBUG7) << "Surely unsatisfiable." << endl;
+    retval = false;
+  }
+
+  return retval;
 }
 
 bool Term::unifyModuloTheories(Term *other, Substitution &resultSubstitution, Term *&resultConstraint)

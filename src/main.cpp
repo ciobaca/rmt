@@ -699,5 +699,6 @@ int main(int argc, char **argv)
       expected("valid command", w, s);
     }
   }
+  printDebugInformation();
   return 0;
 }

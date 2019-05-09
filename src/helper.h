@@ -9,6 +9,7 @@
 #include <unordered_map>
 #include <functional>
 #include "constrainedsolution.h"
+#include <ctime>
 
 /* #ifndef NDEBUG */
 /* #define NDEBUG */
@@ -93,5 +94,17 @@ void abortWithMessage(std::string error);
 
 void addDefinedSuccessors(std::vector< std::pair<ConstrainedSolution, bool> > &successors,
   Term *term, Term *constraint, bool progress, int depth);
+
+void printDebugInformation();
+
+void updateTimer(string timer, clock_t val);
+
+void updateTimerIfFlag(string name, clock_t val);
+
+bool isTimerFlagSet(string timer);
+
+void setTimerFlag(string name);
+
+void unsetTimerFlag(string name);
 
 #endif

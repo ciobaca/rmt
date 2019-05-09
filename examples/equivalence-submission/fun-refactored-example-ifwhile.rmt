@@ -34,6 +34,9 @@ signature
   plus : Exp Exp -> NonValExp,
   plushl : Exp -> NonValExp,
   plushr : Exp -> NonValExp,
+  mod : Exp Exp -> NonValExp,
+  modhl : Exp -> NonValExp,
+  modhr : Exp -> NonValExp,
   times : Exp Exp -> NonValExp,
   timeshl : Exp -> NonValExp,
   timeshr : Exp -> NonValExp,
@@ -46,6 +49,9 @@ signature
   less : Exp Exp -> NonValExp,
   lesshl : Exp -> NonValExp,
   lesshr : Exp -> NonValExp,
+  equals : Exp Exp -> NonValExp,
+  equalshl : Exp -> NonValExp,
+  equalshr : Exp -> NonValExp,
   ite : Exp Exp Exp -> NonValExp,
   iteh : Exp Exp -> NonValExp,
   not : Exp -> NonValExp,
@@ -71,9 +77,7 @@ variables
   Z : Int,
   I : Int,
   J : Int,
-  N : Int,
-  SUM : Int,
-  S : Int,
+  A : Int,
 
   B : Bool,
 
@@ -82,6 +86,7 @@ variables
   ENV1 : Map,
   ENV2 : Map,
   ENV3 : Map,
+  ENV4 : Map,
 
   EXP : Exp,
   EXP1 : Exp,
@@ -107,9 +112,11 @@ define substitute : Var Exp Exp -> Exp by
   (substitute (var X) EXP (var Y)) /\ (bnot (mequals X Y)) => (var Y),
 
   (substitute (var X) EXP (plus EXP1 EXP2)) => (plus (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
+  (substitute (var X) EXP (mod EXP1 EXP2)) => (mod (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (times EXP1 EXP2)) => (times (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (minus EXP1 EXP2)) => (minus (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (less EXP1 EXP2)) => (less (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
+  (substitute (var X) EXP (equals EXP1 EXP2)) => (equals (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (le EXP1 EXP2)) => (le (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (not EXP1)) => (not (substitute (var X) EXP EXP1)),
   (substitute (var X) EXP (ite EXP1 EXP2 EXP3)) => (ite (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2) (substitute (var X) EXP EXP3)),
@@ -138,6 +145,12 @@ constrained-rewrite-system language
   (P (push J (push (plushr I) REST)) ENV) => (P (push (plus I J) REST) ENV),
   (P (push (plus I J) REST) ENV) => (P (push (mplus I J) REST) ENV),
 
+  (P (push (mod FNV EXP) REST) ENV) => (P (push FNV (push (modhl EXP) REST)) ENV),
+  (P (push I (push (modhl EXP) REST)) ENV) => (P (push (mod I EXP) REST) ENV),
+  (P (push (mod I FNV) REST) ENV) => (P (push FNV (push (modhr I) REST)) ENV),
+  (P (push J (push (modhr I) REST)) ENV) => (P (push (mod I J) REST) ENV),
+  (P (push (mod I J) REST) ENV) => (P (push (mmod I J) REST) ENV),
+
   (P (push (times FNV EXP) REST) ENV) => (P (push FNV (push (timeshl EXP) REST)) ENV),
   (P (push I (push (timeshl EXP) REST)) ENV) => (P (push (times I EXP) REST) ENV),
   (P (push (times I FNV) REST) ENV) => (P (push FNV (push (timeshr I) REST)) ENV),
@@ -155,6 +168,12 @@ constrained-rewrite-system language
   (P (push (less I FNV) REST) ENV) => (P (push FNV (push (lesshr I) REST)) ENV),
   (P (push J (push (lesshr I) REST)) ENV) => (P (push (less I J) REST) ENV),
   (P (push (less I J) REST) ENV) => (P (push (mless I J) REST) ENV),
+
+  (P (push (equals FNV EXP) REST) ENV) => (P (push FNV (push (equalshl EXP) REST)) ENV),
+  (P (push I (push (equalshl EXP) REST)) ENV) => (P (push (equals I EXP) REST) ENV),
+  (P (push (equals I FNV) REST) ENV) => (P (push FNV (push (equalshr I) REST)) ENV),
+  (P (push J (push (equalshr I) REST)) ENV) => (P (push (equals I J) REST) ENV),
+  (P (push (equals I J) REST) ENV) => (P (push (mequals I J) REST) ENV),
 
   (P (push (le FNV EXP) REST) ENV) => (P (push FNV (push (lehl EXP) REST)) ENV),
   (P (push I (push (lehl EXP) REST)) ENV) => (P (push (le I EXP) REST) ENV),
@@ -177,7 +196,7 @@ constrained-rewrite-system language
 
   (P (push (seq VF EXP2) REST) ENV) => (P (push EXP2 REST) ENV),
   (P (push (seq FNV EXP2) REST) ENV) => (P (push FNV (push (seqh EXP2) REST)) ENV),
-  (P (push VF (push (seqh EXP2) REST)) ENV) => (P (push (seq I EXP2) REST) ENV),
+  (P (push VF (push (seqh EXP2) REST)) ENV) => (P (push (seq VF EXP2) REST) ENV),
 
   (P (push (while EXP1 EXP2) REST) ENV) => (P (push (ite EXP1 (seq EXP2 (while EXP1 EXP2)) skip) REST) ENV),
   (P (push skip REST) ENV) => (P (push 0 REST) ENV),
@@ -189,11 +208,6 @@ constrained-rewrite-system language
   (P (push (app (lam (var X) EXP1) VF) REST) ENV) => (P (push (substitute (var X) VF EXP1) REST) ENV),
 
   (P (push (miu (var X) EXP) REST) ENV) => (P (push (substitute (var X) (miu (var X) EXP) EXP) REST) ENV)
-;
-
-define reduce : Int Int Stack -> Stack by
-  (reduce I N REST) /\ (mgt I N) => REST,
-  (reduce I N REST) /\ (mle I N) => (push (plushr I) (reduce (mplus I 1) N REST))
 ;
 
 /*
@@ -223,37 +237,15 @@ rundefined in language :
 */
 
 /*
-rundefined in language:
+show-simulation [200, total] in language and language :
 
-(P (push 
-    (app
-      (miu (var 3)
-        (lam (var 0)
-        (ite (le 0 (var 0))
-          (plus (var 0)
-            (app (var 3) (minus (var 0) 1)))
-          0
-          )))
-      3)
-  done) ENV)
-;
+(pair
+  (P (push (assign (var 0) X) done) ENV1)
+  (P (push (assign (var 0) X) done) ENV2)
+  )
 
-!EOF!
-*/
-
-/*
-rundefined in language:
-
-(P (push 
-  (app (app (app
-    (miu (var 3)
-      (lam (var 0) (lam (var 1) (lam (var 2)
-      (ite (le (var 1) (var 0))
-        (app (app (app (var 3) (var 0)) (plus (var 1) 1)) (plus (var 2) (var 1)))
-        (var 2)
-        )))))
-    3) 0) 0)
- done) ENV2)
+with-base
+    (pair (P (push X done) ENV3) (P (push X done) ENV4))
 ;
 
 !EOF!
@@ -261,98 +253,92 @@ rundefined in language:
 
 show-simulation [200, total] in language and language :
 
+(pair
+
+  (P (push (seq (assign (var 0) X) (seq (assign (var 1) Y)
+    (ite
+      (equals (mod (var 0) 2) 0)
+      (while (less 0 (var 0))
+        (assign (var 1) (plus (var 1) 1))
+        )
+      (while (less 0 (var 0))
+        (assign (var 1) (plus (var 1) 2))
+        )
+      )
+  )) done) ENV1)
+
+  (P (push (seq (assign (var 0) X) (seq (assign (var 1) Y)
+    (while (less 0 (var 0))
+        (ite
+          (equals (mod (var 0) 2) 0)
+          (assign (var 1) (plus (var 1) 1))
+          (assign (var 1) (plus (var 1) 2))
+          )
+        )
+  )) done) ENV2)
+)
+,
 
 (pair
 
-  (P (push 
-    (app
-      (miu (var 3)
-        (lam (var 0)
-        (ite (le 0 (var 0))
-          (plus (var 0)
-            (app (var 3) (minus (var 0) 1)))
-          0
-          )))
-      N)
+(P (push
+      (while (less 0 (var 0))
+        (assign (var 1) (plus (var 1) 1))
+        )
   done) ENV1)
 
-  (P (push 
-  (app (app (app
-    (miu (var 3)
-      (lam (var 0) (lam (var 1) (lam (var 2)
-      (ite (le (var 1) (var 0))
-        (app (app (app (var 3) (var 0)) (plus (var 1) 1)) (plus (var 2) (var 1)))
-        (var 2)
-        )))))
-    N) 0) 0)
- done) ENV2)
-) /\ (band (mle 0 N)
-    true
-    //(mle N 1)
-    )
-
-,
-
-
-
-(pair
-
-  (P (push S (reduce I N done)) ENV1)
-
-  (P (push 
-  (app (app (app
-    (miu (var 3)
-      (lam (var 0) (lam (var 1) (lam (var 2)
-      (ite (le (var 1) (var 0))
-        (app (app (app (var 3) (var 0)) (plus (var 1) 1)) (plus (var 2) (var 1)))
-        (var 2)
-        )))))
-    N) (plus (mminus I 1) 1)) (plus (mminus S X) X))
+(P (push
+    (while (less 0 (var 0))
+        (ite
+          (equals (mod (var 0) 2) 0)
+          (assign (var 1) (plus (var 1) 1))
+          (assign (var 1) (plus (var 1) 2))
+          )
+        )
   done) ENV2)
 
-)  /\ (band
-          (band (mle 0 N)
-            true
-            //(mle N 2)
-            )
-          (band (mle I N) (mle 1 I)))
-
+) /\ (band
+    (band
+      (mequals (lookup ENV1 0) (lookup ENV2 0))
+      (mequals (lookup ENV1 1) (lookup ENV2 1))
+      )
+    (band
+      (mequals (lookup ENV1 0) X)
+      (mequals (mmod X 2) 0)
+      )
+  )
 ,
-
 
 (pair
 
-  (P (push 
-    (app
-      (miu (var 3)
-        (lam (var 0)
-        (ite (le 0 (var 0))
-          (plus (var 0)
-            (app (var 3) (minus (var 0) 1)))
-          0
-          )))
-      (minus I 1))
-  (reduce I N done)) ENV1)
+(P (push
+      (while (less 0 (var 0))
+        (assign (var 1) (plus (var 1) 2))
+        )
+  done) ENV1)
 
-  (P (push 
-  (app (app (app
-    (miu (var 3)
-      (lam (var 0) (lam (var 1) (lam (var 2)
-      (ite (le (var 1) (var 0))
-        (app (app (app (var 3) (var 0)) (plus (var 1) 1)) (plus (var 2) (var 1)))
-        (var 2)
-        )))))
-    N) 0) 0)
- done) ENV2)
-)
-/\ (band
-  (band (mle 0 N)
-    true
-    //(mle N 2)
-    )
-  (band (mle I N) (mle 0 I)))
+(P (push
+    (while (less 0 (var 0))
+        (ite
+          (equals (mod (var 0) 2) 0)
+          (assign (var 1) (plus (var 1) 1))
+          (assign (var 1) (plus (var 1) 2))
+          )
+        )
+  done) ENV2)
+
+) /\ (band
+    (band
+      (mequals (lookup ENV1 0) (lookup ENV2 0))
+      (mequals (lookup ENV1 1) (lookup ENV2 1))
+      )
+    (band
+      (mequals (lookup ENV1 0) X)
+      (mequals (mmod X 2) 1)
+      )
+  )
 
 
 with-base
-    (pair (P (push SUM done) ENV1) (P (push SUM done) ENV2))
+    (pair (P (push X done) ENV3) (P (push X done) ENV4))
 ;

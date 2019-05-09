@@ -198,6 +198,237 @@ define reduce : Int Int Stack -> Stack by
 ;
 
 
+//PARTIAL SIMULATION : WORKS TO SHOW imp < f
+show-simulation [200, partial] in language and language :
+
+(pair
+
+  (P (push 
+    (seq 
+      (assign (var 0) 0)
+      (seq
+        (assign (var 1) 0)
+        (while
+          (le (var 1) N)
+          (seq
+            (assign (var 0) (plus (var 0) (var 1)))
+            (assign (var 1) (plus (var 1) 1))
+            )
+          )
+        )
+      )
+ done) ENV2)
+
+  (P (push 
+    (app
+      (miu (var 3)
+        (lam (var 0)
+        (ite (le 0 (var 0))
+          (plus (var 0)
+            (app (var 3) (minus (var 0) 1)))
+          0
+          )))
+      N)
+  done) ENV1)
+) /\ (band (mle 0 N)
+    true
+    //(mle N 1)
+    )
+
+,
+
+
+(pair
+
+  (P (push 
+      (while
+        (le (var 1) N)
+        (seq
+          (assign (var 0) (plus (var 0) (var 1)))
+          (assign (var 1) (plus (var 1) 1))
+          )
+        )
+  done) ENV2)
+
+  (P (push S (reduce I N done)) ENV1)
+
+)  /\ (band 
+        (band
+          (band (mle 0 N)
+            true
+            //(mle N 2)
+            )
+          (band (mle I N) (mle 1 I)))
+        (band
+          (mequals (lookup ENV2 0) S)
+          (mequals (lookup ENV2 1) I)
+          )
+        )
+
+,
+
+
+(pair
+
+  (P (push 
+    (seq 
+      (assign (var 0) 0)
+      (seq
+        (assign (var 1) 0)
+        (while
+          (le (var 1) N)
+          (seq
+            (assign (var 0) (plus (var 0) (var 1)))
+            (assign (var 1) (plus (var 1) 1))
+            )
+          )
+        )
+      )
+ done) ENV2)
+
+  (P (push 
+    (app
+      (miu (var 3)
+        (lam (var 0)
+        (ite (le 0 (var 0))
+          (plus (var 0)
+            (app (var 3) (minus (var 0) 1)))
+          0
+          )))
+      (minus I 1))
+  (reduce I N done)) ENV1)
+
+)
+/\ (band
+  (band (mle 0 N)
+    true
+    //(mle N 2)
+    )
+  (band (mle I N) (mle 0 I)))
+
+
+with-base
+    (pair (P (push X done) ENV4) (P (push SUM done) ENV3)) /\ (mequals (lookup ENV4 0) SUM)
+;
+
+!EOF!
+
+
+//PARTIAL SIMULATION : WORKS TO SHOW f < imp
+show-simulation [200, partial] in language and language :
+
+(pair
+
+  (P (push 
+    (app
+      (miu (var 3)
+        (lam (var 0)
+        (ite (le 0 (var 0))
+          (plus (var 0)
+            (app (var 3) (minus (var 0) 1)))
+          0
+          )))
+      N)
+  done) ENV1)
+
+  (P (push 
+    (seq 
+      (assign (var 0) 0)
+      (seq
+        (assign (var 1) 0)
+        (while
+          (le (var 1) N)
+          (seq
+            (assign (var 0) (plus (var 0) (var 1)))
+            (assign (var 1) (plus (var 1) 1))
+            )
+          )
+        )
+      )
+ done) ENV2)
+) /\ (band (mle 0 N)
+    true
+    //(mle N 1)
+    )
+
+,
+
+
+(pair
+
+  (P (push S (reduce I N done)) ENV1)
+
+  (P (push 
+      (while
+        (le (var 1) N)
+        (seq
+          (assign (var 0) (plus (var 0) (var 1)))
+          (assign (var 1) (plus (var 1) 1))
+          )
+        )
+  done) ENV2)
+
+)  /\ (band 
+        (band
+          (band (mle 0 N)
+            true
+            //(mle N 2)
+            )
+          (band (mle I N) (mle 1 I)))
+        (band
+          (mequals (lookup ENV2 0) S)
+          (mequals (lookup ENV2 1) I)
+          )
+        )
+
+,
+
+
+(pair
+
+  (P (push 
+    (app
+      (miu (var 3)
+        (lam (var 0)
+        (ite (le 0 (var 0))
+          (plus (var 0)
+            (app (var 3) (minus (var 0) 1)))
+          0
+          )))
+      (minus I 1))
+  (reduce I N done)) ENV1)
+
+  (P (push 
+    (seq 
+      (assign (var 0) 0)
+      (seq
+        (assign (var 1) 0)
+        (while
+          (le (var 1) N)
+          (seq
+            (assign (var 0) (plus (var 0) (var 1)))
+            (assign (var 1) (plus (var 1) 1))
+            )
+          )
+        )
+      )
+ done) ENV2)
+
+)
+/\ (band
+  (band (mle 0 N)
+    true
+    //(mle N 2)
+    )
+  (band (mle I N) (mle 0 I)))
+
+
+with-base
+    (pair (P (push SUM done) ENV3) (P (push X done) ENV4)) /\ (mequals (lookup ENV4 0) SUM)
+;
+
+!EOF!
+
 //TOTAL SIMULATION : WORKS TO SHOW f < imp (doesn't work to show imp < f)
 show-simulation [200, total] in language and language :
 

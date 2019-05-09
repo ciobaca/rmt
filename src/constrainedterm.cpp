@@ -53,9 +53,13 @@ vector<ConstrainedSolution> ConstrainedTerm::smtNarrowDefinedSearch(int printDep
   return this->smtNarrowSearch(rs);
 }
 
-vector<ConstrainedSolution> ConstrainedTerm::smtRewriteDefined(int printDepth, ConstrainedRewriteSystem rs)
+vector<ConstrainedSolution> ConstrainedTerm::smtRewriteDefined(int, ConstrainedRewriteSystem rs)
 {
-  vector<Variable *> vs = this->vars();
+  vector<Variable *> vstemp = this->vars();
+  vector<Variable *> vs;
+  for (const auto &it : vstemp)
+    if (it->sort == getIntSort())
+      vs.push_back(it);
   sort(vs.begin(), vs.end());
   vs.resize(distance(vs.begin(), unique(vs.begin(), vs.end())));
   vector<Term *> cts;

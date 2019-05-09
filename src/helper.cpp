@@ -74,17 +74,21 @@ void addDefinedSuccessors(vector< pair<ConstrainedSolution, bool> > &successors,
   ConstrainedSolution *sol = NULL;
   bool step = false;
   do {
-    vector<ConstrainedSolution> sols = ct.smtRewriteDefined(depth);
-    vector<ConstrainedTerm> ctsuccs = solutionsToSuccessors(sols);
+    vector<Function*> funcs = ct.getDefinedFunctions();
     step = false;
-    if ((ctsuccs.size() > 0) &&
-      ((sol == NULL) /*force at least one defined step*/ ||
-        (ctsuccs.size() == ct.term->countDefinedFunctions))) {
-      ct = ctsuccs[0];
-      sol = new ConstrainedSolution(sols[0]);
-      step = true;
+    for (int fidx = 0; fidx < (int)funcs.size() && !step; ++fidx) {
+      vector<Function*> currentFunction;
+      currentFunction.push_back(funcs[fidx]);
+      vector<ConstrainedSolution> sols = ct.smtRewriteDefined(depth, getDefinedFunctionsSystem(currentFunction));
+      vector<ConstrainedTerm> ctsuccs = solutionsToSuccessors(sols);
+      if ((ctsuccs.size() > 0) &&
+        (//(sol == NULL) /*force at least one defined step*/ ||
+        (ctsuccs.size() == ct.term->nrFuncInTerm(funcs[fidx])))) {
+        ct = ctsuccs[0];
+        sol = new ConstrainedSolution(sols[0]);
+        step = true;
+      }
     }
-
   } while (step);
   if (sol != NULL) {
     successors.push_back(make_pair(*sol, progress));

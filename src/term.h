@@ -273,6 +273,9 @@ struct Term
 
   // replace all constants by corresponding variables
   virtual Term *unsubstitute(vector<Term *> cts, vector<Variable *> vs) = 0;
+
+  //count apparitions of a certain function in term
+  virtual int nrFuncInTerm(Function *f) = 0;
 };
 
 bool unabstractSolution(Substitution, ConstrainedSolution &);

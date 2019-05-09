@@ -53,9 +53,8 @@ vector<ConstrainedSolution> ConstrainedTerm::smtNarrowDefinedSearch(int printDep
   return this->smtNarrowSearch(rs);
 }
 
-vector<ConstrainedSolution> ConstrainedTerm::smtRewriteDefined(int printDepth)
+vector<ConstrainedSolution> ConstrainedTerm::smtRewriteDefined(int printDepth, ConstrainedRewriteSystem rs)
 {
-  ConstrainedRewriteSystem rs = this->getDefinedFunctionsSystem(printDepth);
   vector<Variable *> vs = this->vars();
   sort(vs.begin(), vs.end());
   vs.resize(distance(vs.begin(), unique(vs.begin(), vs.end())));
@@ -72,6 +71,10 @@ vector<ConstrainedSolution> ConstrainedTerm::smtRewriteDefined(int printDepth)
     result[i] = result[i].unsubstitute(cts, vs);
   }
   return result;
+}
+
+vector<ConstrainedSolution> ConstrainedTerm::smtRewriteDefined(int printDepth) {
+  return this->smtRewriteDefined(printDepth, this->getDefinedFunctionsSystem(printDepth));
 }
 
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs)

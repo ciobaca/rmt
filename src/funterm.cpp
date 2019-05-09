@@ -522,3 +522,10 @@ Term *FunTerm::unsubstitute(vector<Term *> cts, vector<Variable *> vs)
   
   return getFunTerm(fun, args);
 }
+
+int FunTerm::nrFuncInTerm(Function *f) {
+  int ans = (this->function == f) ? 1 : 0;
+  for (auto &it : this->arguments)
+    ans += it->nrFuncInTerm(f);
+  return ans;
+}

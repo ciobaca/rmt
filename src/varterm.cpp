@@ -265,3 +265,7 @@ Term *VarTerm::unsubstitute(vector<Term *>, vector<Variable *>)
 {
   return this;
 }
+
+int VarTerm::nrFuncInTerm(Function *f) {
+  return 0;
+}

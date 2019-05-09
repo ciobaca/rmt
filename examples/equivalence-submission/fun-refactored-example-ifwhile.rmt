@@ -78,6 +78,8 @@ variables
   I : Int,
   J : Int,
   A : Int,
+  N : Int,
+  REZ : Int,
 
   B : Bool,
 
@@ -258,17 +260,17 @@ show-simulation [200, total] in language and language :
   (P (push (seq (assign (var 0) X) (seq (assign (var 1) Y)
     (ite
       (equals (mod (var 0) 2) 0)
-      (while (less 0 (var 0))
+      (while (less (var 1) N)
         (assign (var 1) (plus (var 1) 1))
         )
-      (while (less 0 (var 0))
+      (while (less (var 1) N)
         (assign (var 1) (plus (var 1) 2))
         )
       )
   )) done) ENV1)
 
   (P (push (seq (assign (var 0) X) (seq (assign (var 1) Y)
-    (while (less 0 (var 0))
+    (while (less (var 1) N)
         (ite
           (equals (mod (var 0) 2) 0)
           (assign (var 1) (plus (var 1) 1))
@@ -282,13 +284,13 @@ show-simulation [200, total] in language and language :
 (pair
 
 (P (push
-      (while (less 0 (var 0))
+      (while (less (var 1) N)
         (assign (var 1) (plus (var 1) 1))
         )
   done) ENV1)
 
 (P (push
-    (while (less 0 (var 0))
+    (while (less (var 1) N)
         (ite
           (equals (mod (var 0) 2) 0)
           (assign (var 1) (plus (var 1) 1))
@@ -312,13 +314,13 @@ show-simulation [200, total] in language and language :
 (pair
 
 (P (push
-      (while (less 0 (var 0))
+      (while (less (var 1) N)
         (assign (var 1) (plus (var 1) 2))
         )
   done) ENV1)
 
 (P (push
-    (while (less 0 (var 0))
+    (while (less (var 1) N)
         (ite
           (equals (mod (var 0) 2) 0)
           (assign (var 1) (plus (var 1) 1))
@@ -340,5 +342,5 @@ show-simulation [200, total] in language and language :
 
 
 with-base
-    (pair (P (push X done) ENV3) (P (push X done) ENV4))
+    (pair (P (push REZ done) ENV3) (P (push REZ done) ENV4)) /\ (mequals (lookup ENV3 1) (lookup ENV4 1))
 ;

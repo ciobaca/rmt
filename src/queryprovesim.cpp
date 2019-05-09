@@ -91,9 +91,11 @@ void QueryProveSim::parse(std::string &s, int &w) {
   } while (1);
 
   matchString(s, w, "with-base");
+  skipWhiteSpace(s, w);
   do {
     ConstrainedTerm ct = parseConstrainedTerm(s, w);
     base.push_back(ct);
+    skipWhiteSpace(s, w);
     if (lookAhead(s, w, ",")) {
       matchString(s, w, ",");
       skipWhiteSpace(s, w);
@@ -102,7 +104,9 @@ void QueryProveSim::parse(std::string &s, int &w) {
       break;
     }
   } while (1);
+  skipWhiteSpace(s, w);
   matchString(s, w, ";");
+  skipWhiteSpace(s, w);
 }
 
 // returns the constraint c such that we have arrived with current into base

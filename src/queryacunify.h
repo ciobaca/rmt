@@ -20,6 +20,7 @@ struct QueryACUnify : public Query {
   virtual void execute();
   std::vector<Substitution> solve(UnifEqSystem ues);
   std::vector<Substitution> solveAC(UnifEq ues);
+  std::vector<Substitution> solveACC(UnifEq ues);
   std::vector<Substitution> combineSubsts(const vector<Substitution> &substs1, const vector<Substitution> &substs2);
   bool solvedForm(const UnifEqSystem &ues);
   Substitution getSubstFromSolvedForm(const UnifEqSystem &ues);

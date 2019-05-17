@@ -22,13 +22,13 @@ FunTerm::FunTerm(Function *function, vector<Term *> arguments) :
   countDefinedFunctions = function->isDefined;
   assert(this->arguments.size() == function->arguments.size());
   //  if (!hasDefinedFunctions) {
-    for (vector<Term *>::iterator it = arguments.begin(); it != arguments.end(); ++it) {
-      if ((*it)->hasDefinedFunctions) {
-        hasDefinedFunctions = true;
-	countDefinedFunctions += (*it)->countDefinedFunctions;
-      }
+  for (vector<Term *>::iterator it = arguments.begin(); it != arguments.end(); ++it) {
+    if ((*it)->hasDefinedFunctions) {
+      hasDefinedFunctions = true;
+      countDefinedFunctions += (*it)->countDefinedFunctions;
     }
-    //  }
+  }
+  //  }
 }
 
 vector<Variable *> FunTerm::computeVars()
@@ -41,7 +41,7 @@ vector<Variable *> FunTerm::computeVars()
   return result;
 }
 
-string FunTerm::toString()
+string FunTerm::toString(vector<void*> *allVars)
 {
   assert(len(function->arguments) == len(arguments));
   int n = len(function->arguments);
@@ -50,9 +50,17 @@ string FunTerm::toString()
   if (n) {
     oss << "(";
   }
-  oss << function->name;
+  if (function->isFresh && allVars != NULL) {
+    int x = distance(allVars->begin(),
+      find(allVars->begin(), allVars->end(), (void*)function));
+    oss << "_$_";
+    oss << x;
+  }
+  else {
+    oss << function->name;
+  }
   for (int i = 0; i < n; ++i) {
-    oss << " " << arguments[i]->toString();
+    oss << " " << arguments[i]->toString(allVars);
   }
   if (n) {
     oss << ")";
@@ -81,12 +89,14 @@ Z3_ast FunTerm::toSmt()
     // oss << arguments[1]->toSmtString();
     if (isExistsFunction(function)) {
       return z3exists(t->variable, arguments[1]);
-    } else{
+    }
+    else {
       assert(isForallFunction(function));
       return z3forall(t->variable, arguments[1]);
     }
     assert(0);
-  } else {
+  }
+  else {
     Log(DEBUG8) << "Descending into " << function->name << endl;
     assert(function->hasInterpretation);
     Z3_ast result = (*function->interpretation)(arguments);
@@ -231,7 +241,8 @@ bool FunTerm::unifyWithFunTerm(FunTerm *t, Substitution &subst)
       }
     }
     return true;
-  } else {
+  }
+  else {
     return false;
   }
 }
@@ -264,7 +275,8 @@ bool FunTerm::computeIsGeneralizationOf(FunTerm *t, Substitution &s, map<pair<Te
     if (this->function != t->function) {
       Log(DEBUG9) << "Nope, not same function symbol" << endl;
       cache[make_pair(t, this)] = false;
-    } else {
+    }
+    else {
       bool result = true;
       for (int i = 0; i < len(t->arguments); ++i) {
         if (!t->arguments[i]->computeIsInstanceOf(arguments[i], s, cache)) {
@@ -287,7 +299,8 @@ int FunTerm::computeDagSize(map<Term *, int> &cache)
 {
   if (contains(cache, (Term *)this)) {
     return 0;
-  } else {
+  }
+  else {
     int result = 1;
     for (int i = 0; i < len(arguments); ++i) {
       result += arguments[i]->computeDagSize(cache);
@@ -303,7 +316,7 @@ Term *FunTerm::rewriteOneStep(RewriteSystem &rewrite, Substitution &how)
   Term *t = this->rewriteTopMost(rewrite, how);
   if (t != this) {
     return t;
-  } 
+  }
 
   // now try inner terms
   vector<Term *> subterms;
@@ -323,7 +336,7 @@ Term *FunTerm::rewriteOneStep(pair<Term *, Term *> rewriteRule, Substitution &ho
   Term *t = this->rewriteTopMost(rewriteRule, how);
   if (t != this) {
     return t;
-  } 
+  }
 
   // now try inner terms
   vector<Term *> subterms;
@@ -340,7 +353,7 @@ Term *FunTerm::rewriteOneStep(pair<Term *, Term *> rewriteRule, Substitution &ho
 Term *FunTerm::rewriteOneStep(ConstrainedRewriteSystem &crs, Substitution &how)
 {
   Log(DEBUG8) << "Term *FunTerm::rewriteOneStep(ConstrainedRewriteSystem &crs, Substitution &how)" << endl;
-  
+
   // try a topmost rewrite
   Term *t = this->rewriteTopMost(crs, how);
   if (t != this) {
@@ -389,7 +402,8 @@ Term *FunTerm::abstract(Substitution &substitution)
     substitution.add(var, this);
     Term *result = getVarTerm(var);
     return result;
-  } else {
+  }
+  else {
     vector<Term *> abstractedArguments;
     for (int i = 0; i < (int)arguments.size(); ++i) {
       abstractedArguments.push_back(arguments[i]->abstract(substitution));
@@ -408,7 +422,7 @@ vector<ConstrainedSolution> FunTerm::rewriteSearch(RewriteSystem &rs)
     pair<Term *, Term *> rewriteRule = rs[i];
     Term *l = rewriteRule.first;
     Term *r = rewriteRule.second;
-    
+
     Substitution subst;
     if (this->isInstanceOf(l, subst)) {
       Term *term = r->substitute(subst);
@@ -426,8 +440,8 @@ vector<ConstrainedSolution> FunTerm::rewriteSearch(RewriteSystem &rs)
       }
       newArguments[i] = innerSolutions[j].term;
       solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
-           innerSolutions[i].subst,
-           innerSolutions[i].lhsTerm));
+        innerSolutions[i].subst,
+        innerSolutions[i].lhsTerm));
     }
   }
 
@@ -452,7 +466,8 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(ConstrainedRewriteSystem &crs)
       Log(DEBUG8) << "Unification succeeded." << endl;
       Term *term = r;
       solutions.push_back(ConstrainedSolution(term, l.constraint, subst, l.term));
-    } else {
+    }
+    else {
       Log(DEBUG8) << "Unification failed." << endl;
     }
   }
@@ -467,9 +482,9 @@ vector<ConstrainedSolution> FunTerm::narrowSearch(ConstrainedRewriteSystem &crs)
       }
       newArguments[i] = innerSolutions[j].term;
       solutions.push_back(ConstrainedSolution(getFunTerm(function, newArguments),
-                innerSolutions[j].constraint,
-                innerSolutions[j].subst,
-                innerSolutions[j].lhsTerm));
+        innerSolutions[j].constraint,
+        innerSolutions[j].subst,
+        innerSolutions[j].lhsTerm));
     }
   }
 
@@ -491,7 +506,8 @@ Term *FunTerm::compute()
     Substitution how;
     Term *afterOneStep = rewriteTopMost(function->crewrite, how);
     return simplifyTerm(afterOneStep)->compute(); // do the rest of the steps
-  } else {
+  }
+  else {
     return getFunTerm(function, newargs);
   }
 }
@@ -519,7 +535,7 @@ Term *FunTerm::unsubstitute(vector<Term *> cts, vector<Variable *> vs)
   for (int i = 0; i < (int)args.size(); ++i) {
     args[i] = args[i]->unsubstitute(cts, vs);
   }
-  
+
   return getFunTerm(fun, args);
 }
 
@@ -528,4 +544,24 @@ int FunTerm::nrFuncInTerm(Function *f) {
   for (auto &it : this->arguments)
     ans += it->nrFuncInTerm(f);
   return ans;
+}
+
+vector<void*> FunTerm::computeVarsAndFresh() {
+  vector<void *> result;
+  if (function->isFresh) {
+    if (!seenVarsAndFresh.count((void*)function)) {
+      result.push_back((void*)function);
+      seenVarsAndFresh.insert((void*)function);
+    }
+  }
+  for (int i = 0; i < len(arguments); ++i) {
+    vector<void *> temp = arguments[i]->varsAndFresh();
+    for (const auto &it : temp) {
+      if (seenVarsAndFresh.count(it))
+        continue;
+      result.push_back(it);
+      seenVarsAndFresh.insert(it);
+    }
+  }
+  return result;
 }

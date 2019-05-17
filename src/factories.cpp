@@ -200,6 +200,7 @@ Function *getFreshConstant(Sort *sort)
   }
   if (contains(functions, freshName)) {
     fresh->setTerm(getFunTerm(functions[freshName], vector0()));
+    functions[freshName]->isFresh = true;
     return functions[freshName];
   } else {
     assert(0);

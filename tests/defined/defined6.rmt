@@ -22,7 +22,14 @@ constrained-rewrite-system flanguage
   (fa A I N) /\ (mle I N) => (fa (mplus A I) (mplus I 1) N),
   (fplus N I) => (mplus N I);
 
-// definedsearch [1,2] (reduce I 0 N);
+// definedrewrite (reduce 10 0 E);
+// definedrewrite (reduce 10 1 (fplus 0 E));
+// definedrewrite (reduce 10 2 (fplus 1 (fplus 0 E)));
+// definedrewrite (reduce I N E);
+
+definedrewrite (reduce I (mplus 1 N) (fplus N E));
+
+!EOF!
 
 //definedsearch (reduce N I (f (mminus I 1))) /\ (mle I N) for reduce;
 

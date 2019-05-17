@@ -25,9 +25,6 @@ const char *funcNames[MAXFUNCS];
 uint32 termDataSize = 0;
 uint32 termData[MAXDATA];
 
-uint32 substDataSize = 0;
-uint32 substData[MAXSUBST];
-
 bool validFastVar(FastVar var)
 {
   assert(0 <= varCount && varCount < MAXVARS);
@@ -226,24 +223,22 @@ size_t printTerm(FastTerm term, char *buffer, size_t size)
 
 FastSubst newSubst()
 {
-  if (substDataSize >= MAXSUBST) {
-    fprintf(stderr, "Too much substitution data.\n");
-    exit(-1);
-  }
-  FastSubst result = substDataSize;
-  substData[substDataSize++] = 0;
-  return result;
+  FastSubst subst = (FastSubst)malloc(sizeof(*subst) + 16 * sizeof(uint32));
+  subst->size = 16;
+  subst->count = 0;
+  return subst;
 }
 
-void addToSubst(FastSubst subst, FastVar var, FastTerm term)
+FastSubst addToSubst(FastSubst subst, FastVar var, FastTerm term)
 {
-  if (substDataSize + 1 < MAXSUBST) {
-    substData[subst]++; // add binding
-    substData[substDataSize++] = var;
-    substData[substDataSize++] = term;
+  if (subst->count < subst->size) {
+    subst->data[subst->count++] = var;
+    subst->data[subst->count++] = term;
+    return subst;
   } else {
-    fprintf(stderr, "Too much substitution data.\n");
-    exit(-1);
+    assert(0);
+    return subst;
+    // TODO: realloc struct, return new subst
   }
 }
 
@@ -284,13 +279,10 @@ bool occurs(FastVar var, FastTerm term)
 
 bool inDomain(FastVar var, FastSubst subst)
 {
-  uint32 index = subst + 1;
-  uint32 size = substData[subst];
-  for (int i = 0; i < size; i++) {
-    if (substData[index] == var) {
+  for (int i = 0; i < subst->count; i += 2) {
+    if (subst->data[i] == var) {
       return true;
     }
-    index += 2;
   }
   return false;
 }
@@ -298,13 +290,10 @@ bool inDomain(FastVar var, FastSubst subst)
 FastTerm range(FastVar var, FastSubst subst)
 {
   assert(inDomain(var, subst));
-  uint32 index = subst + 1;
-  uint32 size = substData[subst];
-  for (int i = 0; i < size; i++) {
-    if (substData[index] == var) {
-      return substData[index + 1];
+  for (int i = 0; i < subst->count; i++) {
+    if (subst->data[i] == var) {
+      return subst->data[i + 1];
     }
-    index += 2;
   }
   assert(0);
   return 0;
@@ -362,16 +351,15 @@ bool unifyHelperList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst subst
   return true;
 }
 
-void composeSubst(FastSubst subst, FastVar v, FastTerm t)
+FastSubst composeSubst(FastSubst subst, FastVar v, FastTerm t)
 {
-  int count = substData[subst];
-  for (int i = 0; i < count; ++i) {
-    FastVar x = substData[subst + 1 + 2 * i];
-    FastTerm s = substData[subst + 2 + 2 * i];
+  for (int i = 0; i < subst->count; i += 2) {
+    FastVar x = subst->data[i];
+    FastTerm s = subst->data[i + 1];
     assert(x != v);
-    substData[subst + 2 + 2 * i] = applyUnitySubst(s, v, t);
+    subst->data[i + 1] = applyUnitySubst(s, v, t);
   }
-  addToSubst(subst, v, t);
+  return addToSubst(subst, v, t);
 }
 
 bool unifyHelper(FastTerm t1, FastTerm t2, FastSubst subst)
@@ -421,8 +409,7 @@ size_t printSubst(FastSubst subst, char *buffer, size_t size)
     result++;
     buffer++;
   }
-  uint32 count = substData[subst];
-  for (int i = 0; i < count; ++i) {
+  for (int i = 0; i < subst->count; i += 2) {
     if (i > 0) {
       if (size >= 1) {
 	buffer[0] = ',';
@@ -437,9 +424,9 @@ size_t printSubst(FastSubst subst, char *buffer, size_t size)
 	buffer++;
       }
     }
-    assert(validFastTerm(substData[subst + 2 * i + 1]));
-    assert(isVariable(substData[subst + 2 * i + 1]));
-    uint32 printed = printTerm(substData[subst + 2 * i + 1], buffer, size);
+    assert(validFastTerm(subst->data[i + 1]));
+    assert(isVariable(subst->data[i]));
+    uint32 printed = printTerm(subst->data[i], buffer, size);
     buffer += printed;
     size -= printed;
     result += size;
@@ -455,8 +442,8 @@ size_t printSubst(FastSubst subst, char *buffer, size_t size)
       result++;
       buffer++;
     }
-    assert(validFastTerm(substData[subst + 2 * i + 2]));
-    printed = printTerm(substData[subst + 2 * i + 2], buffer, size);
+    assert(validFastTerm(subst->data[i + 1]));
+    printed = printTerm(subst->data[i], buffer, size);
     buffer += printed;
     size -= printed;
     result += size;

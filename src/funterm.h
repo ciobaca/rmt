@@ -3,6 +3,7 @@
 
 #include "term.h"
 #include "constrainedsolution.h"
+#include <set>
 
 struct FunTerm : public Term
 {
@@ -14,6 +15,8 @@ struct FunTerm : public Term
   virtual vector<Variable *> computeVars();
 
   virtual Sort *getSort();
+
+  std::set<void*> seenVarsAndFresh; //auxiliary set to make sure all vars * fresh are unique
 
   virtual Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
 
@@ -42,7 +45,9 @@ struct FunTerm : public Term
 
   virtual Z3_ast toSmt();
 
-  virtual string toString();
+  vector<void*> computeVarsAndFresh();
+
+  virtual string toString(vector<void*> *allVars = NULL);
   virtual string toPrettyString();
 
   virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);

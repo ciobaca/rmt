@@ -30,6 +30,8 @@ struct Function
   bool isDefined; // is a defined function
   ConstrainedRewriteSystem crewrite; // only valid if it's a defined function
 
+  bool isFresh;
+
   void updateDefined(ConstrainedRewriteSystem &crewrite)
   {
     this->isDefined = true;
@@ -49,6 +51,7 @@ private:
     this->isCommutative = isCommutative;
     this->isAssociative = isAssociative;
     this->unityElement = unityElement;
+    this->isFresh = false;
   }
 
   Function(string name, vector<Sort *> arguments, Sort *result, string interpretation)
@@ -141,6 +144,7 @@ private:
     this->isCommutative = false;
     this->isAssociative = false;
     this->unityElement = NULL;
+    this->isFresh = false;
   }
 
   Function(string name, vector<Sort *> arguments, Sort *result, Z3Function *interpretation)
@@ -154,6 +158,7 @@ private:
     this->isCommutative = false;
     this->isAssociative = false;
     this->unityElement = NULL;
+    this->isFresh = false;
   }
 
   Function(string name, vector<Sort *> arguments, Sort *result, Z3_func_decl interpretation)
@@ -168,6 +173,7 @@ private:
     this->isCommutative = false;
     this->isAssociative = false;
     this->unityElement = NULL;
+    this->isFresh = false;
   }
 
   friend Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars);

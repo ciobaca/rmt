@@ -49,14 +49,22 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "[Ww]indows")
   # so that they can be found.
   foreach (z3_lib ${Z3_LIBRARIES})
     message(STATUS "Adding copy rule for ${z3_lib}")
-    add_custom_command(TARGET rmt
+    add_custom_command(TARGET testft1
       POST_BUILD
       COMMAND
         ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:${z3_lib}>
-        $<TARGET_FILE_DIR:rmt>
+        $<TARGET_FILE_DIR:testft1>
+    )
+    add_custom_command(TARGET testft2
+      POST_BUILD
+      COMMAND
+        ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:${z3_lib}>
+        $<TARGET_FILE_DIR:testft2>
     )
   endforeach()
 endif()
 
-install (TARGETS rmt DESTINATION bin)
+install (TARGETS testft1 DESTINATION bin)
+install (TARGETS testft2 DESTINATION bin)

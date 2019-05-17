@@ -76,7 +76,8 @@ Term* QueryUnifyPatWeg::exploreVar(Term *s) {
   if (sigma.find(s) == sigma.end()) {
     return ready[s] = s;
   }
-  return ready[s] = descend(sigma[s]);
+  auto aux = descend(sigma[s]);
+  return ready[s] = move(aux);
 }
 
 Term* QueryUnifyPatWeg::descend(Term *s) {
@@ -87,9 +88,11 @@ Term* QueryUnifyPatWeg::descend(Term *s) {
     return ready[s] = s;
   }
   if (s->isVarTerm) {
-    return ready[s] = exploreVar(s);
+    auto aux = exploreVar(s);
+    return ready[s] = move(aux);
   }
-  return ready[s] = getFunTerm(s->getAsFunTerm()->function, exploreArgs(s->getAsFunTerm()->arguments));
+  auto aux = getFunTerm(s->getAsFunTerm()->function, exploreArgs(s->getAsFunTerm()->arguments));
+  return ready[s] = move(aux);
 }
 
 vector<Term*> QueryUnifyPatWeg::exploreArgs(vector<Term*> v) {
@@ -137,7 +140,7 @@ bool QueryUnifyPatWeg::finish(Term *r) {
         FunTerm *fr = r->getAsFunTerm();
         FunTerm *fs = s->getAsFunTerm();
         int n = fr->arguments.size();
-        if (fs->arguments.size() != n) {
+        if ((int)fs->arguments.size() != n) {
           return false;
         }
         for (int i = 0; i < n; ++i) {

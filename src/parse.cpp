@@ -62,7 +62,7 @@ void expected(string what, int &where, string text)
 
 bool isIdentifierChar(char c)
 {
-  return c == '_' || isalpha(c) || isdigit(c); 
+  return c == '_' || c == '|' || isalpha(c) || isdigit(c); 
 }
 
 string getQuotedString(string &s, int &pos)

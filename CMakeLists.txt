@@ -87,4 +87,3 @@ add_test(TestEquiv1Slow "./rmt" -v 0 ../tests/equivalence/imp-running-example-1.
 set_tests_properties (TestEquiv1Slow PROPERTIES PASS_REGULAR_EXPRESSION "Succeeded in proving circularity #1")
 set_tests_properties (TestEquiv1Slow PROPERTIES PASS_REGULAR_EXPRESSION "Succeeded in proving circularity #2")
 set_tests_properties (TestEquiv1Slow PROPERTIES PASS_REGULAR_EXPRESSION "Succeeded in proving circularity #3")
-

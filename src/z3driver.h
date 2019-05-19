@@ -28,7 +28,10 @@ struct Z3Theory
   void addEqualityConstraint(Term *, Term *);
   void addConstraint(Term *);
 
+  std::string toNormString();
+
   Z3Result isSatisfiable();
+  Z3Result isSatisfiableHelper();
 };
 
 Z3Result isSatisfiable(Term *constraint);

@@ -124,7 +124,6 @@ vector<Substitution> QueryACUnify::combineSubsts(const vector<Substitution> &sub
   vector<Substitution> combinedSubsts;
   for (const auto &subst1 : substs1) {
     for (const auto &subst2 : substs2) {
-      // TO DO: check if subst1 and subst2 are compatible?? HOW???
       Substitution currSubst = subst1;
       for (auto it : subst2) {
           currSubst.force(it.first, it.second);
@@ -161,6 +160,12 @@ vector<Substitution> QueryACUnify::solveACC(UnifEq ueq) {
   getCoeffs(ueq.t1, l, constToVar);
   getCoeffs(ueq.t2, r, constToVar);
   delSameCoeffs(l, r);
+  if (!l.size() || !r.size()) {
+    if (l.size() != r.size()) {
+      return {};
+    }
+    return vector<Substitution>{Substitution()};
+  }
   vector<int> a = fromMapToVector(l);
   vector<int> b = fromMapToVector(r);
   LDEGraphAlg graphAlg(a, b);
@@ -407,18 +412,24 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
     }
   };
   vector<Substitution> minSubstSet;
-  minSubstSet.push_back(Substitution());
+  queue<int> q;
   if (!checkMask(0)) {
-    minSubstSet.pop_back();
+    return {};
   } else {
+    minSubstSet.push_back(Substitution());
     getSubstFromMask(0, minSubstSet.back());
   }
-  const int upperMask = 1 << sigma.size();
-  for (int mask = 1; mask < upperMask; ++mask) {
-    if (checkMask(mask)) {
-      Substitution subst;
-      minSubstSet.push_back(Substitution());
-      getSubstFromMask(mask, minSubstSet.back());
+  for (q.push(0); !q.empty(); q.pop()) {
+    int mask = q.front();
+    for (int i = 0; i < (int)sigma.size(); ++i) {
+      if (mask & (1 << i)) {
+        break;
+      }
+      int nextMask = mask | (1 << i);
+      if (checkMask(nextMask)) {
+        minSubstSet.push_back(Substitution());
+        getSubstFromMask(nextMask, minSubstSet.back());
+      }
     }
   }
   return minSubstSet;
@@ -429,43 +440,57 @@ vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
     return {getSubstFromSolvedForm(ues)};
   }
   vector<Substitution> minSubstSet;
-  Substitution subst;
-  while (ues.size()) {
-    UnifEq &eq = ues.back();
-    if (eq.t1 == eq.t2) {
-      ues.pop_back();
-      continue;
-    }
-    if (eq.t1->isVarTerm) {
-      if (eq.t2->isFunTerm && eq.t2->hasVariable(eq.t1->getAsVarTerm()->variable)) {
-        return {};
-      }
-      subst.force(eq.t1->getAsVarTerm()->variable, eq.t2);
-      Substitution aux(eq.t1->getAsVarTerm()->variable, eq.t2);
-      ues.pop_back();
-      for (auto &it : ues) {
-        it.t1 = it.t1->substitute(aux);
-        it.t2 = it.t2->substitute(aux);
-      }
-      continue;
-    }
-    if (eq.t1->isFunTerm && eq.t2->isFunTerm) {
-      auto func1 = eq.t1->getAsFunTerm()->function;
-      auto func2 = eq.t2->getAsFunTerm()->function;
-      if (func1 != func2) {
-        return {};
-      }
-      if (func1->isAssociative && func1->isCommutative) {
-        minSubstSet = combineSubsts(minSubstSet, solveAC(eq));
+  queue<pair<UnifEqSystem, Substitution>> q;
+  for (q.push(make_pair(ues, Substitution())); !q.empty(); q.pop()) {
+    ues = move(q.front().first);
+    Substitution subst = move(q.front().second);
+    bool toAdd = true;
+    while (ues.size() && toAdd) {
+      UnifEq &eq = ues.back();
+      if (eq.t1 == eq.t2) {
         ues.pop_back();
         continue;
       }
-      UnifEq toDecomp = move(eq);
-      ues.pop_back();
-      ues.decomp(toDecomp.t1->getAsFunTerm(), toDecomp.t2->getAsFunTerm());
+      if (eq.t1->isVarTerm) {
+        if (eq.t2->isFunTerm && eq.t2->hasVariable(eq.t1->getAsVarTerm()->variable)) {
+          toAdd = false;
+          break;
+        }
+        subst.force(eq.t1->getAsVarTerm()->variable, eq.t2);
+        Substitution aux(eq.t1->getAsVarTerm()->variable, eq.t2);
+        ues.pop_back();
+        for (auto &it : ues) {
+          it.t1 = it.t1->substitute(aux);
+          it.t2 = it.t2->substitute(aux);
+        }
+        continue;
+      }
+      if (eq.t1->isFunTerm && eq.t2->isFunTerm) {
+        auto func1 = eq.t1->getAsFunTerm()->function;
+        auto func2 = eq.t2->getAsFunTerm()->function;
+        if (func1 != func2) {
+          toAdd = false;
+          break;
+        }
+        if (func1->isAssociative && func1->isCommutative) {
+          vector<Substitution> sols = solveAC(eq);
+          ues.pop_back();
+          for (auto &sol : sols) {
+            q.push(make_pair(UnifEqSystem(sol, ues), subst));
+          }
+          toAdd = false;
+          break;
+        }
+        UnifEq toDecomp = move(eq);
+        ues.pop_back();
+        ues.decomp(toDecomp.t1->getAsFunTerm(), toDecomp.t2->getAsFunTerm());
+      }
+    }
+    if (toAdd) {
+      minSubstSet.push_back(move(subst));
     }
   }
-  return combineSubsts({subst}, minSubstSet);
+  return minSubstSet;
 }
 
 void QueryACUnify::execute() {

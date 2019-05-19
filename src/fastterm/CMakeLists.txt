@@ -1,15 +1,12 @@
 cmake_minimum_required(VERSION 2.8.9)
-project(rmt C CXX)
+project(testft C CXX)
+
+add_library(fastterm fastterm.cpp)  
 
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 99)
 
-SET(CMAKE_EXE_LINKER_FLAGS "-Wl,-no-as-needed ${CMAKE_EXE_LINKER_FLAGS}")
-
 add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -DNDEBUG")
-
-# set (Gperftools_DIR "${CMAKE_CURRENT_LIST_DIR}")
-# find_package(Gperftools REQUIRED)
 
 # Make sure you pass the path using "/" even on Windows.
 find_package(Z3
@@ -26,19 +23,25 @@ message(STATUS "Z3_FOUND: ${Z3_FOUND}")
 message(STATUS "Found Z3 ${Z3_VERSION_STRING}")
 message(STATUS "Z3_DIR: ${Z3_DIR}")
 
-file(GLOB SOURCES "*.cpp")
+file(GLOB SOURCES1 "*.cpp")
+message(STATUS "SOURCES1 (w/ main): ${SOURCES1}")
+ foreach(SRCFILE IN LISTS SOURCES1)
+    string(REGEX MATCH "^.*testft.*$" RESULT ${SRCFILE})
+    if ("${RESULT}" STREQUAL "")
+      list(APPEND SOURCES2 ${SRCFILE})
+    endif()
+endforeach()
+message(STATUS "SOURCES2 (no main): ${SOURCES2}")
+
 file(GLOB_RECURSE INCS "*.h")
 
-add_executable(rmt ${SOURCES} ${INCS})
+add_executable(testft1 ${SOURCES2} "testft1.cpp" ${INCS})
+add_executable(testft2 ${SOURCES2} "testft2.cpp" ${INCS})
 
-# target_link_libraries(rmt PRIVATE ${GPERFTOOLS_TCMALLOC} ${GPERFTOOLS_PROFILER})
-
-add_subdirectory(fastterm)
-
-target_include_directories(rmt PRIVATE ${Z3_C_INCLUDE_DIRS})
-target_include_directories(rmt PRIVATE fastterm)
-target_link_libraries(rmt PRIVATE ${Z3_LIBRARIES})
-target_link_libraries(rmt PRIVATE fastterm)
+target_include_directories(testft1 PRIVATE ${Z3_C_INCLUDE_DIRS})
+target_include_directories(testft2 PRIVATE fastterm)
+target_link_libraries(testft1 PRIVATE ${Z3_LIBRARIES})
+target_link_libraries(testft2 PRIVATE fastterm)
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "[Ww]indows")
   # On Windows we need to copy the Z3 libraries
@@ -46,14 +49,22 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "[Ww]indows")
   # so that they can be found.
   foreach (z3_lib ${Z3_LIBRARIES})
     message(STATUS "Adding copy rule for ${z3_lib}")
-    add_custom_command(TARGET rmt
+    add_custom_command(TARGET testft1
       POST_BUILD
       COMMAND
         ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:${z3_lib}>
-        $<TARGET_FILE_DIR:rmt>
+        $<TARGET_FILE_DIR:testft1>
+    )
+    add_custom_command(TARGET testft2
+      POST_BUILD
+      COMMAND
+        ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:${z3_lib}>
+        $<TARGET_FILE_DIR:testft2>
     )
   endforeach()
 endif()
 
-install (TARGETS rmt DESTINATION bin)
+install (TARGETS testft1 DESTINATION bin)
+install (TARGETS testft2 DESTINATION bin)

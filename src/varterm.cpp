@@ -5,6 +5,8 @@
 #include "sort.h"
 #include "helper.h"
 #include "factories.h"
+#include <algorithm>
+#include <sstream>
 
 using namespace std;
 
@@ -33,8 +35,22 @@ Term *VarTerm::computeSubstitution(Substitution &subst, map<Term *, Term *> &)
   }
 }
 
-string VarTerm::toString()
+vector<void*> VarTerm::computeVarsAndFresh() {
+  vector<void*> result;
+  result.push_back((void*)variable);
+  return result;
+}
+
+string VarTerm::toString(vector<void*> *allVars)
 {
+  if (allVars != NULL) {
+    int x = distance(allVars->begin(),
+      find(allVars->begin(), allVars->end(), (void*)variable));
+    ostringstream ss;
+    ss << "_$_";
+    ss << x;
+    return ss.str();
+  }
   return variable->name;
 }
 

@@ -454,8 +454,20 @@ void Z3Theory::addConstraint(Term *constraint)
   constraints.push_back(constraint);
 }
 
-Z3Result Z3Theory::isSatisfiable()
-{
+map<string, Z3Result> knownResults;
+
+string Z3Theory::toNormString() {
+  ostringstream ss;
+  for (const auto &it : this->constraints) {
+    vector<void*> usedVars = it->varsAndFresh();
+    ss << "||";
+    ss << it->toString(&usedVars);
+    ss << "||";
+  }
+  return ss.str();
+}
+
+Z3Result Z3Theory::isSatisfiableHelper() {
   Z3_solver z3solver = Z3_mk_solver(z3context);
   for (int i = 0; i < static_cast<int>(z3asserts.size()); ++i) {
     Log(DEBUG7) << "Asserting (from prelude) " << Z3_ast_to_string(z3context, z3asserts[i]) << "." << endl;
@@ -486,6 +498,20 @@ Z3Result Z3Theory::isSatisfiable()
     assert(0);
     return unknown;
   }
+}
+
+Z3Result Z3Theory::isSatisfiable()
+{
+  string key = this->toNormString();
+  Log(INFO) << "Computing result for " << key << endl;
+
+  if (!knownResults.count(key)) {
+    knownResults[key] = this->isSatisfiableHelper();
+  }
+  else {
+    Log(INFO) << "Result is already known for " << key << endl;
+  }
+  return knownResults[key];
 }
 
 // Z3Result Z3Theory::isSatisfiable()
@@ -562,11 +588,13 @@ Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
         Term *resultUnZ3 = getVarTerm(z3_const_to_var[symbol]);
         Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
         return resultUnZ3;
-      } else if (z3_const_to_const.find(symbol) != z3_const_to_const.end()) {
+      }
+      else if (z3_const_to_const.find(symbol) != z3_const_to_const.end()) {
         Term *resultUnZ3 = z3_const_to_const[symbol];
         Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
         return resultUnZ3;
-      } else {
+      }
+      else {
         assert(symbol_to_func_decl.find(symbol) != symbol_to_func_decl.end());
         Z3_func_decl func = symbol_to_func_decl[symbol];
         assert(func_decl_to_function.find(func) != func_decl_to_function.end());
@@ -828,7 +856,7 @@ Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
         unZ3(arg1, sa1, boundVars),
         unZ3(arg2, sa2, boundVars),
         unZ3(arg3, sa3, boundVars)
-        ));
+      ));
       Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
       return resultUnZ3;
     }
@@ -1611,7 +1639,8 @@ z3_fresh::z3_fresh(Sort *sort) :
 {
   if (sort == getIntSort()) {
     fresh_symbol = Z3_mk_int_symbol(z3context, z3_symbol_count++);
-  } else {
+  }
+  else {
     assert(0);
   }
 }
@@ -1624,5 +1653,5 @@ void z3_fresh::setTerm(Term *term)
 Z3_ast z3_fresh::operator()(std::vector<Term *> args)
 {
   assert(args.size() == 0);
-  return Z3_mk_const(z3context, fresh_symbol, sort->interpretation); 
+  return Z3_mk_const(z3context, fresh_symbol, sort->interpretation);
 }

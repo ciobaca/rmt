@@ -21,6 +21,18 @@ vector<Variable *> Term::vars()
   }
 }
 
+vector<void *> Term::varsAndFresh()
+{
+  if (computedVarsAndFresh) {
+    return allVarsAndFresh;
+  }
+  else {
+    computedVarsAndFresh = true;
+    return allVarsAndFresh = computeVarsAndFresh();
+  }
+}
+
+
 vector<Variable *> Term::computeUniqueVars()
 {
   vector<Variable *> myv = this->vars();

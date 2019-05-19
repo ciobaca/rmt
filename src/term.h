@@ -33,24 +33,34 @@ struct Term
   bool isFunTerm;
 
   bool computedVars;
+  bool computedVarsAndFresh;
   bool computedUniqueVars;
-  vector<Variable *> allVars;
-  vector<Variable *> allUniqueVars;
+  std::vector<Variable *> allVars;
+  std::vector<void *> allVarsAndFresh;
+  std::vector<Variable *> allUniqueVars;
 
   Term() {
     computedVars = false;
     computedUniqueVars = false;
+    computedVarsAndFresh = false;
     hasDefinedFunctions = false;
     countDefinedFunctions = 0;
   }
-
+  
   // Returns the set of variables that appear in the term.  The result
   // is cached (a second call to vars will be O(1)).
   virtual vector<Variable *> vars();
 
+  // Returns the set of unique variables and fresh constants that appear in the term
+  // in the order in which they appear. The result
+  // is cached (a second call to vars will be O(1)).
+  virtual vector<void*> varsAndFresh();
+
   // Returns the set of variables in a term; no repetitions. Prefer
   // the cached version below to this one.
   virtual vector<Variable *> computeUniqueVars();
+
+  virtual vector<void*> computeVarsAndFresh() = 0;
   
   // Returns the set of variables in a term; no repetitions. Caches
   // the result.
@@ -260,7 +270,7 @@ struct Term
   virtual Z3_ast toSmt() = 0;
 
   // returns an infix representation of the term as a string
-  virtual string toString() = 0;
+  virtual string toString(vector<void*> *allVars = NULL) = 0;
 
   // returns a pretier representation of the term
   virtual string toPrettyString() = 0;

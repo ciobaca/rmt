@@ -1,7 +1,8 @@
 #ifndef FASTTERM_H__
 #define FASTTERM_H__
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <cassert>
 #include <z3.h>
 
 #define MAXVARS (1024 * 16)
@@ -35,13 +36,19 @@ typedef uint32 FastTerm;  /* 0 .. MAXVARS - 1 and MAXVARS .. */
                           /* if >= MAXVARS, then it represents a pointer into termData */
 typedef uint32 FastSort;  /* 0 .. MAXSORTS - 1 */
 
-typedef struct {
+struct FastSubst {
   uint32 size;
   uint32 count;
-  uint32 data[0];
-} FastSubstitutionPrivate;
+  uint32 *data;
 
-typedef FastSubstitutionPrivate *FastSubst;
+  FastSubst();
+  ~FastSubst();
+  void addToSubst(FastVar var, FastTerm term);
+  bool inDomain(FastVar var);
+  FastTerm range(FastVar var);
+  FastTerm applySubst(FastTerm term);
+  void composeWith(FastVar v, FastTerm t);
+};
 
 /*
   Initialization.
@@ -120,19 +127,8 @@ FastTerm fastFalse();
   Substitutions.
 */
 
-FastSubst newSubst();
-
-void addToSubst(FastVar var, FastTerm term);
-
-FastSubst composeSubst(FastSubst subst, FastVar v, FastTerm t);
-
 FastTerm applyUnitySubst(FastTerm term, FastVar v, FastTerm t);
-FastTerm applySubst(FastTerm term, FastSubst subst);
-
-bool inDomain(FastVar var, FastSubst subst);
-FastTerm range(FastVar var, FastSubst subst);
-
-size_t printSubst(FastSubst subst, char *buffer, size_t size);
+size_t printSubst(FastSubst &subst, char *buffer, size_t size);
 
 /*
   Helper functions.
@@ -143,7 +139,7 @@ bool occurs(FastVar var, FastTerm term);
 /*
   Syntactic unification.
  */
-bool unify(FastTerm t1, FastTerm t2, FastSubst *result);
+bool unify(FastTerm t1, FastTerm t2, FastSubst &result);
 
 /*
   Z3 interface.

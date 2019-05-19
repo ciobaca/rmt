@@ -43,7 +43,7 @@ void test1()
   printf("t2 = %s.\n", buffer);
 
   FastSubst subst;
-  if (unify(t1, t2, &subst)) {
+  if (unify(t1, t2, subst)) {
     printf("Unification successful.\n");
     printSubst(subst, buffer, 1024);
     printf("unifier = %s.\n", buffer);
@@ -94,7 +94,7 @@ void test2()
   printf("t2 = %s.\n", buffer);
 
   FastSubst subst;
-  if (unify(t1, t2, &subst)) {
+  if (unify(t1, t2, subst)) {
     printf("Unification successful.\n");
     printSubst(subst, buffer, 1024);
     printf("unifier = %s.\n", buffer);
@@ -145,7 +145,7 @@ void test3()
   printf("t2 = %s.\n", buffer);
 
   FastSubst subst;
-  if (unify(t1, t2, &subst)) {
+  if (unify(t1, t2, subst)) {
     printf("Unification successful.\n");
     printSubst(subst, buffer, 1024);
     printf("unifier = %s.\n", buffer);
@@ -197,7 +197,7 @@ void test4()
   printf("t2 = %s.\n", buffer);
 
   FastSubst subst;
-  if (unify(t1, t2, &subst)) {
+  if (unify(t1, t2, subst)) {
     printf("Unification successful.\n");
     printSubst(subst, buffer, 1024);
     printf("unifier = %s.\n", buffer);
@@ -249,7 +249,7 @@ void test5()
   printf("t2 = %s.\n", buffer);
 
   FastSubst subst;
-  if (unify(t1, t2, &subst)) {
+  if (unify(t1, t2, subst)) {
     printf("Unification successful.\n");
     printSubst(subst, buffer, 1024);
     printf("unifier = %s.\n", buffer);

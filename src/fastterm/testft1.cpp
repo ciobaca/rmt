@@ -64,7 +64,7 @@ int test2()
   Z3_sort sort5 = Z3_mk_int_sort(z3context1);
   Z3_sort sort7 = Z3_mk_int_sort(z3context2);
 
-  printf("Sorts: %p %p %p %p %p %p %p %p\n", sort1, sort3, sort5, sort7);
+  printf("(Void *)Sorts: %p %p %p %p\n", sort1, sort3, sort5, sort7);
 
   Z3_symbol symb1 = Z3_mk_string_symbol(z3context1, "symb1");
   Z3_symbol symb2 = Z3_mk_string_symbol(z3context1, "symb2");

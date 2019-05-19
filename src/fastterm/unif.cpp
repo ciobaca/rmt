@@ -1,27 +1,25 @@
 #include "fastterm.h"
 #include <cassert>
 
-bool unifyHelper(FastTerm, FastTerm, FastSubst);
-
-bool unifyHelperList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst subst)
+bool unifyList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst &subst)
 {
   for (uint i = 0; i < count; ++i) {
-    if (!unifyHelper(tl1[i], tl2[i], subst)) {
+    if (!unify(tl1[i], tl2[i], subst)) {
       return false;
     }
   }
   return true;
 }
 
-bool unifyHelper(FastTerm t1, FastTerm t2, FastSubst subst)
+bool unify(FastTerm t1, FastTerm t2, FastSubst &subst)
 {
-  t1 = applySubst(t1, subst);
-  t2 = applySubst(t2, subst);
+  t1 = subst.applySubst(t1);
+  t2 = subst.applySubst(t2);
   if (isFuncTerm(t1) && isFuncTerm(t2)) {
     if (getFunc(t1) != getFunc(t2)) {
       return false;
     }
-    return unifyHelperList(args(t1), args(t2), getArity(getFunc(t1)), subst);
+    return unifyList(args(t1), args(t2), getArity(getFunc(t1)), subst);
   } else {
     if (isFuncTerm(t1)) {
       FastTerm temp = t1;
@@ -33,14 +31,8 @@ bool unifyHelper(FastTerm t1, FastTerm t2, FastSubst subst)
       return false;
     }
     if (t1 != t2) {
-      composeSubst(subst, t1, t2);
+      subst.composeWith(t1, t2);
     }
     return true;
   }
-}
-
-bool unify(FastTerm t1, FastTerm t2, FastSubst *result)
-{
-  *result = newSubst();
-  return unifyHelper(t1, t2, *result);
 }

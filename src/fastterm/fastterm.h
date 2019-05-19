@@ -141,6 +141,8 @@ bool occurs(FastVar var, FastTerm term);
  */
 bool unify(FastTerm t1, FastTerm t2, FastSubst &result);
 
+bool match(FastTerm pattern, FastTerm subject, FastSubst &result);
+
 /*
   Z3 interface.
  */

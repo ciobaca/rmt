@@ -35,3 +35,10 @@ FastSort getVarSort(FastVar var)
   assert(validFastVar(var));
   return varSorts[var];
 }
+
+bool eq_var(FastVar var1, FastVar var2)
+{
+  assert(validVariable(var1));
+  assert(validVariable(var2));
+  return var1 == var2;
+}

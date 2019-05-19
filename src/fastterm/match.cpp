@@ -11,28 +11,24 @@ bool matchList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst &subst)
   return true;
 }
 
-bool match(FastTerm t1, FastTerm t2, FastSubst &subst)
+bool match(FastTerm subject, FastTerm pattern, FastSubst &subst)
 {
-  //  t1 = subst.applySubst(t1);
-  t2 = subst.applySubst(t2);
-  if (isFuncTerm(t1) && isFuncTerm(t2)) {
-    if (getFunc(t1) != getFunc(t2)) {
+  if (isFuncTerm(subject) && isFuncTerm(pattern)) {
+    if (getFunc(subject) != getFunc(pattern)) {
       return false;
     }
-    return matchList(args(t1), args(t2), getArity(getFunc(t1)), subst);
+    return matchList(args(subject), args(pattern),
+		     getArity(getFunc(subject)), subst);
   } else {
-    if (!isVariable(t2)) {
+    if (!isVariable(pattern)) {
       return false;
     }
-    if (t1 == t2) {
+    assert(isVariable(pattern));
+    if (subst.inDomain(pattern)) {
+      return eq_term(subject, subst.range(pattern));
+    } else {
+      subst.composeWith(pattern, subject);
       return true;
     }
-    // t2 is a variable
-    // t1 is a term not equal to t2 (might be another variable)
-    // if (occurs(t2, t1)) {
-    //   return false;
-    // }
-    subst.composeWith(t1, t2);
-    return true;
   }
 }

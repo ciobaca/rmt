@@ -164,3 +164,10 @@ const char *getFuncName(FastTerm func)
   assert(validFastFunc(func));
   return funcNames[func];
 }
+
+bool eq_func(FastFunc func1, FastFunc func2)
+{
+  assert(validFastFunc(func1));
+  assert(validFastFunc(func2));
+  return func1 == func2;
+}

@@ -82,6 +82,7 @@ FastVar newVar(const char *name, FastSort sort);
 bool validFastVar(FastVar var);
 const char *getVarName(FastVar var);
 FastSort getVarSort(FastVar var);
+bool eq_var(FastVar var1, FastVar var2);
 
 /*
   Function symbols.
@@ -98,6 +99,8 @@ FastSort getFuncSort(FastFunc func);
 bool isBuiltinFunc(FastFunc func);
 BuiltinFuncType getBuiltinFuncType(FastFunc func);
 
+bool eq_func(FastFunc func1, FastFunc func2);
+
 /*
   Terms.
 */
@@ -113,6 +116,8 @@ FastFunc getFunc(FastTerm term);
 FastTerm *args(FastTerm term);
 FastTerm getArg(FastTerm term, uint arg);
 FastSort getSort(FastTerm term);
+
+bool eq_term(FastTerm term1, FastTerm term2);
 
 /*
   Builtins.
@@ -141,7 +146,7 @@ bool occurs(FastVar var, FastTerm term);
  */
 bool unify(FastTerm t1, FastTerm t2, FastSubst &result);
 
-bool match(FastTerm pattern, FastTerm subject, FastSubst &result);
+bool match(FastTerm subject, FastTerm pattern, FastSubst &result);
 
 /*
   Z3 interface.

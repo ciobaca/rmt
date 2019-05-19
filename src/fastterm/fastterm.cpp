@@ -186,3 +186,33 @@ FastSort getSort(FastTerm term)
     return getFuncSort(getFunc(term));
   }
 }
+
+bool eq_term_list(FastTerm *tl1, FastTerm *tl2, uint count)
+{
+  for (uint i = 0; i < count; ++i) {
+    if (!eq_term(tl1[i], tl2[i])) {
+      return false;
+    }
+  }
+  return 0;
+}
+
+bool eq_term(FastTerm t1, FastTerm t2)
+{
+  assert(validFastTerm(t1));
+  assert(validFastTerm(t2));
+  if (isFuncTerm(t1) && isFuncTerm(t2)) {
+    FastFunc func1 = getFunc(t1);
+    FastFunc func2 = getFunc(t2);
+    if (!eq_func(func1, func2)) {
+      return false;
+    }
+    FastTerm *args1 = args(t1);
+    FastTerm *args2 = args(t2);
+    return eq_term_list(args1, args2, getArity(func1));
+  } else if (isVariable(t1) && isVariable(t2)) {
+    return eq_var(t1, t2);
+  } else {
+    return false;
+  }
+}

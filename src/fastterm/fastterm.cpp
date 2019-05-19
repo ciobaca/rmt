@@ -2,141 +2,53 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <z3.h>
+#include <stdlib.h>
 
-uint32 sortCount = 0;
-const char *sortNames[MAXSORTS];
-
-FastSort subsortings[MAXSUBSORTINGS * 2];
-uint32 subsortingCount = 0;
-
-uint32 varCount = 0;
-FastSort varSorts[MAXVARS];
-const char *varNames[MAXVARS];
-
-uint32 funcCount = 0;
-uint32 arities[MAXFUNCS]; // number of arguments
-uint32 arityIndex[MAXFUNCS]; // where in arityData the argument sorts are
-FastSort resultSorts[MAXFUNCS]; // the result sort
-FastSort arityData[MAXARITYDATA]; // at arityData[arityIndex[f]] start the
-                                  // arities[f] sorts of the arguments
-uint32 arityDataIndex = 0;
-const char *funcNames[MAXFUNCS];
+void initFastTerm()
+{
+  initSorts();
+  initFuncs();
+}
 
 uint32 termDataSize = 0;
 uint32 termData[MAXDATA];
 
-bool validFastVar(FastVar var)
+bool validFastVarTerm(FastTerm term)
 {
-  assert(0 <= varCount && varCount < MAXVARS);
-  return 0 <= var && var < varCount;
+  assert(validFastTerm(term));
+  return isVariable(term);
 }
 
-bool validFastFunc(FastFunc func)
+bool validFastFuncTerm(FastTerm term)
 {
-  assert(0 <= funcCount && funcCount < MAXFUNCS);
-  return 0 <= func && func < funcCount;
+  assert(validFastTerm(term));
+  return isFuncTerm(term);
 }
 
 bool validFastTerm(FastTerm term)
 {
   assert(0 <= varCount && varCount < MAXVARS);
   assert(0 <= termDataSize && termDataSize < MAXDATA);
-  return (0 <= term & term < varCount) ||
+  return (validFastVar(term)) ||
     (MAXVARS <= term && term < MAXVARS + termDataSize);
-}
-
-bool validFastSort(FastSort sort)
-{
-  assert(0 <= sortCount && sortCount < MAXSORTS);
-  return 0 <= sort && sort < sortCount;
-}
-
-FastSort newSort(const char *name)
-{
-  if (sortCount == MAXSORTS) {
-    fprintf(stderr, "Too many sorts.\n");
-    exit(-1);
-  }
-  sortNames[sortCount] = name;
-  FastSort result = sortCount++;
-  assert(validFastSort(result));
-  return result;
-}
-
-void newSubsorting(FastSort subsort, FastSort supersort)
-{
-  if (subsortingCount == MAXSUBSORTINGS) {
-    fprintf(stderr, "Too many subsortings.\n");
-    exit(-1);
-  }
-  subsortings[subsortingCount * 2] = subsort;
-  subsortings[subsortingCount * 2 + 1] = supersort;
-  subsortingCount++;
-}
-
-FastVar newVar(const char *name, FastSort sort)
-{
-  if (varCount == MAXVARS) {
-    fprintf(stderr, "Too many variables.\n");
-    exit(-1);
-  }
-  varNames[varCount] = name;
-  varSorts[varCount] = sort;
-  FastVar result = varCount++;
-  assert(validFastVar(result));
-  return result;
-}
-
-FastFunc newConst(const char *name, FastSort sort)
-{
-  if (funcCount == MAXFUNCS) {
-    fprintf(stderr, "Too many functions.\n");
-    exit(-1);
-  }
-  arities[funcCount] = 0;
-  funcNames[funcCount] = name;
-  arityIndex[funcCount] = 0; // not to be used (as arity is 0)
-  resultSorts[funcCount] = sort;
-  FastFunc result = funcCount++;
-  assert(validFastFunc(result));
-  return result;
-}
-
-FastFunc newFunc(const char *name, FastSort resultSort, uint32 argCount, FastSort *args)
-{
-  if (funcCount == MAXFUNCS) {
-    fprintf(stderr, "Too many functions.\n");
-    exit(-1);
-  }
-  if (arityDataIndex + argCount > MAXARITYDATA) {
-    fprintf(stderr, "Too many function arguments.\n");
-    exit(-1);
-  }
-  arities[funcCount] = argCount;
-  funcNames[funcCount] = name;
-  resultSorts[funcCount] = resultSort;
-  arityIndex[funcCount] = arityDataIndex;
-  for (int i = 0; i < argCount; ++i) {
-    arityData[arityDataIndex++] = args[i];
-  }
-  FastFunc result = funcCount++;
-  assert(validFastFunc(result));
-  return result;
 }
 
 FastTerm newFuncTerm(FastFunc func, FastTerm *args)
 {
-  if (termDataSize + arities[func] > MAXDATA) {
+  if (termDataSize + getArity(func) > MAXDATA) {
     fprintf(stderr, "Too much term data.\n");
     exit(-1);
   }
-  uint32 result = termDataSize + MAXVARS;
-  termData[termDataSize++] = func;
-  for (int i = 0; i < arities[func]; ++i) {
-    termData[termDataSize++] = args[i];
+  uint32 result = termDataSize;
+  termData[result] = func;
+  termDataSize++;
+  for (uint i = 0; i < getArity(func); ++i) {
+    termData[result + i + 1] = args[i];
+    termDataSize++;
   }
-  assert(validFastTerm(result));
-  return result;
+  assert(validFastTerm(result + MAXVARS));
+  return result + MAXVARS;
 }
 
 bool isVariable(FastTerm term)
@@ -155,10 +67,10 @@ size_t printTermRec(FastTerm term, char *buffer, size_t size)
 {
   if (isVariable(term)) {
     assert(0 <= term && term < MAXVARS);
-    size_t len = strlen(varNames[term]);
+    size_t len = strlen(getVarName(term));
     if (len <= size) {
       for (size_t i = 0; i < len; ++i) {
-	buffer[i] = varNames[term][i];
+	buffer[i] = getVarName(term)[i];
       }
     }
     return len;
@@ -169,23 +81,23 @@ size_t printTermRec(FastTerm term, char *buffer, size_t size)
     assert(0 <= index && index < termDataSize);
 
     FastFunc func = termData[index];
-    size_t len = strlen(funcNames[func]);
+    size_t len = strlen(getFuncName(func));
     size_t printedResult = 0;
     if (len <= size) {
       for (size_t i = 0; i < len; ++i) {
-	buffer[i] = funcNames[func][i];
+	buffer[i] = getFuncName(func)[i];
 	printedResult++;
       }
 
       buffer = buffer + len;
       size = size - len;
-      if (size >= 1 && arities[func] > 0) {
+      if (size >= 1 && getArity(func) > 0) {
 	buffer[0] = '(';
 	size--;
 	printedResult++;
 	buffer++;
       }
-      for (int i = 0; i < arities[func]; ++i) {
+      for (uint i = 0; i < getArity(func); ++i) {
 	if (size >= 1 && i > 0) {
 	  buffer[0] = ',';
 	  size--;
@@ -197,7 +109,7 @@ size_t printTermRec(FastTerm term, char *buffer, size_t size)
 	size = size - printed;
 	printedResult += printed;
       }
-      if (size >= 1 && arities[func] > 0) {
+      if (size >= 1 && getArity(func) > 0) {
 	buffer[0] = ')';
 	size--;
 	printedResult++;
@@ -221,28 +133,7 @@ size_t printTerm(FastTerm term, char *buffer, size_t size)
   }
 }
 
-FastSubst newSubst()
-{
-  FastSubst subst = (FastSubst)malloc(sizeof(*subst) + 16 * sizeof(uint32));
-  subst->size = 16;
-  subst->count = 0;
-  return subst;
-}
-
-FastSubst addToSubst(FastSubst subst, FastVar var, FastTerm term)
-{
-  if (subst->count < subst->size) {
-    subst->data[subst->count++] = var;
-    subst->data[subst->count++] = term;
-    return subst;
-  } else {
-    assert(0);
-    return subst;
-    // TODO: realloc struct, return new subst
-  }
-}
-
-inline FastFunc funcSymbol(FastTerm term)
+FastFunc getFunc(FastTerm term)
 {
   assert(isFuncTerm(term));
   assert(term >= MAXVARS);
@@ -250,7 +141,15 @@ inline FastFunc funcSymbol(FastTerm term)
   return termData[index];
 }
 
-inline FastTerm *args(FastTerm term)
+FastTerm getArg(FastTerm term, uint arg)
+{
+  assert(validFastTerm(term));
+  assert(validFastFuncTerm(term));
+  assert(0 <= arg && arg < getArity(getFunc(term)));
+  return termData[term - MAXVARS + arg + 1];
+}
+
+FastTerm *args(FastTerm term)
 {
   assert(isFuncTerm(term));
   assert(term >= MAXVARS);
@@ -264,9 +163,9 @@ bool occurs(FastVar var, FastTerm term)
     return true;
   }
   if (isFuncTerm(term)) {
-    FastFunc func = funcSymbol(term);
+    FastFunc func = getFunc(term);
     FastTerm *arguments = args(term);
-    for (int i = 0; i < arities[func]; ++i) {
+    for (uint i = 0; i < getArity(func); ++i) {
       if (occurs(var, *arguments)) {
 	return true;
       }
@@ -277,188 +176,13 @@ bool occurs(FastVar var, FastTerm term)
   return false;
 }
 
-bool inDomain(FastVar var, FastSubst subst)
+FastSort getSort(FastTerm term)
 {
-  for (int i = 0; i < subst->count; i += 2) {
-    if (subst->data[i] == var) {
-      return true;
-    }
-  }
-  return false;
-}
-
-FastTerm range(FastVar var, FastSubst subst)
-{
-  assert(inDomain(var, subst));
-  for (int i = 0; i < subst->count; i++) {
-    if (subst->data[i] == var) {
-      return subst->data[i + 1];
-    }
-  }
-  assert(0);
-  return 0;
-}
-
-FastTerm applySubst(FastTerm term, FastSubst subst)
-{
+  assert(validFastTerm(term));
   if (isVariable(term)) {
-    if (inDomain(term, subst)) {
-      return range(term, subst);
-    }
-    return term;
+    return getVarSort(term);
   } else {
-    assert(isFuncTerm(term));
-    FastFunc func = funcSymbol(term);
-    FastTerm result = newFuncTerm(func, args(term));
-    FastTerm *arguments = args(result);
-    for (int i = 0; i < arities[func]; ++i) {
-      *arguments = applySubst(*arguments, subst);
-      arguments++;
-    }
-    return result;
+    assert(validFastFuncTerm(term));
+    return getFuncSort(getFunc(term));
   }
-}
-
-FastTerm applyUnitySubst(FastTerm term, FastVar v, FastTerm t)
-{
-  if (isVariable(term)) {
-    if (term == v) {
-      return t;
-    }
-    return term;
-  } else {
-    assert(isFuncTerm(term));
-    FastFunc func = funcSymbol(term);
-    FastTerm result = newFuncTerm(func, args(term));
-    FastTerm *arguments = args(result);
-    for (int i = 0; i < arities[func]; ++i) {
-      *arguments = applyUnitySubst(*arguments, v, t);
-      arguments++;
-    }
-    return result;
-  }
-}
-
-bool unifyHelper(FastTerm, FastTerm, FastSubst);
-
-bool unifyHelperList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst subst)
-{
-  for (int i = 0; i < count; ++i) {
-    if (!unifyHelper(tl1[i], tl2[i], subst)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-FastSubst composeSubst(FastSubst subst, FastVar v, FastTerm t)
-{
-  for (int i = 0; i < subst->count; i += 2) {
-    FastVar x = subst->data[i];
-    FastTerm s = subst->data[i + 1];
-    assert(x != v);
-    subst->data[i + 1] = applyUnitySubst(s, v, t);
-  }
-  return addToSubst(subst, v, t);
-}
-
-bool unifyHelper(FastTerm t1, FastTerm t2, FastSubst subst)
-{
-  t1 = applySubst(t1, subst);
-  t2 = applySubst(t2, subst);
-  if (isFuncTerm(t1) && isFuncTerm(t2)) {
-    if (funcSymbol(t1) != funcSymbol(t2)) {
-      return false;
-    }
-    return unifyHelperList(args(t1), args(t2), arities[funcSymbol(t1)], subst);
-  } else {
-    if (isFuncTerm(t1)) {
-      FastTerm temp = t1;
-      t1 = t2;
-      t2 = temp;
-    }
-    assert(isVariable(t1));
-    if (!isVariable(t2) && occurs(t1, t2)) {
-      return false;
-    }
-    if (t1 != t2) {
-      composeSubst(subst, t1, t2);
-    }
-    return true;
-  }
-}
-
-bool unify(FastTerm t1, FastTerm t2, FastSubst *result)
-{
-  *result = newSubst();
-  return unifyHelper(t1, t2, *result);
-}
-
-size_t printSubst(FastSubst subst, char *buffer, size_t size)
-{
-  size_t result = 0;
-  if (size >= 1) {
-    buffer[0] = '{';
-    size--;
-    result++;
-    buffer++;
-  }
-  if (size >= 1) {
-    buffer[0] = ' ';
-    size--;
-    result++;
-    buffer++;
-  }
-  for (int i = 0; i < subst->count; i += 2) {
-    if (i > 0) {
-      if (size >= 1) {
-	buffer[0] = ',';
-	size--;
-	result++;
-	buffer++;
-      }
-      if (size >= 1) {
-	buffer[0] = ' ';
-	size--;
-	result++;
-	buffer++;
-      }
-    }
-    assert(validFastTerm(subst->data[i + 1]));
-    assert(isVariable(subst->data[i]));
-    uint32 printed = printTerm(subst->data[i], buffer, size);
-    buffer += printed;
-    size -= printed;
-    result += size;
-    if (size >= 1) {
-      buffer[0] = '-';
-      size--;
-      result++;
-      buffer++;
-    }
-    if (size >= 1) {
-      buffer[0] = '>';
-      size--;
-      result++;
-      buffer++;
-    }
-    assert(validFastTerm(subst->data[i + 1]));
-    printed = printTerm(subst->data[i], buffer, size);
-    buffer += printed;
-    size -= printed;
-    result += size;
-  }
-  if (size >= 1) {
-    buffer[0] = ' ';
-    size--;
-    result++;
-    buffer++;
-  }
-  if (size >= 1) {
-    buffer[0] = '}';
-    size--;
-    result++;
-    buffer++;
-  }
-  return result;
 }

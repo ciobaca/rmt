@@ -4,7 +4,7 @@ project(rmt C CXX)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 99)
 
-add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -DNDEBUG")
+add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic")
 
 # Make sure you pass the path using "/" even on Windows.
 find_package(Z3

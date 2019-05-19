@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 2.8.9)
 project(testft C CXX)
 
-add_library(fastterm fastterm.cpp)  
-
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 99)
 
@@ -22,6 +20,7 @@ find_package(Z3
 message(STATUS "Z3_FOUND: ${Z3_FOUND}")
 message(STATUS "Found Z3 ${Z3_VERSION_STRING}")
 message(STATUS "Z3_DIR: ${Z3_DIR}")
+message(STATUS "Z3_DIR: ${Z3_C_INCLUDE_DIRS}")
 
 file(GLOB SOURCES1 "*.cpp")
 message(STATUS "SOURCES1 (w/ main): ${SOURCES1}")
@@ -33,6 +32,12 @@ message(STATUS "SOURCES1 (w/ main): ${SOURCES1}")
 endforeach()
 message(STATUS "SOURCES2 (no main): ${SOURCES2}")
 
+add_library(fastterm ${SOURCES2})
+
+target_include_directories(fastterm PUBLIC ${Z3_C_INCLUDE_DIRS})
+
+target_link_libraries(fastterm PRIVATE ${Z3_LIBRARIES})
+
 file(GLOB_RECURSE INCS "*.h")
 
 add_executable(testft1 ${SOURCES2} "testft1.cpp" ${INCS})
@@ -40,6 +45,7 @@ add_executable(testft2 ${SOURCES2} "testft2.cpp" ${INCS})
 
 target_include_directories(testft1 PRIVATE ${Z3_C_INCLUDE_DIRS})
 target_include_directories(testft2 PRIVATE fastterm)
+
 target_link_libraries(testft1 PRIVATE ${Z3_LIBRARIES})
 target_link_libraries(testft2 PRIVATE fastterm)
 

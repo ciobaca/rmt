@@ -80,9 +80,9 @@ std::map<std::pair<Z3_context, FastTerm>, Z3_ast> cacheTerm;
 
 Z3_ast toZ3Term(Z3_context context, FastTerm term)
 {
-  char buffer[1024];
-  printTerm(term, buffer, 1024);
-  printf("toZ3Term %s\n", buffer);
+  //  char buffer[1024];
+  //  printTerm(term, buffer, 1024);
+  //  printf("toZ3Term %s\n", buffer);
   if (cacheTerm.find(std::make_pair(context, term)) != cacheTerm.end()) {
     return cacheTerm[std::make_pair(context, term)];
   } else {
@@ -133,7 +133,7 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
       }
     }
     cacheTerm[std::make_pair(context, term)] = result;
-    printf("toZ3Term returned %s\n", Z3_ast_to_string(context, result));
+    //    printf("toZ3Term returned %s\n", Z3_ast_to_string(context, result));
     return result;
   }
 }

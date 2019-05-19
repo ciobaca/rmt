@@ -4,7 +4,12 @@ project(rmt C CXX)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 99)
 
+SET(CMAKE_EXE_LINKER_FLAGS "-Wl,-no-as-needed ${CMAKE_EXE_LINKER_FLAGS}")
+
 add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -DNDEBUG")
+
+# set (Gperftools_DIR "${CMAKE_CURRENT_LIST_DIR}")
+# find_package(Gperftools REQUIRED)
 
 # Make sure you pass the path using "/" even on Windows.
 find_package(Z3
@@ -25,6 +30,8 @@ file(GLOB SOURCES "*.cpp")
 file(GLOB_RECURSE INCS "*.h")
 
 add_executable(rmt ${SOURCES} ${INCS})
+
+# target_link_libraries(rmt PRIVATE ${GPERFTOOLS_TCMALLOC} ${GPERFTOOLS_PROFILER})
 
 target_include_directories(rmt PRIVATE ${Z3_C_INCLUDE_DIRS})
 target_link_libraries(rmt PRIVATE ${Z3_LIBRARIES})

@@ -53,26 +53,6 @@ Substitution QueryACUnify::getSubstFromSolvedForm(const UnifEqSystem &ues) {
   return subst;
 }
 
-bool QueryACUnify::checkElementarity(Term *t) {
-  Function *f = t->getAsFunTerm()->function;
-  queue<Term*> q;
-  for (q.push(t); !q.empty(); q.pop()) {
-    t = q.front();
-    if (t->isFunTerm) {
-      FunTerm *funTerm = t->getAsFunTerm();
-      for (Term *term : funTerm->arguments) {
-        if (term->isFunTerm) {
-          if (term->getAsFunTerm()->function != f) {
-            return false;
-          }
-          q.push(term);
-        }
-      }
-    }
-  }
-  return true;
-}
-
 void QueryACUnify::delSameCoeffs(map<Term*, int> &l, map<Term*, int> &r) {
   if (l.size() > r.size()) {
     l.swap(r);
@@ -134,7 +114,7 @@ vector<Substitution> QueryACUnify::combineSubsts(const vector<Substitution> &sub
   return combinedSubsts;
 }
 
-vector<Substitution> QueryACUnify::solveACC(UnifEq ueq) {
+vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
   Function *f = ueq.t1->getAsFunTerm()->function;
   Term *unityElement = getFunTerm(f->unityElement, {});
   function<void(Term*, map<Term*, int>&, map<Term*, Term*>&)> getCoeffs;
@@ -302,135 +282,6 @@ vector<Substitution> QueryACUnify::solveACC(UnifEq ueq) {
       }
     }
     subst = move(normalizedSubst);
-  }
-  return minSubstSet;
-}
-
-vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
-  if (!checkElementarity(ueq.t1) || !checkElementarity(ueq.t2)) {
-    return solveACC(ueq);
-  }
-  Function *f = ueq.t1->getAsFunTerm()->function;
-  function<void(Term*, map<Term*, int>&)> getCoeffs;
-  getCoeffs = [&](Term *t, map<Term*, int> &M) {
-    if(t->isVarTerm) {
-      ++M[t];
-      return;
-    }
-    for(auto term : t->getAsFunTerm()->arguments) {
-      getCoeffs(term, M);
-    }
-  };
-  map<Term*, int> l, r;
-  getCoeffs(ueq.t1, l);
-  getCoeffs(ueq.t2, r);
-  delSameCoeffs(l, r);
-  if (l.size() + r.size() == 0) {
-    return {Substitution()};
-  }
-  vector<int> a = fromMapToVector(l);
-  vector<int> b = fromMapToVector(r);
-  LDEGraphAlg graphAlg(a, b);
-  vector<pair<vector<int>, vector<int>>> result = graphAlg.solve();
-  if (!result.size()) {
-    return {};
-  }
-  vector<Substitution> sigma;
-  for (const auto &sol : result) {
-    int index = 0;
-    sigma.push_back(Substitution());
-    Term *z = getVarTerm(createFreshVariable((Sort*) getSort("State")));
-    for (auto it : l) {
-      sigma.back().add(it.first->getAsVarTerm()->variable, createFuncWithSameVar(sol.first[index], z, f));
-      ++index;
-    }
-    index = 0;
-    for (auto it : r) {
-      sigma.back().add(it.first->getAsVarTerm()->variable, createFuncWithSameVar(sol.second[index], z, f));
-      ++index;
-    }
-  }
-  vector<vector<Term*>> sigmaImage(sigma.size(), vector<Term*>(l.size() + r.size()));
-  for(int i = 0; i < (int)sigma.size(); ++i) {
-    int index = 0;
-    for(auto it : l) {
-      sigmaImage[i][index] = sigma[i].image(it.first->getAsVarTerm()->variable);
-      ++index;
-    }
-    for(auto it : r) {
-      sigmaImage[i][index] = sigma[i].image(it.first->getAsVarTerm()->variable);
-      ++index;
-    }
-  }
-  auto checkMask = [&](int mask) -> bool {
-    int n = sigma.size();
-    int m = sigmaImage[0].size();
-    int used = 0;
-    const int allBits = (1 << m) - 1;
-    for (int i = 0; i < n; ++i) {
-      if (mask & (1 << i)) {
-        continue;
-      }
-      for (int j = 0; j < m; ++j) {
-        if (used & (1 << j)) {
-          continue;
-        }
-        Term *aux = sigmaImage[i][j];
-        if (aux) {
-          used |= 1 << j;
-          if (used == allBits) {
-            return true;
-          }
-        }
-      }
-    }
-    return false;
-  };
-  auto getSubstFromMask = [&](const int &mask, Substitution &subst) {
-    int n = sigma.size();
-    int m = sigmaImage[0].size();
-    vector<Term*> ans(m);
-    for (int i = 0; i < n; ++i) {
-      if (mask & (1 << i)) {
-        continue;
-      }
-      for (int j = 0; j < m; ++j) {
-        Term *aux = sigmaImage[i][j];
-        if (aux) {
-          ans[j] = ans[j] ? getFunTerm(f, {ans[j], aux}) : aux;
-        }
-      }
-    }
-    int index = 0;
-    for (auto it : l) {
-      subst.add(it.first->getAsVarTerm()->variable, ans[index]);
-      ++index;
-    }
-    for (auto it : r) {
-      subst.add(it.first->getAsVarTerm()->variable, ans[index]);
-      ++index;
-    }
-  };
-  vector<Substitution> minSubstSet;
-  queue<int> q;
-  if (!checkMask(0)) {
-    return {};
-  } else {
-    minSubstSet.push_back(Substitution());
-    getSubstFromMask(0, minSubstSet.back());
-  }
-  for (q.push(0); !q.empty(); q.pop()) {
-    int mask = q.front();
-    for (int i = 0; i < (int)sigma.size(); ++i) {
-      if (mask & (1 << i)) {
-        break;
-      }
-      int nextMask = mask | (1 << i);
-      if (checkMask(nextMask)) {
-        minSubstSet.push_back(Substitution());
-        getSubstFromMask(nextMask, minSubstSet.back());
-      }
-    }
   }
   return minSubstSet;
 }

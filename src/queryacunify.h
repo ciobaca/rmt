@@ -26,7 +26,6 @@ struct QueryACUnify : public Query {
   Substitution getSubstFromSolvedForm(const UnifEqSystem &ues);
 
 private:
-  bool checkElementarity(Term *t);
   void delSameCoeffs(std::map<Term*, int> &l, std::map<Term*, int> &r);
   std::vector<int> fromMapToVector(const std::map<Term*, int> &M);
   Term* createFuncWithSameVar(int cnt, Term *var, Function *f, Term *unityElement = nullptr);

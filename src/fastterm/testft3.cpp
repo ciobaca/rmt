@@ -28,15 +28,15 @@ vector<pair<unsigned int, unsigned int>> testPairVector() {
   return ans;
 }
 
-bool compareVectors(FastSubst fs, vector<unsigned int> v) {
-  if (fs.size != v.size()) return false;
-  for (int i = 0; i < fs.size; ++i) if (fs.data[i] != v[i]) return false;
+bool compareVectors(FastSubst &fs, vector<unsigned int> &v) {
+  if (fs.count != v.size()) return false;
+  for (int i = 0; i < fs.count; ++i) if (fs.data[i] != v[i]) return false;
   return true;
 }
 
-bool compareVectors(FastSubst fs, vector<pair<unsigned int, unsigned int>> v) {
-  if (fs.size != v.size()) return false;
-  for (int i = 0; i < fs.size; i += 2) if (fs.data[i] != v[i / 2].first || fs.data[i + 1] != v[i / 2].second) return false;
+bool compareVectors(FastSubst &fs, vector<pair<unsigned int, unsigned int>> &v) {
+  if (fs.count != 2 * v.size()) return false;
+  for (int i = 0; i < fs.count; i += 2) if (fs.data[i] != v[i / 2].first || fs.data[i + 1] != v[i / 2].second) return false;
   return true;
 }
 
@@ -66,9 +66,16 @@ int main() {
     auto pv = testPairVector();
     t2 = chrono::high_resolution_clock::now();
     pvt += chrono::duration_cast<chrono::microseconds>(t2 - t1).count() / 1e6;
+
+    if (!compareVectors(fs, v)) {
+      cout << "TRIST v! " << cnt << '\n';
+    }
+    if (!compareVectors(fs, pv)) {
+      cout << "TRIST pv! " << cnt << '\n';
+    }
   }
-  cout << fst / 100 << '\n';
-  cout << vt / 100 << '\n';
-  cout << pvt / 100 << '\n';
+  cout << fst << '\n';
+  cout << vt << '\n';
+  cout << pvt << '\n';
   return 0;
 }

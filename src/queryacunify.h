@@ -21,9 +21,6 @@ struct QueryACUnify : public Query {
   std::vector<Substitution> solve(UnifEqSystem ues);
   std::vector<Substitution> solveAC(UnifEq ues);
   std::vector<Substitution> solveACC(UnifEq ues);
-  std::vector<Substitution> combineSubsts(const vector<Substitution> &substs1, const vector<Substitution> &substs2);
-  bool solvedForm(const UnifEqSystem &ues);
-  Substitution getSubstFromSolvedForm(const UnifEqSystem &ues);
 
 private:
   void delSameCoeffs(std::map<Term*, int> &l, std::map<Term*, int> &r);

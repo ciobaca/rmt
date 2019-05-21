@@ -31,28 +31,6 @@ void QueryACUnify::parse(string &s, int &w) {
   }
 }
 
-bool QueryACUnify::solvedForm(const UnifEqSystem &ues) {
-  for (const auto &eq1 : ues) {
-    if (eq1.t1->isFunTerm) {
-      return false;
-    }
-    for (const auto &eq2 : ues) {
-      if (eq2.t2->hasVariable(eq1.t1->getAsVarTerm()->variable)) {
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-Substitution QueryACUnify::getSubstFromSolvedForm(const UnifEqSystem &ues) {
-  Substitution subst;
-  for (const auto &eq : ues) {
-    subst.force(eq.t1->getAsVarTerm()->variable, eq.t2);
-  }
-  return subst;
-}
-
 void QueryACUnify::delSameCoeffs(map<Term*, int> &l, map<Term*, int> &r) {
   if (l.size() > r.size()) {
     l.swap(r);
@@ -95,23 +73,6 @@ Term* QueryACUnify::createFuncWithSameVar(int cnt, Term *var, Function *f, Term 
     --cnt;
   }
   return ans;
-}
-
-vector<Substitution> QueryACUnify::combineSubsts(const vector<Substitution> &substs1, const vector<Substitution> &substs2) {
-  if (!substs1.size() || !substs2.size()) {
-    return substs1.size() ? substs1 : substs2;
-  }
-  vector<Substitution> combinedSubsts;
-  for (const auto &subst1 : substs1) {
-    for (const auto &subst2 : substs2) {
-      Substitution currSubst = subst1;
-      for (auto it : subst2) {
-          currSubst.force(it.first, it.second);
-      }
-      combinedSubsts.push_back(move(currSubst));
-    }
-  }
-  return combinedSubsts;
 }
 
 vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
@@ -287,9 +248,6 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
 }
 
 vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
-  if (solvedForm(ues)) {
-    return {getSubstFromSolvedForm(ues)};
-  }
   vector<Substitution> minSubstSet;
   queue<pair<UnifEqSystem, Substitution>> q;
   for (q.push(make_pair(ues, Substitution())); !q.empty(); q.pop()) {

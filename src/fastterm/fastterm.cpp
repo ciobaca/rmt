@@ -70,7 +70,7 @@ size_t printTermRec(FastTerm term, char *buffer, size_t size)
     size_t len = strlen(getVarName(term));
     if (len <= size) {
       for (size_t i = 0; i < len; ++i) {
-	buffer[i] = getVarName(term)[i];
+        buffer[i] = getVarName(term)[i];
       }
     }
     return len;
@@ -85,35 +85,35 @@ size_t printTermRec(FastTerm term, char *buffer, size_t size)
     size_t printedResult = 0;
     if (len <= size) {
       for (size_t i = 0; i < len; ++i) {
-	buffer[i] = getFuncName(func)[i];
-	printedResult++;
+        buffer[i] = getFuncName(func)[i];
+        printedResult++;
       }
 
       buffer = buffer + len;
       size = size - len;
       if (size >= 1 && getArity(func) > 0) {
-	buffer[0] = '(';
-	size--;
-	printedResult++;
-	buffer++;
+        buffer[0] = '(';
+        size--;
+        printedResult++;
+        buffer++;
       }
       for (uint i = 0; i < getArity(func); ++i) {
-	if (size >= 1 && i > 0) {
-	  buffer[0] = ',';
-	  size--;
-	  printedResult++;
-	  buffer++;
-	}
-	size_t printed = printTermRec(termData[index + i + 1], buffer, size);
-	buffer = buffer + printed;
-	size = size - printed;
-	printedResult += printed;
+        if (size >= 1 && i > 0) {
+          buffer[0] = ',';
+          size--;
+          printedResult++;
+          buffer++;
+        }
+        size_t printed = printTermRec(termData[index + i + 1], buffer, size);
+        buffer = buffer + printed;
+        size = size - printed;
+        printedResult += printed;
       }
       if (size >= 1 && getArity(func) > 0) {
-	buffer[0] = ')';
-	size--;
-	printedResult++;
-	buffer++;
+        buffer[0] = ')';
+        size--;
+        printedResult++;
+        buffer++;
       }
     }
     return printedResult;
@@ -167,7 +167,7 @@ bool occurs(FastVar var, FastTerm term)
     FastTerm *arguments = args(term);
     for (uint i = 0; i < getArity(func); ++i) {
       if (occurs(var, *arguments)) {
-	return true;
+        return true;
       }
       arguments++;
     }

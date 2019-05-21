@@ -18,14 +18,14 @@ bool match(FastTerm subject, FastTerm pattern, FastSubst &subst)
       return false;
     }
     return matchList(args(subject), args(pattern),
-		     getArity(getFunc(subject)), subst);
+         getArity(getFunc(subject)), subst);
   } else {
     if (!isVariable(pattern)) {
       return false;
     }
     assert(isVariable(pattern));
     if (subst.inDomain(pattern)) {
-      return eq_term(subject, subst.range(pattern));
+      return eq_term(subject, subst.image(pattern));
     } else {
       subst.composeWith(pattern, subject);
       return true;

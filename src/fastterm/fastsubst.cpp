@@ -38,7 +38,7 @@ bool FastSubst::inDomain(FastVar var)
   return false;
 }
 
-FastTerm FastSubst::range(FastVar var)
+FastTerm FastSubst::image(FastVar var)
 {
   assert(inDomain(var));
   for (uint i = 0; i < count; i++) {
@@ -54,7 +54,7 @@ FastTerm FastSubst::applySubst(FastTerm term)
 {
   if (isVariable(term)) {
     if (inDomain(term)) {
-      return range(term);
+      return image(term);
     }
     return term;
   } else {
@@ -124,16 +124,16 @@ size_t printSubst(FastSubst &subst, char *buffer, size_t size)
   for (uint i = 0; i < subst.count; i += 2) {
     if (i > 0) {
       if (size >= 1) {
-	buffer[0] = ',';
-	size--;
-	result++;
-	buffer++;
+        buffer[0] = ',';
+        size--;
+        result++;
+        buffer++;
       }
       if (size >= 1) {
-	buffer[0] = ' ';
-	size--;
-	result++;
-	buffer++;
+        buffer[0] = ' ';
+        size--;
+        result++;
+        buffer++;
       }
     }
     assert(validFastTerm(subst.data[i + 1]));

@@ -133,11 +133,11 @@ vector<FastSubst> FastQueryACUnify::solveAC(UnifEq ueq) {
   for(int i = 0; i < (int)sigma.size(); ++i) {
     int index = 0;
     for(auto it : l) {
-      sigmaImage[i][index] = sigma[i].range(it.first);
+      sigmaImage[i][index] = sigma[i].image(it.first);
       ++index;
     }
     for(auto it : r) {
-      sigmaImage[i][index] = sigma[i].range(it.first);
+      sigmaImage[i][index] = sigma[i].image(it.first);
       ++index;
     }
   }
@@ -146,7 +146,7 @@ vector<FastSubst> FastQueryACUnify::solveAC(UnifEq ueq) {
     for (const auto &it : constToVar) {
       FastVar var = it.second;
       if (subst.inDomain(var)) {
-        FastTerm t = subst.range(var);
+        FastTerm t = subst.image(var);
         if(isFuncTerm(t) && t != it.second) {
           return false;
         }

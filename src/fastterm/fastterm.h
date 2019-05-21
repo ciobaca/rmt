@@ -45,7 +45,7 @@ struct FastSubst {
   ~FastSubst();
   void addToSubst(FastVar var, FastTerm term);
   bool inDomain(FastVar var);
-  FastTerm range(FastVar var);
+  FastTerm image(FastVar var);
   FastTerm applySubst(FastTerm term);
   void composeWith(FastVar v, FastTerm t);
 };

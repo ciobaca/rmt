@@ -15,7 +15,8 @@
 
 enum BuiltinSortType {
   bltnBool,
-  bltnInt
+  bltnInt,
+  bltnState
 };
 
 enum BuiltinFuncType {
@@ -70,6 +71,7 @@ BuiltinSortType getBuiltinSortType(FastSort sort);
 
 FastSort fastBoolSort();
 FastSort fastIntSort();
+FastSort fastStateSort();
 
 void newSubSort(FastSort subsort, FastSort supersort);
 
@@ -79,6 +81,7 @@ const char *getSortName(FastSort sort);
   Variables.
  */
 FastVar newVar(const char *name, FastSort sort);
+FastVar createFreshVariable(FastSort sort);
 bool validFastVar(FastVar var);
 const char *getVarName(FastVar var);
 FastSort getVarSort(FastVar var);

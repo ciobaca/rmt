@@ -85,7 +85,7 @@ vector<FastSubst> FastQueryACUnify::solveAC(UnifEq ueq) {
     }
     if(!getArity(t) || getFunc(t) != f) {
       if(!constToVar.count(t)) {
-        constToVar[t] = -1; // ?? getVarTerm(createFreshVariable((Sort*) getSort("State")));
+        constToVar[t] = createFreshVariable(fastStateSort());
       }
       ++M[constToVar[t]];
       return;
@@ -118,7 +118,7 @@ vector<FastSubst> FastQueryACUnify::solveAC(UnifEq ueq) {
   for (const auto &sol : result) {
     int index = 0;
     sigma.push_back(FastSubst());
-    FastTerm z = -1; // ?getVarTerm(createFreshVariable((Sort*) getSort("State")));
+    FastTerm z = createFreshVariable(fastStateSort());
     for (auto it : l) {
       sigma.back().addToSubst(it.first, createFuncWithSameVar(sol.first[index], z,f, unityElement));
       ++index;

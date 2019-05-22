@@ -9,6 +9,7 @@ BuiltinSortType builtinSortType[MAXSORTS];
 
 FastSort sortBool;
 FastSort sortInt;
+FastSort sortState;
 
 FastSort subsortings[MAXSUBSORTINGS * 2];
 uint32 subsortingCount = 0;
@@ -26,6 +27,10 @@ void initSorts()
   sortInt = newSort("Int");
   sortIsBuiltin[sortInt] = true;
   builtinSortType[sortInt] = bltnInt;
+  
+  sortState = newSort("State");
+  sortIsBuiltin[sortState] = true;
+  builtinSortType[sortState] = bltnState;
 }
 
 bool isBuiltinSort(FastSort sort)
@@ -42,6 +47,10 @@ FastSort fastBoolSort()
 FastSort fastIntSort()
 {
   return sortInt;
+}
+
+FastSort fastStateSort() {
+  return sortState;
 }
 
 bool validFastSort(FastSort sort)

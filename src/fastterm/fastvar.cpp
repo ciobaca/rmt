@@ -1,7 +1,9 @@
 #include "fastterm.h"
 #include <cassert>
+#include <string>
 
 uint32 varCount = 0;
+uint32 fresVarCount = 0;
 FastSort varSorts[MAXVARS];
 const char *varNames[MAXVARS];
 
@@ -22,6 +24,10 @@ FastVar newVar(const char *name, FastSort sort)
   FastVar result = varCount++;
   assert(validFastVar(result));
   return result;
+}
+
+FastVar createFreshVariable(FastSort sort) {
+  return newVar(("_" + std::to_string(varCount++)).c_str(), sort);
 }
  
 const char *getVarName(FastVar var)

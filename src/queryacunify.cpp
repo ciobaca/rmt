@@ -214,13 +214,9 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
     return checkConstConstraints(subst);
   };
   vector<Substitution> minSubstSet;
-  minSubstSet.push_back(Substitution());
-  if (!checkMask(0) || !getSubstFromMask(0, minSubstSet.back())) {
-    minSubstSet.pop_back();
-  }
   const int upperMask = 1 << sigma.size();
-  for (int mask = 1; mask < upperMask; ++mask) {
-    if (checkMask(mask)) {
+  for (int mask = 0; mask < upperMask; ++mask) {
+    if (f->unityElement != nullptr || checkMask(mask)) {
       Substitution subst;
       if (getSubstFromMask(mask, subst)) {
         minSubstSet.push_back(subst);
@@ -255,13 +251,29 @@ vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
     Substitution subst = move(q.front().second);
     bool toAdd = true;
     while (ues.size() && toAdd) {
-      UnifEq &eq = ues.back();
+      UnifEq eq = ues.back();
       if (eq.t1 == eq.t2) {
         ues.pop_back();
         continue;
       }
       if (eq.t1->isVarTerm) {
         if (eq.t2->isFunTerm && eq.t2->hasVariable(eq.t1->getAsVarTerm()->variable)) {
+          Term *uElem = getFunTerm(eq.t2->getAsFunTerm()->function->unityElement, {});
+          if (uElem != nullptr) {
+            ues.pop_back();
+            Term *arg1 = eq.t2->getAsFunTerm()->arguments[0];
+            Term *arg2 = eq.t2->getAsFunTerm()->arguments[1];
+            UnifEqSystem nues(ues);
+            nues.addEq(UnifEq(arg1, uElem));
+            nues.addEq(UnifEq(arg2, eq.t1), true);
+            q.push(make_pair(nues, subst));
+            if (arg1 != arg2) {
+              nues = UnifEqSystem(ues);
+              nues.addEq(UnifEq(arg1, eq.t1));
+              nues.addEq(UnifEq(arg2, uElem), true);
+              q.push(make_pair(nues, subst));
+            }
+          }
           toAdd = false;
           break;
         }
@@ -278,10 +290,43 @@ vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
         auto func1 = eq.t1->getAsFunTerm()->function;
         auto func2 = eq.t2->getAsFunTerm()->function;
         if (func1 != func2) {
+          ues.pop_back();
+          if (func1->unityElement != nullptr) {
+            Term *uElem = getFunTerm(func1->unityElement, {});
+            Term *arg1 = eq.t1->getAsFunTerm()->arguments[0];
+            Term *arg2 = eq.t1->getAsFunTerm()->arguments[1];
+            UnifEqSystem nues(ues);
+            nues.addEq(UnifEq(arg1, uElem));
+            nues.addEq(UnifEq(arg2, eq.t2), true);
+            q.push(make_pair(nues, subst));
+            nues = UnifEqSystem(ues);
+            nues.addEq(UnifEq(arg1, eq.t2));
+            nues.addEq(UnifEq(arg2, uElem), true);
+            q.push(make_pair(nues, subst));
+            if (func1->unityElement == func2->unityElement) {
+              nues = UnifEqSystem(ues);
+              nues.addEq(UnifEq(eq.t1, uElem));
+              nues.addEq(UnifEq(eq.t2, uElem), true);
+              q.push(make_pair(nues, subst));
+            }
+          }
+          if (func2->unityElement != nullptr) {
+            Term *uElem = getFunTerm(func2->unityElement, {});
+            Term *arg1 = eq.t2->getAsFunTerm()->arguments[0];
+            Term *arg2 = eq.t2->getAsFunTerm()->arguments[1];
+            UnifEqSystem nues(ues);
+            nues.addEq(UnifEq(arg1, uElem));
+            nues.addEq(UnifEq(arg2, eq.t1), true);
+            q.push(make_pair(nues, subst));
+            nues = UnifEqSystem(ues);
+            nues.addEq(UnifEq(arg1, eq.t1));
+            nues.addEq(UnifEq(arg2, uElem), true);
+            q.push(make_pair(nues, subst));
+          }
           toAdd = false;
           break;
         }
-        if (func1->isAssociative && func1->isCommutative) {
+        if (func1->isAssociative && func1->isCommutative && func1->unityElement == nullptr) {
           vector<Substitution> sols = solveAC(eq);
           ues.pop_back();
           for (auto &sol : sols) {

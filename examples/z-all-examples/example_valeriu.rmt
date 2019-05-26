@@ -64,4 +64,8 @@ ac-unify (tg X) (tg Y);
 n*unify (tg X) (tg Y);
 pat-weg-unify (tg X) (tg Y);
 
+ac-unify (f X Y) (g a c);
+ac-unify (f X Y) (f a c);
 ac-unify (f X Y) (f (ff a c) Z);
+ac-unify (f X (f X X)) (f X X);
+acu-unify (f X (f X X)) (f X X);

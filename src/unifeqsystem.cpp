@@ -25,6 +25,13 @@ UnifEqSystem::UnifEqSystem(const Substitution &sol, const UnifEqSystem &ues) : s
   this->sortUES();
 }
 
+void UnifEqSystem::addEq(const UnifEq &eq, bool toSort) {
+  this->push_back(eq);
+  if (toSort) {
+    this->sortUES();
+  }
+}
+
 void UnifEqSystem::decomp(FunTerm *t1, FunTerm *t2) {
   int n = t1->arguments.size();
   for (int i = 0; i < n; ++i) {

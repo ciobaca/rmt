@@ -24,8 +24,15 @@ UnifEqSystem::UnifEqSystem(const FastSubst &sol, const UnifEqSystem &ues) : std:
   this->sortUES();
 }
 
+void UnifEqSystem::addEq(const UnifEq &eq, bool toSort) {
+  this->push_back(eq);
+  if (toSort) {
+    this->sortUES();
+  }
+}
+
 void UnifEqSystem::decomp(FastTerm t1, FastTerm t2) {
-  int n = getArity(t1);
+  int n = getArity(getFunc(t1));
   auto args1 = args(t1);
   auto args2 = args(t2);
   for (int i = 0; i < n; ++i) {

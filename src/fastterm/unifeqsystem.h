@@ -11,6 +11,7 @@ struct UnifEqSystem : std::vector<UnifEq> {
   UnifEqSystem(const UnifEq &eq);
   UnifEqSystem(const UnifEqSystem &ues);
   UnifEqSystem(const FastSubst &sols, const UnifEqSystem &ues);
+  void addEq(const UnifEq &eq, bool toSort = false);
   void decomp(FastTerm t1, FastTerm t2);
   void sortUES();
 };

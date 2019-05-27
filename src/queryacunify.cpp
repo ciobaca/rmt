@@ -41,7 +41,7 @@ void QueryACUnify::delSameCoeffs(map<Term*, int> &l, map<Term*, int> &r) {
       toDel.push_back(it.first);
     }
   }
-  for (Term *it : toDel) {
+  for (auto it : toDel) {
     int minVal = min(l[it], r[it]);
     l[it] -= minVal;
     r[it] -= minVal;

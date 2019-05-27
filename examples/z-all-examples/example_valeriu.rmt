@@ -69,3 +69,4 @@ ac-unify (f X Y) (f a c);
 ac-unify (f X Y) (f (ff a c) Z);
 ac-unify (f X (f X X)) (f X X);
 acu-unify (f X (f X X)) (f X X);
+ac-unify (g X X) (g c (tg Y));

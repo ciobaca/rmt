@@ -3,14 +3,14 @@
 
 FastSubst::FastSubst()
 {
-  data = new uint [16];
+  data = new uint32 [16];
   size = 16;
   count = 0;
 }
 
 FastSubst::~FastSubst()
 {
-  delete [] data;
+  //delete []data;
 }
 
 void FastSubst::addToSubst(FastVar var, FastTerm term)

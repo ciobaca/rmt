@@ -37,6 +37,8 @@ typedef uint32 FastTerm;  /* 0 .. MAXVARS - 1 and MAXVARS .. */
                           /* if >= MAXVARS, then it represents a pointer into termData */
 typedef uint32 FastSort;  /* 0 .. MAXSORTS - 1 */
 
+const uint32 MISSING_UELEM = 0xFFFFFFFF;
+
 struct FastSubst {
   uint32 size;
   uint32 count;
@@ -92,6 +94,10 @@ bool eq_var(FastVar var1, FastVar var2);
 */
 FastFunc newConst(const char *name, FastSort sort);
 FastFunc newFunc(const char *name, FastSort resultSort, uint32 arity, FastSort *args);
+FastFunc newACFunc(const char *name, FastSort sort);
+FastFunc newACUFunc(const char *name, FastFunc uElem);
+FastFunc getUnityElement(FastFunc func);
+bool isFuncAC(FastFunc func);
 bool validFastFunc(FastFunc func);
 
 FastSort getArgSort(FastFunc func, uint arg);

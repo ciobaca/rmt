@@ -12,15 +12,11 @@ struct FastQueryACUnify {
   FastTerm t1;
   FastTerm t2;
 
-  FastQueryACUnify();
-  virtual FastQueryACUnify *create();
-  virtual void parse(std::string &s, int &w);
-  virtual void execute();
-  std::vector<FastSubst> solve(UnifEqSystem ues);
-  std::vector<FastSubst> solveAC(UnifEq ues);
-  std::vector<FastSubst> solveACC(UnifEq ues);
+  FastQueryACUnify(FastTerm t1, FastTerm t2);
+  std::vector<FastSubst> solve();
 
 private:
+  std::vector<FastSubst> solveAC(UnifEq ues);
   void delSameCoeffs(std::map<FastTerm, int> &l, std::map<FastTerm, int> &r);
   std::vector<int> fromMapToVector(const std::map<FastTerm, int> &M);
   FastTerm createFuncWithSameVar(int cnt, FastTerm var, FastFunc f, FastTerm unityElement);

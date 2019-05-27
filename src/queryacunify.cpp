@@ -103,7 +103,17 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
   delSameCoeffs(l, r);
   if (!l.size() || !r.size()) {
     if (l.size() != r.size()) {
-      return {};
+      if (f->unityElement == nullptr) {
+        return {};
+      }
+      Substitution subst;
+      for (auto it : l) {
+        subst.add(it.first->getAsVarTerm()->variable, unityElement);
+      }
+      for (auto it : r) {
+        subst.add(it.first->getAsVarTerm()->variable, unityElement);
+      }
+      return vector<Substitution>{subst};
     }
     return vector<Substitution>{Substitution()};
   }
@@ -190,7 +200,7 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
   auto getSubstFromMask = [&](const int &mask, Substitution &subst) -> bool {
     int n = sigma.size();
     int m = sigmaImage[0].size();
-    vector<Term*> ans(m);
+    vector<Term*> ans(m, nullptr);
     for (int i = 0; i < n; ++i) {
       if (mask & (1 << i)) {
         continue;
@@ -199,6 +209,13 @@ vector<Substitution> QueryACUnify::solveAC(UnifEq ueq) {
         Term *aux = sigmaImage[i][j];
         if (aux->isVarTerm || aux != unityElement) {
           ans[j] = ans[j] ? getFunTerm(f, {ans[j], aux}) : aux;
+        }
+      }
+    }
+    if (f->unityElement != nullptr) {
+      for (auto &it : ans) {
+        if (it == nullptr) {
+          it = unityElement;
         }
       }
     }
@@ -303,12 +320,6 @@ vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
             nues.addEq(UnifEq(arg1, eq.t2));
             nues.addEq(UnifEq(arg2, uElem), true);
             q.push(make_pair(nues, subst));
-            if (func1->unityElement == func2->unityElement) {
-              nues = UnifEqSystem(ues);
-              nues.addEq(UnifEq(eq.t1, uElem));
-              nues.addEq(UnifEq(eq.t2, uElem), true);
-              q.push(make_pair(nues, subst));
-            }
           }
           if (func2->unityElement != nullptr) {
             Term *uElem = getFunTerm(func2->unityElement, {});
@@ -326,7 +337,7 @@ vector<Substitution> QueryACUnify::solve(UnifEqSystem ues) {
           toAdd = false;
           break;
         }
-        if (func1->isAssociative && func1->isCommutative && func1->unityElement == nullptr) {
+        if (func1->isAssociative && func1->isCommutative) {
           vector<Substitution> sols = solveAC(eq);
           ues.pop_back();
           for (auto &sol : sols) {

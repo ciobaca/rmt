@@ -15,10 +15,10 @@ variables
   X : State, X1 : State, X2 : State, X3 : State, X4 : State, X5 : State, X6 : State,
   Y : State, Y1 : State, Y2 : State, Y3 : State, Y4 : State, Y5 : State;
 
-/*c-unify (f X Y) (f Y (f Z Y));
-c-unify (g X Y) (g Y (f Z Y));
-c-unify (f (f X Z) (f Z Y)) (f Y (f Z Y));
-c-unify (g (g X Z) (g Z Y)) (g Y (g Z Y));
+//c-unify (f X Y) (f Y (f Z Y));
+//c-unify (g X Y) (g Y (f Z Y));
+//c-unify (f (f X Z) (f Z Y)) (f Y (f Z Y));
+//c-unify (g (g X Z) (g Z Y)) (g Y (g Z Y));
 acu-unify (f X (f X X)) (f Y (f Z Z));
 acu-unify (f X1 X2) (f X3 X4);
 acu-unify (f X1 X2) (f X1 (f X2 X1));
@@ -27,7 +27,7 @@ ac-unify (f X3 X4) (f X1 X2);
 ac-unify (f (f X1 X1) (f X2 X3)) (f (f Y1 Y1) Y2);
 acc-unify (f X1 X2) (f X3 c);
 acc-unify (f (f X1 X1) (f X2 a)) (f (f c c) Y1);
-acs-unify (f X1 (f X2 X3)) (f X4 (f X5 X6));*/
+acs-unify (f X1 (f X2 X3)) (f X4 (f X5 X6));
 
 ac-unify (f (f X Y) Z) (f Z (f X Y));
 acs-unify (f (f X Y) Z) (f Z (f X Y));

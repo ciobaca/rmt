@@ -42,10 +42,10 @@ void test1()
   printTerm(t2, buffer, 1024);
   printf("t2 = %s.\n", buffer);
 
-  FastSubst subst;
-  if (unify(t1, t2, subst)) {
+  auto subst = unify(t1, t2);
+  if (subst.size()) {
     printf("Unification successful.\n");
-    printSubst(subst, buffer, 1024);
+    printSubst(subst[0], buffer, 1024);
     printf("unifier = %s.\n", buffer);
   } else {
     printf("Unification failed.\n");
@@ -93,10 +93,10 @@ void test2()
   printTerm(t2, buffer, 1024);
   printf("t2 = %s.\n", buffer);
 
-  FastSubst subst;
-  if (unify(t1, t2, subst)) {
+  auto subst = unify(t1, t2);
+  if (subst.size()) {
     printf("Unification successful.\n");
-    printSubst(subst, buffer, 1024);
+    printSubst(subst[0], buffer, 1024);
     printf("unifier = %s.\n", buffer);
   } else {
     printf("Unification failed.\n");
@@ -144,10 +144,10 @@ void test3()
   printTerm(t2, buffer, 1024);
   printf("t2 = %s.\n", buffer);
 
-  FastSubst subst;
-  if (unify(t1, t2, subst)) {
+  auto subst = unify(t1, t2);
+  if (subst.size()) {
     printf("Unification successful.\n");
-    printSubst(subst, buffer, 1024);
+    printSubst(subst[0], buffer, 1024);
     printf("unifier = %s.\n", buffer);
   } else {
     printf("Unification failed.\n");
@@ -196,10 +196,10 @@ void test4()
   printTerm(t2, buffer, 1024);
   printf("t2 = %s.\n", buffer);
 
-  FastSubst subst;
-  if (unify(t1, t2, subst)) {
+  auto subst = unify(t1, t2);
+  if (subst.size()) {
     printf("Unification successful.\n");
-    printSubst(subst, buffer, 1024);
+    printSubst(subst[0], buffer, 1024);
     printf("unifier = %s.\n", buffer);
   } else {
     printf("Unification failed.\n");
@@ -248,10 +248,10 @@ void test5()
   printTerm(t2, buffer, 1024);
   printf("t2 = %s.\n", buffer);
 
-  FastSubst subst;
-  if (unify(t1, t2, subst)) {
+  auto subst = unify(t1, t2);
+  if (subst.size()) {
     printf("Unification successful.\n");
-    printSubst(subst, buffer, 1024);
+    printSubst(subst[0], buffer, 1024);
     printf("unifier = %s.\n", buffer);
   } else {
     printf("Unification failed.\n");

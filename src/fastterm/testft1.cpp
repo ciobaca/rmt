@@ -213,30 +213,19 @@ void test_unify()
   printTerm(t7, buffer7, 1024);
 
   FastSubst subst1;
-  printf("unify %s and %s: %d\n", buffer1, buffer2, unify(t1, t2, subst1));
-  printf("unify %s and %s: %d\n", buffer1, buffer2, (int)FastQueryACUnify(t1, t2).solve().size());
+  printf("unify %s and %s: %d\n", buffer1, buffer2, unify(t1, t2).size());
   
   FastSubst subst2;
-  printf("unify %s and %s: %d\n", buffer2, buffer3, unify(t2, t3, subst2));
-  printf("unify %s and %s: %d\n", buffer2, buffer3, (int)FastQueryACUnify(t2, t3).solve().size());
+  printf("unify %s and %s: %d\n", buffer2, buffer3, unify(t2, t3).size());
   
   FastSubst subst3;
-  printf("unify %s and %s: %d\n", buffer3, buffer5, unify(t3, t5, subst3));
-  printf("unify %s and %s: %d\n", buffer3, buffer5, (int)FastQueryACUnify(t3, t5).solve().size());
+  printf("unify %s and %s: %d\n", buffer3, buffer5, unify(t3, t5).size());
 
   FastSubst subst4;
-  printf("unify %s and %s: %d\n", buffer5, buffer6, unify(t5, t6, subst4));
-  printf("unify %s and %s: %d\n", buffer5, buffer6, (int)FastQueryACUnify(t5, t6).solve().size());
+  printf("unify %s and %s: %d\n", buffer5, buffer6, unify(t5, t6).size());
 
   FastSubst subst5;
-  printf("unify %s and %s: %d\n", buffer6, buffer7, unify(t6, t7, subst5));
-  printf("unify %s and %s: %d\n", buffer6, buffer7, (int)FastQueryACUnify(t6, t7).solve().size());
-  auto ans = FastQueryACUnify(t6, t7).solve();
-  for (auto it : ans) {
-    char buff[1000] = {};
-    printSubst(it, buff, 1000);
-    printf("%s\n", buff);
-  }
+  printf("unify %s and %s: %d\n", buffer6, buffer7, unify(t6, t7).size());
 }
 
 void test_match()

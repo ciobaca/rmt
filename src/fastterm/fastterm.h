@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <cassert>
+#include <vector>
 #include <z3.h>
 
 #define MAXVARS (1024 * 16)
@@ -153,7 +154,7 @@ bool occurs(FastVar var, FastTerm term);
 /*
   Syntactic unification.
  */
-bool unify(FastTerm t1, FastTerm t2, FastSubst &result);
+std::vector<FastSubst> unify(FastTerm t1, FastTerm t2);
 
 bool match(FastTerm subject, FastTerm pattern, FastSubst &result);
 

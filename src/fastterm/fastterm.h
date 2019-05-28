@@ -48,6 +48,7 @@ struct FastSubst {
   FastSubst();
   ~FastSubst();
   void addToSubst(FastVar var, FastTerm term);
+  void replaceConstWithVar(FastFunc c, FastVar);
   bool inDomain(FastVar var);
   FastTerm image(FastVar var);
   FastTerm applySubst(FastTerm term);
@@ -156,7 +157,7 @@ bool occurs(FastVar var, FastTerm term);
  */
 std::vector<FastSubst> unify(FastTerm t1, FastTerm t2);
 
-bool match(FastTerm subject, FastTerm pattern, FastSubst &result);
+std::vector<FastSubst> match(FastTerm subject, FastTerm pattern, FastSubst &result);
 
 /*
   Z3 interface.

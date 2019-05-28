@@ -294,34 +294,34 @@ void test_match()
   printTerm(t7, buffer7, 1024);
 
   FastSubst subst1;
-  printf("match %s and %s: %d\n", buffer1, buffer2, match(t1, t2, subst1));
-  
+  printf("match %s and %s: %d\n", buffer1, buffer2, match(t1, t2, subst1).size());
+
   FastSubst subst2;
-  printf("match %s and %s: %d\n", buffer2, buffer3, match(t2, t3, subst2));
-  
+  printf("match %s and %s: %d\n", buffer2, buffer3, match(t2, t3, subst2).size());
+
   FastSubst subst3;
-  printf("match %s and %s: %d\n", buffer3, buffer5, match(t3, t5, subst3));
+  printf("match %s and %s: %d\n", buffer3, buffer5, match(t3, t5, subst3).size());
 
   FastSubst subst4;
-  printf("match %s and %s: %d\n", buffer5, buffer6, match(t5, t6, subst4));
+  printf("match %s and %s: %d\n", buffer5, buffer6, match(t5, t6, subst4).size());
 
   FastSubst subst5;
-  printf("match %s and %s: %d\n", buffer6, buffer7, match(t6, t7, subst5));
+  printf("match %s and %s: %d\n", buffer6, buffer7, match(t6, t7, subst5).size());
 
   FastSubst subst6;
-  printf("match %s and %s: %d\n", buffer2, buffer1, match(t2, t1, subst6));
-  
+  printf("match %s and %s: %d\n", buffer2, buffer1, match(t2, t1, subst6).size());
+
   FastSubst subst7;
-  printf("match %s and %s: %d\n", buffer3, buffer2, match(t3, t2, subst7));
-  
+  printf("match %s and %s: %d\n", buffer3, buffer2, match(t3, t2, subst7).size());
+
   FastSubst subst8;
-  printf("match %s and %s: %d\n", buffer5, buffer3, match(t5, t3, subst8));
+  printf("match %s and %s: %d\n", buffer5, buffer3, match(t5, t3, subst8).size());
 
   FastSubst subst9;
-  printf("match %s and %s: %d\n", buffer6, buffer5, match(t6, t5, subst9));
+  printf("match %s and %s: %d\n", buffer6, buffer5, match(t6, t5, subst9).size());
 
   FastSubst subst10;
-  printf("match %s and %s: %d\n", buffer7, buffer6, match(t7, t6, subst10));
+  printf("match %s and %s: %d\n", buffer7, buffer6, match(t7, t6, subst10).size());
 }
 
 int main()

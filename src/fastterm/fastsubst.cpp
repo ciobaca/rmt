@@ -50,6 +50,14 @@ FastTerm FastSubst::image(FastVar var)
   return 0;
 }
 
+void FastSubst::replaceConstWithVar(FastTerm c, FastVar v) {
+  for (uint i = 0; i < count; ++i) {
+    if (data[i] == c) {
+      data[i] = v;
+    }
+  }
+}
+
 FastTerm FastSubst::applySubst(FastTerm term)
 {
   if (isVariable(term)) {

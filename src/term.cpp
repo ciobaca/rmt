@@ -348,3 +348,9 @@ Term *Term::normalizeFunctions()
   //   return this;
   // }
 }
+
+string &Term::toString() {
+  if (this->stringRepresentation.size() == 0)
+    this->computeToString();
+  return this->stringRepresentation;
+}

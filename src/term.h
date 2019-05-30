@@ -39,6 +39,8 @@ struct Term
   std::vector<void *> allVarsAndFresh;
   std::vector<Variable *> allUniqueVars;
 
+  string stringRepresentation;
+
   Term() {
     computedVars = false;
     computedUniqueVars = false;
@@ -269,8 +271,9 @@ struct Term
   // virtual string toSmtString() = 0;
   virtual Z3_ast toSmt() = 0;
 
-  // returns an infix representation of the term as a string
-  virtual string toString() = 0;
+  // returns an infix representation of the term as a string (cached)
+  virtual void computeToString() = 0;
+  string &toString();
 
   // returns a term in which variable names are uniformized
   virtual Term *toUniformTerm(vector<void*> &allVars, map<Variable*, Term*> *subst = NULL) = 0;

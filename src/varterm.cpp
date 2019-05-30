@@ -41,9 +41,9 @@ vector<void*> VarTerm::computeVarsAndFresh() {
   return result;
 }
 
-string VarTerm::toString()
+void VarTerm::computeToString()
 {
-  return variable->name;
+  this->stringRepresentation = variable->name;
 }
 
 Z3_ast VarTerm::toSmt()

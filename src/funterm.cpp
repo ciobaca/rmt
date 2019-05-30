@@ -41,7 +41,7 @@ vector<Variable *> FunTerm::computeVars()
   return result;
 }
 
-string FunTerm::toString()
+void FunTerm::computeToString()
 {
   assert(len(function->arguments) == len(arguments));
   int n = len(function->arguments);
@@ -57,7 +57,7 @@ string FunTerm::toString()
   if (n) {
     oss << ")";
   }
-  return oss.str();
+  this->stringRepresentation = oss.str();
 }
 
 Z3_ast FunTerm::toSmt()

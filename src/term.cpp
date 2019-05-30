@@ -11,7 +11,7 @@
 
 using namespace std;
 
-vector<Variable *> Term::vars() 
+vector<Variable *> &Term::vars() 
 {
   if (computedVars) {
     return allVars;
@@ -21,7 +21,7 @@ vector<Variable *> Term::vars()
   }
 }
 
-vector<void *> Term::varsAndFresh()
+vector<void *> &Term::varsAndFresh()
 {
   if (computedVarsAndFresh) {
     return allVarsAndFresh;
@@ -42,7 +42,7 @@ vector<Variable *> Term::computeUniqueVars()
   return myv;
 }
 
-vector<Variable *> Term::uniqueVars()
+vector<Variable *> &Term::uniqueVars()
 {
   if (computedUniqueVars) {
     return allUniqueVars;
@@ -327,7 +327,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearchWdf(ConstrainedRewriteSystem &c
 
 bool Term::hasVariable(Variable *var)
 {
-  vector<Variable *> uvars = uniqueVars();
+  vector<Variable *> &uvars = uniqueVars();
   for (vector<Variable *>::iterator it = uvars.begin(); it != uvars.end(); ++it) {
     if (*it == var) {
       return true;

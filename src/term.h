@@ -51,12 +51,12 @@ struct Term
   
   // Returns the set of variables that appear in the term.  The result
   // is cached (a second call to vars will be O(1)).
-  virtual vector<Variable *> vars();
+  virtual vector<Variable *> &vars();
 
   // Returns the set of unique variables and fresh constants that appear in the term
   // in the order in which they appear. The result
   // is cached (a second call to vars will be O(1)).
-  virtual vector<void*> varsAndFresh();
+  virtual vector<void*> &varsAndFresh();
 
   // Returns the set of variables in a term; no repetitions. Prefer
   // the cached version below to this one.
@@ -66,7 +66,7 @@ struct Term
   
   // Returns the set of variables in a term; no repetitions. Caches
   // the result.
-  virtual vector<Variable *> uniqueVars();
+  virtual vector<Variable *> &uniqueVars();
 
   // Returns whether the term contains the variable given as argument
   virtual bool hasVariable(Variable *);

@@ -107,9 +107,6 @@ struct Term
   // The boolean parameter should be set to false if the rs is not optimally reducing.
   virtual Term *normalize(RewriteSystem &rewriteSystem, bool = true);
 
-  // Computes a term where all defined functions have been normalized
-  virtual Term *normalizeFunctions();
-
   // Unifies this term with the parameter. Implements visitor pattern
   // for multiple dispatch.  The substitution is the substitution
   // compute so far.

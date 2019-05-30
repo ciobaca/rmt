@@ -64,8 +64,8 @@ void QueryProveSim2::parse(std::string &s, int &w) {
 
 // solves phi(x) -> (P(x), Q(x)) \in [base]
 Term *QueryProveSim2::whenBase(ConstrainedPair PQphi, vector<ConstrainedPair> &base) {
-  ConstrainedTerm P = ConstrainedTerm(PQphi.lhs, PQphi.constraint).normalizeFunctions();
-  ConstrainedTerm Q = ConstrainedTerm(PQphi.rhs, PQphi.constraint).normalizeFunctions();
+  ConstrainedTerm P = ConstrainedTerm(PQphi.lhs, PQphi.constraint);
+  ConstrainedTerm Q = ConstrainedTerm(PQphi.rhs, PQphi.constraint);
   Term *psi = bFalse();
   for(const auto &circ : base) {
     Term *constraint = simplifyConstraint(bAnd(

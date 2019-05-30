@@ -138,12 +138,12 @@ Term *Term::rewriteTopMost(pair<ConstrainedTerm, Term *> crewriteRule, Substitut
   Substitution subst;
   if (this->isInstanceOf(l, subst)) {
     Log(DEBUG7) << "instance of " << l->toString() << endl;
-    if (isSatisfiable(c->substitute(subst)->normalizeFunctions()) == sat) {
+    if (isSatisfiable(c->substitute(subst)) == sat) {
       Log(DEBUG7) << "    and satisfiable" << endl;
       // TODO does not work when constraint has variables not in the lhs of the rewrite rule
       // to solve this issue, should add to "how" the variables occuring in the constraint but not the rule
       how = subst;
-      return r->substitute(subst)->normalizeFunctions();
+      return r->substitute(subst);
     } else {
       Log(DEBUG7) << "    but not satisfiable (" << c->substitute(subst)->toString() << ")" << endl;
     }
@@ -219,14 +219,14 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
   Log(DEBUG7) << "Solution.subst = " << solution.subst.toString() << endl;
   Log(DEBUG7) << "Solution.simplifyingSubst = " << solution.simplifyingSubst.toString() << endl;
 
-  Term *toCheck = simplifyConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst))->normalizeFunctions();
+  Term *toCheck = simplifyConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst));
   Log(DEBUG7) << "Checking satisfiability of " << toCheck->toString() << "." << endl;
   Z3Theory theory;
   vector<Variable *> interpretedVariables = getInterpretedVariables();
   for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
   }
-  theory.addConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst)->normalizeFunctions());
+  theory.addConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst));
   Log(DEBUG7) << "Sending to SMT solver." << endl;
   bool retval = false;
 
@@ -324,7 +324,7 @@ vector<ConstrainedSolution> Term::smtNarrowSearchBasic(ConstrainedRewriteSystem 
 vector<ConstrainedSolution> Term::smtNarrowSearchWdf(ConstrainedRewriteSystem &crsInit, Term *initialConstraint)
 {
   Log(DEBUG7) << "Term::smtNarrowSearchWdt" << this->toString() << endl;
-  return this->normalizeFunctions()->smtNarrowSearchBasic(crsInit, initialConstraint->normalizeFunctions());
+  return this->smtNarrowSearchBasic(crsInit, initialConstraint);
 }
 
 bool Term::hasVariable(Variable *var)
@@ -338,9 +338,9 @@ bool Term::hasVariable(Variable *var)
   return false;
 }
 
-Term *Term::normalizeFunctions()
-{
-  return this;
+//Term *Term::normalizeFunctions()
+//{
+//  return this;
   // TODO this needs to be redesigned
   
   //  Log(DEBUG6) << "Term *Term::normalizeFunctions() (" << this->toString() << ")" << endl;
@@ -353,7 +353,7 @@ Term *Term::normalizeFunctions()
   // } else {
   //   return this;
   // }
-}
+//}
 
 string &Term::toString() {
   if (this->stringRepresentation.size() == 0)

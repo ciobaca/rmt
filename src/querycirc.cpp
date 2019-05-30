@@ -43,7 +43,7 @@ void QueryCirc::execute()
 {
   Term *phiLeft = ctLeft.constraint;
   
-  Term *phi = ctLeft.normalizeFunctions().whenImplies(circLeft);
+  Term *phi = ctLeft.whenImplies(circLeft);
   ctLeft.constraint = bAnd(phiLeft, bNot(phi));
 
   circRight.constraint = bAnd(circRight.constraint, bAnd(phi, phiLeft));

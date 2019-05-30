@@ -113,7 +113,7 @@ void QueryProveSim::parse(std::string &s, int &w) {
 Term *QueryProveSim::whenImpliesBase(ConstrainedTerm current) {
   Term *constraintResult = bFalse();
   for (int i = 0; i < (int)base.size(); ++i) {
-    Term *constraint = current.normalizeFunctions().whenImplies(base[i]);
+    Term *constraint = current.whenImplies(base[i]);
     constraintResult = bOr(constraintResult, constraint);
   }
   constraintResult = simplifyConstraint(constraintResult);
@@ -124,7 +124,7 @@ Term *QueryProveSim::whenImpliesBase(ConstrainedTerm current) {
 Term *QueryProveSim::whenImpliesCircularity(ConstrainedTerm current) {
   Term *constraintResult = bFalse();
   for (int i = 0; i < (int)circularities.size(); ++i) {
-    Term *constraint = current.normalizeFunctions().whenImplies(circularities[i]);
+    Term *constraint = current.whenImplies(circularities[i]);
     constraintResult = bOr(constraintResult, constraint);
   }
   constraintResult = simplifyConstraint(constraintResult);
@@ -133,7 +133,7 @@ Term *QueryProveSim::whenImpliesCircularity(ConstrainedTerm current) {
 
 bool QueryProveSim::possibleCircularity(ConstrainedTerm ct) {
   for (int i = 0; i < (int)circularities.size(); ++i) {
-    if (ct.normalizeFunctions().whenImplies(circularities[i]) != bFalse()) {
+    if (ct.whenImplies(circularities[i]) != bFalse()) {
       return true;
     }
   }
@@ -170,7 +170,7 @@ bool QueryProveSim::possibleLhsBase(Term *lhs) {
     Term *lhsBase, *rhsBase;
     QueryProveSim::decomposeConstrainedTermEq(base[i], lhsBase, rhsBase);
     Log(DEBUG) << "possibleLhsBase? Checking whether " << lhs->toString() << " unifies with " << lhsBase->toString() << endl;
-    if (ConstrainedTerm(lhs, bTrue()).normalizeFunctions().whenImplies(ConstrainedTerm(lhsBase, bTrue())) != bFalse()) {
+    if (ConstrainedTerm(lhs, bTrue()).whenImplies(ConstrainedTerm(lhsBase, bTrue())) != bFalse()) {
       Log(DEBUG) << "possibleLhsBase?     Is true that " << lhs->toString() << " unifies with " << lhsBase->toString() << endl;
       return true;
     }
@@ -183,7 +183,7 @@ bool QueryProveSim::possibleRhsBase(Term *rhs) {
   for (int i = 0; i < (int)base.size(); ++i) {
     Term *lhsBase, *rhsBase;
     QueryProveSim::decomposeConstrainedTermEq(base[i], lhsBase, rhsBase);
-    if (ConstrainedTerm(rhs, bTrue()).normalizeFunctions().whenImplies(ConstrainedTerm(rhsBase, bTrue())) != bFalse()) {
+    if (ConstrainedTerm(rhs, bTrue()).whenImplies(ConstrainedTerm(rhsBase, bTrue())) != bFalse()) {
       return true;
     }
   }
@@ -194,7 +194,7 @@ bool QueryProveSim::possibleLhsCircularity(Term *lhs) {
   for (int i = 0; i < (int)circularities.size(); ++i) {
     Term *lhsCircularity, *rhsCircularity;
     QueryProveSim::decomposeConstrainedTermEq(circularities[i], lhsCircularity, rhsCircularity);
-    if (ConstrainedTerm(lhs, bTrue()).normalizeFunctions().whenImplies(ConstrainedTerm(lhsCircularity, bTrue())) != bFalse()) {
+    if (ConstrainedTerm(lhs, bTrue()).whenImplies(ConstrainedTerm(lhsCircularity, bTrue())) != bFalse()) {
       return true;
     }
   }
@@ -223,7 +223,7 @@ ConstrainedTerm QueryProveSim::pairC(Term *left, Term *right, Term *constraint) 
 
 //returns a constraint under which either base or circularity holds
 Term *QueryProveSim::proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth) {
-  ct = ct.normalizeFunctions();
+  ct = ct;
   cout << spaces(depth) << "Trying to prove base case: " << ct.toString() << endl;
   Term *baseConstraint = simplifyConstraint(whenImpliesBase(ct));
   if (isSatisfiable(bNot(baseConstraint)) == unsat) {
@@ -383,7 +383,7 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
 }
 
 bool QueryProveSim::proveSimulation(ConstrainedTerm ct, int depth) {
-  ct = ct.normalizeFunctions();
+  ct = ct;
   cout << spaces(depth) << "Proving simulation circularity " << ct.toString() << endl;
   bool result = proveSimulationForallLeft(ct, false, depth + 1); //needProgressRight = true;
   if (result) {

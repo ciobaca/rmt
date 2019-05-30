@@ -93,7 +93,7 @@ Term *QueryProveEquivalence::whenImpliesBase(ConstrainedTerm current)
 {
   Term *constraintResult = bFalse();
   for (int i = 0; i < (int)base.size(); ++i) {
-    Term *constraint = current.normalizeFunctions().whenImplies(base[i]);
+    Term *constraint = current.whenImplies(base[i]);
     constraintResult = bOr(constraintResult, constraint);
   }
   return constraintResult;
@@ -104,7 +104,7 @@ Term *QueryProveEquivalence::whenImpliesCircularity(ConstrainedTerm current)
 {
   Term *constraintResult = bFalse();
   for (int i = 0; i < (int)circularities.size(); ++i) {
-    Term *constraint = current.normalizeFunctions().whenImplies(circularities[i]);
+    Term *constraint = current.whenImplies(circularities[i]);
     constraintResult = bOr(constraintResult, constraint);
   }
   return constraintResult;
@@ -135,7 +135,7 @@ bool QueryProveEquivalence::possibleLhsBase(Term *lhs)
     Term *lhsBase, *rhsBase;
     decomposeConstrainedTermEq(base[i], lhsBase, rhsBase);
     Log(DEBUG) <<   "possibleLhsBase? Checking whether " << lhs->toString() << " unifies with " << lhsBase->toString() << endl;
-    if (ConstrainedTerm(lhs, bTrue()).normalizeFunctions().whenImplies(ConstrainedTerm(lhsBase, bTrue())) != bFalse()) {
+    if (ConstrainedTerm(lhs, bTrue()).whenImplies(ConstrainedTerm(lhsBase, bTrue())) != bFalse()) {
       Log(DEBUG) << "possibleLhsBase?     Is true that " << lhs->toString() << " unifies with " << lhsBase->toString() << endl;
       return true;
     }
@@ -149,7 +149,7 @@ bool QueryProveEquivalence::possibleRhsBase(Term *rhs)
   for (int i = 0; i < (int)base.size(); ++i) {
     Term *lhsBase, *rhsBase;
     decomposeConstrainedTermEq(base[i], lhsBase, rhsBase);
-    if (ConstrainedTerm(rhs, bTrue()).normalizeFunctions().whenImplies(ConstrainedTerm(rhsBase, bTrue())) != bFalse()) {
+    if (ConstrainedTerm(rhs, bTrue()).whenImplies(ConstrainedTerm(rhsBase, bTrue())) != bFalse()) {
       return true;
     }
   }
@@ -161,7 +161,7 @@ bool QueryProveEquivalence::possibleLhsCircularity(Term *lhs)
   for (int i = 0; i < (int)circularities.size(); ++i) {
     Term *lhsCircularity, *rhsCircularity;
     decomposeConstrainedTermEq(circularities[i], lhsCircularity, rhsCircularity);
-    if (ConstrainedTerm(lhs, bTrue()).normalizeFunctions().whenImplies(ConstrainedTerm(lhsCircularity, bTrue())) != bFalse()) {
+    if (ConstrainedTerm(lhs, bTrue()).whenImplies(ConstrainedTerm(lhsCircularity, bTrue())) != bFalse()) {
       return true;
     }
   }
@@ -188,7 +188,7 @@ bool QueryProveEquivalence::possibleRhsCircularity(Term *)
 bool QueryProveEquivalence::possibleCircularity(ConstrainedTerm ct)
 {
   for (int i = 0; i < (int)circularities.size(); ++i) {
-    if (ct.normalizeFunctions().whenImplies(circularities[i]) != bFalse()) {
+    if (ct.whenImplies(circularities[i]) != bFalse()) {
       return true;
     }
   }
@@ -279,7 +279,7 @@ bool QueryProveEquivalence::proveEquivalenceForallLeft(ConstrainedTerm ct, bool 
 
 bool QueryProveEquivalence::proveBaseCase(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int)
 {
-  ct = ct.normalizeFunctions();
+  ct = ct;
   cout << spaces(depth) << "Trying to prove base case: " << ct.toString() << endl;
   Term *constraint = simplifyConstraint(whenImpliesBase(ct));
   if (constraint == bTrue()) {
@@ -304,7 +304,7 @@ bool QueryProveEquivalence::proveBaseCase(ConstrainedTerm ct, bool progressLeft,
 
 bool QueryProveEquivalence::proveEquivalence(ConstrainedTerm ct, bool progressLeft, bool progressRight, int depth, int branchingDepth)
 {
-  ct = ct.normalizeFunctions();
+  ct = ct;
   cout << spaces(depth) << "Proving equivalence circularity " << ct.toString() << endl;
   bool result = proveEquivalenceForallLeft(ct, progressLeft, progressRight, depth + 1, branchingDepth);
   if (result) {

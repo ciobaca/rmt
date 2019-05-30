@@ -88,7 +88,7 @@ Variable *getVariable(string name)
   }
 }
 
-void createVariable(string name, Sort *sort)
+Variable *createVariable(string name, Sort *sort)
 {
 #ifndef NDEBUG
   Variable *v = getVariable(name);
@@ -96,6 +96,7 @@ void createVariable(string name, Sort *sort)
 #endif
 
   variables[name] = new Variable(name, sort);
+  return variables[name];
 }
 
 bool variableExists(string name)
@@ -626,7 +627,7 @@ Term *simplifyConstraint(Term *constraint)
   return result;;
 }
 
-Term *simplifyTerm(Term *term)
+Term *simplifyTerm_helper(Term *term)
 {
   if (term->isFunTerm) {
     FunTerm *funterm = term->getAsFunTerm();
@@ -648,6 +649,17 @@ Term *simplifyTerm(Term *term)
     assert(term->isVarTerm);
     return term;
   }
+}
+
+map<Term*, Term*> simplifyCache;
+
+Term *simplifyTerm(Term *term) {
+  vector<void*> usedVars = term->varsAndFresh();
+  map<Variable*, Term*> subst;
+  Term *unifTerm = term->toUniformTerm(usedVars, &subst);
+  if (!simplifyCache.count(unifTerm))
+    simplifyCache[unifTerm] = simplifyTerm_helper(unifTerm);
+  return simplifyCache[unifTerm]->unsubstituteUnif(subst);
 }
 
 ConstrainedTerm simplifyConstrainedTerm(ConstrainedTerm ct)
@@ -735,4 +747,19 @@ ConstrainedRewriteSystem getDefinedFunctionsSystem(vector<Function *> definedFun
   }
 
   return crsFinal;
+}
+
+Variable *getOrCreateVariable(std::string name, Sort *s) {
+  Variable *res = getVariable(name);
+  if (res == NULL)
+    res = createVariable(name, s);
+  assert(res->sort == s);
+  return res;
+}
+
+Variable *getUniformVariable(int varIdx, Sort *s) {
+  ostringstream ss;
+  ss << "_$_" << s->name << "_";
+  ss << varIdx;
+  return getOrCreateVariable(ss.str(), s);
 }

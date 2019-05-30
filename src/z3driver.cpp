@@ -454,17 +454,15 @@ void Z3Theory::addConstraint(Term *constraint)
   constraints.push_back(constraint);
 }
 
-map<string, Z3Result> knownResults;
+map<Term*, Z3Result> knownResults;
 
-string Z3Theory::toNormString() {
-  ostringstream ss;
-  for (const auto &it : this->constraints) {
+Term *Z3Theory::toNormTerm() {
+  Term *t = bTrue();
+  for (auto &it : this->constraints) {
     vector<void*> usedVars = it->varsAndFresh();
-    ss << "||";
-    ss << it->toString(&usedVars);
-    ss << "||";
+    t = bAnd(t, it->toUniformTerm(usedVars));
   }
-  return ss.str();
+  return t;
 }
 
 Z3Result Z3Theory::isSatisfiableHelper() {
@@ -502,7 +500,7 @@ Z3Result Z3Theory::isSatisfiableHelper() {
 
 Z3Result Z3Theory::isSatisfiable()
 {
-  string key = this->toNormString();
+  Term *key = this->toNormTerm();
   Log(INFO) << "Computing result for " << key << endl;
 
   if (!knownResults.count(key)) {

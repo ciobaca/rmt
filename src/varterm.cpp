@@ -41,16 +41,8 @@ vector<void*> VarTerm::computeVarsAndFresh() {
   return result;
 }
 
-string VarTerm::toString(vector<void*> *allVars)
+string VarTerm::toString()
 {
-  if (allVars != NULL) {
-    int x = distance(allVars->begin(),
-      find(allVars->begin(), allVars->end(), (void*)variable));
-    ostringstream ss;
-    ss << "_$_";
-    ss << x;
-    return ss.str();
-  }
   return variable->name;
 }
 
@@ -284,4 +276,17 @@ Term *VarTerm::unsubstitute(vector<Term *>, vector<Variable *>)
 
 int VarTerm::nrFuncInTerm(Function *f) {
   return 0;
+}
+
+Term *VarTerm::toUniformTerm(std::vector<void*> &allVars, map<Variable*, Term*> *subst) {
+  int x = distance(allVars.begin(),
+    find(allVars.begin(), allVars.end(), (void*)variable));
+  Variable *v = getUniformVariable(x, this->getSort());
+  if (subst != NULL) (*subst)[v] = this;
+  return getVarTerm(v);
+}
+
+Term *VarTerm::unsubstituteUnif(map<Variable*, Term*> &subst) {
+  assert(subst.count(this->variable));
+  return subst[this->variable];
 }

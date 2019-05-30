@@ -47,7 +47,7 @@ struct FunTerm : public Term
 
   vector<void*> computeVarsAndFresh();
 
-  virtual string toString(vector<void*> *allVars = NULL);
+  virtual string toString();
   virtual string toPrettyString();
 
   virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
@@ -57,6 +57,10 @@ struct FunTerm : public Term
 
   virtual void getDefinedFunctions(std::set<Function *> &);
   virtual Term *unsubstitute(std::vector<Term *> cts, std::vector<Variable *> vs);
+
+  Term *toUniformTerm(std::vector<void*> &allVars, map<Variable*, Term*> *subst);
+
+  Term *unsubstituteUnif(map<Variable*, Term*> &subst);
 
   int nrFuncInTerm(Function *f);
 };

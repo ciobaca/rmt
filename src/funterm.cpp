@@ -41,7 +41,7 @@ vector<Variable *> FunTerm::computeVars()
   return result;
 }
 
-string FunTerm::toString(vector<void*> *allVars)
+string FunTerm::toString()
 {
   assert(len(function->arguments) == len(arguments));
   int n = len(function->arguments);
@@ -50,17 +50,9 @@ string FunTerm::toString(vector<void*> *allVars)
   if (n) {
     oss << "(";
   }
-  if (function->isFresh && allVars != NULL) {
-    int x = distance(allVars->begin(),
-      find(allVars->begin(), allVars->end(), (void*)function));
-    oss << "_$_";
-    oss << x;
-  }
-  else {
-    oss << function->name;
-  }
+  oss << function->name;
   for (int i = 0; i < n; ++i) {
-    oss << " " << arguments[i]->toString(allVars);
+    oss << " " << arguments[i]->toString();
   }
   if (n) {
     oss << ")";
@@ -564,4 +556,29 @@ vector<void*> FunTerm::computeVarsAndFresh() {
     }
   }
   return result;
+}
+
+Term *FunTerm::toUniformTerm(vector<void*> &allVars, map<Variable*, Term*> *subst) {
+  assert(len(function->arguments) == len(arguments));
+  int n = len(function->arguments);
+
+  if (function->isFresh) {
+    int x = distance(allVars.begin(),
+      find(allVars.begin(), allVars.end(), (void*)function));
+    Variable *v = getUniformVariable(x, this->getSort());
+    if (subst != NULL) (*subst)[v] = this;
+    return getVarTerm(v);
+  }
+  vector<Term*> newArguments(arguments.size());
+  for (int i = 0; i < n; ++i) {
+    newArguments[i] = arguments[i]->toUniformTerm(allVars, subst);
+  }
+  return getFunTerm(this->function, newArguments);
+}
+
+Term *FunTerm::unsubstituteUnif(map<Variable*, Term*> &subst) {
+  vector<Term *> newArgs(this->arguments.size());
+  for (int i = 0; i < (int)arguments.size(); ++i)
+    newArgs[i] = arguments[i]->unsubstituteUnif(subst);
+  return getFunTerm(this->function, newArgs);
 }

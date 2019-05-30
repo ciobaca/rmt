@@ -19,7 +19,7 @@ struct Variable
 private:
   Variable(string, Sort *);
 
-  friend void createVariable(string, Sort *);
+  friend Variable *createVariable(string, Sort *);
 };
 
 #endif

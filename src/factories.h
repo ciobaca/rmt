@@ -6,6 +6,7 @@
 #include <map>
 #include "term.h"
 #include "constrainedrewritesystem.h"
+#include "variable.h"
 
 struct Function;
 struct Variable;
@@ -58,7 +59,7 @@ bool existsConstrainedRewriteSystem(std::string name);
 void putConstrainedRewriteSystem(std::string name, ConstrainedRewriteSystem crewrite);
 
 Variable *getVariable(std::string name);
-void createVariable(std::string name, Sort *sort);
+Variable *createVariable(std::string name, Sort *sort);
 
 Sort *getSort(std::string name);
 Sort *getBuiltinSort(Z3_string sortName);
@@ -116,5 +117,8 @@ ConstrainedRewriteSystem getDefinedFunctionsSystem(vector<Function *> definedFun
 std::vector<Term *> vector0();
 std::vector<Term *> vector1(Term *term);
 std::vector<Term *> vector2(Term *term1, Term *term2);
+
+Variable *getOrCreateVariable(std::string name, Sort *s);
+Variable *getUniformVariable(int varIdx, Sort *s);
 
 #endif

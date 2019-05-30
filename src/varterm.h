@@ -46,13 +46,17 @@ struct VarTerm : public Term
 
   virtual Z3_ast toSmt();
 
-  virtual string toString(vector<void*> *allVars = NULL);
+  virtual string toString();
   virtual string toPrettyString();
 
   virtual Term *compute();
 
   virtual void getDefinedFunctions(std::set<Function *> &);
   virtual Term *unsubstitute(std::vector<Term *> cts, std::vector<Variable *> vs);
+
+  Term *toUniformTerm(std::vector<void*> &allVars, map<Variable*, Term*> *subst);
+
+  Term *unsubstituteUnif(map<Variable*, Term*> &subst);
 
   int nrFuncInTerm(Function *f);
 };

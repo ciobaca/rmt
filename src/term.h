@@ -270,7 +270,10 @@ struct Term
   virtual Z3_ast toSmt() = 0;
 
   // returns an infix representation of the term as a string
-  virtual string toString(vector<void*> *allVars = NULL) = 0;
+  virtual string toString() = 0;
+
+  // returns a term in which variable names are uniformized
+  virtual Term *toUniformTerm(vector<void*> &allVars, map<Variable*, Term*> *subst = NULL) = 0;
 
   // returns a pretier representation of the term
   virtual string toPrettyString() = 0;
@@ -283,6 +286,9 @@ struct Term
 
   // replace all constants by corresponding variables
   virtual Term *unsubstitute(vector<Term *> cts, vector<Variable *> vs) = 0;
+
+  // reverse of "toUnifTerm" process
+  virtual Term *unsubstituteUnif(map<Variable*, Term*> &subst) = 0;
 
   //count apparitions of a certain function in term
   virtual int nrFuncInTerm(Function *f) = 0;

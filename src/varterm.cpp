@@ -43,6 +43,23 @@ Term *VarTerm::computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Te
   return this;
 }
 
+Term *VarTerm::substitute(Substitution &subst)
+{
+  if (subst.inDomain(variable)) {
+    return subst.image(variable);
+  } else {
+    return this;
+  }
+}
+
+Term *VarTerm::substituteSingleton(Variable *v, Term *t)
+{
+  if (this->variable == v) {
+    return t;
+  }
+  return this;
+}
+
 vector<void*> VarTerm::computeVarsAndFresh() {
   vector<void*> result;
   result.push_back((void*)variable);

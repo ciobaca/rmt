@@ -72,8 +72,11 @@ struct Term
   virtual bool hasVariable(Variable *);
 
   // Apply the substitution given as a parameter to this term.
-  virtual Term *substitute(Substitution &);
-  virtual Term *substituteSingleton(Variable *v, Term *t);
+  virtual Term *cachedSubstitute(Substitution &);
+  virtual Term *cachedSubstituteSingleton(Variable *v, Term *t);
+
+  virtual Term *substitute(Substitution &) = 0;
+  virtual Term *substituteSingleton(Variable *v, Term *t) = 0;
 
   // Helper function that applies the substitution given as the first
   // parameter.  The second parameter is a cache that records for

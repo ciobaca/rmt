@@ -14,6 +14,8 @@ struct VarTerm : public Term
 
   Sort *getSort();
 
+  virtual Term *substitute(Substitution &);
+  virtual Term *substituteSingleton(Variable *v, Term *t);
   Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
   Term *computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &);
 

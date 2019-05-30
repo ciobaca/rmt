@@ -52,13 +52,13 @@ vector<Variable *> Term::uniqueVars()
   }
 }
 
-Term *Term::substitute(Substitution &subst)
+Term *Term::cachedSubstitute(Substitution &subst)
 {
   map<Term *, Term *> cache;
   return computeSubstitution(subst, cache);
 }
 
-Term *Term::substituteSingleton(Variable *v, Term *t)
+Term *Term::cachedSubstituteSingleton(Variable *v, Term *t)
 {
   map<Term *, Term *> cache;
   return computeSingletonSubstitution(v, t, cache);

@@ -4,7 +4,7 @@ project(rmt C CXX)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_STANDARD 99)
 
-SET(CMAKE_EXE_LINKER_FLAGS "-Wl,-no-as-needed ${CMAKE_EXE_LINKER_FLAGS}")
+SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 
 add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -DNDEBUG")
 

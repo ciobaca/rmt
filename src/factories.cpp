@@ -18,6 +18,7 @@ map<string, Sort *> builtinSorts;
 map<string, Function *> functions;
 map<pair<Function *, vector<Term *> >, Term *> funTerms;
 map<Variable *, Term *> varTerms;
+vector<Variable *> interpretedVariables;
 
 int freshVariableCounter = 0;
 
@@ -94,8 +95,9 @@ Variable *createVariable(string name, Sort *sort)
   Variable *v = getVariable(name);
   assert(!v);
 #endif
-
   variables[name] = new Variable(name, sort);
+  if (sort->hasInterpretation)
+    interpretedVariables.push_back(variables[name]);
   return variables[name];
 }
 
@@ -346,15 +348,9 @@ Term *getVarTerm(Variable *v)
   }
 }
 
-vector<Variable *> getInterpretedVariables()
+vector<Variable *> &getInterpretedVariables()
 {
-  vector<Variable *> result;
-  for (map<string, Variable *>::iterator it = variables.begin(); it != variables.end(); ++it) {
-    if (it->second->sort->hasInterpretation) {
-      result.push_back(it->second);
-    }
-  }
-  return result;
+  return interpretedVariables;
 }
 
 vector<Term *> vector0()

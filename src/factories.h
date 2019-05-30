@@ -97,7 +97,7 @@ Function *getFreshConstant(Sort *sort);
 
 Variable *createFreshVariable(Sort *);
 
-std::vector<Variable *> getInterpretedVariables();
+std::vector<Variable *> &getInterpretedVariables();
 
 std::vector<Term *> vector1(Term *term);
 std::vector<Term *> vector2(Term *term1, Term *term2);

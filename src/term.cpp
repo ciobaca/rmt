@@ -155,36 +155,36 @@ Term *Term::rewriteTopMost(pair<ConstrainedTerm, Term *> crewriteRule, Substitut
 bool unabstractSolution(Substitution &abstractingSubstitution, ConstrainedSolution &solution)
 {
   
-  clock_t t0 = clock();
+  // clock_t t0 = clock();
 
-  Log(DEBUG7) << "unabstractSolution" << endl;
+  // Log(DEBUG7) << "unabstractSolution" << endl;
   
-  Log(DEBUG7) << "Term = " << solution.term->toString() << endl;
-  Log(DEBUG7) << "Constraint = " << solution.constraint->toString() << endl;
-  Log(DEBUG7) << "Subst = " << solution.subst.toString() << endl;
-  Log(DEBUG7) << "LHS Term = " << solution.lhsTerm->toString() << endl;
-  Log(DEBUG7) << "Abstracting substitution = " << abstractingSubstitution.toString() << endl;
+  // Log(DEBUG7) << "Term = " << solution.term->toString() << endl;
+  // Log(DEBUG7) << "Constraint = " << solution.constraint->toString() << endl;
+  // Log(DEBUG7) << "Subst = " << solution.subst.toString() << endl;
+  // Log(DEBUG7) << "LHS Term = " << solution.lhsTerm->toString() << endl;
+  // Log(DEBUG7) << "Abstracting substitution = " << abstractingSubstitution.toString() << endl;
 
-  Substitution simplifyingSubst;
+  Substitution &simplifyingSubst = solution.simplifyingSubst;
   for (Substitution::iterator it = solution.subst.begin(); it != solution.subst.end(); ++it) {
     Term *lhsTerm = getVarTerm(it->first)->substitute(abstractingSubstitution)->substitute(simplifyingSubst);
     Term *rhsTerm = it->second->substitute(abstractingSubstitution)->substitute(simplifyingSubst);
-    Log(DEBUG9) << "Processing constraint " << lhsTerm->toString() << " = " << rhsTerm->toString() << endl;
+    //    Log(DEBUG9) << "Processing constraint " << lhsTerm->toString() << " = " << rhsTerm->toString() << endl;
     if (lhsTerm == rhsTerm) {
-      Log(DEBUG9) << "Constraint is trivial, skipping" << endl;
+      //      Log(DEBUG9) << "Constraint is trivial, skipping" << endl;
       continue;
     }
     bool simplifiedConstraint = false;
     if (lhsTerm->isVarTerm) {
-      Log(DEBUG7) << "Left-hand side is a variable." << endl;
+      //      Log(DEBUG7) << "Left-hand side is a variable." << endl;
       Variable *var = lhsTerm->getAsVarTerm()->variable;
-      Log(DEBUG7) << "Variable " << var->name << " in domain of simplifyingSubst: " << simplifyingSubst.inDomain(var) << endl;
-      Log(DEBUG7) << "Term " << rhsTerm->toString() << " has variable " << var->name << ": " << rhsTerm->hasVariable(var) << endl;
-      Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
+      //      Log(DEBUG7) << "Variable " << var->name << " in domain of simplifyingSubst: " << simplifyingSubst.inDomain(var) << endl;
+      //      Log(DEBUG7) << "Term " << rhsTerm->toString() << " has variable " << var->name << ": " << rhsTerm->hasVariable(var) << endl;
+      //      Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
       if ((!(simplifyingSubst.inDomain(var)))) {
         if ((!(rhsTerm->hasVariable(var)))) {
           if ((!(abstractingSubstitution.inRange(var)))) {
-            Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << rhsTerm->toString() << "." << endl;
+	    //            Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << rhsTerm->toString() << "." << endl;
             simplifiedConstraint = true;
             simplifyingSubst.add(var, rhsTerm);
           }
@@ -192,19 +192,19 @@ bool unabstractSolution(Substitution &abstractingSubstitution, ConstrainedSoluti
       }
     }
     if (!simplifiedConstraint && rhsTerm->isVarTerm) {
-      Log(DEBUG7) << "Right-hand side is a variable." << endl;
+      //      Log(DEBUG7) << "Right-hand side is a variable." << endl;
       Variable *var = rhsTerm->getAsVarTerm()->variable;
-      Log(DEBUG7) << "Variable " << var->name << " in domain of simplifyingSubst: " << simplifyingSubst.inDomain(var) << endl;
-      Log(DEBUG7) << "Term " << lhsTerm->toString() << " has variable " << var->name << ": " << lhsTerm->hasVariable(var) << endl;
-      Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
+      //      Log(DEBUG7) << "Variable " << var->name << " in domain of simplifyingSubst: " << simplifyingSubst.inDomain(var) << endl;
+      //      Log(DEBUG7) << "Term " << lhsTerm->toString() << " has variable " << var->name << ": " << lhsTerm->hasVariable(var) << endl;
+      //      Log(DEBUG7) << "Substitution " << abstractingSubstitution.toString() << " has variable " << var->name << " in range: " << abstractingSubstitution.inRange(var) << endl;
       if (!simplifyingSubst.inDomain(var) && !lhsTerm->hasVariable(var) && !abstractingSubstitution.inRange(var)) {
-        Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << lhsTerm->toString() << "." << endl;
+	//        Log(DEBUG7) << "Not yet in domain of simplifyingSubst, adding " << var->name << " |-> " << lhsTerm->toString() << "." << endl;
         simplifiedConstraint = true;
         simplifyingSubst.add(var, lhsTerm);
       }
     }
     if (!simplifiedConstraint) {
-      Log(DEBUG7) << "Could not simplify constraint, sending to SMT solver." << endl;
+      //      Log(DEBUG7) << "Could not simplify constraint, sending to SMT solver." << endl;
       solution.constraint = bAnd(solution.constraint, createEqualityConstraint(lhsTerm, rhsTerm));
     }
   }
@@ -214,26 +214,26 @@ bool unabstractSolution(Substitution &abstractingSubstitution, ConstrainedSoluti
   }
   solution.simplifyingSubst = simplifyingSubst;
 
-  Log(DEBUG7) << "Solution.subst = " << solution.subst.toString() << endl;
-  Log(DEBUG7) << "Solution.simplifyingSubst = " << solution.simplifyingSubst.toString() << endl;
+  //  Log(DEBUG7) << "Solution.subst = " << solution.subst.toString() << endl;
+  //  Log(DEBUG7) << "Solution.simplifyingSubst = " << solution.simplifyingSubst.toString() << endl;
 
   Term *toCheck = simplifyConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst));
-  Log(DEBUG7) << "Checking satisfiability of " << toCheck->toString() << "." << endl;
+  //  Log(DEBUG7) << "Checking satisfiability of " << toCheck->toString() << "." << endl;
   Z3Theory theory;
   vector<Variable *> &interpretedVariables = getInterpretedVariables();
   for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
   }
   theory.addConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst));
-  Log(DEBUG7) << "Sending to SMT solver." << endl;
+  //  Log(DEBUG7) << "Sending to SMT solver." << endl;
   bool retval = false;
 
   if (theory.isSatisfiable() != unsat) {
-    Log(DEBUG7) << "Possibly satisfiable." << endl;
+    //    Log(DEBUG7) << "Possibly satisfiable." << endl;
     retval = true;
   }
   else {
-    Log(DEBUG7) << "Surely unsatisfiable." << endl;
+    //    Log(DEBUG7) << "Surely unsatisfiable." << endl;
     retval = false;
   }
 

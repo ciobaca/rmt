@@ -290,7 +290,7 @@ struct Term
   virtual void getDefinedFunctions(std::set<Function *> &) = 0;
 
   // replace all constants by corresponding variables
-  virtual Term *unsubstitute(vector<Term *> cts, vector<Variable *> vs) = 0;
+  virtual Term *unsubstitute(vector<Term *> &cts, vector<Variable *> &vs) = 0;
 
   // reverse of "toUnifTerm" process
   virtual Term *unsubstituteUnif(map<Variable*, Term*> &subst) = 0;

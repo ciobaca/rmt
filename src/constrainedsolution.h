@@ -27,10 +27,10 @@ struct ConstrainedSolution
   Substitution subst;
   Substitution simplifyingSubst; // the part of the constraint that can be encoded as substitution
 
-  ConstrainedSolution(Term *term, Term *constraint, Substitution subst, Term *lhsTerm);
-  ConstrainedSolution(Term *term, Substitution subst, Term *lhsTerm);
+  ConstrainedSolution(Term *term, Term *constraint, Substitution &subst, Term *lhsTerm);
+  ConstrainedSolution(Term *term, Substitution &subst, Term *lhsTerm);
 
-  ConstrainedSolution unsubstitute(std::vector<Term *>, std::vector<Variable *>);
+  ConstrainedSolution unsubstitute(std::vector<Term *> &, std::vector<Variable *> &);
   
   Term *getFullConstraint(); // returns the full constraint, including the simplifyingSubstitution, assuming search started from the constrained term given as argument
 

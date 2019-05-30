@@ -7,7 +7,7 @@
 
 using namespace std;
 
-ConstrainedSolution::ConstrainedSolution(Term *term, Term *constraint, Substitution subst, Term *lhsTerm) :
+ConstrainedSolution::ConstrainedSolution(Term *term, Term *constraint, Substitution &subst, Term *lhsTerm) :
   term(term),
   constraint(constraint),
   lhsTerm(lhsTerm),
@@ -15,7 +15,7 @@ ConstrainedSolution::ConstrainedSolution(Term *term, Term *constraint, Substitut
 {
 }
 
-ConstrainedSolution::ConstrainedSolution(Term *term, Substitution subst, Term *lhsTerm) :
+ConstrainedSolution::ConstrainedSolution(Term *term, Substitution &subst, Term *lhsTerm) :
   term(term),
   constraint(bTrue()),
   lhsTerm(lhsTerm),
@@ -48,7 +48,7 @@ Term *ConstrainedSolution::getFullConstraint()
   // return result;
 }
 
-ConstrainedSolution ConstrainedSolution::unsubstitute(vector<Term *> cts, vector<Variable *> vs)
+ConstrainedSolution ConstrainedSolution::unsubstitute(vector<Term *> &cts, vector<Variable *> &vs)
 {
   ConstrainedSolution result = *this;
   result.term = result.term->unsubstitute(cts, vs);

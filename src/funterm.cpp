@@ -544,7 +544,7 @@ void FunTerm::getDefinedFunctions(std::set<Function *> &where)
   }
 }
 
-Term *FunTerm::unsubstitute(vector<Term *> cts, vector<Variable *> vs)
+Term *FunTerm::unsubstitute(vector<Term *> &cts, vector<Variable *> &vs)
 {
   for (int i = 0; i < (int)cts.size(); ++i) {
     if (cts[i] == this) {

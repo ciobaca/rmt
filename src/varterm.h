@@ -55,7 +55,7 @@ struct VarTerm : public Term
   Term *compute();
 
   void getDefinedFunctions(std::set<Function *> &);
-  Term *unsubstitute(std::vector<Term *> cts, std::vector<Variable *> vs);
+  Term *unsubstitute(std::vector<Term *> &cts, std::vector<Variable *> &vs);
 
   Term *toUniformTerm(std::vector<void*> &allVars, map<Variable*, Term*> *subst);
 

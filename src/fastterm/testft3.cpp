@@ -47,10 +47,10 @@ int main() {
   
   const int N = 1e7;
   double fst = 0, vt = 0, pvt = 0;
-  for (int cnt = 0; cnt <= 100; ++cnt) {
+  for (int cnt = 0; cnt <= 10; ++cnt) {
     vals.clear();
     for (int i = 0; i < N; ++i) vals.push_back(rand());
-    
+
     chrono::high_resolution_clock::time_point t1, t2;
     t1 = chrono::high_resolution_clock::now();
     FastSubst fs = testFastSubst();

@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <cassert>
+#include <vector>
 #include <z3.h>
 
 #define MAXVARS (1024 * 16)
@@ -48,6 +49,28 @@ struct FastSubst {
   FastTerm range(FastVar var);
   FastTerm applySubst(FastTerm term);
   void composeWith(FastVar v, FastTerm t);
+};
+
+struct FastSubst1 {
+  std::vector<uint32> data;
+
+  FastSubst1();
+  ~FastSubst1();
+  void addToSubst1(FastVar var, FastTerm term);
+  bool inDomain1(FastVar var);
+  FastTerm range1(FastVar var);
+  FastTerm applySubst1(FastTerm term);
+  void composeWith1(FastVar v, FastTerm t);
+};
+
+struct FastSubst2 : public std::vector<uint32> {
+  FastSubst2();
+  ~FastSubst2();
+  void addToSubst2(FastVar var, FastTerm term);
+  bool inDomain2(FastVar var);
+  FastTerm range2(FastVar var);
+  FastTerm applySubst2(FastTerm term);
+  void composeWith2(FastVar v, FastTerm t);
 };
 
 /*
@@ -134,6 +157,8 @@ FastTerm fastFalse();
 
 FastTerm applyUnitySubst(FastTerm term, FastVar v, FastTerm t);
 size_t printSubst(FastSubst &subst, char *buffer, size_t size);
+size_t printSubst1(FastSubst1 &subst, char *buffer, size_t size);
+size_t printSubst2(FastSubst1 &subst, char *buffer, size_t size);
 
 /*
   Helper functions.
@@ -145,6 +170,8 @@ bool occurs(FastVar var, FastTerm term);
   Syntactic unification.
  */
 bool unify(FastTerm t1, FastTerm t2, FastSubst &result);
+bool unify1(FastTerm t1, FastTerm t2, FastSubst1 &result);
+bool unify2(FastTerm t1, FastTerm t2, FastSubst2 &result);
 
 bool match(FastTerm subject, FastTerm pattern, FastSubst &result);
 

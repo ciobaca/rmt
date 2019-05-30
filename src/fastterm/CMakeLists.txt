@@ -42,12 +42,15 @@ file(GLOB_RECURSE INCS "*.h")
 
 add_executable(testft1 ${SOURCES2} "testft1.cpp" ${INCS})
 add_executable(testft2 ${SOURCES2} "testft2.cpp" ${INCS})
+add_executable(testft3 ${SOURCES2} "testft3.cpp" ${INCS})
 
 target_include_directories(testft1 PRIVATE ${Z3_C_INCLUDE_DIRS})
 target_include_directories(testft2 PRIVATE fastterm)
+target_include_directories(testft3 PRIVATE fastterm)
 
 target_link_libraries(testft1 PRIVATE ${Z3_LIBRARIES})
 target_link_libraries(testft2 PRIVATE fastterm)
+target_link_libraries(testft3 PRIVATE fastterm)
 
 if ("${CMAKE_SYSTEM_NAME}" MATCHES "[Ww]indows")
   # On Windows we need to copy the Z3 libraries

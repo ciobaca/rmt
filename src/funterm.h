@@ -12,51 +12,59 @@ struct FunTerm : public Term
 
   FunTerm(Function *function, vector<Term *> arguments);
 
-  virtual vector<Variable *> computeVars();
+  vector<Variable *> computeVars();
 
-  virtual Sort *getSort();
+  Sort *getSort();
 
   std::set<void*> seenVarsAndFresh; //auxiliary set to make sure all vars * fresh are unique
 
-  virtual Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
+  virtual Term *substitute(Substitution &);
+  virtual Term *substituteSingleton(Variable *v, Term *t);
 
-  virtual bool unifyWith(Term *, Substitution &);
-  virtual bool unifyWithFunTerm(FunTerm *, Substitution &);
-  virtual bool unifyWithVarTerm(VarTerm *, Substitution &);
+  Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
+  Term *computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &);
 
-  virtual VarTerm *getAsVarTerm();
-  virtual FunTerm *getAsFunTerm();
+  bool unifyWith(Term *, Substitution &);
+  bool unifyWithFunTerm(FunTerm *, Substitution &);
+  bool unifyWithVarTerm(VarTerm *, Substitution &);
 
-  virtual bool computeIsNormalized(RewriteSystem &, map<Term *, bool> &);
-  virtual Term *computeNormalize(RewriteSystem &, map<Term *, Term *> &, bool);
+  VarTerm *getAsVarTerm();
+  FunTerm *getAsFunTerm();
 
-  virtual bool computeIsInstanceOf(Term *, Substitution &, map<pair<Term *, Term *>, bool> &);
-  virtual bool computeIsGeneralizationOf(VarTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
-  virtual bool computeIsGeneralizationOf(FunTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
+  bool computeIsNormalized(RewriteSystem &, map<Term *, bool> &);
+  Term *computeNormalize(RewriteSystem &, map<Term *, Term *> &, bool);
 
-  virtual int computeDagSize(map<Term *, int> &);
+  bool computeIsInstanceOf(Term *, Substitution &, map<pair<Term *, Term *>, bool> &);
+  bool computeIsGeneralizationOf(VarTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
+  bool computeIsGeneralizationOf(FunTerm *, Substitution &, map<pair<Term *, Term *>, bool> &);
 
-  virtual Term *rewriteOneStep(RewriteSystem &, Substitution &how);
-  virtual Term *rewriteOneStep(pair<Term *, Term *>, Substitution &how);
-  virtual Term *rewriteOneStep(ConstrainedRewriteSystem &, Substitution &how);
-  virtual Term *rewriteOneStep(pair<ConstrainedTerm, Term *>, Substitution &how);
+  int computeDagSize(map<Term *, int> &);
 
-  virtual Term *abstract(Substitution &);
+  Term *rewriteOneStep(RewriteSystem &, Substitution &how);
+  Term *rewriteOneStep(pair<Term *, Term *>, Substitution &how);
+  Term *rewriteOneStep(ConstrainedRewriteSystem &, Substitution &how);
+  Term *rewriteOneStep(pair<ConstrainedTerm, Term *>, Substitution &how);
 
-  virtual Z3_ast toSmt();
+  Term *abstract(Substitution &);
+
+  Z3_ast toSmt();
 
   vector<void*> computeVarsAndFresh();
 
-  virtual string toString(vector<void*> *allVars = NULL);
-  virtual string toPrettyString();
+  void computeToString();
+  string toPrettyString();
 
-  virtual vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
-  virtual vector<ConstrainedSolution> narrowSearch(ConstrainedRewriteSystem &);
+  vector<ConstrainedSolution> rewriteSearch(RewriteSystem &);
+  vector<ConstrainedSolution> narrowSearch(ConstrainedRewriteSystem &);
 
-  virtual Term *compute();
+  Term *compute();
 
-  virtual void getDefinedFunctions(std::set<Function *> &);
-  virtual Term *unsubstitute(std::vector<Term *> cts, std::vector<Variable *> vs);
+  void getDefinedFunctions(std::set<Function *> &);
+  Term *unsubstitute(std::vector<Term *> &cts, std::vector<Variable *> &vs);
+
+  Term *toUniformTerm(std::vector<void*> &allVars, map<Variable*, Term*> *subst);
+
+  Term *unsubstituteUnif(map<Variable*, Term*> &subst);
 
   int nrFuncInTerm(Function *f);
 };

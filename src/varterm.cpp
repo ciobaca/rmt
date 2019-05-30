@@ -35,23 +35,40 @@ Term *VarTerm::computeSubstitution(Substitution &subst, map<Term *, Term *> &)
   }
 }
 
+Term *VarTerm::computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &)
+{
+  if (this->variable == v) {
+    return t;
+  }
+  return this;
+}
+
+Term *VarTerm::substitute(Substitution &subst)
+{
+  if (subst.inDomain(variable)) {
+    return subst.image(variable);
+  } else {
+    return this;
+  }
+}
+
+Term *VarTerm::substituteSingleton(Variable *v, Term *t)
+{
+  if (this->variable == v) {
+    return t;
+  }
+  return this;
+}
+
 vector<void*> VarTerm::computeVarsAndFresh() {
   vector<void*> result;
   result.push_back((void*)variable);
   return result;
 }
 
-string VarTerm::toString(vector<void*> *allVars)
+void VarTerm::computeToString()
 {
-  if (allVars != NULL) {
-    int x = distance(allVars->begin(),
-      find(allVars->begin(), allVars->end(), (void*)variable));
-    ostringstream ss;
-    ss << "_$_";
-    ss << x;
-    return ss.str();
-  }
-  return variable->name;
+  this->stringRepresentation = variable->name;
 }
 
 Z3_ast VarTerm::toSmt()
@@ -277,11 +294,24 @@ void VarTerm::getDefinedFunctions(std::set<Function *> &)
   // intentionally empty; no defined functions in a variable term
 }
 
-Term *VarTerm::unsubstitute(vector<Term *>, vector<Variable *>)
+Term *VarTerm::unsubstitute(vector<Term *> &, vector<Variable *> &)
 {
   return this;
 }
 
 int VarTerm::nrFuncInTerm(Function *f) {
   return 0;
+}
+
+Term *VarTerm::toUniformTerm(std::vector<void*> &allVars, map<Variable*, Term*> *subst) {
+  int x = distance(allVars.begin(),
+    find(allVars.begin(), allVars.end(), (void*)variable));
+  Variable *v = getUniformVariable(x, this->getSort());
+  if (subst != NULL) (*subst)[v] = this;
+  return getVarTerm(v);
+}
+
+Term *VarTerm::unsubstituteUnif(map<Variable*, Term*> &subst) {
+  assert(subst.count(this->variable));
+  return subst[this->variable];
 }

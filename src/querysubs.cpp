@@ -51,7 +51,7 @@ void QuerySubs::execute()
     return;
   }
 
-  Term *constraint = ctLeft.normalizeFunctions().whenImplies(ctRight);
+  Term *constraint = ctLeft.whenImplies(ctRight);
   ctLeft.constraint = bAnd(ctLeft.constraint, bNot(constraint));
   
   cout << "Success: " << 1 << " solutions." << endl;

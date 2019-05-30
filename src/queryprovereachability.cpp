@@ -111,9 +111,9 @@ void QueryProveReachability::execute()
 Term *QueryProveReachability::proveByImplicationCRS(ConstrainedTerm lhs, Term *rhs,
 			 ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int depth)
 {
-  lhs.term = lhs.term->normalizeFunctions();
-  lhs.constraint = lhs.constraint->normalizeFunctions();
-  rhs = rhs->normalizeFunctions();
+  lhs.term = lhs.term;
+  lhs.constraint = lhs.constraint;
+  rhs = rhs;
   
   Term *unificationConstraint;
   Substitution subst;
@@ -124,7 +124,7 @@ Term *QueryProveReachability::proveByImplicationCRS(ConstrainedTerm lhs, Term *r
     Log(DEBUG4) << spaces(depth + 1) << "Unification constraint: " << unificationConstraint->toString() << endl;
     Term *constraint = bImplies(lhs.constraint, unificationConstraint);
     constraint = simplifyConstraint(constraint);
-    constraint = constraint->normalizeFunctions();
+    constraint = constraint;
     if (isSatisfiable(bNot(constraint)) == unsat) {
       // the negation of the implication is unsatisfiable,
       // meaning that the implication is valid
@@ -154,9 +154,9 @@ Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term 
 			   ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth, bool hadProgress,
 			   int branchingDepth)
 {
-  lhs.term = lhs.term->normalizeFunctions();
-  lhs.constraint = lhs.constraint->normalizeFunctions();
-  rhs = rhs->normalizeFunctions();
+  lhs.term = lhs.term;
+  lhs.constraint = lhs.constraint;
+  rhs = rhs;
   
   Log(DEBUG) << spaces(depth + 1) << "STEP 2. Does lhs rewrite using circularities?" << endl;
   Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
@@ -192,9 +192,9 @@ Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term 
 Term *QueryProveReachability::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
 		     ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth, bool, int branchingDepth)
 {
-  lhs.term = lhs.term->normalizeFunctions();
-  lhs.constraint = lhs.constraint->normalizeFunctions();
-  rhs = rhs->normalizeFunctions();
+  lhs.term = lhs.term;
+  lhs.constraint = lhs.constraint;
+  rhs = rhs;
 
   Log(DEBUG) << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?" << endl;
   Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
@@ -242,9 +242,9 @@ void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
   if (lhs.constraint == 0) {
     lhs.constraint = bTrue();
   }
-  lhs.term = lhs.term->normalizeFunctions();
-  lhs.constraint = lhs.constraint->normalizeFunctions();
-  rhs = rhs->normalizeFunctions();
+  lhs.term = lhs.term;
+  lhs.constraint = lhs.constraint;
+  rhs = rhs;
 
   lhs = simplifyConstrainedTerm(lhs);
   ConstrainedTerm initialLhs = lhs;
@@ -258,9 +258,9 @@ void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
   cout << spaces(depth) << "  IMPL if " << implicationConstraint->toPrettyString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(implicationConstraint));
   lhs = simplifyConstrainedTerm(lhs);
-  lhs.term = lhs.term->normalizeFunctions();
-  lhs.constraint = lhs.constraint->normalizeFunctions();
-  rhs = rhs->normalizeFunctions();
+  lhs.term = lhs.term;
+  lhs.constraint = lhs.constraint;
+  rhs = rhs;
 
   Term *circularityConstraint = proveByCircularitiesCRS(lhs, rhs, crs, circ, depth, hadProgress, branchingDepth);
   ConstrainedTerm circLhs = lhs;
@@ -268,9 +268,9 @@ void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
   cout << spaces(depth) << "  CIRC if " << circularityConstraint->toPrettyString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(circularityConstraint));
   lhs = simplifyConstrainedTerm(lhs);
-  lhs.term = lhs.term->normalizeFunctions();
-  lhs.constraint = lhs.constraint->normalizeFunctions();
-  rhs = rhs->normalizeFunctions();
+  lhs.term = lhs.term;
+  lhs.constraint = lhs.constraint;
+  rhs = rhs;
 
   Term *rewriteConstraint = proveByRewriteCRS(lhs, rhs, crs, circ, depth, hadProgress, branchingDepth);
   ConstrainedTerm rewrLhs = lhs;
@@ -278,9 +278,9 @@ void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
   cout << spaces(depth) << "  REWR if " << rewriteConstraint->toPrettyString() << endl;
   lhs.constraint = bAnd(lhs.constraint, bNot(rewriteConstraint));
   lhs = simplifyConstrainedTerm(lhs);
-  lhs.term = lhs.term->normalizeFunctions();
-  lhs.constraint = lhs.constraint->normalizeFunctions();
-  rhs = rhs->normalizeFunctions();
+  lhs.term = lhs.term;
+  lhs.constraint = lhs.constraint;
+  rhs = rhs;
 
   if (isSatisfiable(lhs.constraint) != unsat) {
     cout << spaces(depth) << "! Remaining proof obligation:" << lhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;

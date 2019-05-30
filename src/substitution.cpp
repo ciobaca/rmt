@@ -31,8 +31,9 @@ void Substitution::apply(Substitution &s) {
 }
 
 void Substitution::force(Variable *v, Term *t) {
-  Substitution temp(v, t);
-  apply(temp);
+  for (auto &it : *this) {
+    it.second = it.second->substituteSingleton(v, t);
+  }
   add(v, t);
 }
 

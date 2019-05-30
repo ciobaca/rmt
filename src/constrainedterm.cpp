@@ -84,8 +84,8 @@ vector<ConstrainedSolution> ConstrainedTerm::smtRewriteDefined(int printDepth) {
 vector<ConstrainedSolution> ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs)
 {
   Log(DEBUG1) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) " << this->toString() << endl;
-  Term *startTerm = term->normalizeFunctions();
-  Term *startConstraint = constraint->normalizeFunctions();
+  Term *startTerm = term;
+  Term *startConstraint = constraint;
   Log(DEBUG1) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) Starting Term = " << startTerm->toString() << endl;
   Log(DEBUG1) << "ConstrainedTerm::smtNarrowSearch(ConstrainedRewriteSystem &crs) Starting Constraint = " << startConstraint->toString() << endl;
   vector<ConstrainedSolution> sols = startTerm->smtNarrowSearchWdf(crs, startConstraint);
@@ -117,8 +117,8 @@ void ConstrainedTerm::smtNarrowSearchHelper(ConstrainedRewriteSystem &crs,
   if (depth < maxDepth) {
     vector<ConstrainedSolution> sols = this->smtNarrowSearch(crs);
     for (int i = 0; i < (int)sols.size(); ++i) {
-      ConstrainedTerm ct(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions(),
-			 sols[i].getFullConstraint()->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst)->normalizeFunctions());
+      ConstrainedTerm ct(sols[i].term->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst),
+			 sols[i].getFullConstraint()->substitute(sols[i].subst)->substitute(sols[i].simplifyingSubst));
       Log(DEBUG2) << "recurse " << ct.toString() << endl;
       ct.smtNarrowSearchHelper(crs, minDepth, maxDepth, depth + 1, result);
     }
@@ -201,21 +201,21 @@ Term *ConstrainedTerm::whenImplies(ConstrainedTerm goal)
   return bFalse();
 }
 
-ConstrainedTerm ConstrainedTerm::normalizeFunctions()
-{
-  Term *newTerm = term, *newConstraint = constraint;
-  newTerm = term->normalizeFunctions();
-  // if (term->hasDefinedFunctions) {
-  //   RewriteSystem functionsRS = getRewriteSystem("functions");
-  //   newTerm = term->normalize(functionsRS, false);
-  // }
-  newConstraint = constraint->normalizeFunctions();
-  // if (constraint->hasDefinedFunctions) {
-  //   RewriteSystem functionsRS = getRewriteSystem("functions");
-  //   newConstraint = constraint->normalize(functionsRS, false);
-  // }
-  return ConstrainedTerm(newTerm, newConstraint);
-}
+// ConstrainedTerm ConstrainedTerm::normalizeFunctions()
+// {
+//   Term *newTerm = term, *newConstraint = constraint;
+//   newTerm = term;
+//   // if (term->hasDefinedFunctions) {
+//   //   RewriteSystem functionsRS = getRewriteSystem("functions");
+//   //   newTerm = term->normalize(functionsRS, false);
+//   // }
+//   newConstraint = constraint;
+//   // if (constraint->hasDefinedFunctions) {
+//   //   RewriteSystem functionsRS = getRewriteSystem("functions");
+//   //   newConstraint = constraint->normalize(functionsRS, false);
+//   // }
+//   return ConstrainedTerm(newTerm, newConstraint);
+// }
 
 vector<Function *> ConstrainedTerm::getDefinedFunctions()
 {

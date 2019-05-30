@@ -99,6 +99,17 @@ void QueryACUUnify::execute() {
   getCoefs(t1, l);
   getCoefs(t2, r);
   delSameCoefs(l, r);
+  if (!l.size() || !r.size()) {
+    Substitution subst;
+    for (auto it : l) {
+      subst.add(it.first->getAsVarTerm()->variable, unityElement);
+    }
+    for (auto it : r) {
+      subst.add(it.first->getAsVarTerm()->variable, unityElement);
+    }
+    cout << subst.toString() << endl;
+    return;
+  }
   vector<int> a = fromMapToVector(l);
   vector<int> b = fromMapToVector(r);
   LDEGraphAlg graphAlg(a, b);

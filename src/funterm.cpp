@@ -41,7 +41,7 @@ vector<Variable *> FunTerm::computeVars()
   return result;
 }
 
-string FunTerm::toString(vector<void*> *allVars)
+void FunTerm::computeToString()
 {
   assert(len(function->arguments) == len(arguments));
   int n = len(function->arguments);
@@ -50,22 +50,14 @@ string FunTerm::toString(vector<void*> *allVars)
   if (n) {
     oss << "(";
   }
-  if (function->isFresh && allVars != NULL) {
-    int x = distance(allVars->begin(),
-      find(allVars->begin(), allVars->end(), (void*)function));
-    oss << "_$_";
-    oss << x;
-  }
-  else {
-    oss << function->name;
-  }
+  oss << function->name;
   for (int i = 0; i < n; ++i) {
-    oss << " " << arguments[i]->toString(allVars);
+    oss << " " << arguments[i]->toString();
   }
   if (n) {
     oss << ")";
   }
-  return oss.str();
+  this->stringRepresentation = oss.str();
 }
 
 Z3_ast FunTerm::toSmt()
@@ -182,6 +174,36 @@ Term *FunTerm::computeSubstitution(Substitution &subst, map<Term *, Term *> &cac
     cache[this] = getFunTerm(function, newargs);
   }
   return cache[this];
+}
+
+Term *FunTerm::computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &cache)
+{
+  if (!contains(cache, (Term *)this)) {
+    vector<Term *> newargs;
+    for (int i = 0; i < len(arguments); ++i) {
+      newargs.push_back(arguments[i]->computeSingletonSubstitution(v, t, cache));
+    }
+    cache[this] = getFunTerm(function, newargs);
+  }
+  return cache[this];
+}
+
+Term *FunTerm::substitute(Substitution &subst)
+{
+  vector<Term *> newargs;
+  for (int i = 0; i < len(arguments); ++i) {
+    newargs.push_back(arguments[i]->substitute(subst));
+  }
+  return getFunTerm(function, newargs);
+}
+
+Term *FunTerm::substituteSingleton(Variable *v, Term *t)
+{
+  vector<Term *> newargs;
+  for (int i = 0; i < len(arguments); ++i) {
+    newargs.push_back(arguments[i]->substituteSingleton(v, t));
+  }
+  return getFunTerm(function, newargs);
 }
 
 Term *FunTerm::computeNormalize(RewriteSystem &rewriteSystem, map<Term *, Term *> &cache, bool optimallyReducing)
@@ -522,7 +544,7 @@ void FunTerm::getDefinedFunctions(std::set<Function *> &where)
   }
 }
 
-Term *FunTerm::unsubstitute(vector<Term *> cts, vector<Variable *> vs)
+Term *FunTerm::unsubstitute(vector<Term *> &cts, vector<Variable *> &vs)
 {
   for (int i = 0; i < (int)cts.size(); ++i) {
     if (cts[i] == this) {
@@ -564,4 +586,29 @@ vector<void*> FunTerm::computeVarsAndFresh() {
     }
   }
   return result;
+}
+
+Term *FunTerm::toUniformTerm(vector<void*> &allVars, map<Variable*, Term*> *subst) {
+  assert(len(function->arguments) == len(arguments));
+  int n = len(function->arguments);
+
+  if (function->isFresh) {
+    int x = distance(allVars.begin(),
+      find(allVars.begin(), allVars.end(), (void*)function));
+    Variable *v = getUniformVariable(x, this->getSort());
+    if (subst != NULL) (*subst)[v] = this;
+    return getVarTerm(v);
+  }
+  vector<Term*> newArguments(arguments.size());
+  for (int i = 0; i < n; ++i) {
+    newArguments[i] = arguments[i]->toUniformTerm(allVars, subst);
+  }
+  return getFunTerm(this->function, newArguments);
+}
+
+Term *FunTerm::unsubstituteUnif(map<Variable*, Term*> &subst) {
+  vector<Term *> newArgs(this->arguments.size());
+  for (int i = 0; i < (int)arguments.size(); ++i)
+    newArgs[i] = arguments[i]->unsubstituteUnif(subst);
+  return getFunTerm(this->function, newArgs);
 }

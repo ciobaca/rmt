@@ -34,7 +34,7 @@ http://profs.info.uaic.ro/~stefan.ciobaca/
 #include "funterm.h"
 #include "query.h"
 #include "constrainedrewritesystem.h"
-#include "fastterm.h"
+//#include "fastterm.h"
 
 using namespace std;
 
@@ -598,6 +598,7 @@ string parseConstrainedRewriteSystem(string &s, int &w, ConstrainedRewriteSystem
   return name;
 }
 
+/*
 int testFastTerm()
 {
   char buffer[1024];
@@ -605,7 +606,7 @@ int testFastTerm()
   FastSort sort = newSort("State");
   FastVar x1 = newVar("x1", sort);
   FastVar x2 = newVar("x2", sort);
-  /* FastVar x3 = newVar("x3", sort); */
+  // FastVar x3 = newVar("x3", sort);
   FastFunc e = newConst("e", sort);
 
   FastSort sorts[16];
@@ -648,6 +649,7 @@ int testFastTerm()
   printf("t5 = %s\n", buffer);
   return 0;
 }
+*/
 
 /*
 
@@ -657,7 +659,7 @@ Entry point to the RMT tool.
 int main(int argc, char **argv)
 {
   if (0) {
-    testFastTerm();
+    //testFastTerm();
   }
   bool readFromStdin = false;
   char *filename = argv[argc - 1];

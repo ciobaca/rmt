@@ -16,7 +16,8 @@
 
 enum BuiltinSortType {
   bltnBool,
-  bltnInt
+  bltnInt,
+  bltnState
 };
 
 enum BuiltinFuncType {
@@ -37,6 +38,8 @@ typedef uint32 FastTerm;  /* 0 .. MAXVARS - 1 and MAXVARS .. */
                           /* if >= MAXVARS, then it represents a pointer into termData */
 typedef uint32 FastSort;  /* 0 .. MAXSORTS - 1 */
 
+const uint32 MISSING_UELEM = 0xFFFFFFFF;
+
 struct FastSubst {
   uint32 size;
   uint32 count;
@@ -45,8 +48,9 @@ struct FastSubst {
   FastSubst();
   ~FastSubst();
   void addToSubst(FastVar var, FastTerm term);
+  void replaceConstWithVar(FastFunc c, FastVar);
   bool inDomain(FastVar var);
-  FastTerm range(FastVar var);
+  FastTerm image(FastVar var);
   FastTerm applySubst(FastTerm term);
   void composeWith(FastVar v, FastTerm t);
 };
@@ -93,6 +97,7 @@ BuiltinSortType getBuiltinSortType(FastSort sort);
 
 FastSort fastBoolSort();
 FastSort fastIntSort();
+FastSort fastStateSort();
 
 void newSubSort(FastSort subsort, FastSort supersort);
 
@@ -102,6 +107,7 @@ const char *getSortName(FastSort sort);
   Variables.
  */
 FastVar newVar(const char *name, FastSort sort);
+FastVar createFreshVariable(FastSort sort);
 bool validFastVar(FastVar var);
 const char *getVarName(FastVar var);
 FastSort getVarSort(FastVar var);
@@ -112,6 +118,10 @@ bool eq_var(FastVar var1, FastVar var2);
 */
 FastFunc newConst(const char *name, FastSort sort);
 FastFunc newFunc(const char *name, FastSort resultSort, uint32 arity, FastSort *args);
+FastFunc newACFunc(const char *name, FastSort sort);
+FastFunc newACUFunc(const char *name, FastFunc uElem);
+FastFunc getUnityElement(FastFunc func);
+bool isFuncAC(FastFunc func);
 bool validFastFunc(FastFunc func);
 
 FastSort getArgSort(FastFunc func, uint arg);
@@ -169,11 +179,9 @@ bool occurs(FastVar var, FastTerm term);
 /*
   Syntactic unification.
  */
-bool unify(FastTerm t1, FastTerm t2, FastSubst &result);
-bool unify1(FastTerm t1, FastTerm t2, FastSubst1 &result);
-bool unify2(FastTerm t1, FastTerm t2, FastSubst2 &result);
+std::vector<FastSubst> unify(FastTerm t1, FastTerm t2);
 
-bool match(FastTerm subject, FastTerm pattern, FastSubst &result);
+std::vector<FastSubst> match(FastTerm subject, FastTerm pattern, FastSubst &result);
 
 /*
   Z3 interface.

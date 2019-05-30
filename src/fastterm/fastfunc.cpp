@@ -13,6 +13,9 @@ FastFunc funcFalse;
 FastTerm termTrue;
 FastTerm termFalse;
 
+bool isAC[MAXFUNCS];
+FastFunc uElem[MAXFUNCS];
+
 uint32 funcCount = 0;
 uint32 arities[MAXFUNCS]; // number of arguments
 uint32 arityIndex[MAXFUNCS]; // where in arityData the argument sorts are
@@ -114,6 +117,8 @@ FastFunc newConst(const char *name, FastSort sort)
   funcNames[funcCount] = name;
   arityIndex[funcCount] = 0; // not to be used (as arity is 0)
   resultSorts[funcCount] = sort;
+  uElem[funcCount] = MISSING_UELEM;
+  isAC[funcCount] = false;
   FastFunc result = funcCount++;
   assert(validFastFunc(result));
   return result;
@@ -136,9 +141,67 @@ FastFunc newFunc(const char *name, FastSort resultSort, uint32 argCount, FastSor
   for (uint i = 0; i < argCount; ++i) {
     arityData[arityDataIndex++] = args[i];
   }
+  uElem[funcCount] = MISSING_UELEM;
+  isAC[funcCount] = false;
   FastFunc result = funcCount++;
   assert(validFastFunc(result));
   return result;
+}
+
+FastFunc newACFunc(const char *name, FastSort sort) {
+  if (funcCount == MAXFUNCS) {
+    fprintf(stderr, "Too many functions.\n");
+    exit(-1);
+  }
+  if (arityDataIndex + 2 > MAXARITYDATA) {
+    fprintf(stderr, "Too many function arguments.\n");
+    exit(-1);
+  }
+  arities[funcCount] = 2;
+  funcNames[funcCount] = name;
+  resultSorts[funcCount] = sort;
+  arityIndex[funcCount] = arityDataIndex;
+  for (uint i = 0; i < 2; ++i) {
+    arityData[arityDataIndex++] = sort;
+  }
+  uElem[funcCount] = MISSING_UELEM;
+  isAC[funcCount] = true;
+  FastFunc result = funcCount++;
+  assert(validFastFunc(result));
+  return result;
+}
+
+FastFunc newACUFunc(const char *name, FastFunc uElem) {
+  if (funcCount == MAXFUNCS) {
+    fprintf(stderr, "Too many functions.\n");
+    exit(-1);
+  }
+  if (arityDataIndex + 2 > MAXARITYDATA) {
+    fprintf(stderr, "Too many function arguments.\n");
+    exit(-1);
+  }
+  arities[funcCount] = 2;
+  funcNames[funcCount] = name;
+  resultSorts[funcCount] = getFuncSort(uElem);
+  arityIndex[funcCount] = arityDataIndex;
+  for (uint i = 0; i < 2; ++i) {
+    arityData[arityDataIndex++] = getFuncSort(uElem);
+  }
+  ::uElem[funcCount] = uElem;
+  isAC[funcCount] = true;
+  FastFunc result = funcCount++;
+  assert(validFastFunc(result));
+  return result;
+}
+
+FastFunc getUnityElement(FastFunc func) {
+  assert(validFastFunc(func));
+  return uElem[func]; 
+}
+
+bool isFuncAC(FastFunc func) {
+  assert(validFastFunc(func));
+  return isAC[func];
 }
 
 FastSort getFuncSort(FastFunc func)

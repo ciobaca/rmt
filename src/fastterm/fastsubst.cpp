@@ -4,16 +4,24 @@
 
 FastSubst::FastSubst()
 {
+<<<<<<< HEAD
   data = (uint *)malloc(sizeof(uint) * 16);// new uint [16];
   // data = new uint [2];
+=======
+  data = new uint32 [16];
+>>>>>>> 47b87021530b680689b32aae833e031f28723509
   size = 16;
   count = 0;
 }
 
 FastSubst::~FastSubst()
 {
+<<<<<<< HEAD
   // delete [] data;
   free(data);
+=======
+  //delete []data;
+>>>>>>> 47b87021530b680689b32aae833e031f28723509
 }
 
 void FastSubst::addToSubst(FastVar var, FastTerm term)
@@ -45,7 +53,7 @@ bool FastSubst::inDomain(FastVar var)
   return false;
 }
 
-FastTerm FastSubst::range(FastVar var)
+FastTerm FastSubst::image(FastVar var)
 {
   assert(inDomain(var));
   for (uint i = 0; i < count; i += 2) {
@@ -57,11 +65,19 @@ FastTerm FastSubst::range(FastVar var)
   return 0;
 }
 
+void FastSubst::replaceConstWithVar(FastTerm c, FastVar v) {
+  for (uint i = 0; i < count; ++i) {
+    if (data[i] == c) {
+      data[i] = v;
+    }
+  }
+}
+
 FastTerm FastSubst::applySubst(FastTerm term)
 {
   if (isVariable(term)) {
     if (inDomain(term)) {
-      return range(term);
+      return image(term);
     }
     return term;
   } else {
@@ -131,16 +147,16 @@ size_t printSubst(FastSubst &subst, char *buffer, size_t size)
   for (uint i = 0; i < subst.count; i += 2) {
     if (i > 0) {
       if (size >= 1) {
-	buffer[0] = ',';
-	size--;
-	result++;
-	buffer++;
+        buffer[0] = ',';
+        size--;
+        result++;
+        buffer++;
       }
       if (size >= 1) {
-	buffer[0] = ' ';
-	size--;
-	result++;
-	buffer++;
+        buffer[0] = ' ';
+        size--;
+        result++;
+        buffer++;
       }
     }
     assert(validFastTerm(subst.data[i + 1]));

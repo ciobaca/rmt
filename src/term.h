@@ -39,6 +39,8 @@ struct Term
   std::vector<void *> allVarsAndFresh;
   std::vector<Variable *> allUniqueVars;
 
+  string stringRepresentation;
+
   Term() {
     computedVars = false;
     computedUniqueVars = false;
@@ -49,12 +51,12 @@ struct Term
   
   // Returns the set of variables that appear in the term.  The result
   // is cached (a second call to vars will be O(1)).
-  virtual vector<Variable *> vars();
+  virtual vector<Variable *> &vars();
 
   // Returns the set of unique variables and fresh constants that appear in the term
   // in the order in which they appear. The result
   // is cached (a second call to vars will be O(1)).
-  virtual vector<void*> varsAndFresh();
+  virtual vector<void*> &varsAndFresh();
 
   // Returns the set of variables in a term; no repetitions. Prefer
   // the cached version below to this one.
@@ -64,13 +66,17 @@ struct Term
   
   // Returns the set of variables in a term; no repetitions. Caches
   // the result.
-  virtual vector<Variable *> uniqueVars();
+  virtual vector<Variable *> &uniqueVars();
 
   // Returns whether the term contains the variable given as argument
   virtual bool hasVariable(Variable *);
 
   // Apply the substitution given as a parameter to this term.
-  virtual Term *substitute(Substitution &);
+  virtual Term *cachedSubstitute(Substitution &);
+  virtual Term *cachedSubstituteSingleton(Variable *v, Term *t);
+
+  virtual Term *substitute(Substitution &) = 0;
+  virtual Term *substituteSingleton(Variable *v, Term *t) = 0;
 
   // Helper function that applies the substitution given as the first
   // parameter.  The second parameter is a cache that records for
@@ -84,6 +90,7 @@ struct Term
   // different from previous subterms. If a subterm has been seen
   // before, the result is obtained from the cache.
   virtual Term *computeSubstitution(Substitution &, map<Term *, Term *> &) = 0;
+  virtual Term *computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &) = 0;
 
   // Compute the set of variable appearing in the term. O(|dag|).
   virtual vector<Variable *> computeVars() = 0;
@@ -99,9 +106,6 @@ struct Term
   // normalized form.
   // The boolean parameter should be set to false if the rs is not optimally reducing.
   virtual Term *normalize(RewriteSystem &rewriteSystem, bool = true);
-
-  // Computes a term where all defined functions have been normalized
-  virtual Term *normalizeFunctions();
 
   // Unifies this term with the parameter. Implements visitor pattern
   // for multiple dispatch.  The substitution is the substitution
@@ -269,8 +273,12 @@ struct Term
   // virtual string toSmtString() = 0;
   virtual Z3_ast toSmt() = 0;
 
-  // returns an infix representation of the term as a string
-  virtual string toString(vector<void*> *allVars = NULL) = 0;
+  // returns an infix representation of the term as a string (cached)
+  virtual void computeToString() = 0;
+  string &toString();
+
+  // returns a term in which variable names are uniformized
+  virtual Term *toUniformTerm(vector<void*> &allVars, map<Variable*, Term*> *subst = NULL) = 0;
 
   // returns a pretier representation of the term
   virtual string toPrettyString() = 0;
@@ -282,12 +290,15 @@ struct Term
   virtual void getDefinedFunctions(std::set<Function *> &) = 0;
 
   // replace all constants by corresponding variables
-  virtual Term *unsubstitute(vector<Term *> cts, vector<Variable *> vs) = 0;
+  virtual Term *unsubstitute(vector<Term *> &cts, vector<Variable *> &vs) = 0;
+
+  // reverse of "toUnifTerm" process
+  virtual Term *unsubstituteUnif(map<Variable*, Term*> &subst) = 0;
 
   //count apparitions of a certain function in term
   virtual int nrFuncInTerm(Function *f) = 0;
 };
 
-bool unabstractSolution(Substitution, ConstrainedSolution &);
+bool unabstractSolution(Substitution &, ConstrainedSolution &);
 
 #endif

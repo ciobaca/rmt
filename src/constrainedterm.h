@@ -45,7 +45,7 @@ struct ConstrainedTerm
   std::vector<Variable *> vars();
   ConstrainedTerm substitute(Substitution &);
 
-  ConstrainedTerm normalizeFunctions();
+  //  ConstrainedTerm normalizeFunctions();
 
   Term *whenImplies(ConstrainedTerm goal);
 

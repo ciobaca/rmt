@@ -302,6 +302,6 @@ struct Term
   virtual int nrFuncInTerm(Function *f) = 0;
 };
 
-bool unabstractSolution(Substitution, ConstrainedSolution &);
+bool unabstractSolution(Substitution &, ConstrainedSolution &);
 
 #endif

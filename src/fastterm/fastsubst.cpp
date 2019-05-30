@@ -4,24 +4,16 @@
 
 FastSubst::FastSubst()
 {
-<<<<<<< HEAD
   data = (uint *)malloc(sizeof(uint) * 16);// new uint [16];
   // data = new uint [2];
-=======
-  data = new uint32 [16];
->>>>>>> 47b87021530b680689b32aae833e031f28723509
   size = 16;
   count = 0;
 }
 
 FastSubst::~FastSubst()
 {
-<<<<<<< HEAD
-  // delete [] data;
   free(data);
-=======
   //delete []data;
->>>>>>> 47b87021530b680689b32aae833e031f28723509
 }
 
 void FastSubst::addToSubst(FastVar var, FastTerm term)

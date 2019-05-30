@@ -152,7 +152,7 @@ Term *Term::rewriteTopMost(pair<ConstrainedTerm, Term *> crewriteRule, Substitut
   return this;
 }
 
-bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolution &solution)
+bool unabstractSolution(Substitution &abstractingSubstitution, ConstrainedSolution &solution)
 {
   
   clock_t t0 = clock();
@@ -209,11 +209,9 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
     }
   }
 
-  Substitution resultSubst = solution.subst;
   for (Substitution::iterator it = abstractingSubstitution.begin(); it != abstractingSubstitution.end(); ++it) {
-    resultSubst.force(it->first, it->second);
+    solution.subst.force(it->first, it->second);
   }
-  solution.subst = resultSubst;
   solution.simplifyingSubst = simplifyingSubst;
 
   Log(DEBUG7) << "Solution.subst = " << solution.subst.toString() << endl;
@@ -222,7 +220,7 @@ bool unabstractSolution(Substitution abstractingSubstitution, ConstrainedSolutio
   Term *toCheck = simplifyConstraint(solution.constraint->substitute(solution.subst)->substitute(solution.simplifyingSubst));
   Log(DEBUG7) << "Checking satisfiability of " << toCheck->toString() << "." << endl;
   Z3Theory theory;
-  vector<Variable *> interpretedVariables = getInterpretedVariables();
+  vector<Variable *> &interpretedVariables = getInterpretedVariables();
   for (int i = 0; i < (int)interpretedVariables.size(); ++i) {
     theory.addVariable(interpretedVariables[i]);
   }

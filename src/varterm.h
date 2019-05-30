@@ -15,6 +15,7 @@ struct VarTerm : public Term
   Sort *getSort();
 
   Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
+  Term *computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &);
 
   bool unifyWith(Term *, Substitution &);
   bool unifyWithFunTerm(FunTerm *, Substitution &);

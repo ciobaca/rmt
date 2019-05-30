@@ -58,6 +58,12 @@ Term *Term::substitute(Substitution &subst)
   return computeSubstitution(subst, cache);
 }
 
+Term *Term::substituteSingleton(Variable *v, Term *t)
+{
+  map<Term *, Term *> cache;
+  return computeSingletonSubstitution(v, t, cache);
+}
+
 bool Term::isNormalized(RewriteSystem &rewriteSystem)
 {
   map<Term *, bool> cache;

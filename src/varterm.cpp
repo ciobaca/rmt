@@ -35,6 +35,14 @@ Term *VarTerm::computeSubstitution(Substitution &subst, map<Term *, Term *> &)
   }
 }
 
+Term *VarTerm::computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &)
+{
+  if (this->variable == v) {
+    return t;
+  }
+  return this;
+}
+
 vector<void*> VarTerm::computeVarsAndFresh() {
   vector<void*> result;
   result.push_back((void*)variable);

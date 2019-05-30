@@ -176,6 +176,18 @@ Term *FunTerm::computeSubstitution(Substitution &subst, map<Term *, Term *> &cac
   return cache[this];
 }
 
+Term *FunTerm::computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &cache)
+{
+  if (!contains(cache, (Term *)this)) {
+    vector<Term *> newargs;
+    for (int i = 0; i < len(arguments); ++i) {
+      newargs.push_back(arguments[i]->computeSingletonSubstitution(v, t, cache));
+    }
+    cache[this] = getFunTerm(function, newargs);
+  }
+  return cache[this];
+}
+
 Term *FunTerm::computeNormalize(RewriteSystem &rewriteSystem, map<Term *, Term *> &cache, bool optimallyReducing)
 {
   Log(DEBUG9) << "computeNormalizing " << this->toString() << endl;

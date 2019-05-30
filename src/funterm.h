@@ -19,6 +19,7 @@ struct FunTerm : public Term
   std::set<void*> seenVarsAndFresh; //auxiliary set to make sure all vars * fresh are unique
 
   Term *computeSubstitution(Substitution &, map<Term *, Term *> &);
+  Term *computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &);
 
   bool unifyWith(Term *, Substitution &);
   bool unifyWithFunTerm(FunTerm *, Substitution &);

@@ -73,6 +73,7 @@ struct Term
 
   // Apply the substitution given as a parameter to this term.
   virtual Term *substitute(Substitution &);
+  virtual Term *substituteSingleton(Variable *v, Term *t);
 
   // Helper function that applies the substitution given as the first
   // parameter.  The second parameter is a cache that records for
@@ -86,6 +87,7 @@ struct Term
   // different from previous subterms. If a subterm has been seen
   // before, the result is obtained from the cache.
   virtual Term *computeSubstitution(Substitution &, map<Term *, Term *> &) = 0;
+  virtual Term *computeSingletonSubstitution(Variable *v, Term *t, map<Term *, Term *> &) = 0;
 
   // Compute the set of variable appearing in the term. O(|dag|).
   virtual vector<Variable *> computeVars() = 0;

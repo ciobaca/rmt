@@ -29,7 +29,7 @@ LDELexAlg::LDELexAlg(const vector<int> &a, const vector<int> &b, int c, int boun
 }
 
 void LDELexAlg::lexAlg0(int poz, int diff) {
-  if (poz + 1 == partialSol.size()) {
+  if (poz + 1 == (int)partialSol.size()) {
     if (diff * vab.back() >= 0 && diff % vab.back() == 0) {
       partialSol[poz] = diff / vab.back();
       if (isMinimal(partialSol)) {
@@ -47,7 +47,7 @@ void LDELexAlg::lexAlg0(int poz, int diff) {
 }
 
 void LDELexAlg::lexAlg1(int poz, int diff, int suma, int sumb) {
-  if (poz + 1 == partialSol.size()) {
+  if (poz + 1 == (int)partialSol.size()) {
     if (diff * vab.back() >= 0 && diff % vab.back() == 0) {
       partialSol[poz] = diff / vab.back();
       if (isMinimal(partialSol)) {
@@ -84,7 +84,7 @@ void LDELexAlg::extendedEuclid(int a, int b, int &x, int &y, int &g) {
 }
 
 void LDELexAlg::lexAlg2(int poz, int diff, int suma, int sumb) {
-  if (poz + 2 == partialSol.size()) {
+  if (poz + 2 == (int)partialSol.size()) {
     int x, y, g;
     extendedEuclid(vab[(int)vab.size() - 2], vab.back(), x, y, g);
     if (!(diff % g) && (x >= 0 || y >= 0)) {

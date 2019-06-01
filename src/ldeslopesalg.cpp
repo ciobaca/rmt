@@ -187,11 +187,11 @@ vector<tuple<int, int, int>> LDESlopesAlg::solve(int a, int b, int c, int v) {
 }
 
 void LDESlopesAlg::lexEnum(int poz, int diff, int suma, int sumb) {
-  if (poz + 1 == a.size()) {
+  if (poz + 1 == (int)a.size()) {
     lexEnum(poz + 1, diff, suma, sumb);
     return;
   }
-  if (poz + 2 == partialSol.size()) {
+  if (poz + 2 == (int)partialSol.size()) {
     vector<tuple<int, int, int>> sols;
     if (!diff && suma + sumb) {
       sols.emplace_back(0, 0, 0);

@@ -46,6 +46,7 @@ struct FastSubst {
   uint32 *data;
 
   FastSubst();
+  FastSubst(const FastSubst &other);
   ~FastSubst();
   void addToSubst(FastVar var, FastTerm term);
   void replaceConstWithVar(FastFunc c, FastVar);
@@ -53,6 +54,7 @@ struct FastSubst {
   FastTerm image(FastVar var);
   FastTerm applySubst(FastTerm term);
   void composeWith(FastVar v, FastTerm t);
+  FastSubst& operator=(const FastSubst &other);
 };
 
 struct FastSubst1 {

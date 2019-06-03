@@ -16,6 +16,21 @@ FastSubst::~FastSubst()
   //delete []data;
 }
 
+FastSubst::FastSubst(const FastSubst &other) {
+  size = other.size;
+  count = other.count;
+  data = (uint *)malloc(sizeof(uint) * size);
+  memcpy(data, other.data, count * sizeof(uint));
+}
+
+FastSubst& FastSubst::operator=(const FastSubst &other) {
+  size = other.size;
+  count = other.count;
+  data = (uint *)malloc(sizeof(uint) * size);
+  memcpy(data, other.data, count * sizeof(uint));
+  return *this;
+}
+
 void FastSubst::addToSubst(FastVar var, FastTerm term)
 {
   if (count >= size) {
@@ -156,7 +171,7 @@ size_t printSubst(FastSubst &subst, char *buffer, size_t size)
     uint32 printed = printTerm(subst.data[i], buffer, size);
     buffer += printed;
     size -= printed;
-    result += size;
+    result += printed;
     if (size >= 1) {
       buffer[0] = '-';
       size--;
@@ -173,7 +188,7 @@ size_t printSubst(FastSubst &subst, char *buffer, size_t size)
     printed = printTerm(subst.data[i], buffer, size);
     buffer += printed;
     size -= printed;
-    result += size;
+    result += printed;
   }
   if (size >= 1) {
     buffer[0] = ' ';
@@ -281,16 +296,16 @@ size_t printSubst1(FastSubst1 &subst, char *buffer, size_t size)
   for (uint i = 0; i < subst.data.size(); i += 2) {
     if (i > 0) {
       if (size >= 1) {
-	buffer[0] = ',';
-	size--;
-	result++;
-	buffer++;
+  buffer[0] = ',';
+  size--;
+  result++;
+  buffer++;
       }
       if (size >= 1) {
-	buffer[0] = ' ';
-	size--;
-	result++;
-	buffer++;
+  buffer[0] = ' ';
+  size--;
+  result++;
+  buffer++;
       }
     }
     assert(validFastTerm(subst.data[i + 1]));
@@ -424,16 +439,16 @@ size_t printSubst2(FastSubst2 &subst, char *buffer, size_t size)
   for (uint i = 0; i < subst.size(); i += 2) {
     if (i > 0) {
       if (size >= 1) {
-	buffer[0] = ',';
-	size--;
-	result++;
-	buffer++;
+  buffer[0] = ',';
+  size--;
+  result++;
+  buffer++;
       }
       if (size >= 1) {
-	buffer[0] = ' ';
-	size--;
-	result++;
-	buffer++;
+  buffer[0] = ' ';
+  size--;
+  result++;
+  buffer++;
       }
     }
     assert(validFastTerm(subst[i + 1]));

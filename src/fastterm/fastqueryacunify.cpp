@@ -328,9 +328,8 @@ vector<FastSubst> FastQueryACUnify::solve() {
           toAdd = false;
           break;
         }
-        UnifEq toDecomp = eq;
         ues.pop_back();
-        ues.decomp(toDecomp.t1, toDecomp.t2);
+        ues.decomp(eq.t1, eq.t2);
       }
     }
     if (toAdd) {

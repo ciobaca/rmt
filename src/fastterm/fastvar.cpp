@@ -3,7 +3,7 @@
 #include <string>
 
 uint32 varCount = 0;
-uint32 fresVarCount = 0;
+uint32 freshVarCount = 0;
 FastSort varSorts[MAXVARS];
 const char *varNames[MAXVARS];
 
@@ -27,7 +27,15 @@ FastVar newVar(const char *name, FastSort sort)
 }
 
 FastVar createFreshVariable(FastSort sort) {
-  return newVar(("_" + std::to_string(varCount++)).c_str(), sort);
+  char *name = new char[12]();
+  name[0] = '_';
+  int index = 1;
+  for (char c : std::to_string(freshVarCount)) {
+    name[index] = c;
+    ++index;
+  }
+  ++freshVarCount;
+  return newVar(name, sort);
 }
  
 const char *getVarName(FastVar var)

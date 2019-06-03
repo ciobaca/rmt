@@ -185,7 +185,7 @@ size_t printSubst(FastSubst &subst, char *buffer, size_t size)
       buffer++;
     }
     assert(validFastTerm(subst.data[i + 1]));
-    printed = printTerm(subst.data[i], buffer, size);
+    printed = printTerm(subst.data[i + 1], buffer, size);
     buffer += printed;
     size -= printed;
     result += printed;

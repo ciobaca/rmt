@@ -263,7 +263,7 @@ void testACUnify() {
     printTerm(t1, buffer, buffSize);
     printf("unify: %s ", buffer);
     memset(buffer, 0, sizeof(buffer));
-//    printTerm(t2, buffer, buffSize);
+    printTerm(t2, buffer, buffSize);
     puts(buffer);
     auto ans = unify(t1, t2);
     printf("#Unifiers: %d\n", ans.size());
@@ -299,12 +299,12 @@ void testACUnify() {
 
   // f X Y === g a c
   t1 = newFuncTerm(f, new FastTerm[2]{X, Y});
-  t2 = newFuncTerm(g, new FastTerm[2]{a, c});
+  t2 = newFuncTerm(g, new FastTerm[2]{newFuncTerm(a, nullptr), newFuncTerm(c, nullptr)});
   unifyTerms(t1, t2);
 
   // f X Y === f a c
   t1 = newFuncTerm(f, new FastTerm[2]{X, Y});
-  t2 = newFuncTerm(f, new FastTerm[2]{a, c});
+  t2 = newFuncTerm(f, new FastTerm[2]{newFuncTerm(a, nullptr), newFuncTerm(c, nullptr)});
   unifyTerms(t1, t2);
 
   // f (f X1 X1) (f X2 X3) === f (f Y1 Y1) Y2
@@ -324,12 +324,12 @@ void testACUnify() {
 
   // tt X X X === tt (tg (tg a)) (tg (tg Z)) (tg Y);
   t1 = newFuncTerm(tt, new FastTerm[3]{X, X, X});
-  t2 = newFuncTerm(tt, new FastTerm[3]{newFuncTerm(tg, new FastTerm[1]{newFuncTerm(tg, new FastTerm[1]{a})}), newFuncTerm(tg, new FastTerm[1]{newFuncTerm(tg, new FastTerm[1]{Z})}), newFuncTerm(tg, new FastTerm[1]{Y})});
+  t2 = newFuncTerm(tt, new FastTerm[3]{newFuncTerm(tg, new FastTerm[1]{newFuncTerm(tg, new FastTerm[1]{newFuncTerm(a, nullptr)})}), newFuncTerm(tg, new FastTerm[1]{newFuncTerm(tg, new FastTerm[1]{Z})}), newFuncTerm(tg, new FastTerm[1]{Y})});
   unifyTerms(t1, t2);
 
   // f X Y === f (ff a c) Z
   t1 = newFuncTerm(f, new FastTerm[2]{X, Y});
-  t2 = newFuncTerm(f, new FastTerm[2]{newFuncTerm(ff, new FastTerm[2]{a, c}), Z});
+  t2 = newFuncTerm(f, new FastTerm[2]{newFuncTerm(ff, new FastTerm[2]{newFuncTerm(a, nullptr), newFuncTerm(c, nullptr)}), Z});
   unifyTerms(t1, t2);
 
   // f X (f X X) === f X X
@@ -339,7 +339,7 @@ void testACUnify() {
 
   // g X X === g c (tg Y)
   t1 = newFuncTerm(g, new FastTerm[2]{X, X});
-  t2 = newFuncTerm(g, new FastTerm[2]{c, newFuncTerm(tg, new FastTerm[1]{Y})});
+  t2 = newFuncTerm(g, new FastTerm[2]{newFuncTerm(c, nullptr), newFuncTerm(tg, new FastTerm[1]{Y})});
   unifyTerms(t1, t2);
 }
 

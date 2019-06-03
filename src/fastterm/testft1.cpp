@@ -2,6 +2,8 @@
 #include "fastqueryacunify.h"
 #include "unifeqsystem.h"
 #include <stdio.h>
+#include <cstring>
+#include <functional>
 #include <z3.h>
 
 int test_fastterm()
@@ -228,6 +230,119 @@ void test_unify()
   printf("unify %s and %s: %d\n", buffer6, buffer7, unify(t6, t7).size());
 }
 
+void testACUnify() {
+  puts("\n");
+  FastSort sort = newSort("State");
+  FastVar X1 = newVar("X1", sort);
+  FastVar X2 = newVar("X2", sort);
+  FastVar X3 = newVar("X3", sort);
+  FastVar X4 = newVar("X4", sort);
+  FastVar X = newVar("X", sort);
+  FastVar Y1 = newVar("Y1", sort);
+  FastVar Y2 = newVar("Y2", sort);
+  FastVar Y = newVar("Y", sort);
+  FastVar Z = newVar("Z", sort);
+  FastFunc a = newConst("a", sort);
+  FastFunc c = newConst("c", sort);
+  FastFunc uElem = newConst("e", sort);
+
+  FastSort sorts[16];
+  for (int i = 0; i < 16; ++i) {
+    sorts[i] = sort;
+  }
+
+  FastFunc f = newACUFunc("f", uElem);
+  FastFunc ff = newACUFunc("ff", uElem);
+  FastFunc g = newFunc("g", sort, 2, sorts);
+  FastFunc tt = newFunc("tt", sort, 3, sorts);
+  FastFunc tg = newFunc("tg", sort, 1, sorts);
+
+  auto unifyTerms = [&](FastTerm t1, FastTerm t2) {
+    const int buffSize = 1 << 10;
+    char buffer[buffSize]{0};
+    printTerm(t1, buffer, buffSize);
+    printf("unify: %s ", buffer);
+    memset(buffer, 0, sizeof(buffer));
+//    printTerm(t2, buffer, buffSize);
+    puts(buffer);
+    auto ans = unify(t1, t2);
+    printf("#Unifiers: %d\n", ans.size());
+    for (auto subst : ans) {
+      memset(buffer, 0, sizeof(buffer));
+      printSubst(subst, buffer, buffSize);
+      puts(buffer);
+    }
+    puts("");
+  };
+  
+  // f X1 X2 === f X3 X4
+  // f X1 X1 === f X4 X3
+  FastTerm t1 = newFuncTerm(f, new FastTerm[2]{X1, X2});
+  FastTerm t2 = newFuncTerm(f, new FastTerm[2]{X3, X4});
+  unifyTerms(t1, t2);
+  unifyTerms(t2, t1);
+
+  // f X Y === f Y X
+  t1 = newFuncTerm(f, new FastTerm[2]{X, Y});
+  t2 = newFuncTerm(f, new FastTerm[2]{Y, X});
+  unifyTerms(t1, t2);
+
+  // f X X1 === f Y Y1
+  t1 = newFuncTerm(f, new FastTerm[2]{X, X1});
+  t2 = newFuncTerm(f, new FastTerm[2]{Y, Y1});
+  unifyTerms(t1, t2);
+
+  // tg X === tg Y
+  t1 = newFuncTerm(tg, new FastTerm[1]{X});
+  t2 = newFuncTerm(tg, new FastTerm[1]{Y});
+  unifyTerms(t1, t2);
+
+  // f X Y === g a c
+  t1 = newFuncTerm(f, new FastTerm[2]{X, Y});
+  t2 = newFuncTerm(g, new FastTerm[2]{a, c});
+  unifyTerms(t1, t2);
+
+  // f X Y === f a c
+  t1 = newFuncTerm(f, new FastTerm[2]{X, Y});
+  t2 = newFuncTerm(f, new FastTerm[2]{a, c});
+  unifyTerms(t1, t2);
+
+  // f (f X1 X1) (f X2 X3) === f (f Y1 Y1) Y2
+  t1 = newFuncTerm(f, new FastTerm[2]{newFuncTerm(f, new FastTerm[2]{X1, X1}), newFuncTerm(f, new FastTerm[2]{X2, X3})});
+  t2 = newFuncTerm(f, new FastTerm[2]{newFuncTerm(f, new FastTerm[2]{Y1, Y1}), Y2});
+  unifyTerms(t1, t2);
+
+  // f (f X Y) Z === f Z (f X Y)
+  t1 = newFuncTerm(f, new FastTerm[2]{newFuncTerm(f, new FastTerm[2]{X, Y}), Z});
+  t2 = newFuncTerm(f, new FastTerm[2]{Z, newFuncTerm(f, new FastTerm[2]{X, Y})});
+  unifyTerms(t1, t2);
+
+  // f X Y === f Y (f Z Y);
+  t1 = newFuncTerm(f, new FastTerm[2]{X, Y});
+  t2 = newFuncTerm(f, new FastTerm[2]{Y, newFuncTerm(f, new FastTerm[2]{Z, Y})});
+  unifyTerms(t1, t2);
+
+  // tt X X X === tt (tg (tg a)) (tg (tg Z)) (tg Y);
+  t1 = newFuncTerm(tt, new FastTerm[3]{X, X, X});
+  t2 = newFuncTerm(tt, new FastTerm[3]{newFuncTerm(tg, new FastTerm[1]{newFuncTerm(tg, new FastTerm[1]{a})}), newFuncTerm(tg, new FastTerm[1]{newFuncTerm(tg, new FastTerm[1]{Z})}), newFuncTerm(tg, new FastTerm[1]{Y})});
+  unifyTerms(t1, t2);
+
+  // f X Y === f (ff a c) Z
+  t1 = newFuncTerm(f, new FastTerm[2]{X, Y});
+  t2 = newFuncTerm(f, new FastTerm[2]{newFuncTerm(ff, new FastTerm[2]{a, c}), Z});
+  unifyTerms(t1, t2);
+
+  // f X (f X X) === f X X
+  t1 = newFuncTerm(f, new FastTerm[2]{X, newFuncTerm(f, new FastTerm[2]{X, X})});
+  t2 = newFuncTerm(f, new FastTerm[2]{X, X});
+  unifyTerms(t1, t2);
+
+  // g X X === g c (tg Y)
+  t1 = newFuncTerm(g, new FastTerm[2]{X, X});
+  t2 = newFuncTerm(g, new FastTerm[2]{c, newFuncTerm(tg, new FastTerm[1]{Y})});
+  unifyTerms(t1, t2);
+}
+
 void test_match()
 {
   FastSort sort = newSort("State");
@@ -332,6 +447,7 @@ int main()
   test_builtins();
   test_unify();
   test_match();
+  testACUnify();
 
   return 0;
 }

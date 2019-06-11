@@ -329,6 +329,8 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
     }
   }
 
+  cout << spaces(initialArgs.depth) << "- proof exists right ended with unsolved constraint " << unsolvedConstraint->toString() << endl;
+
   return unsolvedConstraint;
 }
 

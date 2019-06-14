@@ -31,20 +31,20 @@ FastSubst::~FastSubst()
   free(data);
 }
 
-FastSubst::FastSubst(const FastSubst &other) {
-  size = other.size;
-  count = other.count;
-  data = (uint *)malloc(sizeof(uint) * size);
-  memcpy(data, other.data, count * sizeof(uint));
-}
+// FastSubst::FastSubst(const FastSubst &other) {
+//   size = other.size;
+//   count = other.count;
+//   data = (uint *)malloc(sizeof(uint) * size);
+//   memcpy(data, other.data, count * sizeof(uint));
+// }
 
-FastSubst& FastSubst::operator=(const FastSubst &other) {
-  size = other.size;
-  count = other.count;
-  data = (uint *)malloc(sizeof(uint) * size);
-  memcpy(data, other.data, count * sizeof(uint));
-  return *this;
-}
+// FastSubst& FastSubst::operator=(const FastSubst &other) {
+//   size = other.size;
+//   count = other.count;
+//   data = (uint *)malloc(sizeof(uint) * size);
+//   memcpy(data, other.data, count * sizeof(uint));
+//   return *this;
+// }
 
 void FastSubst::addToSubst(FastVar var, FastTerm term)
 {

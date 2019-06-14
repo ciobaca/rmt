@@ -86,6 +86,12 @@ void QueryProveSim::parse(std::string &s, int &w) {
   skipWhiteSpace(s, w);
 
   do {
+    assumedCircularities.push_back(false);
+    if (lookAhead(s, w, "[assumed]")) {
+      matchString(s, w, "[assumed]");
+      skipWhiteSpace(s, w);
+      assumedCircularities.back() = true;
+    }
     ConstrainedTerm ct = parseConstrainedTerm(s, w);
     circularities.push_back(ct);
     skipWhiteSpace(s, w);
@@ -468,7 +474,10 @@ void QueryProveSim::execute() {
   for (int i = 0; i < circCount; ++i) {
     cout << "Proving simulation circularity #" << (i + 1) << endl;
     ConstrainedTerm ct = circularities[i];
-    if (proveSimulation(ct, 0)) {
+    if (assumedCircularities[i]) {
+      cout << "Circularity #" << (i + 1) << " was assumed to be true" << endl;
+    }
+    else if (proveSimulation(ct, 0)) {
       cout << "Succeeded in proving circularity #" << (i + 1) << endl;
     }
     else {

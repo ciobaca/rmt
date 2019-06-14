@@ -4,31 +4,38 @@
 
 FastSubst::FastSubst()
 {
-  data = (uint *)malloc(sizeof(uint) * 16);// new uint [16];
-  // data = new uint [2];
-  size = 16;
+  size = 4;
+  data = (uint *)malloc(sizeof(uint) * size);
   count = 0;
+}
+
+FastSubst::FastSubst(const FastSubst &s)
+{
+  size = s.size;
+  count = s.count;
+  data = (uint *)malloc(sizeof(uint) * size);
+  memmove(data, s.data, count * sizeof(uint32));
+}
+
+FastSubst &FastSubst::operator=(const FastSubst &s)
+{
+  size = s.size;
+  count = s.count;
+  data = (uint *)malloc(sizeof(uint) * size);
+  memmove(data, s.data, count * sizeof(uint32));
+  return *this;
 }
 
 FastSubst::~FastSubst()
 {
   free(data);
-  //delete []data;
 }
 
 void FastSubst::addToSubst(FastVar var, FastTerm term)
 {
   if (count >= size) {
     uint *newdata = (uint *)realloc(data, sizeof(uint) * size * 2);
-    //uint *newdata = new uint32 [size * 2];
     size = size * 2;
-    //    memmove(newdata, data, count * sizeof(uint));
-    // for (uint i = 0; i < count; ++i) {
-    //   newdata[i] = data[i];
-    // }
-    
-    //    delete [] data;
-    // free(data);
     data = newdata;
   }
   data[count++] = var;

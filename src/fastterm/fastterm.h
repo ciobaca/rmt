@@ -46,6 +46,8 @@ struct FastSubst {
   uint32 *data;
 
   FastSubst();
+  FastSubst(const FastSubst &);
+  FastSubst &operator=(const FastSubst &);
   ~FastSubst();
   void addToSubst(FastVar var, FastTerm term);
   void replaceConstWithVar(FastFunc c, FastVar);

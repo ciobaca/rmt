@@ -1,4 +1,6 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <vector>
+#include <random>
 #include "fastterm.h"
 using namespace std;
 
@@ -47,7 +49,7 @@ int main() {
   
   const int N = 1e7;
   double fst = 0, vt = 0, pvt = 0;
-  for (int cnt = 0; cnt <= 10; ++cnt) {
+  for (int cnt = 0; cnt <= 50; ++cnt) {
     vals.clear();
     for (int i = 0; i < N; ++i) vals.push_back(rand());
 

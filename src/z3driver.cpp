@@ -1545,30 +1545,31 @@ Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
   case Z3_QUANTIFIER_AST:
   {
     Log(DEBUG) << "UnZ3-ing quantifier" << endl;
-    if (Z3_get_quantifier_num_bound(z3context, ast) != 1) {
-      abortWithMessage("Cannot unz3 an ast of kind Z3_QUANTIFIER_AST with several bound variables.");
-    }
-    Z3_symbol symbol = Z3_get_quantifier_bound_name(z3context, ast, 0);
-    assert(z3_const_to_var.find(symbol) != z3_const_to_var.end());
-    Variable *boundVar = z3_const_to_var[symbol];
+    int nrBoundVars = (int)Z3_get_quantifier_num_bound(z3context, ast);
     vector<Variable *> newBoundVars = boundVars;
-    newBoundVars.push_back(boundVar);
-    Z3_ast body = Z3_get_quantifier_body(z3context, ast);
+    vector<Variable *> freshBoundVars;
+    for (int bvarnum = 0; bvarnum < nrBoundVars; ++bvarnum) {
+      Z3_symbol symbol = Z3_get_quantifier_bound_name(z3context, ast, bvarnum);
+      assert(z3_const_to_var.find(symbol) != z3_const_to_var.end());
+      Variable *boundVar = z3_const_to_var[symbol];
+      newBoundVars.push_back(boundVar);
+      freshBoundVars.push_back(boundVar);
+    }
 
+    Z3_ast body = Z3_get_quantifier_body(z3context, ast);
     Term *bodyTerm = unZ3(body, getBoolSort(), newBoundVars);
-    if (Z3_is_quantifier_forall(z3context, ast)) {
-      Term *resultUnZ3 = bForall(boundVar, bodyTerm);
-      Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
-      return resultUnZ3;
-    }
-    else if (Z3_is_quantifier_exists(z3context, ast)) {
-      Term *resultUnZ3 = bExists(boundVar, bodyTerm);
-      Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
-      return resultUnZ3;
-    }
+    Term *(*whichQ)(Variable*, Term*) = NULL;
+    if (Z3_is_quantifier_forall(z3context, ast)) whichQ = bForall;
+    else if (Z3_is_quantifier_exists(z3context, ast)) whichQ = bExists;
     else {
       abortWithMessage("In UnZ3: unknown quantifier.");
     }
+    reverse(freshBoundVars.begin(), freshBoundVars.end());
+    Term *resultUnZ3 = bodyTerm;
+    for (const auto &boundVar : freshBoundVars)
+      resultUnZ3 = whichQ(boundVar, resultUnZ3);
+    Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
+    return resultUnZ3;
   }
   break;
   case Z3_SORT_AST:
@@ -1583,11 +1584,11 @@ Term *unZ3(Z3_ast ast, Sort *sort, vector<Variable *> boundVars)
   default:
     Log(DEBUG8) << "unZ3: undefined case." << endl;
     break;
-  }
-  assert(0);
-  Term *resultUnZ3 = 0;
-  Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
-  return resultUnZ3;
+}
+assert(0);
+Term *resultUnZ3 = 0;
+Log(DEBUG8) << "Result of unZ3 = " << resultUnZ3->toString() << "." << endl;
+return resultUnZ3;
 }
 
 Z3_func_decl createZ3FunctionSymbol(string name, std::vector<Sort *> arguments, Sort *resultSort)

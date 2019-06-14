@@ -15,5 +15,5 @@ bool unifyList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst &subst)
 
 std::vector<FastSubst> unify(FastTerm t1, FastTerm t2)
 {
-  return FastQueryACUnify(t1, t1).solve();
+  return FastQueryACUnify(t1, t2).solve();
 }

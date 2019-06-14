@@ -30,8 +30,12 @@ struct QueryProveSim : public Query {
 
   /* holds information about which proofs failed */
   vector<int> failedCircularities;
+  /* holds which circularities are assumed to be true */
+  vector<bool> assumedCircularities;
 
   QueryProveSim();
+
+  bool useDFS;
 
   virtual Query *create();
 

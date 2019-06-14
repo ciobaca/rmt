@@ -55,6 +55,7 @@ struct FastSubst {
   FastTerm image(FastVar var);
   FastTerm applySubst(FastTerm term);
   void composeWith(FastVar v, FastTerm t);
+  FastSubst& operator=(const FastSubst &other);
 };
 
 struct FastSubst1 {

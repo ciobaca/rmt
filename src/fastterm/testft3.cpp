@@ -8,7 +8,7 @@ vector<int> vals;
 
 FastSubst testFastSubst() {
   FastSubst ans;
-  for (int i = 0; i < vals.size(); i += 2) {
+  for (int i = 0; i < (int)vals.size(); i += 2) {
     ans.addToSubst(vals[i], vals[i + 1]);
   }
   return ans;
@@ -16,7 +16,7 @@ FastSubst testFastSubst() {
 
 vector<unsigned int> testVector() {
   vector<unsigned int> ans;
-  for (int i = 0; i < vals.size(); ++i) {
+  for (int i = 0; i < (int)vals.size(); ++i) {
     ans.push_back(vals[i]);
   }
   return ans;
@@ -24,7 +24,7 @@ vector<unsigned int> testVector() {
 
 vector<pair<unsigned int, unsigned int>> testPairVector() {
   vector<pair<unsigned int, unsigned int>> ans;
-  for (int i = 0; i < vals.size(); i += 2) {
+  for (int i = 0; i < (int)vals.size(); i += 2) {
     ans.emplace_back(vals[i], vals[i + 1]);
   }
   return ans;
@@ -32,13 +32,13 @@ vector<pair<unsigned int, unsigned int>> testPairVector() {
 
 bool compareVectors(FastSubst &fs, vector<unsigned int> &v) {
   if (fs.count != v.size()) return false;
-  for (int i = 0; i < fs.count; ++i) if (fs.data[i] != v[i]) return false;
+  for (int i = 0; i < (int)fs.count; ++i) if (fs.data[i] != v[i]) return false;
   return true;
 }
 
 bool compareVectors(FastSubst &fs, vector<pair<unsigned int, unsigned int>> &v) {
   if (fs.count != 2 * v.size()) return false;
-  for (int i = 0; i < fs.count; i += 2) if (fs.data[i] != v[i / 2].first || fs.data[i + 1] != v[i / 2].second) return false;
+  for (int i = 0; i < (int)fs.count; i += 2) if (fs.data[i] != v[i / 2].first || fs.data[i + 1] != v[i / 2].second) return false;
   return true;
 }
 

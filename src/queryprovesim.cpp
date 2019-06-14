@@ -9,6 +9,7 @@
 #include <string>
 #include <cassert>
 #include <queue>
+#include <stack>
 using namespace std;
 
 QueryProveSim::QueryProveSim() {
@@ -24,8 +25,15 @@ void QueryProveSim::parse(std::string &s, int &w) {
 
   /* defaults */
   proveTotal = false;
+  useDFS = false;
   maxDepth = 100;
   isBounded = false;
+
+  if (lookAhead(s, w, "useDFS")) {
+    matchString(s, w, "useDFS");
+    useDFS = true;
+    skipWhiteSpace(s, w);
+  }
 
   if (lookAhead(s, w, "[")) {
     matchString(s, w, "[");
@@ -263,12 +271,15 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
   Term *unsolvedConstraint = initialArgs.ct.constraint;
 
   queue<proveSimulationExistsRight_arguments> BFS_Q;
-  BFS_Q.push(initialArgs);
+  stack<proveSimulationExistsRight_arguments> DFS_S;
+  if (useDFS) DFS_S.push(initialArgs);
+  else BFS_Q.push(initialArgs);
 
-  while (!BFS_Q.empty()) {
+  while (!BFS_Q.empty() || !DFS_S.empty()) {
 
-    proveSimulationExistsRight_arguments t = BFS_Q.front();
-    BFS_Q.pop();
+    proveSimulationExistsRight_arguments t = useDFS ? DFS_S.top() : BFS_Q.front();
+    if (useDFS) DFS_S.pop();
+    else BFS_Q.pop();
 
     if (t.depth > maxDepth) {
       cout << spaces(t.depth) << "! proof failed (exceeded maximum depth) exists right " << t.ct.toString() << endl;
@@ -325,7 +336,9 @@ Term *QueryProveSim::proveSimulationExistsRight(proveSimulationExistsRight_argum
       ConstrainedTerm afterStep = pairC(lhs, sol.term, bAnd(t.ct.constraint, sol.constraint));
       afterStep = afterStep.substitute(sol.subst).substitute(sol.simplifyingSubst);
       afterStep = simplifyConstrainedTerm(afterStep);
-      BFS_Q.push(proveSimulationExistsRight_arguments(afterStep, rhsSolutions[i].second, t.depth + 1));
+      proveSimulationExistsRight_arguments toPush(afterStep, rhsSolutions[i].second, t.depth + 1);
+      if (useDFS) DFS_S.push(toPush);
+      else BFS_Q.push(toPush);
     }
   }
 

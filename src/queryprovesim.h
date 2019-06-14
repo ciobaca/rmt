@@ -33,6 +33,8 @@ struct QueryProveSim : public Query {
 
   QueryProveSim();
 
+  bool useDFS;
+
   virtual Query *create();
 
   virtual void parse(std::string &s, int &w);

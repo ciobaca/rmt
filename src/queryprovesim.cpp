@@ -471,11 +471,13 @@ void QueryProveSim::execute() {
   }
 
   // prove all circularities
+  int nrAssumed = 0;
   for (int i = 0; i < circCount; ++i) {
     cout << "Proving simulation circularity #" << (i + 1) << endl;
     ConstrainedTerm ct = circularities[i];
     if (assumedCircularities[i]) {
       cout << "Circularity #" << (i + 1) << " was assumed to be true" << endl;
+      ++nrAssumed;
     }
     else if (proveSimulation(ct, 0)) {
       cout << "Succeeded in proving circularity #" << (i + 1) << endl;
@@ -487,7 +489,11 @@ void QueryProveSim::execute() {
   }
 
   if (failedCircularities.empty()) {
-    cout << "Succeeded in proving ALL circularities" << endl;
+    cout << "Succeeded in proving ALL circularities";
+    if (nrAssumed > 0) {
+      cout << " (" << nrAssumed << " were assumed)";
+    }
+    cout << endl;
   }
   else {
     cout << "Failed to prove the following cirularities:";

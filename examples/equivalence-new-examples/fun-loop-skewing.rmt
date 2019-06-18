@@ -177,7 +177,7 @@ constrained-rewrite-system fun1
   (P (push (miu (var X) EXP) REST) ENV) => (P (push (substitute (var X) (miu (var X) EXP) EXP) REST) ENV)
 ;
 
-show-simulation [300, total] in fun1 and fun1 :
+show-simulation [150, total] in fun1 and fun1 :
 
 (pair
 
@@ -277,148 +277,69 @@ show-simulation [300, total] in fun1 and fun1 :
     )
   )
  )
-
 ,
 
-[assumed]
 (pair
 
   (P (push 
-    (while
-      (less (var V3) (var V4))
-      (seq
-        (assign (var C1) (plus (var C1) 2))
-        (assign (var V3) (plus (var V3) 1))
-        )
-      )
-  (push
-    (seq |_| (assign (var V1) (plus (var V1) 1)))
+    (assign (var C1) (plus (var C1) 2))
+  (push 
+    (seq |_| (assign (var V3) (plus (var V3) 1)))
     (push
-      (seq |_| (while (less (var V1) (var V2)) (seq (assign (var V3) (plus (var C2) (var V2))) (seq (while (less (var V3) (var V4)) (seq (assign (var C1) (plus (var C1) 2)) (assign (var V3) (plus (var V3) 1)))) (assign (var V1) (plus (var V1) 1))))))
-      done)
-    )
-  ) ENV3)
-
-  (P (push
-    (while
-      (less (var V1) (var V2))
-      (seq
-        (seq
-          (assign (var V5) (plus (plus (var C2) (var V2)) (var V6)))
-          (assign (var V3) (minus (var V5) (var V6)))
-          )
-        (seq
-          (ite
-            (less (var V5) (plus (var V4) (var V6)))
-            (seq
-              (while
-                (less (var V5) (plus (var V4) (var V6)))
-                (seq
-                  (assign (var V3) (minus (var V5) (var V6)))
-                  (seq
-                    (assign (var C1) (plus (var C1) 2))
-                    (assign (var V5) (plus (var V5) 1))
-                    )
-                  )
-                )
-              (assign (var V3) (var V4))
-              )
-            skip
-            )
-          (assign (var V1) (plus (var V1) 1))
-          )
-        )
-      )
-  done) ENV4)
-
-) /\ (band (band
-/* circularity constraints */
-  true
-/* constraints which ensure equality of variables in the two environments */
-  (band
-    (mequals (lookup ENV3 C1) (lookup ENV4 C1))
-    (band
-      (mequals (lookup ENV3 C2) (lookup ENV4 C2))
-      (band
-        (mequals (lookup ENV3 V1) (lookup ENV4 V1))
-        (band
-          (mequals (lookup ENV3 V2) (lookup ENV4 V2))
-          (mequals (lookup ENV3 V4) (lookup ENV4 V4))  
-          )
-        )
-    )
-  )
-)
- /* constraints which ensure that program variables are distinct */
- (band
-  (mequals V1 1)
-  (band
-    (mequals V2 2)
-    (band
-      (mequals V3 3)
-      (band
-        (mequals V4 4)
-        (band
-          (mequals V5 5)
-          (band
-            (mequals V6 6)
-            (band
-              (mequals C1 7)
-              (mequals C2 8)
-              )
-            )
-          )
-        )
-      )
-    )
-  )
- )
-
-,
-
-[assumed]
-(pair
-
-  (P (push 
-    (while
-      (less (var V3) (var V4))
-      (seq
-        (assign (var C1) (plus (var C1) 2))
-        (assign (var V3) (plus (var V3) 1))
-        )
-      )
-  (push
-    (seq |_| (assign (var V1) (plus (var V1) 1)))
-    (push
-      (seq |_| (while (less (var V1) (var V2)) (seq (assign (var V3) (plus (var C2) (var V2))) (seq (while (less (var V3) (var V4)) (seq (assign (var C1) (plus (var C1) 2)) (assign (var V3) (plus (var V3) 1)))) (assign (var V1) (plus (var V1) 1))))))
-      done)
-    )
-  ) ENV3)
-
-  (P (push
-    (while
-      (less (var V5) (plus (var V4) (var V6)))
-      (seq
-        (assign (var V3) (minus (var V5) (var V6)))
+      (seq |_| (while
+        (less (var V3) (var V4))
         (seq
           (assign (var C1) (plus (var C1) 2))
-          (assign (var V5) (plus (var V5) 1))
+          (assign (var V3) (plus (var V3) 1))
           )
+        ))
+      (push
+        (seq |_| (assign (var V1) (plus (var V1) 1)))
+        (push
+          (seq |_| (while (less (var V1) (var V2)) (seq (assign (var V3) (plus (var C2) (var V2))) (seq (while (less (var V3) (var V4)) (seq (assign (var C1) (plus (var C1) 2)) (assign (var V3) (plus (var V3) 1)))) (assign (var V1) (plus (var V1) 1))))))
+          done)
         )
+    )
+  )
+  ) ENV3)
+
+  (P (push
+    (assign (var C1) (plus (var C1) 2))
+  (push
+    (seq |_| (assign (var V5) (plus (var V5) 1)))
+    (push
+      (seq |_| (while
+          (less (var V5) (plus (var V4) (var V6)))
+          (seq
+            (assign (var V3) (minus (var V5) (var V6)))
+            (seq
+              (assign (var C1) (plus (var C1) 2))
+              (assign (var V5) (plus (var V5) 1))
+              )
+            )
+          ))
+      (push (seq |_| (assign (var V3) (var V4)))
+          (push (seq |_| (assign (var V1) (plus (var V1) 1)))
+            (push (seq |_| (while (less (var V1) (var V2))
+              (seq (seq (assign (var V5) (plus (plus (var C2) (var V2)) (var V6)))
+                (assign (var V3) (minus (var V5) (var V6)))) (seq (ite (less (var V5) (plus (var V4) (var V6)))
+                  (seq (while (less (var V5) (plus (var V4) (var V6))) (seq (assign (var V3) (minus (var V5) (var V6)))
+                    (seq (assign (var C1) (plus (var C1) 2)) (assign (var V5) (plus (var V5) 1))))) (assign (var V3) (var V4))) skip)
+                (assign (var V1) (plus (var V1) 1)))))) done)))
       )
-  (push (seq |_| (assign (var V3) (var V4)))
-      (push (seq |_| (assign (var V1) (plus (var V1) 1)))
-        (push (seq |_| (while (less (var V1) (var V2))
-          (seq (seq (assign (var V5) (plus (plus (var C2) (var V2)) (var V6)))
-            (assign (var V3) (minus (var V5) (var V6)))) (seq (ite (less (var V5) (plus (var V4) (var V6)))
-              (seq (while (less (var V5) (plus (var V4) (var V6))) (seq (assign (var V3) (minus (var V5) (var V6)))
-                (seq (assign (var C1) (plus (var C1) 2)) (assign (var V5) (plus (var V5) 1))))) (assign (var V3) (var V4))) skip)
-            (assign (var V1) (plus (var V1) 1)))))) done)))
+    )
   ) ENV4)
 
 ) /\ (band (band
 /* circularity constraints */
-  true
+  (band
+    //true
+     (band
+       (mequals (lookup ENV3 V3) (lookup ENV4 V3))
+       (mequals (lookup ENV4 V5) (mplus (lookup ENV4 V3) (lookup ENV4 V6)))
+       )
+    (mless (lookup ENV3 V3) (lookup ENV3 V4))
+  )
 /* constraints which ensure equality of variables in the two environments */
   (band
     (mequals (lookup ENV3 C1) (lookup ENV4 C1))

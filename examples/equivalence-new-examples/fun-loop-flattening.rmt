@@ -259,7 +259,7 @@ show-simulation [300, total] in fun1 and fun1 :
   (band
  /* constraints which ensure that program variables are distinct */
  true
- (mless (lookup ENV3 /*V*/2) (mtimes 15 (mtimes 15 15)))
+ (mless (lookup ENV3 /*V*/2) (mtimes 5 5))
  )
  )
 
@@ -367,12 +367,12 @@ show-simulation [300, total] in fun1 and fun1 :
  /* constraints which ensure that program variables are distinct */
 (band
  true
- (mless (lookup ENV3 /*V*/2) (mtimes 15 (mtimes 15 15)))
+ (mless (lookup ENV3 /*V*/2) (mtimes 5 5))
  )
  )
 
 
 with-base
     (pair (P (push I done) ENV1) (P (push J done) ENV2)) /\
-    (mequals (lookup ENV3 /*C*/11) (lookup ENV4 /*C*/11))
+    (mequals (lookup ENV1 /*C*/11) (lookup ENV2 /*C*/11))
 ;

@@ -383,16 +383,16 @@ show-simulation [150, total] in fun1 and fun1 :
 with-base
     (pair (P (push I done) ENV1) (P (push J done) ENV2)) /\
   (band
-    (mequals (lookup ENV3 C1) (lookup ENV4 C1))
+    (mequals (lookup ENV1 C1) (lookup ENV2 C1))
     (band
-      (mequals (lookup ENV3 C2) (lookup ENV4 C2))
+      (mequals (lookup ENV1 C2) (lookup ENV2 C2))
       (band
-        (mequals (lookup ENV3 V1) (lookup ENV4 V1))
+        (mequals (lookup ENV1 V1) (lookup ENV2 V1))
         (band
-          (mequals (lookup ENV3 V2) (lookup ENV4 V2))
+          (mequals (lookup ENV1 V2) (lookup ENV2 V2))
           (band
-            (mequals (lookup ENV3 V3) (lookup ENV4 V3))
-            (mequals (lookup ENV3 V4) (lookup ENV4 V4))
+            (mequals (lookup ENV3 V1) (lookup ENV4 V2))
+            (mequals (lookup ENV3 V1) (lookup ENV4 V2))
             )
           )
         )

@@ -17,7 +17,6 @@
 enum BuiltinSortType {
   bltnBool,
   bltnInt,
-  bltnState
 };
 
 enum BuiltinFuncType {
@@ -90,6 +89,8 @@ void initFuncs();
   Sorts.
  */
 FastSort newSort(const char *name);
+bool existsSort(const char *name);
+FastSort getSortByName(const char *name);
 
 bool validFastSort(FastSort sort);
 
@@ -103,6 +104,8 @@ FastSort fastStateSort();
 
 void newSubSort(FastSort subsort, FastSort supersort);
 
+bool isSubSortTransitive(FastSort subsort, FastSort supersort);
+
 const char *getSortName(FastSort sort);
 
 /*
@@ -114,6 +117,9 @@ bool validFastVar(FastVar var);
 const char *getVarName(FastVar var);
 FastSort getVarSort(FastVar var);
 bool eq_var(FastVar var1, FastVar var2);
+
+bool existsVar(const char *name);
+FastVar getVarByName(const char *name);
 
 /*
   Function symbols.
@@ -135,6 +141,9 @@ bool isBuiltinFunc(FastFunc func);
 BuiltinFuncType getBuiltinFuncType(FastFunc func);
 
 bool eq_func(FastFunc func1, FastFunc func2);
+
+bool existsFunc(const char *name);
+FastFunc getFuncByName(const char *name);
 
 /*
   Terms.
@@ -177,6 +186,7 @@ size_t printSubst2(FastSubst1 &subst, char *buffer, size_t size);
 */
 
 bool occurs(FastVar var, FastTerm term);
+bool identifierTaken(const char *name);
 
 /*
   Syntactic unification.

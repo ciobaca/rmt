@@ -1,5 +1,7 @@
 #include "fastterm.h"
 #include <cassert>
+#include <cstring>
+#include <iostream>
 
 uint32 sortCount = 0;
 const char *sortNames[MAXSORTS];
@@ -27,10 +29,6 @@ void initSorts()
   sortInt = newSort("Int");
   sortIsBuiltin[sortInt] = true;
   builtinSortType[sortInt] = bltnInt;
-  
-  sortState = newSort("State");
-  sortIsBuiltin[sortState] = true;
-  builtinSortType[sortState] = bltnState;
 }
 
 bool isBuiltinSort(FastSort sort)
@@ -65,13 +63,17 @@ FastSort newSort(const char *name)
     fprintf(stderr, "Too many sorts.\n");
     exit(-1);
   }
-  sortNames[sortCount] = name;
+  sortNames[sortCount] = strdup(name);
+  if (sortNames[sortCount] == 0) {
+    fprintf(stderr, "Not enough memory to duplicate C string.\n");
+    exit(-1);
+  }
   FastSort result = sortCount++;
   assert(validFastSort(result));
   return result;
 }
 
-void newSubsorting(FastSort subsort, FastSort supersort)
+void newSubSort(FastSort subsort, FastSort supersort)
 {
   if (subsortingCount == MAXSUBSORTINGS) {
     fprintf(stderr, "Too many subsortings.\n");
@@ -92,4 +94,42 @@ BuiltinSortType getBuiltinSortType(FastSort sort)
 {
   assert(validFastSort(sort));
   return builtinSortType[sort];
+}
+
+bool existsSort(const char *name)
+{
+  for (uint32 i = 0; i < sortCount; ++i) {
+    if (strcmp(sortNames[i], name) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+FastSort getSortByName(const char *name)
+{
+  assert(existsSort(name));
+  for (uint32 i = 0; i < sortCount; ++i) {
+    if (strcmp(sortNames[i], name) == 0) {
+      assert(validFastSort(i));
+      return i;
+    }
+  }
+  assert(0);
+  return 0;
+}
+
+bool isSubSortTransitive(FastSort subsort, FastSort supersort)
+{
+  if (subsort == supersort) {
+    return true;
+  }
+  for (uint32 i = 0; i < subsortingCount; i++) {
+    FastSort subsortp = subsortings[i * 2];
+    FastSort supersortp = subsortings[i * 2 + 1];
+    if (subsortp == subsort && isSubSortTransitive(supersortp, supersort)) {
+      return true;
+    }
+  }
+  return false;
 }

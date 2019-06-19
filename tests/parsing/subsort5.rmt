@@ -1,0 +1,5 @@
+sorts State1, State2, State3;
+
+subsort Int < State3;
+
+subsort State3 < State1;

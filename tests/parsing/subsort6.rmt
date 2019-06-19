@@ -1,0 +1,5 @@
+sorts State1, State2, State3;
+
+subsort Bool < Int;
+
+subsort State3 < State1;

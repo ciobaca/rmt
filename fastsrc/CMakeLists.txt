@@ -57,3 +57,86 @@ if ("${CMAKE_SYSTEM_NAME}" MATCHES "[Ww]indows")
 endif()
 
 install (TARGETS fastrmt DESTINATION bin)
+
+include(CTest)
+
+add_test(TestFastParsingSort1 "../fastrmt" -v 0 ../../tests/parsing/dupsort1.rmt)
+set_tests_properties (TestFastParsingSort1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
+
+add_test(TestFastParsingSort2 "../fastrmt" -v 0 ../../tests/parsing/dupsort2.rmt)
+set_tests_properties (TestFastParsingSort2 PROPERTIES PASS_REGULAR_EXPRESSION "sort already exists")
+
+add_test(TestFastParsingSort3 "../fastrmt" -v 0 ../../tests/parsing/dupsort3.rmt)
+set_tests_properties (TestFastParsingSort3 PROPERTIES PASS_REGULAR_EXPRESSION "sort already exists")
+
+add_test(TestFastParsingSort4 "../fastrmt" -v 0 ../../tests/parsing/dupsort4.rmt)
+set_tests_properties (TestFastParsingSort4 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
+
+add_test(TestFastParsingSort5 "../fastrmt" -v 0 ../../tests/parsing/interpretedsort1.rmt)
+set_tests_properties (TestFastParsingSort5 PROPERTIES PASS_REGULAR_EXPRESSION "todo: cannot handle interpreted sorts yet")
+
+add_test(TestFastParsingSubSort1 "../fastrmt" -v 0 ../../tests/parsing/subsort1.rmt)
+set_tests_properties (TestFastParsingSubSort1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
+
+add_test(TestFastParsingSubSort2 "../fastrmt" -v 0 ../../tests/parsing/subsort2.rmt)
+set_tests_properties (TestFastParsingSubSort2 PROPERTIES PASS_REGULAR_EXPRESSION "Error: cannot add subsorting \\(would create cycle\\)")
+
+add_test(TestFastParsingSubSort3 "../fastrmt" -v 0 ../../tests/parsing/subsort3.rmt)
+set_tests_properties (TestFastParsingSubSort3 PROPERTIES PASS_REGULAR_EXPRESSION "Error: cannot add subsorting \\(would create cycle\\)")
+
+add_test(TestFastParsingSubSort4 "../fastrmt" -v 0 ../../tests/parsing/subsort4.rmt)
+set_tests_properties (TestFastParsingSubSort4 PROPERTIES PASS_REGULAR_EXPRESSION "Error: cannot add subsorting to builtin sorts")
+
+add_test(TestFastParsingSubSort5 "../fastrmt" -v 0 ../../tests/parsing/subsort5.rmt)
+set_tests_properties (TestFastParsingSubSort5 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
+
+add_test(TestFastParsingSubSort6 "../fastrmt" -v 0 ../../tests/parsing/subsort6.rmt)
+set_tests_properties (TestFastParsingSubSort6 PROPERTIES PASS_REGULAR_EXPRESSION "Error: cannot add subsorting to builtin sorts")
+
+add_test(TestFastParsingSignature1 "../fastrmt" -v 0 ../../tests/parsing/signature1.rmt)
+set_tests_properties (TestFastParsingSignature1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
+
+add_test(TestFastParsingSignature2 "../fastrmt" -v 0 ../../tests/parsing/signature2.rmt)
+set_tests_properties (TestFastParsingSignature2 PROPERTIES PASS_REGULAR_EXPRESSION "Error: duplicate function symbol")
+
+add_test(TestFastParsingSignature3 "../fastrmt" -v 0 ../../tests/parsing/signature3.rmt)
+set_tests_properties (TestFastParsingSignature3 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
+
+add_test(TestFastParsingSignature4 "../fastrmt" -v 0 ../../tests/parsing/signature4.rmt)
+set_tests_properties (TestFastParsingSignature4 PROPERTIES PASS_REGULAR_EXPRESSION "Unity element of ACU function must be nullary")
+
+add_test(TestFastParsingSignature5 "../fastrmt" -v 0 ../../tests/parsing/signature5.rmt)
+set_tests_properties (TestFastParsingSignature5 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
+
+add_test(TestFastParsingSignature6 "../fastrmt" -v 0 ../../tests/parsing/signature6.rmt)
+set_tests_properties (TestFastParsingSignature6 PROPERTIES PASS_REGULAR_EXPRESSION "Unsupported combination of a/c/u properties")
+
+add_test(TestFastParsingSignature7 "../fastrmt" -v 0 ../../tests/parsing/signature7.rmt)
+set_tests_properties (TestFastParsingSignature7 PROPERTIES PASS_REGULAR_EXPRESSION "Unsupported combination of a/c/u properties")
+
+add_test(TestFastParsingSignature8 "../fastrmt" -v 0 ../../tests/parsing/signature8.rmt)
+set_tests_properties (TestFastParsingSignature8 PROPERTIES PASS_REGULAR_EXPRESSION "Unsupported combination of a/c/u properties")
+
+add_test(TestFastParsingSignature9 "../fastrmt" -v 0 ../../tests/parsing/signature9.rmt)
+set_tests_properties (TestFastParsingSignature9 PROPERTIES PASS_REGULAR_EXPRESSION "AC functions must be defined on the same sort")
+
+add_test(TestFastParsingSignature10 "../fastrmt" -v 0 ../../tests/parsing/signature10.rmt)
+set_tests_properties (TestFastParsingSignature10 PROPERTIES PASS_REGULAR_EXPRESSION "AC functions must be defined on the same sort")
+
+add_test(TestFastParsingSignature11 "../fastrmt" -v 0 ../../tests/parsing/signature11.rmt)
+set_tests_properties (TestFastParsingSignature11 PROPERTIES PASS_REGULAR_EXPRESSION "AC functions must be defined on the same sort")
+
+add_test(TestFastParsingSignature12 "../fastrmt" -v 0 ../../tests/parsing/signature12.rmt)
+set_tests_properties (TestFastParsingSignature12 PROPERTIES PASS_REGULAR_EXPRESSION "Associative or commutative functions must have exactly two arguments")
+
+add_test(TestFastParsingSignature13 "../fastrmt" -v 0 ../../tests/parsing/signature13.rmt)
+set_tests_properties (TestFastParsingSignature13 PROPERTIES PASS_REGULAR_EXPRESSION "todo: cannot handle interpreted functions yet")
+
+add_test(TestFastParsingVar1 "../fastrmt" -v 0 ../../tests/parsing/var1.rmt)
+set_tests_properties (TestFastParsingVar1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
+
+add_test(TestFastParsingVar2 "../fastrmt" -v 0 ../../tests/parsing/var2.rmt)
+set_tests_properties (TestFastParsingVar2 PROPERTIES PASS_REGULAR_EXPRESSION "variable already exists")
+
+add_test(TestFastParsingVar3 "../fastrmt" -v 0 ../../tests/parsing/var3.rmt)
+set_tests_properties (TestFastParsingVar3 PROPERTIES PASS_REGULAR_EXPRESSION "identifier already used")

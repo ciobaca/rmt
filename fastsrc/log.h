@@ -3,54 +3,29 @@
 
 #include <iostream>
 #include <fstream>
+#include <string>
+
+#ifdef LOG_CPP__
+#else
+extern int debug_level;
+extern bool debug_sat;
+#endif
 
 const int ERROR = 0;
 const int WARNING = 1;
 const int INFO = 2;
-const int DEBUG = 3;
-const int DEBUG1 = 4;
-const int DEBUG2 = 5;
-const int DEBUG3 = 6;
-const int DEBUG4 = 7;
-const int DEBUG5 = 8;
-const int DEBUG6 = 9;
-const int DEBUG7 = 10;
-const int DEBUG8 = 11;
-const int DEBUG9 = 12;
+const int DEBUG3 = 3;
+const int DEBUG4 = 4;
+const int DEBUG5 = 5;
+const int DEBUG6 = 6;
+const int DEBUG7 = 7;
+const int DEBUG8 = 8;
+const int DEBUG9 = 9;
 
 std::string levelToString(const int);
 
-enum Feature
-{
-  LOGSAT
-};
+#define LOG(level, params) do { if (level <= debug_level) { std::cerr << levelToString(level); params; std::cerr << std::endl; } } while (0)
 
-struct Log
-{
-  static int debug_level;
-  int level;
-  bool hasFeature;
-  Feature feature;
-
-  static const bool debugSatisfiability;
-
-  Log(int);
-  Log(Feature f);
-
-  bool loggingEnabled();
-
-  template<class T> Log &operator<<(const T &t)
-  {
-    if (loggingEnabled()) {
-      std::cerr << t;
-    }
-    return *this;
-  }
-
-  typedef std::basic_ostream<char, std::char_traits<char> > tcerr;
-  typedef tcerr &(*stdeol)(tcerr &);
-  
-  Log& operator<<(stdeol);
-};
+#define LOGSAT(params) do { if (debug_sat) { std::cerr << "SAT "; params; std::cerr << std::endl; } } while (0)
 
 #endif

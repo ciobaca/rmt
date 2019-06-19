@@ -2,26 +2,28 @@
 #define PARSE_H__
 
 #include <string>
-#include "term.h"
+#include "fastterm.h"
 #include "constrainedterm.h"
 
 using namespace std;
 
 ConstrainedTerm parseConstrainedTerm(string &s, int &w);
-Term *parseTerm(string &s);
-Term *parseTerm(const char *s);
-void matchString(string &s, int &pos, string what);
-void match(string &s, int &pos, char c);
-void skipWhiteSpace(string &s, int &pos);
-string getQuotedString(string &s, int &pos);
-bool lookAhead(string &s, int &pos, string what);
-bool lookAheadIdentifier(string &s, int &pos);
-string getIdentifier(string &s, int &pos);
-int getNumber(string &s, int &pos);
-Term *parseTerm(string &s, int &pos);
-void expected(string what, int &where, string text);
-void parseError(string error, int &where, string text);
-ConstrainedRewriteSystem parseCRSfromName(string &s, int &w);
-ConstrainedPair parseConstrainedPair(string &s, int &w);
+// FastTerm parseTerm(string &s);
+/* FastTerm parseTerm(const char *s); */
+void matchString(std::string &s, int &pos, std::string what);
+void match(std::string &s, int &pos, char c);
+void skipWhiteSpace(std::string &s, int &pos);
+std::string getQuotedString(std::string &s, int &pos);
+bool lookAhead(std::string &s, int &pos, std::string what);
+bool lookAheadIdentifier(std::string &s, int &pos);
+std::string getIdentifier(std::string &s, int &pos);
+int getNumber(std::string &s, int &pos);
+
+FastTerm parseTerm(std::string &s, int &pos);
+
+void expected(std::string what, int &where, std::string text);
+void parseError(std::string error, int &where, std::string text);
+/* ConstrainedRewriteSystem parseCRSfromName(string &s, int &w); */
+/* ConstrainedPair parseConstrainedPair(string &s, int &w); */
 
 #endif

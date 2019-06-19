@@ -32,6 +32,7 @@ map<Z3_func_decl, Function *> func_decl_to_function;
 vector<Z3_ast> z3asserts;
 Z3_params simplifyParams;
 Z3_tactic simplifyTactic;
+Z3_params tacticParams;
 
 Z3_string z3_sort_to_string(Z3_sort s) {
   return Z3_sort_to_string(z3context, s);
@@ -50,21 +51,27 @@ Z3_ast z3_simplify(Term *term)
   Z3_ast toSimplify = term->toSmt();
   if (term->getSort() == getBoolSort()) {
     Z3_goal goal = Z3_mk_goal(z3context, false, false, false);
-    Z3_goal_assert(z3context, goal, term->toSmt());
-    Z3_apply_result res = Z3_tactic_apply(z3context, simplifyTactic, goal);
+    Z3_goal_inc_ref(z3context, goal);
+    Z3_goal_assert(z3context, goal, toSimplify);
+    Z3_apply_result res = Z3_tactic_apply_ex(z3context, simplifyTactic, goal, tacticParams);
+    Z3_apply_result_inc_ref(z3context, res);
     vector<Z3_ast> clauses;
     int nrgoals = Z3_apply_result_get_num_subgoals(z3context, res);
     for (int i = 0; i < nrgoals; ++i) {
       Z3_goal g = Z3_apply_result_get_subgoal(z3context, res, i);
+      Z3_goal_inc_ref(z3context, g);
       int sz = Z3_goal_size(z3context, g);
       for (int j = 0; j < sz; ++j)
         clauses.push_back(Z3_goal_formula(z3context, g, j));
+      Z3_goal_dec_ref(z3context, g);
     }
     Z3_ast result = clauses.empty() ? Z3_mk_true(z3context) : (
       (clauses.size() == 1) ? clauses[0] :
       Z3_mk_and(z3context, clauses.size(), &clauses[0])
       );
     toSimplify = result;
+    Z3_goal_dec_ref(z3context, goal);
+    Z3_apply_result_dec_ref(z3context, res);
   }
   return Z3_simplify_ex(z3context, toSimplify, simplifyParams);
 }
@@ -373,20 +380,24 @@ Z3_ast z3_custom_func::operator()(vector<Term *> args)
 void z3_error_handler(Z3_context context, Z3_error_code error)
 {
   Z3_string string_error = Z3_get_error_msg(context, error);
-  abortWithMessage(string("Z3 returned non OK error code (") + string_error + ".");
+  abortWithMessage(string("Z3 returned non OK error code (") + string_error + ").");
 }
 
 void start_z3_api()
 {
   Z3_config z3config = Z3_mk_config();
-  Z3_set_param_value(z3config, "timeout", "200");
+  Z3_set_param_value(z3config, "timeout", "300");
   Z3_set_param_value(z3config, "auto_config", "true");
   z3context = Z3_mk_context(z3config);
   Z3_set_error_handler(z3context, z3_error_handler);
 
   simplifyParams = Z3_mk_params(z3context);
-  Z3_params_set_bool(z3context, simplifyParams, Z3_mk_string_symbol(z3context, "sort_store"), true);
   Z3_params_inc_ref(z3context, simplifyParams);
+  Z3_params_set_bool(z3context, simplifyParams, Z3_mk_string_symbol(z3context, "sort_store"), true);
+
+  tacticParams = Z3_mk_params(z3context);
+  Z3_params_inc_ref(z3context, tacticParams);
+  Z3_params_set_uint(z3context, tacticParams, Z3_mk_string_symbol(z3context, "timeout"), 200);
 
   simplifyTactic = Z3_mk_tactic(z3context, "ctx-solver-simplify");
   Z3_tactic_inc_ref(z3context, simplifyTactic);

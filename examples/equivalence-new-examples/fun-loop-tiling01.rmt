@@ -214,7 +214,8 @@ show-simulation [300, total] in fun1 and fun1 :
 /* circularity constraints */
   (band
     (mless 0 (lookup ENV4 /*V*/4))
-    (mle 0 (lookup ENV3 /*V*/1))
+    //(mle 0 (lookup ENV3 /*V*/1))
+    true
   )
 /* constraints which ensure equality of variables in the two environments */
   (band
@@ -294,7 +295,8 @@ show-simulation [300, total] in fun1 and fun1 :
     (band
       (band
         (mless 0 (lookup ENV4 /*V*/4))
-        (mle 0 (lookup ENV3 /*V*/1))
+        //(mle 0 (lookup ENV3 /*V*/1))
+        true
         )
       true
       )

@@ -185,13 +185,12 @@ constrained-rewrite-system fun1
   (P (push (miu (var X) EXP) REST) ENV) => (P (push (substitute (var X) (miu (var X) EXP) EXP) REST) ENV)
 ;
 
-simplification (band (band (band (mequals (lookup ENV3 V1) (lookup ENV4 V1)) (band (mequals (lookup ENV3 V3) (lookup ENV4 V3)) (band (mequals (lookup ENV4 V4) (mplus (mtimes (lookup ENV4 V1) (lookup ENV4 V2)) (lookup ENV4 V3))) (band (bnot (mle (lookup ENV3 V2) (lookup ENV3 V1))) (band (mequals (lookup ENV3 V11) (lookup ENV4 V11)) (band (mequals (lookup ENV3 V2) (lookup ENV4 V2)) (bnot (mle (lookup ENV3 V2) (mplus 1 (lookup ENV3 V3)))))))))) true) (bequals (bnot (mle (mtimes (lookup ENV4 V2) (lookup ENV4 V2)) (mplus 1 (lookup ENV4 V4)))) true));
+//simplification (band (band (band (mequals (lookup ENV3 V1) (lookup ENV4 V1)) (band (mequals (lookup ENV3 V3) (lookup ENV4 V3)) (band (mequals (lookup ENV4 V4) (mplus (mtimes (lookup ENV4 V1) (lookup ENV4 V2)) (lookup ENV4 V3))) (band (bnot (mle (lookup ENV3 V2) (lookup ENV3 V1))) (band (mequals (lookup ENV3 V11) (lookup ENV4 V11)) (band (mequals (lookup ENV3 V2) (lookup ENV4 V2)) (bnot (mle (lookup ENV3 V2) (mplus 1 (lookup ENV3 V3)))))))))) true) (bequals (bnot (mle (mtimes (lookup ENV4 V2) (lookup ENV4 V2)) (mplus 1 (lookup ENV4 V4)))) true));
 
-!EOF!
+//!EOF!
 
 show-simulation [300, total] in fun1 and fun1 :
 
-[assumed]
 (pair
 
   (P (push 
@@ -257,8 +256,11 @@ show-simulation [300, total] in fun1 and fun1 :
     (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
   )
 )
+  (band
  /* constraints which ensure that program variables are distinct */
  true
+ (mless (lookup ENV3 /*V*/2) (mtimes 15 (mtimes 15 15)))
+ )
  )
 
 ,
@@ -343,9 +345,18 @@ show-simulation [300, total] in fun1 and fun1 :
       (mequals (lookup ENV4 /*V*/4) (mplus (mtimes (lookup ENV4 /*V*/1) (lookup ENV4 /*V*/2)) (lookup ENV4 /*V*/3)))
       )
     (band
-      (mless (lookup ENV3 /*V*/1) (lookup ENV3 /*V*/2))
-      (mless (lookup ENV3 /*V*/3) (lookup ENV3 /*V*/2))
-      )
+      (band
+        (mless (lookup ENV3 /*V*/1) (lookup ENV3 /*V*/2))
+        (mless (lookup ENV3 /*V*/3) (lookup ENV3 /*V*/2))
+        )
+      (band
+        (mless 0 (lookup ENV3 /*V*/2))
+        (band
+          (mle 0 (lookup ENV3 /*V*/1))
+          (mle 0 (lookup ENV3 /*V*/3))
+          )
+        )
+    )
     )
 /* constraints which ensure equality of variables in the two environments */
   (band
@@ -354,20 +365,14 @@ show-simulation [300, total] in fun1 and fun1 :
   )
 )
  /* constraints which ensure that program variables are distinct */
+(band
  true
+ (mless (lookup ENV3 /*V*/2) (mtimes 15 (mtimes 15 15)))
+ )
  )
 
 
 with-base
     (pair (P (push I done) ENV1) (P (push J done) ENV2)) /\
-  (band
     (mequals (lookup ENV3 /*C*/11) (lookup ENV4 /*C*/11))
-    (band
-      (mequals (lookup ENV3 /*V*/1) (lookup ENV4 /*V*/1))
-      (band
-        (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
-        (mequals (lookup ENV3 /*V*/3) (lookup ENV4 /*V*/3))
-        )
-      )
-  )
 ;

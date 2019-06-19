@@ -62,13 +62,13 @@ variables
   N : Int,
   SUM : Int,
   S : Int,
-  /*C*/11 : Int,
+  V11 : Int,
   C2 : Int,
   B1 : Bool,
-  /*V*/1 : Int,
-  /*V*/2 : Int,
-  /*V*/3 : Int,
-  /*V*/4 : Int,
+  V1 : Int,
+  V2 : Int,
+  V3 : Int,
+  V4 : Int,
   V5 : Int,
   V6 : Int,
 
@@ -184,6 +184,10 @@ constrained-rewrite-system fun1
 
   (P (push (miu (var X) EXP) REST) ENV) => (P (push (substitute (var X) (miu (var X) EXP) EXP) REST) ENV)
 ;
+
+simplification (band (band (band (mequals (lookup ENV3 V1) (lookup ENV4 V1)) (band (mequals (lookup ENV3 V3) (lookup ENV4 V3)) (band (mequals (lookup ENV4 V4) (mplus (mtimes (lookup ENV4 V1) (lookup ENV4 V2)) (lookup ENV4 V3))) (band (bnot (mle (lookup ENV3 V2) (lookup ENV3 V1))) (band (mequals (lookup ENV3 V11) (lookup ENV4 V11)) (band (mequals (lookup ENV3 V2) (lookup ENV4 V2)) (bnot (mle (lookup ENV3 V2) (mplus 1 (lookup ENV3 V3)))))))))) true) (bequals (bnot (mle (mtimes (lookup ENV4 V2) (lookup ENV4 V2)) (mplus 1 (lookup ENV4 V4)))) true));
+
+!EOF!
 
 show-simulation [300, total] in fun1 and fun1 :
 

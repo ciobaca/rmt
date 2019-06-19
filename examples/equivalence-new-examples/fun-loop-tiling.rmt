@@ -63,7 +63,7 @@ variables
   S : Int,
   C2 : Int,
   B1 : Bool,
-  V6 : Int,
+  K : Int,
 
   B : Bool,
 
@@ -226,12 +226,11 @@ show-simulation [150, total] in fun1 and fun1 :
   )
 )
  /* constraints which ensure that program variables are distinct */
- true
+ (mless (lookup ENV3 /*V*/2) 15)
  )
 
 ,
 
-[assumed]
 (pair
 
   (P (push
@@ -294,7 +293,13 @@ show-simulation [150, total] in fun1 and fun1 :
   (band
     (band
       (mequals (mtimes (lookup ENV4 /*V*/4) (lookup ENV4 /*V*/5)) (lookup ENV4 /*V*/2))
-      (mle 0 (lookup ENV4 /*V*/5))
+      (band
+        (mless 0 (lookup ENV4 /*V*/2))
+        (band
+          (mle 0 (lookup ENV4 /*V*/1))
+          (mle 0 (lookup ENV4 /*V*/3))
+          )
+        )
       )
     (band
       (mequals (lookup ENV3 /*V*/1) (mplus (lookup ENV4 /*V*/1) (lookup ENV4 /*V*/3)))
@@ -314,7 +319,13 @@ show-simulation [150, total] in fun1 and fun1 :
   )
 )
  /* constraints which ensure that program variables are distinct */
- true
+ (band
+  (mequals (lookup ENV4 /*V*/1) (mtimes (lookup ENV4 /*V*/4) K))
+  (band
+    (mless (lookup ENV3 /*V*/2) 15)
+    true
+    )
+  )
  )
 
 

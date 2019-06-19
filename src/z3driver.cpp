@@ -386,7 +386,7 @@ void z3_error_handler(Z3_context context, Z3_error_code error)
 void start_z3_api()
 {
   Z3_config z3config = Z3_mk_config();
-  Z3_set_param_value(z3config, "timeout", "300");
+  Z3_set_param_value(z3config, "timeout", "2000");
   Z3_set_param_value(z3config, "auto_config", "true");
   z3context = Z3_mk_context(z3config);
   Z3_set_error_handler(z3context, z3_error_handler);
@@ -397,7 +397,7 @@ void start_z3_api()
 
   tacticParams = Z3_mk_params(z3context);
   Z3_params_inc_ref(z3context, tacticParams);
-  Z3_params_set_uint(z3context, tacticParams, Z3_mk_string_symbol(z3context, "timeout"), 200);
+  Z3_params_set_uint(z3context, tacticParams, Z3_mk_string_symbol(z3context, "timeout"), 2000);
 
   simplifyTactic = Z3_mk_tactic(z3context, "ctx-solver-simplify");
   Z3_tactic_inc_ref(z3context, simplifyTactic);

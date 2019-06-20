@@ -1,77 +1,70 @@
 #include "rewritesystem.h"
-#include "term.h"
-#include "substitution.h"
-#include "variable.h"
-#include "factories.h"
-#include "log.h"
+#include "fastterm.h"
+#include "helper.h"
 #include <cassert>
 #include <string>
 #include <sstream>
 
 using namespace std;
 
-void RewriteSystem::addRule(Term *l, Term *r)
+void RewriteSystem::addRule(ConstrainedTerm l, FastTerm r)
 {
-  assert(subseteq(r->vars(), l->vars()));
   this->push_back(make_pair(l, r));
 }
 
-RewriteSystem RewriteSystem::rename(string s)
-{
-  vector<Variable *> vars;
-  for (int i = 0; i < (int)this->size(); ++i) {
-    append(vars, (*this)[i].first->vars());
-    append(vars, (*this)[i].second->vars());
-  }
+// RewriteSystem RewriteSystem::rename(string s)
+// {
+//   vector<Variable *> vars;
+//   for (int i = 0; i < (int)this->size(); ++i) {
+//     append(vars, (*this)[i].first.vars());
+//     append(vars, (*this)[i].second->vars());
+//   }
 
-  map<Variable *, Variable *> r = createRenaming(vars, s);
-  Substitution subst = createSubstitution(r);
+//   map<Variable *, Variable *> r = createRenaming(vars, s);
+//   Substitution subst = createSubstitution(r);
 
-  RewriteSystem result;
-  for (int i = 0; i < (int)this->size(); ++i) {
-    Term *l = (*this)[i].first;
-    Term *r = (*this)[i].second;
-    result.push_back(make_pair(l->substitute(subst), r->substitute(subst)));
-  }
+//   RewriteSystem result;
+//   for (int i = 0; i < (int)this->size(); ++i) {
+//     ConstrainedTerm l = (*this)[i].first;
+//     Term *r = (*this)[i].second;
+//     result.push_back(make_pair(l.substitute(subst), r->substitute(subst)));
+//   }
 
-  return result;
-}
+//   return result;
+// }
 
-RewriteSystem RewriteSystem::fresh()
-{
-  vector<Variable *> myvars;
-  for (int i = 0; i < (int)this->size(); ++i) {
-    append(myvars, (*this)[i].first->vars());
-    append(myvars, (*this)[i].second->vars());
-  }
-  Log(DEBUG9) << "Variables in rewrite system: " << endl;
-  for (int i = 0; i < (int)myvars.size(); ++i) {
-    Log(DEBUG9) << myvars[i]->name << " ";
-  }
+// RewriteSystem RewriteSystem::fresh()
+// {
+//   Log(DEBUG8) << "Creating fresh rewrite system" << endl;
+//   //  static int counter = 100;
+//   vector<Variable *> myvars;
+//   for (int i = 0; i < (int)this->size(); ++i) {
+//     append(myvars, (*this)[i].first.vars());
+//     append(myvars, (*this)[i].second->vars());
+//   }
+//   Log(DEBUG8) << "Variables: " << varVecToString(myvars) << endl;
 
-  map<Variable *, Variable *> renaming = freshRenaming(myvars);
+//   map<Variable *, Variable *> renaming = freshRenaming(myvars);
+  
+//   Substitution subst = createSubstitution(renaming);
 
-  Substitution subst = createSubstitution(renaming);
+//   RewriteSystem result;
+//   for (int i = 0; i < (int)this->size(); ++i) {
+//     ConstrainedTerm l = (*this)[i].first;
+//     Term *r = (*this)[i].second;
+//     result.push_back(make_pair(l.substitute(subst), r->substitute(subst)));
+//   }
 
-  Log(DEBUG9) << "Created substitution " << subst.toString() << endl;
-
-  RewriteSystem result;
-  for (int i = 0; i < (int)this->size(); ++i) {
-    Term *l = (*this)[i].first;
-    Term *r = (*this)[i].second;
-    result.push_back(make_pair(l->substitute(subst), r->substitute(subst)));
-  }
-
-  return result;
-}
+//   return result;
+// }
 
 string RewriteSystem::toString()
 {
   ostringstream oss;
   for (int i = 0; i < (int)this->size(); ++i) {
-    Term *l = (*this)[i].first;
-    Term *r = (*this)[i].second;
-    oss << l->toString() << " => " << r->toString();
+    ConstrainedTerm l = (*this)[i].first;
+    FastTerm r = (*this)[i].second;
+    oss << ::toStringCT(l) << " => " << toStringFT(r);
     if (i != (int)this->size() - 1) {
       oss << ", ";
     }

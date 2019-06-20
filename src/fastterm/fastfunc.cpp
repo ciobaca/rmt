@@ -114,7 +114,11 @@ FastFunc newConst(const char *name, FastSort sort)
     exit(-1);
   }
   arities[funcCount] = 0;
-  funcNames[funcCount] = name;
+  funcNames[funcCount] = strdup(name);
+  if (funcNames[funcCount] == 0) {
+    fprintf(stderr, "Not enough memory to duplicate C string (function name).\n");
+    exit(-1);
+  }
   arityIndex[funcCount] = 0; // not to be used (as arity is 0)
   resultSorts[funcCount] = sort;
   uElem[funcCount] = MISSING_UELEM;
@@ -135,7 +139,11 @@ FastFunc newFunc(const char *name, FastSort resultSort, uint32 argCount, FastSor
     exit(-1);
   }
   arities[funcCount] = argCount;
-  funcNames[funcCount] = name;
+  funcNames[funcCount] = strdup(name);
+  if (funcNames[funcCount] == 0) {
+    fprintf(stderr, "Not enough memory to duplicate C string (function name).\n");
+    exit(-1);
+  }
   resultSorts[funcCount] = resultSort;
   arityIndex[funcCount] = arityDataIndex;
   for (uint i = 0; i < argCount; ++i) {
@@ -158,7 +166,11 @@ FastFunc newACFunc(const char *name, FastSort sort) {
     exit(-1);
   }
   arities[funcCount] = 2;
-  funcNames[funcCount] = name;
+  funcNames[funcCount] = strdup(name);
+  if (funcNames[funcCount] == 0) {
+    fprintf(stderr, "Not enough memory to duplicate C string (function name).\n");
+    exit(-1);
+  }
   resultSorts[funcCount] = sort;
   arityIndex[funcCount] = arityDataIndex;
   for (uint i = 0; i < 2; ++i) {
@@ -181,7 +193,11 @@ FastFunc newACUFunc(const char *name, FastFunc uElem) {
     exit(-1);
   }
   arities[funcCount] = 2;
-  funcNames[funcCount] = name;
+  funcNames[funcCount] = strdup(name);
+  if (funcNames[funcCount] == 0) {
+    fprintf(stderr, "Not enough memory to duplicate C string (function name).\n");
+    exit(-1);
+  }
   resultSorts[funcCount] = getFuncSort(uElem);
   arityIndex[funcCount] = arityDataIndex;
   for (uint i = 0; i < 2; ++i) {
@@ -233,4 +249,27 @@ bool eq_func(FastFunc func1, FastFunc func2)
   assert(validFastFunc(func1));
   assert(validFastFunc(func2));
   return func1 == func2;
+}
+
+bool existsFunc(const char *name)
+{
+  for (uint32 i = 0; i < funcCount; ++i) {
+    if (strcmp(funcNames[i], name) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
+FastFunc getFuncByName(const char *name)
+{
+  assert(existsFunc(name));
+  for (uint32 i = 0; i < funcCount; ++i) {
+    if (strcmp(funcNames[i], name) == 0) {
+      assert(validFastFunc(i));
+      return i;
+    }
+  }
+  assert(0);
+  return 0;
 }

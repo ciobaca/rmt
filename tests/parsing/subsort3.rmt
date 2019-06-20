@@ -1,0 +1,7 @@
+sorts State1, State2, State3;
+
+subsort State1 < State2;
+
+subsort State2 < State3;
+
+subsort State3 < State1;

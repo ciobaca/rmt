@@ -176,6 +176,11 @@ bool occurs(FastVar var, FastTerm term)
   return false;
 }
 
+bool identifierTaken(const char *name)
+{
+  return existsSort(name) || existsVar(name) || existsFunc(name);
+}
+
 FastSort getSort(FastTerm term)
 {
   assert(validFastTerm(term));

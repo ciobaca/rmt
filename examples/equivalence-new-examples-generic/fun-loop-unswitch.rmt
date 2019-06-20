@@ -20,7 +20,9 @@ subsort ValExp < Exp;
 subsort NonValExp < Exp;
 
 builtins
-  iS1 : Int Int Int -> Int
+  iS1 : Int Int Int Int -> Int,
+  iS2 : Int Int Int Int -> Int,
+  iB1 : Int Int -> Bool
   ;
 
 signature
@@ -36,10 +38,12 @@ signature
   push : Exp Stack -> Stack,
 
   plus : Exp Exp -> NonValExp,
+  mod : Exp Exp -> NonValExp,
   times : Exp Exp -> NonValExp,
   minus : Exp Exp -> NonValExp,
   le : Exp Exp -> NonValExp,
   less : Exp Exp -> NonValExp,
+  equals : Exp Exp -> NonValExp,
   ite : Exp Exp Exp -> NonValExp,
   not : Exp -> NonValExp,
 
@@ -55,26 +59,20 @@ signature
   |_| : -> NonValExp,
 
   /* uninterpreted sequences and expressions */
-  S1 : -> NonValExp
+  S1 : -> NonValExp,
+  S2 : -> NonValExp,
+  B1 : -> NonValExp
 ;
 
 variables
   X : Int,
   Y : Int,
   Z : Int,
-  T : Int,
   I : Int,
   J : Int,
-  K : Int,
-  KK : Int,
+  A : Int,
   N : Int,
-  SUM : Int,
-  S : Int,
-  C1 : Int,
-  C2 : Int,
-  B1 : Bool,
-  V1 : Int,
-  V2 : Int,
+  REZ : Int,
 
   B : Bool,
 
@@ -92,6 +90,16 @@ variables
   FNV : NonValExp,
   VF : ValExp;
 
+/*
+define eqId : Id Id -> Bool by
+  eqId x x = true,
+  eqId y y = true,
+  eqId z z = true,
+  eqId x y = false,
+  eqId x z = false,
+   ...
+*/
+
 define substitute : Var Exp Exp -> Exp by
   (substitute (var X) EXP I) => I,
   (substitute (var X) EXP B) => B,
@@ -99,9 +107,11 @@ define substitute : Var Exp Exp -> Exp by
   (substitute (var X) EXP (var Y)) /\ (bnot (mequals X Y)) => (var Y),
 
   (substitute (var X) EXP (plus EXP1 EXP2)) => (plus (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
+  (substitute (var X) EXP (mod EXP1 EXP2)) => (mod (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (times EXP1 EXP2)) => (times (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (minus EXP1 EXP2)) => (minus (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (less EXP1 EXP2)) => (less (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
+  (substitute (var X) EXP (equals EXP1 EXP2)) => (equals (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (le EXP1 EXP2)) => (le (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2)),
   (substitute (var X) EXP (not EXP1)) => (not (substitute (var X) EXP EXP1)),
   (substitute (var X) EXP (ite EXP1 EXP2 EXP3)) => (ite (substitute (var X) EXP EXP1) (substitute (var X) EXP EXP2) (substitute (var X) EXP EXP3)),
@@ -117,7 +127,8 @@ define substitute : Var Exp Exp -> Exp by
 
   (substitute (var X) EXP1 (miu (var X) EXP)) => (miu (var X) EXP),
   (substitute (var X) EXP1 (miu (var Y) EXP)) /\ (bnot (mequals X Y)) => (miu (var Y) (substitute (var X) EXP1 EXP))
-  ;
+  ;  
+
 
 constrained-rewrite-system fun1
 
@@ -128,6 +139,12 @@ constrained-rewrite-system fun1
   (P (push (plus I FNV) REST) ENV) => (P (push FNV (push (plus I |_|) REST)) ENV),
   (P (push J (push (plus I |_|) REST)) ENV) => (P (push (plus I J) REST) ENV),
   (P (push (plus I J) REST) ENV) => (P (push (mplus I J) REST) ENV),
+
+  (P (push (mod FNV EXP) REST) ENV) => (P (push FNV (push (mod |_| EXP) REST)) ENV),
+  (P (push I (push (mod |_| EXP) REST)) ENV) => (P (push (mod I EXP) REST) ENV),
+  (P (push (mod I FNV) REST) ENV) => (P (push FNV (push (mod I |_|) REST)) ENV),
+  (P (push J (push (mod I |_|) REST)) ENV) => (P (push (mod I J) REST) ENV),
+  (P (push (mod I J) REST) ENV) => (P (push (mmod I J) REST) ENV),
 
   (P (push (times FNV EXP) REST) ENV) => (P (push FNV (push (times |_| EXP) REST)) ENV),
   (P (push I (push (times |_| EXP) REST)) ENV) => (P (push (times I EXP) REST) ENV),
@@ -146,6 +163,12 @@ constrained-rewrite-system fun1
   (P (push (less I FNV) REST) ENV) => (P (push FNV (push (less I |_|) REST)) ENV),
   (P (push J (push (less I |_|) REST)) ENV) => (P (push (less I J) REST) ENV),
   (P (push (less I J) REST) ENV) => (P (push (mless I J) REST) ENV),
+
+  (P (push (equals FNV EXP) REST) ENV) => (P (push FNV (push (equals |_| EXP) REST)) ENV),
+  (P (push I (push (equals |_| EXP) REST)) ENV) => (P (push (equals I EXP) REST) ENV),
+  (P (push (equals I FNV) REST) ENV) => (P (push FNV (push (equals I |_|) REST)) ENV),
+  (P (push J (push (equals I |_|) REST)) ENV) => (P (push (equals I J) REST) ENV),
+  (P (push (equals I J) REST) ENV) => (P (push (mequals I J) REST) ENV),
 
   (P (push (le FNV EXP) REST) ENV) => (P (push FNV (push (le |_| EXP) REST)) ENV),
   (P (push I (push (le |_| EXP) REST)) ENV) => (P (push (le I EXP) REST) ENV),
@@ -183,17 +206,33 @@ constrained-rewrite-system fun1
 
   /* interpretations of uninterpreted expressions and sequences */
   (P (push S1 REST) ENV) => (P (push 0 REST)
-    (update ENV /*C*/6 (iS1 (lookup ENV /*C*/6) (lookup ENV /*V*/1) (lookup ENV /*V*/2))))
+    (update ENV /*C*/7 (iS1 (lookup ENV /*C*/6) (lookup ENV /*C*/7) (lookup ENV /*V*/1) (lookup ENV /*V*/2)))),
+  (P (push S2 REST) ENV) => (P (push 0 REST)
+    (update ENV /*C*/7 (iS2 (lookup ENV /*C*/6) (lookup ENV /*C*/7) (lookup ENV /*V*/1) (lookup ENV /*V*/2)))),
+  (P (push B1 REST) ENV) => (P (push (iB1 (lookup ENV /*C*/6) (lookup ENV /*V*/2)) REST) ENV)
 ;
 
-
-show-simulation [300, total] in fun1 and fun1 :
+show-simulation useDFS [300, total] in fun1 and fun1 :
 
 (pair
 
   (P (push 
-    (seq
-      (assign (var /*V*/1) 0)
+    (while
+      (less (var /*V*/1) (var /*V*/2))
+      (seq
+        (ite
+          B1
+          S1
+          S2
+          )
+        (assign (var /*V*/1) (plus (var /*V*/1) 1))
+        )
+      )
+  done) ENV3)
+
+  (P (push
+    (ite
+      B1
       (while
         (less (var /*V*/1) (var /*V*/2))
         (seq
@@ -201,23 +240,11 @@ show-simulation [300, total] in fun1 and fun1 :
           (assign (var /*V*/1) (plus (var /*V*/1) 1))
           )
         )
-      )
-  done) ENV3)
-
-  (P (push
-    (seq
-      (assign (var /*V*/1) 0)
       (while
         (less (var /*V*/1) (var /*V*/2))
         (seq
-          (seq
-            S1
-            (assign (var /*V*/1) (plus (var /*V*/1) 1))
-            )
-          (seq
-            S1
-            (assign (var /*V*/1) (plus (var /*V*/1) 1))
-            )
+          S2
+          (assign (var /*V*/1) (plus (var /*V*/1) 1))
           )
         )
       )
@@ -225,12 +252,17 @@ show-simulation [300, total] in fun1 and fun1 :
 
 ) /\ (band (band  
 /* circularity constraints */
-  (mequals (mmod (lookup ENV3 /*V*/2) 2) 0)
-  //(mequals (lookup ENV3 /*V*/2) (mtimes 2 K))
+  true
 /* constraints which ensure equality of variables in the two environments */
 (band
-      (mequals (lookup ENV3 /*C*/7) (lookup ENV4 /*C*/7))
-      (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
+      (mequals (lookup ENV3 /*C*/6) (lookup ENV4 /*C*/6))
+      (band
+        (mequals (lookup ENV3 /*C*/7) (lookup ENV4 /*C*/7))
+        (band
+          (mequals (lookup ENV3 /*V*/1) (lookup ENV4 /*V*/1))
+          (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
+          )
+      )
       )
 )
  /* constraints which ensure that program variables are distinct */
@@ -239,14 +271,17 @@ show-simulation [300, total] in fun1 and fun1 :
 
 ,
 
-
 (pair
 
   (P (push 
     (while
       (less (var /*V*/1) (var /*V*/2))
       (seq
-        S1
+        (ite
+          B1
+          S1
+          S2
+          )
         (assign (var /*V*/1) (plus (var /*V*/1) 1))
         )
       )
@@ -256,44 +291,88 @@ show-simulation [300, total] in fun1 and fun1 :
     (while
       (less (var /*V*/1) (var /*V*/2))
       (seq
-        (seq
-          S1
-          (assign (var /*V*/1) (plus (var /*V*/1) 1))
-          )
-        (seq
-          S1
-          (assign (var /*V*/1) (plus (var /*V*/1) 1))
-          )
+        S1
+        (assign (var /*V*/1) (plus (var /*V*/1) 1))
         )
       )
   done) ENV4)
 
 ) /\ (band (band  
 /* circularity constraints */
-  (band
-    (band
-      //(mequals (lookup ENV3 /*V*/2) (mtimes 2 K))
-      //(mequals (lookup ENV3 /*V*/1) (mtimes 2 KK))
-      (mequals (mmod (lookup ENV3 /*V*/1) 2) 0)
-      (mequals (mmod (lookup ENV3 /*V*/2) 2) 0)
-      )
-    (band
-      (mequals (lookup ENV3 /*V*/1) (lookup ENV4 /*V*/1))
-      true
-      )
-    )
+  (iB1 (lookup ENV3 6) (lookup ENV3 2))
 /* constraints which ensure equality of variables in the two environments */
 (band
-      (mequals (lookup ENV3 /*C*/7) (lookup ENV4 /*C*/7))
-      (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
+      (mequals (lookup ENV3 /*C*/6) (lookup ENV4 /*C*/6))
+      (band
+        (mequals (lookup ENV3 /*C*/7) (lookup ENV4 /*C*/7))
+        (band
+          (mequals (lookup ENV3 /*V*/1) (lookup ENV4 /*V*/1))
+          (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
+          )
+      )
       )
 )
  /* constraints which ensure that program variables are distinct */
  true
  )
 
+ ,
+
+(pair
+
+  (P (push 
+    (while
+      (less (var /*V*/1) (var /*V*/2))
+      (seq
+        (ite
+          B1
+          S1
+          S2
+          )
+        (assign (var /*V*/1) (plus (var /*V*/1) 1))
+        )
+      )
+  done) ENV3)
+
+  (P (push
+    (while
+      (less (var /*V*/1) (var /*V*/2))
+      (seq
+        S2
+        (assign (var /*V*/1) (plus (var /*V*/1) 1))
+        )
+      )
+  done) ENV4)
+
+) /\ (band (band  
+/* circularity constraints */
+  (bnot (iB1 (lookup ENV3 6) (lookup ENV3 2)))
+/* constraints which ensure equality of variables in the two environments */
+(band
+      (mequals (lookup ENV3 /*C*/6) (lookup ENV4 /*C*/6))
+      (band
+        (mequals (lookup ENV3 /*C*/7) (lookup ENV4 /*C*/7))
+        (band
+          (mequals (lookup ENV3 /*V*/1) (lookup ENV4 /*V*/1))
+          (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
+          )
+      )
+      )
+)
+ /* constraints which ensure that program variables are distinct */
+ true
+ )
 
 with-base
     (pair (P (push I done) ENV1) (P (push J done) ENV2)) /\
-    (mequals (lookup ENV1 /*C*/7) (lookup ENV2 /*C*/7))
+    (band
+      (mequals (lookup ENV1 /*C*/6) (lookup ENV2 /*C*/6))
+      (band
+        (mequals (lookup ENV1 /*C*/7) (lookup ENV2 /*C*/7))
+        (band
+          (mequals (lookup ENV1 /*V*/1) (lookup ENV2 /*V*/1))
+          (mequals (lookup ENV1 /*V*/2) (lookup ENV2 /*V*/2))
+          )
+      )
+      )
 ;

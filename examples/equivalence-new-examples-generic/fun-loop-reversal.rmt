@@ -20,7 +20,8 @@ subsort ValExp < Exp;
 subsort NonValExp < Exp;
 
 builtins
-  iS1 : Int Int Int -> Int
+  iS1 : Int Int Int -> Int,
+  iE1 : Int Int -> Int
   ;
 
 signature
@@ -55,7 +56,8 @@ signature
   |_| : -> NonValExp,
 
   /* uninterpreted sequences and expressions */
-  S1 : -> NonValExp
+  S1 : -> NonValExp,
+  E1 : -> NonValExp
 ;
 
 variables
@@ -65,16 +67,14 @@ variables
   T : Int,
   I : Int,
   J : Int,
-  K : Int,
-  KK : Int,
   N : Int,
   SUM : Int,
   S : Int,
-  C1 : Int,
-  C2 : Int,
+  /*C*/11 : Int,
+  /*C*/12 : Int,
   B1 : Bool,
-  V1 : Int,
-  V2 : Int,
+  /*V*/1 : Int,
+  /*V*/2 : Int,
 
   B : Bool,
 
@@ -183,17 +183,17 @@ constrained-rewrite-system fun1
 
   /* interpretations of uninterpreted expressions and sequences */
   (P (push S1 REST) ENV) => (P (push 0 REST)
-    (update ENV /*C*/6 (iS1 (lookup ENV /*C*/6) (lookup ENV /*V*/1) (lookup ENV /*V*/2))))
+    (update ENV /*C*/11 (iS1 (lookup ENV /*C*/11) (lookup ENV /*C*/12) (lookup ENV /*V*/2)))),
+  (P (push E1 REST) ENV) => (P (push (iE1 (lookup ENV /*C*/12) (lookup ENV /*V*/2)) REST) ENV)
 ;
 
-
-show-simulation [300, total] in fun1 and fun1 :
+show-simulation useDFS [300, total] in fun1 and fun1 :
 
 (pair
 
   (P (push 
     (seq
-      (assign (var /*V*/1) 0)
+      (assign (var /*V*/1) E1)
       (while
         (less (var /*V*/1) (var /*V*/2))
         (seq
@@ -205,36 +205,56 @@ show-simulation [300, total] in fun1 and fun1 :
   done) ENV3)
 
   (P (push
-    (seq
-      (assign (var /*V*/1) 0)
-      (while
-        (less (var /*V*/1) (var /*V*/2))
+    (ite
+      (less E1 (var /*V*/2))
+      (seq
+        (assign (var /*V*/1) (minus (var /*V*/2) 1))
         (seq
-          (seq
-            S1
-            (assign (var /*V*/1) (plus (var /*V*/1) 1))
+          (while
+            (le E1 (var /*V*/1))
+            (seq
+              S1
+              (assign (var /*V*/1) (minus (var /*V*/1) 1))
+              )
             )
-          (seq
-            S1
-            (assign (var /*V*/1) (plus (var /*V*/1) 1))
-            )
+          (assign (var /*V*/1) (var /*V*/2))
           )
         )
+      (assign (var /*V*/1) E1)
       )
   done) ENV4)
 
-) /\ (band (band  
+) /\ (band (band
 /* circularity constraints */
-  (mequals (mmod (lookup ENV3 /*V*/2) 2) 0)
-  //(mequals (lookup ENV3 /*V*/2) (mtimes 2 K))
+  true
 /* constraints which ensure equality of variables in the two environments */
 (band
-      (mequals (lookup ENV3 /*C*/7) (lookup ENV4 /*C*/7))
-      (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
+      (mequals (lookup ENV3 /*C*/11) (lookup ENV4 /*C*/11))
+      (band
+        (mequals (lookup ENV3 /*C*/12) (lookup ENV4 /*C*/12))
+        (band
+          (mequals (lookup ENV3 /*V*/1) (lookup ENV4 /*V*/1))
+          (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
+          )
+      )
       )
 )
  /* constraints which ensure that program variables are distinct */
- true
+ (band
+    (bnot (mequals /*C*/11 /*C*/12))
+    (band
+      (bnot (mequals /*C*/11 /*V*/1))
+      (band
+        (bnot (mequals /*C*/11 /*V*/2))
+        (band
+          (bnot (mequals /*C*/12 /*V*/1))
+          (band
+            (bnot (mequals /*C*/12 /*V*/2))
+            (bnot (mequals /*V*/1 /*V*/2))
+          )
+        )
+      )
+    ))
  )
 
 ,
@@ -243,6 +263,7 @@ show-simulation [300, total] in fun1 and fun1 :
 (pair
 
   (P (push 
+    //(assign (var /*V*/1) E1)
     (while
       (less (var /*V*/1) (var /*V*/2))
       (seq
@@ -254,46 +275,71 @@ show-simulation [300, total] in fun1 and fun1 :
 
   (P (push
     (while
-      (less (var /*V*/1) (var /*V*/2))
+      (le E1 (var /*V*/1))
       (seq
-        (seq
-          S1
-          (assign (var /*V*/1) (plus (var /*V*/1) 1))
-          )
-        (seq
-          S1
-          (assign (var /*V*/1) (plus (var /*V*/1) 1))
-          )
+        S1
+        (assign (var /*V*/1) (minus (var /*V*/1) 1))
         )
       )
-  done) ENV4)
+  (push
+    (seq |_| (assign (var /*V*/1) (var /*V*/2)))
+    done
+    )
+  ) ENV4)
 
-) /\ (band (band  
+) /\ (band (band
 /* circularity constraints */
   (band
     (band
-      //(mequals (lookup ENV3 /*V*/2) (mtimes 2 K))
-      //(mequals (lookup ENV3 /*V*/1) (mtimes 2 KK))
-      (mequals (mmod (lookup ENV3 /*V*/1) 2) 0)
-      (mequals (mmod (lookup ENV3 /*V*/2) 2) 0)
+      (mless (iE1 (lookup ENV3 /*C*/12) (lookup ENV3 /*V*/2)) (lookup ENV3 /*V*/2))
+      (mless (lookup ENV3 /*V*/1) (lookup ENV3 /*V*/2))
       )
-    (band
-      (mequals (lookup ENV3 /*V*/1) (lookup ENV4 /*V*/1))
-      true
+    (mequals
+      (mplus (lookup ENV3 /*V*/1) (lookup ENV4 /*V*/1))
+      (mplus (mminus (lookup ENV3 /*V*/2) 1)
+        (iE1 (lookup ENV3 /*C*/12) (lookup ENV3 /*V*/2))
+        )
       )
     )
 /* constraints which ensure equality of variables in the two environments */
 (band
-      (mequals (lookup ENV3 /*C*/7) (lookup ENV4 /*C*/7))
-      (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
+      (mequals (lookup ENV3 /*C*/11) (lookup ENV4 /*C*/11))
+      (band
+        (mequals (lookup ENV3 /*C*/12) (lookup ENV4 /*C*/12))
+        (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
+      )
       )
 )
  /* constraints which ensure that program variables are distinct */
- true
+ (band
+    (bnot (mequals /*C*/11 /*C*/12))
+    (band
+      (bnot (mequals /*C*/11 /*V*/1))
+      (band
+        (bnot (mequals /*C*/11 /*V*/2))
+        (band
+          (bnot (mequals /*C*/12 /*V*/1))
+          (band
+            (bnot (mequals /*C*/12 /*V*/2))
+            (bnot (mequals /*V*/1 /*V*/2))
+          )
+        )
+      )
+    ))
  )
 
 
 with-base
     (pair (P (push I done) ENV1) (P (push J done) ENV2)) /\
-    (mequals (lookup ENV1 /*C*/7) (lookup ENV2 /*C*/7))
+    (band
+      (mequals (lookup ENV1 /*C*/11) (lookup ENV2 /*C*/11))
+      (band
+        (mequals (lookup ENV1 /*C*/12) (lookup ENV2 /*C*/12))
+        (band
+          (mequals (lookup ENV1 /*V*/1) (lookup ENV2 /*V*/1))
+          //true
+          (mequals (lookup ENV1 /*V*/2) (lookup ENV2 /*V*/2))
+          )
+      )
+      )
 ;

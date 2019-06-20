@@ -20,7 +20,12 @@ subsort ValExp < Exp;
 subsort NonValExp < Exp;
 
 builtins
-  iS1 : Int Int Int -> Int
+  iB1 : Int -> Bool,
+  iS1 : Int Int -> Int,
+  iS2_11 : Int Int -> Int,
+  iS2_12 : Int Int -> Int,
+  iS3_11 : Int Int -> Int,
+  iS3_12 : Int Int -> Int
   ;
 
 signature
@@ -55,26 +60,22 @@ signature
   |_| : -> NonValExp,
 
   /* uninterpreted sequences and expressions */
-  S1 : -> NonValExp
+  B1 : -> NonValExp,
+  S1 : -> NonValExp,
+  S2 : -> NonValExp,
+  S3 : -> NonValExp
 ;
 
 variables
   X : Int,
   Y : Int,
   Z : Int,
-  T : Int,
   I : Int,
   J : Int,
-  K : Int,
-  KK : Int,
   N : Int,
   SUM : Int,
   S : Int,
-  C1 : Int,
-  C2 : Int,
   B1 : Bool,
-  V1 : Int,
-  V2 : Int,
 
   B : Bool,
 
@@ -182,118 +183,60 @@ constrained-rewrite-system fun1
   (P (push (miu (var X) EXP) REST) ENV) => (P (push (substitute (var X) (miu (var X) EXP) EXP) REST) ENV),
 
   /* interpretations of uninterpreted expressions and sequences */
+  (P (push B1 REST) ENV) => (P (push (iB1 (lookup ENV /*C*/12)) REST) ENV),
   (P (push S1 REST) ENV) => (P (push 0 REST)
-    (update ENV /*C*/6 (iS1 (lookup ENV /*C*/6) (lookup ENV /*V*/1) (lookup ENV /*V*/2))))
+    (update ENV
+      /*C*/11 (iS1 (lookup ENV /*C*/11) (lookup ENV /*C*/12)))
+    ),
+  (P (push S3 REST) ENV) => (P (push 0 REST)
+    (update (update ENV
+      /*C*/11 (iS3_11 (lookup ENV /*C*/11) (lookup ENV /*C*/12)))
+      /*C*/12 (iS3_12 (lookup ENV /*C*/11) (lookup ENV /*C*/12)))
+    ),
+  (P (push S2 REST) ENV) => (P (push 0 REST)
+    (update (update ENV
+      /*C*/11 (iS2_11 (lookup ENV /*C*/11) (lookup ENV /*C*/12)))
+      /*C*/12 (iS2_12 (lookup ENV /*C*/11) (lookup ENV /*C*/12)))
+    )
 ;
 
-
-show-simulation [300, total] in fun1 and fun1 :
+show-simulation [200, total] in fun1 and fun1 :
 
 (pair
 
   (P (push 
     (seq
-      (assign (var /*V*/1) 0)
-      (while
-        (less (var /*V*/1) (var /*V*/2))
-        (seq
-          S1
-          (assign (var /*V*/1) (plus (var /*V*/1) 1))
-          )
+      S1
+      (ite
+        B1
+        S2
+        S3
         )
       )
-  done) ENV3)
-
-  (P (push
-    (seq
-      (assign (var /*V*/1) 0)
-      (while
-        (less (var /*V*/1) (var /*V*/2))
-        (seq
-          (seq
-            S1
-            (assign (var /*V*/1) (plus (var /*V*/1) 1))
-            )
-          (seq
-            S1
-            (assign (var /*V*/1) (plus (var /*V*/1) 1))
-            )
-          )
-        )
-      )
-  done) ENV4)
-
-) /\ (band (band  
-/* circularity constraints */
-  (mequals (mmod (lookup ENV3 /*V*/2) 2) 0)
-  //(mequals (lookup ENV3 /*V*/2) (mtimes 2 K))
-/* constraints which ensure equality of variables in the two environments */
-(band
-      (mequals (lookup ENV3 /*C*/7) (lookup ENV4 /*C*/7))
-      (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
-      )
-)
- /* constraints which ensure that program variables are distinct */
- true
- )
-
-,
-
-
-(pair
+  done) ENV)
 
   (P (push 
-    (while
-      (less (var /*V*/1) (var /*V*/2))
-      (seq
-        S1
-        (assign (var /*V*/1) (plus (var /*V*/1) 1))
-        )
-      )
-  done) ENV3)
-
-  (P (push
-    (while
-      (less (var /*V*/1) (var /*V*/2))
-      (seq
-        (seq
-          S1
-          (assign (var /*V*/1) (plus (var /*V*/1) 1))
+      (ite
+        B1
+        (
+          seq
+            S1
+            S2
           )
-        (seq
-          S1
-          (assign (var /*V*/1) (plus (var /*V*/1) 1))
+        (
+          seq
+            S1
+            S3
           )
         )
-      )
-  done) ENV4)
+  done) ENV)
 
-) /\ (band (band  
-/* circularity constraints */
-  (band
-    (band
-      //(mequals (lookup ENV3 /*V*/2) (mtimes 2 K))
-      //(mequals (lookup ENV3 /*V*/1) (mtimes 2 KK))
-      (mequals (mmod (lookup ENV3 /*V*/1) 2) 0)
-      (mequals (mmod (lookup ENV3 /*V*/2) 2) 0)
-      )
-    (band
-      (mequals (lookup ENV3 /*V*/1) (lookup ENV4 /*V*/1))
-      true
-      )
-    )
-/* constraints which ensure equality of variables in the two environments */
-(band
-      (mequals (lookup ENV3 /*C*/7) (lookup ENV4 /*C*/7))
-      (mequals (lookup ENV3 /*V*/2) (lookup ENV4 /*V*/2))
-      )
-)
- /* constraints which ensure that program variables are distinct */
- true
- )
-
+) /\ true
 
 with-base
-    (pair (P (push I done) ENV1) (P (push J done) ENV2)) /\
-    (mequals (lookup ENV1 /*C*/7) (lookup ENV2 /*C*/7))
+    (pair (P (push I done) ENV1) (P (push I done) ENV2)) /\
+    (band
+      (mequals (lookup ENV1 /*C*/11) (lookup ENV2 /*C*/11))
+      (mequals (lookup ENV1 /*C*/12) (lookup ENV2 /*C*/12))
+      )
 ;

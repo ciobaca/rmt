@@ -215,7 +215,7 @@ show-simulation [200, total] in fun1 and fun1 :
       )
   done) ENV)
 
-  (P (push 
+  (P (push
       (ite
         B1
         (

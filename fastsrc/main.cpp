@@ -23,6 +23,7 @@ http://profs.info.uaic.ro/~stefan.ciobaca/
 #include "helper.h"
 #include "parse.h"
 #include "fastterm.h"
+#include "smallqueries.h"
 
 // #include "term.h"
 // #include "factories.h"
@@ -561,38 +562,6 @@ void parseVariables(string &s, int &w)
 //   putRewriteSystem("simplifications", rewrite);
 // }
 
-// string parseRewriteSystem(string &s, int &w, RewriteSystem &rewrite)
-// {
-//   skipWhiteSpace(s, w);
-//   matchString(s, w, "rewrite-system");
-//   skipWhiteSpace(s, w);
-//   string name = getIdentifier(s, w);
-//   skipWhiteSpace(s, w);
-//   while (w < len(s)) {
-//     skipWhiteSpace(s, w);
-//     Term *t = parseTerm(s, w);
-//     skipWhiteSpace(s, w);
-//     matchString(s, w, "=>");
-//     skipWhiteSpace(s, w);
-//     Term *tp = parseTerm(s, w);
-//     LOG(INFO) << "Parsed rewrite rule: " << t->toString() << " => " << tp->toString() << endl;
-//     rewrite.addRule(t, tp);
-//     skipWhiteSpace(s, w);
-//     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
-//       expected("more rewrite rules", w, s);
-//     }
-//     if (s[w] == ',') {
-//       match(s, w, ',');
-//       continue;
-//     }
-//     else {
-//       match(s, w, ';');
-//       break;
-//     }
-//   }
-//   return name;
-// }
-
 string parseRewriteSystem(string &s, int &w, RewriteSystem &rs)
 {
   skipWhiteSpace(s, w);
@@ -603,12 +572,10 @@ string parseRewriteSystem(string &s, int &w, RewriteSystem &rs)
   while (w < len(s)) {
     skipWhiteSpace(s, w);
     ConstrainedTerm t = parseConstrainedTerm(s, w);
-    //    LOG(DEBUG9, toStringCT(t));
     skipWhiteSpace(s, w);
     matchString(s, w, "=>");
     skipWhiteSpace(s, w);
     FastTerm tp = parseTerm(s, w);
-    LOG(INFO, cerr << "Parsed rewrite rule: " << toStringCT(t) << " => " << toStringFT(tp));
     rs.addRule(t, tp);
     skipWhiteSpace(s, w);
     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
@@ -617,8 +584,7 @@ string parseRewriteSystem(string &s, int &w, RewriteSystem &rs)
     if (s[w] == ',') {
       match(s, w, ',');
       continue;
-    }
-    else {
+    } else {
       match(s, w, ';');
       break;
     }
@@ -691,6 +657,8 @@ int main(int argc, char **argv)
       string name = parseRewriteSystem(s, w, rs);
       rewriteSystems[name] = rs;
       skipWhiteSpace(s, w);
+    } else if (lookAhead(s, w, "abstract")) {
+      processAbstract(s, w);
     }
     // else if (lookAhead(s, w, "builtins")) parseBuiltins(s, w);
     // else if (lookAhead(s, w, "assert")) parseAsserts(s, w);

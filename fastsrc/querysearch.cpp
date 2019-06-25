@@ -1,10 +1,12 @@
 #include "querysearch.h"
 #include "parse.h"
-#include "factories.h"
+#include "log.h"
+#include "helper.h"
+#include "rewritesystem.h"
+#include "search.h"
 #include <string>
 #include <map>
 #include <iostream>
-#include "log.h"
 
 using namespace std;
 
@@ -12,7 +14,7 @@ QuerySearch::QuerySearch()
   : ct(0, 0)
 {
 }
-  
+
 Query *QuerySearch::create()
 {
   return new QuerySearch();
@@ -48,26 +50,22 @@ void QuerySearch::parse(std::string &s, int &w)
   matchString(s, w, ";");
 }
 
+extern map<string, RewriteSystem> rewriteSystems;
+
 void QuerySearch::execute()
 {
-  ConstrainedRewriteSystem crs;
-  if (existsRewriteSystem(rewriteSystemName)) {
-    crs = ConstrainedRewriteSystem(getRewriteSystem(rewriteSystemName));
-  }
-  else if (existsConstrainedRewriteSystem(rewriteSystemName)) {
-    crs = getConstrainedRewriteSystem(rewriteSystemName);
-  }
-  else {
-    Log(ERROR) << "Cannot find (constrained) rewrite system " << rewriteSystemName << endl;
+  if (!contains(rewriteSystems, rewriteSystemName)) {
+    cout << "Cannot find (constrained) rewrite system " << rewriteSystemName << endl;
     return;
   }
+  RewriteSystem rs = rewriteSystems[rewriteSystemName];
 
-  Log(DEBUG) << "Narrowing search from " << ct.toString() << "." << endl;
-  vector<ConstrainedTerm> solutions = ct.smtNarrowSearch(crs, minDepth, maxDepth);
+  LOG(DEBUG3, cerr << "Narrowing search from " << toStringCT(ct) << ".");
+  vector<ConstrainedTerm> solutions = search(ct, rs, minDepth, maxDepth);
   cout << "Success: " << solutions.size() << " solutions." << endl;
   for (int i = 0; i < (int)solutions.size(); ++i) {
     cout << "Solution #" << i + 1 << ":" << endl;
-    //cout << solutions[i].toString() << endl;
-    cout << simplifyConstrainedTerm(solutions[i]).toString() << endl;
+    // TODO: simplify constrained term
+    cout << toStringCT(solutions[i]) << endl;
   }
 }

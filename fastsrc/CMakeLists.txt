@@ -141,5 +141,8 @@ set_tests_properties (TestFastParsingVar2 PROPERTIES PASS_REGULAR_EXPRESSION "va
 add_test(TestFastParsingVar3 "../fastrmt" -v 0 ../../tests/parsing/var3.rmt)
 set_tests_properties (TestFastParsingVar3 PROPERTIES PASS_REGULAR_EXPRESSION "identifier already used")
 
-add_test(TestFastReachExample1 "../fastrmt" -v 0 ../../tests/reach/reach1.rmt)
-set_tests_properties (TestFastReachExample1 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
+add_test(TestFastParsingRewriteSystem1 "../fastrmt" -v 0 ../../tests/parsing/rewritesystem1.rmt)
+set_tests_properties (TestFastParsingRewriteSystem1 PROPERTIES PASS_REGULAR_EXPRESSION "Done.")
+
+add_test(TestFastSearchExample1 "../fastrmt" -v 0 ../../tests/search/search1.rmt)
+set_tests_properties (TestFastSearchExample1 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")

@@ -36,15 +36,15 @@
 
 /* using namespace std; */
 
-/* template<typename A, typename B> bool contains(map<A, B> &container, A elem) */
-/* { */
-/*   return container.find(elem) != container.end(); */
-/* } */
+template<typename A, typename B> bool contains(std::map<A, B> &container, A elem)
+{
+  return container.find(elem) != container.end();
+}
 
-/* template<typename A, typename B> bool contains(unordered_map<A, B> &container, A elem) */
-/* { */
-/*   return container.count(elem); */
-/* } */
+template<typename A, typename B> bool contains(std::unordered_map<A, B> &container, A elem)
+{
+  return container.count(elem);
+}
 
 /* template<typename A, typename B> bool contains(vector<pair<A, B>> &container, A elem) { */
 /*   return find_if(container.begin(), container.end(), [&](const pair<A, B> &it) { return it.first == elem; }) != container.end(); */

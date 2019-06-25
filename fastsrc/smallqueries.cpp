@@ -2,6 +2,7 @@
 #include "fastterm.h"
 #include "parse.h"
 #include "abstract.h"
+#include "helper.h"
 #include <iostream>
 
 using namespace std;
@@ -21,5 +22,5 @@ void processAbstract(string &s, int &w)
   abstractTerm(term, resultTerm, resultSubst);
   cout << "Abstracting          " << toStringFT(term) << ":" << endl;
   cout << "Abstract term     =  " << toStringFT(resultTerm) << endl;
-  cout << "Abstracting subst =  " << toStringSubst(resultTerm) << endl;
+  //  cout << "Abstracting subst =  " << toStringSubst(resultTerm) << endl;
 }

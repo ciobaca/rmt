@@ -159,6 +159,21 @@ FastTerm fastEqBool(FastTerm t1, FastTerm t2)
 
 FastTerm fastAnd(FastTerm t1, FastTerm t2)
 {
+  if (t1 == fastFalse()) {
+    return fastFalse();
+  }
+  if (t2 == fastFalse()) {
+    return fastFalse();
+  }
+  if (t1 == fastTrue()) {
+    return t2;
+  }
+  if (t2 == fastTrue()) {
+    return t1;
+  }
+  if (eq_term(t1, t2)) {
+    return t1;
+  }
   FastTerm args[4];
   args[0] = t1;
   args[1] = t2;
@@ -167,6 +182,21 @@ FastTerm fastAnd(FastTerm t1, FastTerm t2)
 
 FastTerm fastOr(FastTerm t1, FastTerm t2)
 {
+  if (t1 == fastTrue()) {
+    return fastTrue();
+  }
+  if (t2 == fastTrue()) {
+    return fastTrue();
+  }
+  if (t1 == fastFalse()) {
+    return t2;
+  }
+  if (t2 == fastFalse()) {
+    return t1;
+  }
+  if (eq_term(t1, t2)) {
+    return t1;
+  }
   FastTerm args[4];
   args[0] = t1;
   args[1] = t2;

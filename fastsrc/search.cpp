@@ -9,8 +9,7 @@
 using namespace std;
 
 vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
-						 const RewriteSystem &rs,
-		       uint32 minDepth, uint32 maxDepth)
+    const RewriteSystem &rs, uint32 minDepth, uint32 maxDepth)
 {
   if (minDepth == 1 && maxDepth == 1) {
     return smtSearchRewriteSystem(ct, rs);

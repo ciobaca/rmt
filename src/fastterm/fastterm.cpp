@@ -196,7 +196,7 @@ bool eq_term_list(FastTerm *tl1, FastTerm *tl2, uint count)
       return false;
     }
   }
-  return 0;
+  return true;
 }
 
 bool eq_term(FastTerm t1, FastTerm t2)
@@ -211,6 +211,7 @@ bool eq_term(FastTerm t1, FastTerm t2)
     }
     FastTerm *args1 = args(t1);
     FastTerm *args2 = args(t2);
+    assert(getArity(func1) == getArity(func2));
     return eq_term_list(args1, args2, getArity(func1));
   } else if (isVariable(t1) && isVariable(t2)) {
     return eq_var(t1, t2);

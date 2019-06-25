@@ -44,7 +44,7 @@ struct ConstrainedTerm
   /* ConstrainedTerm fresh(); */
 };
 
-std::string toStringCT(const ConstrainedTerm &ct);
+std::string toString(const ConstrainedTerm &ct);
 //std::string toPrettyString(const ConstrainedTerm &ct);
 
 /* vector<ConstrainedTerm> solutionsToSuccessors(vector<ConstrainedSolution> &solutions); */

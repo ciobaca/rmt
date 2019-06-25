@@ -43,14 +43,14 @@ void printToOss(FastTerm term, ostringstream &oss)
   }
 }
 
-std::string toStringFT(FastTerm term)
+std::string toString(FastTerm term)
 {
   ostringstream oss;
   printToOss(term, oss);
   return oss.str();
 }
 
-std::string toStringSubst(FastSubst subst)
+std::string toString(FastSubst subst)
 {
   ostringstream oss;
   oss << "{ ";

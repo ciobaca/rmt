@@ -11,7 +11,6 @@ struct RewriteSystem : public std::vector<std::pair<ConstrainedTerm, FastTerm> >
   void addRule(ConstrainedTerm l, FastTerm r);
   RewriteSystem rename(std::string);
   RewriteSystem fresh();
-  std::string toString();
 };
 
 #endif

@@ -58,14 +58,14 @@ void RewriteSystem::addRule(ConstrainedTerm l, FastTerm r)
 //   return result;
 // }
 
-string RewriteSystem::toString()
+string toString(const RewriteSystem &rs)
 {
   ostringstream oss;
-  for (int i = 0; i < (int)this->size(); ++i) {
-    ConstrainedTerm l = (*this)[i].first;
-    FastTerm r = (*this)[i].second;
-    oss << ::toStringCT(l) << " => " << toStringFT(r);
-    if (i != (int)this->size() - 1) {
+  for (int i = 0; i < (int)rs.size(); ++i) {
+    ConstrainedTerm l = rs[i].first;
+    FastTerm r = rs[i].second;
+    oss << ::toString(l) << " => " << toString(r);
+    if (i != (int)rs.size() - 1) {
       oss << ", ";
     }
   }

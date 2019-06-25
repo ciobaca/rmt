@@ -91,8 +91,8 @@ std::string string_from_int(int);
 extern int VERBOSITY;
 
 void abortWithMessage(const std::string &error);
-std::string toStringFT(FastTerm term);
-std::string toStringSubst(FastSubst subst);
+std::string toString(FastTerm term);
+std::string toString(FastSubst subst);
 
 /* void addDefinedSuccessors(std::vector< std::pair<ConstrainedSolution, bool> > &successors, */
 /*   Term *term, Term *constraint, bool progress, int depth); */

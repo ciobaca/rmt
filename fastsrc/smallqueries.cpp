@@ -27,9 +27,9 @@ void processAbstract(string &s, int &w)
   FastTerm resultTerm;
   FastSubst resultSubst;
   abstractTerm(term, resultTerm, resultSubst);
-  cout << "Abstracting          " << toStringFT(term) << ":" << endl;
-  cout << "Abstract term     =  " << toStringFT(resultTerm) << endl;
-  cout << "Abstracting subst =  " << toStringSubst(resultSubst) << endl;
+  cout << "Abstracting          " << toString(term) << ":" << endl;
+  cout << "Abstract term     =  " << toString(resultTerm) << endl;
+  cout << "Abstracting subst =  " << toString(resultSubst) << endl;
 }
 
 void processSearch(string &s, int &w)
@@ -72,12 +72,12 @@ void processSearch(string &s, int &w)
   }
   RewriteSystem rs = rewriteSystems[rewriteSystemName];
 
-  LOG(DEBUG3, cerr << "Narrowing search from " << toStringCT(ct) << ".");
+  LOG(DEBUG3, cerr << "Narrowing search from " << toString(ct) << ".");
   vector<ConstrainedTerm> solutions = search(ct, rs, minDepth, maxDepth);
   cout << "Success: " << solutions.size() << " solutions." << endl;
   for (int i = 0; i < (int)solutions.size(); ++i) {
     cout << "Solution #" << i + 1 << ":" << endl;
     // TODO: simplify constrained term
-    cout << toStringCT(solutions[i]) << endl;
+    cout << toString(solutions[i]) << endl;
   }
 }

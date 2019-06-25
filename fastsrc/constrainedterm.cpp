@@ -8,13 +8,13 @@
 
 using namespace std;
 
-string toStringCT(const ConstrainedTerm &ct)
+string toString(const ConstrainedTerm &ct)
 {
   ostringstream oss;
-  oss << toStringFT(ct.term);
+  oss << toString(ct.term);
   if (ct.constraint) {
     oss << " /\\ ";
-    oss << toStringFT(ct.constraint);
+    oss << toString(ct.constraint);
   }
   return oss.str();
 }

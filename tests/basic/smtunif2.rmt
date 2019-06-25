@@ -1,0 +1,15 @@
+sorts State;
+
+signature
+  f : Int Int -> State// ,
+  // loop : Int Int -> State,
+  // done : Int -> State,
+  // extra : State State -> State
+  ;
+
+variables
+  B : Bool, S : Int, N : Int, M : Int;
+
+smt-unify
+  (f N (mplus N N))
+  (f N (mtimes 3 M));

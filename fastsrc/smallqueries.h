@@ -6,5 +6,6 @@
 void processAbstract(std::string &s, int &w);
 void processSearch(std::string &s, int &w);
 void processUnify(std::string &s, int &w);
+void processSmtUnify(std::string &s, int &w);
 
 #endif

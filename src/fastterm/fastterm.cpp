@@ -144,7 +144,7 @@ FastTerm getArg(FastTerm term, uint arg)
 {
   assert(validFastTerm(term));
   assert(validFastFuncTerm(term));
-  assert(0 <= arg && arg < getArity(getFunc(term)));
+  assert(/* 0 <= arg && */arg < getArity(getFunc(term)));
   return termData[term - MAXVARS + arg + 1];
 }
 

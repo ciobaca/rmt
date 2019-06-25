@@ -2,6 +2,7 @@
 #include <cassert>
 #include <sstream>
 #include <cstring>
+#include <iostream>
 
 bool funcIsBuiltin[MAXFUNCS];
 BuiltinFuncType builtinFunc[MAXFUNCS];
@@ -15,7 +16,13 @@ FastFunc funcTrue;
 FastFunc funcFalse;
 FastFunc funcLE;
 FastFunc funcPlus;
+FastFunc funcTimes;
 FastFunc funcMinus;
+FastFunc funcEqInt;
+FastFunc funcEqBool;
+
+bool hasEqFunc[MAXSORTS];
+FastFunc eqFunc[MAXSORTS];
 
 FastTerm termTrue;
 FastTerm termFalse;
@@ -71,6 +78,12 @@ void initFuncs()
   funcIsBuiltin[funcNot] = true;
   builtinFunc[funcNot] = bltnNot;
 
+  funcEqBool = newFunc("beq", fastBoolSort(), 2, args);
+  funcIsBuiltin[funcEqBool] = true;
+  builtinFunc[funcEqBool] = bltnEqBool;
+  hasEqFunc[fastBoolSort()] = true;
+  eqFunc[fastBoolSort()] = funcEqBool;
+
   termTrue = newFuncTerm(funcTrue, args);
   termFalse = newFuncTerm(funcFalse, args);
 
@@ -94,9 +107,54 @@ void initFuncs()
   funcIsBuiltin[funcPlus] = true;
   builtinFunc[funcPlus] = bltnPlus;
 
+  funcTimes = newFunc("mtimes", fastIntSort(), 2, args);
+  funcIsBuiltin[funcTimes] = true;
+  builtinFunc[funcTimes] = bltnTimes;
+
   funcMinus = newFunc("mminus", fastIntSort(), 2, args);
   funcIsBuiltin[funcMinus] = true;
   builtinFunc[funcMinus] = bltnMinus;
+
+  funcEqInt = newFunc("mequals", fastBoolSort(), 2, args);
+  funcIsBuiltin[funcEqInt] = true;
+  builtinFunc[funcEqInt] = bltnEqInt;
+
+  hasEqFunc[fastIntSort()] = true;
+  eqFunc[fastIntSort()] = funcEqInt;
+}
+
+FastTerm fastEq(FastTerm t1, FastTerm t2)
+{
+  FastSort sort1 = getSort(t1);
+  FastSort sort2 = getSort(t2);
+  if (sort1 != sort2) {
+    std::cerr << "Internal error: tried to add equality between terms of different sorts." << std::endl;
+    exit(-1);
+  }
+  if (!hasEqFunc[sort1]) {
+    std::cerr << "Internal error: tried to add equality between terms of sort that does not feature equality." << std::endl;
+    exit(-1);
+  }
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(eqFunc[sort1], args);
+}
+
+FastTerm fastEqInt(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcEqInt, args);
+}
+
+FastTerm fastEqBool(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcEqBool, args);
 }
 
 FastTerm fastAnd(FastTerm t1, FastTerm t2)

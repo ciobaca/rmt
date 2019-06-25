@@ -1,0 +1,13 @@
+sorts State;
+
+signature
+  f : State Int -> State,
+  h : Int -> State
+  ;
+
+variables
+  B : Bool, S : Int, N : Int, M : Int, Z : State;
+
+smt-unify
+  (f (h N) (mplus N N))
+  (f Z (mtimes 3 M));

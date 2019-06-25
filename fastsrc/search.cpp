@@ -1,7 +1,7 @@
 #include "search.h"
 #include "constrainedterm.h"
 #include "log.h"
-#include "abstract.h"
+ #include "abstract.h"
 
 using namespace std;
 

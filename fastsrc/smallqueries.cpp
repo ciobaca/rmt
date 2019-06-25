@@ -5,6 +5,7 @@
 #include "helper.h"
 #include "log.h"
 #include "search.h"
+#include "smtunify.h"
 #include <iostream>
 #include <map>
 #include <vector>
@@ -92,10 +93,33 @@ void processUnify(string &s, int &w)
   skipWhiteSpace(s, w);
   matchString(s, w, ";");
 
-  FastSubst subst;
   cout << "Unifying " << toString(t1) << " and " << toString(t2) << endl;
 
   vector<FastSubst> unifiers = unify(t1, t2);
+  if (unifiers.size() == 0) {
+    cout << "No solution." << endl;
+  } else {
+    cout << "Solution count: " << unifiers.size() << endl;
+    for (uint i = 0; i < unifiers.size(); ++i) {
+      cout << "Solution #" << i + 1 << ": ";
+      cout << toString(unifiers[i]) << endl;
+    }
+  }
+}
+
+void processSmtUnify(string &s, int &w)
+{
+  matchString(s, w, "smt-unify");
+  skipWhiteSpace(s, w);
+  FastTerm t1 = parseTerm(s, w);
+  skipWhiteSpace(s, w);
+  FastTerm t2 = parseTerm(s, w);
+  skipWhiteSpace(s, w);
+  matchString(s, w, ";");
+
+  cout << "Unifying " << toString(t1) << " and " << toString(t2) << endl;
+
+  vector<Solution> unifiers = smtUnify(t1, t2);
   if (unifiers.size() == 0) {
     cout << "No solution." << endl;
   } else {

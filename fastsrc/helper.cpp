@@ -20,7 +20,7 @@ extern uint32 termDataSize;
 void printToOss(FastTerm term, ostringstream &oss)
 {
   if (isVariable(term)) {
-    assert(0 <= term && term < MAXVARS);
+    assert(/* 0 <= term && */term < MAXVARS);
     oss << getVarName(term);
   } else {
     assert(isFuncTerm(term));

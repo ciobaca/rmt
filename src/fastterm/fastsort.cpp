@@ -53,7 +53,7 @@ FastSort fastStateSort() {
 
 bool validFastSort(FastSort sort)
 {
-  assert(0 <= sortCount && sortCount < MAXSORTS);
+  assert(/* 0 <= sortCount && */sortCount < MAXSORTS);
   return /* 0 <= sort && */ sort < sortCount;
 }
 

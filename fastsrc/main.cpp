@@ -668,6 +668,8 @@ int main(int argc, char **argv)
       processSearch(s, w);
     } else if (lookAhead(s, w, "unify")) {
       processUnify(s, w);
+    } else if (lookAhead(s, w, "smt-unify")) {
+      processSmtUnify(s, w);
     }
     // else if (lookAhead(s, w, "builtins")) parseBuiltins(s, w);
     // else if (lookAhead(s, w, "assert")) parseAsserts(s, w);

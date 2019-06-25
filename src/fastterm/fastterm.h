@@ -28,7 +28,10 @@ enum BuiltinFuncType {
   bltnNumeral,
   bltnLE,
   bltnPlus,
+  bltnTimes,
   bltnMinus,
+  bltnEqInt,
+  bltnEqBool,
 };
 
 typedef unsigned int uint32;
@@ -58,28 +61,6 @@ struct FastSubst {
   FastTerm image(FastVar var);
   FastTerm applySubst(FastTerm term);
   void composeWith(FastVar v, FastTerm t);
-};
-
-struct FastSubst1 {
-  std::vector<uint32> data;
-
-  FastSubst1();
-  ~FastSubst1();
-  void addToSubst1(FastVar var, FastTerm term);
-  bool inDomain1(FastVar var);
-  FastTerm range1(FastVar var);
-  FastTerm applySubst1(FastTerm term);
-  void composeWith1(FastVar v, FastTerm t);
-};
-
-struct FastSubst2 : public std::vector<uint32> {
-  FastSubst2();
-  ~FastSubst2();
-  void addToSubst2(FastVar var, FastTerm term);
-  bool inDomain2(FastVar var);
-  FastTerm range2(FastVar var);
-  FastTerm applySubst2(FastTerm term);
-  void composeWith2(FastVar v, FastTerm t);
 };
 
 /*
@@ -170,6 +151,9 @@ bool eq_term(FastTerm term1, FastTerm term2);
 /*
   Builtins.
  */
+FastTerm fastEq(FastTerm t1, FastTerm t2);
+FastTerm fastEqInt(FastTerm t1, FastTerm t2);
+FastTerm fastEqBool(FastTerm t1, FastTerm t2);
 FastTerm fastAnd(FastTerm, FastTerm);
 FastTerm fastOr(FastTerm, FastTerm);
 FastTerm fastNot(FastTerm);
@@ -182,8 +166,6 @@ FastTerm fastFalse();
 
 FastTerm applyUnitySubst(FastTerm term, FastVar v, FastTerm t);
 size_t printSubst(FastSubst &subst, char *buffer, size_t size);
-size_t printSubst1(FastSubst1 &subst, char *buffer, size_t size);
-size_t printSubst2(FastSubst1 &subst, char *buffer, size_t size);
 
 /*
   Helper functions.

@@ -597,6 +597,11 @@ string parseRewriteSystem(string &s, int &w, RewriteSystem &rs)
 */
 int main(int argc, char **argv)
 {
+#ifdef NDEBUG
+  cout << "Running without assertions on." << endl;
+#else
+  cout << "Running with assertions on." << endl;
+#endif
   initFastTerm();
   bool readFromStdin = false;
   char *filename = argv[argc - 1];
@@ -661,6 +666,8 @@ int main(int argc, char **argv)
       processAbstract(s, w);
     } else if (lookAhead(s, w, "search")) {
       processSearch(s, w);
+    } else if (lookAhead(s, w, "unify")) {
+      processUnify(s, w);
     }
     // else if (lookAhead(s, w, "builtins")) parseBuiltins(s, w);
     // else if (lookAhead(s, w, "assert")) parseAsserts(s, w);

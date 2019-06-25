@@ -69,7 +69,7 @@ bool FastSubst::inDomain(FastVar var)
 
 FastTerm FastSubst::image(FastVar var)
 {
-  assert(inDomain(var));
+  assert(this->inDomain(var));
   for (uint i = 0; i < count; i += 2) {
     if (data[i] == var) {
       return data[i + 1];
@@ -239,7 +239,7 @@ bool FastSubst1::inDomain1(FastVar var)
 
 FastTerm FastSubst1::range1(FastVar var)
 {
-  assert(inDomain(var));
+  assert(inDomain1(var));
   for (uint i = 0; i < data.size(); i += 2) {
     if (data[i] == var) {
       return data[i + 1];

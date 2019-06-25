@@ -161,7 +161,7 @@ void done_z3_solver(Z3_context context, Z3_solver solver)
 
 void z3_assert(Z3_context context, Z3_solver solver, FastTerm term)
 {
-  assert(getSort(term) == fastBoolSort);
+  assert(getSort(term) == fastBoolSort());
   Z3_solver_assert(context, solver, toZ3Term(context, term));
 }
 

@@ -10,7 +10,7 @@ const char *varNames[MAXVARS];
 
 bool validFastVar(FastVar var)
 {
-  assert(0 <= varCount && varCount < MAXVARS);
+  assert(/*0 <= varCount && */varCount < MAXVARS);
   return /* 0 <= var && */ var < varCount;
 }
 
@@ -57,8 +57,8 @@ FastSort getVarSort(FastVar var)
 
 bool eq_var(FastVar var1, FastVar var2)
 {
-  assert(validVariable(var1));
-  assert(validVariable(var2));
+  assert(validFastVar(var1));
+  assert(validFastVar(var2));
   return var1 == var2;
 }
 

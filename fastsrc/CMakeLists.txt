@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 99)
 
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 
-add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic")
+add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -fpermissive")
 
 # set (Gperftools_DIR "${CMAKE_CURRENT_LIST_DIR}")
 # find_package(Gperftools REQUIRED)
@@ -93,6 +93,9 @@ set_tests_properties (TestFastParsingSubSort5 PROPERTIES PASS_REGULAR_EXPRESSION
 add_test(TestFastParsingSubSort6 "../fastrmt" -v 0 ../../tests/parsing/subsort6.rmt)
 set_tests_properties (TestFastParsingSubSort6 PROPERTIES PASS_REGULAR_EXPRESSION "Error: cannot add subsorting to builtin sorts")
 
+add_test(TestFastParsingSubSort7 "../fastrmt" -v 0 ../../tests/parsing/subsort7.rmt)
+set_tests_properties (TestFastParsingSubSort7 PROPERTIES PASS_REGULAR_EXPRESSION "Error: incorrect subsorting")
+
 add_test(TestFastParsingSignature1 "../fastrmt" -v 0 ../../tests/parsing/signature1.rmt)
 set_tests_properties (TestFastParsingSignature1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
 
@@ -153,6 +156,33 @@ add_test(TestFastBasicAbstract2 "../fastrmt" -v 0 ../../tests/basic/abstract2.rm
 set_tests_properties (TestFastBasicAbstract2 PROPERTIES PASS_REGULAR_EXPRESSION "Abstract term     =  \\(extra \\(loop N N\\) \\(init N\\)\\)"
                                                         PASS_REGULAR_EXPRESSION "Abstracting subst =  {  }")
 # TODO: check why these do not work as expected
- 
+
+add_test(TestFastBasicUnif1 "../fastrmt" -v 0 ../../tests/basic/unif1.rmt)
+set_tests_properties (TestFastBasicUnif1 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
+
+add_test(TestFastBasicUnif2 "../fastrmt" -v 0 ../../tests/basic/unif2.rmt)
+set_tests_properties (TestFastBasicUnif2 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
+
+add_test(TestFastBasicUnif3 "../fastrmt" -v 0 ../../tests/basic/unif3.rmt)
+set_tests_properties (TestFastBasicUnif3 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
+
+add_test(TestFastBasicUnif4 "../fastrmt" -v 0 ../../tests/basic/unif4.rmt)
+set_tests_properties (TestFastBasicUnif4 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
+
+add_test(TestFastBasicUnif5 "../fastrmt" -v 0 ../../tests/basic/unif5.rmt)
+set_tests_properties (TestFastBasicUnif5 PROPERTIES PASS_REGULAR_EXPRESSION "No solution.")
+
+add_test(TestFastBasicUnif6 "../fastrmt" -v 0 ../../tests/basic/unif6.rmt)
+set_tests_properties (TestFastBasicUnif6 PROPERTIES PASS_REGULAR_EXPRESSION "No solution.")
+
+add_test(TestFastBasicUnif7 "../fastrmt" -v 0 ../../tests/basic/unif7.rmt)
+set_tests_properties (TestFastBasicUnif7 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
+
+add_test(TestFastBasicUnif8 "../fastrmt" -v 0 ../../tests/basic/unif8.rmt)
+set_tests_properties (TestFastBasicUnif8 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
+
+add_test(TestFastBasicUnif9 "../fastrmt" -v 0 ../../tests/basic/unif9.rmt)
+set_tests_properties (TestFastBasicUnif9 PROPERTIES PASS_REGULAR_EXPRESSION "No solution.")
+
 add_test(TestFastSearchExample1 "../fastrmt" -v 0 ../../tests/search/search1.rmt)
 set_tests_properties (TestFastSearchExample1 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")

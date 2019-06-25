@@ -243,6 +243,8 @@ vector<FastSubst> FastQueryACUnify::solveAC(UnifEq ueq) {
   return minSubstSet;
 }
 
+#include <iostream>
+
 vector<FastSubst> FastQueryACUnify::solve() {
   UnifEqSystem ues(t1, t2);
   vector<FastSubst> minSubstSet;
@@ -259,10 +261,10 @@ vector<FastSubst> FastQueryACUnify::solve() {
       }
       if (isVariable(eq.t1)) {
         if (isFuncTerm(eq.t2) && occurs(eq.t1, eq.t2)) {
-          FastFunc uElem = getUnityElement(getFunc(eq.t1));
-          FastTerm uElemTerm = newFuncTerm(uElem, nullptr);
+          FastFunc uElem = getUnityElement(getFunc(eq.t2));
           if (uElem != MISSING_UELEM) {
-            ues.pop_back();
+	    FastTerm uElemTerm = newFuncTerm(uElem, nullptr);
+	    ues.pop_back();
             auto arg1 = args(eq.t2)[0];
             auto arg2 = args(eq.t2)[1];
             UnifEqSystem nues(ues);

@@ -1,0 +1,11 @@
+sorts State;
+
+signature
+
+extra : State -> State;
+
+variables
+
+X : State;
+
+unify (extra X) X;

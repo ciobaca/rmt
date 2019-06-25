@@ -1,0 +1,8 @@
+sorts State;
+
+signature
+  init : Int->State, loop : Int Int->State, done : Int->State, extra : State State -> State;
+
+variables B : Bool, S : Int, N : Int, I : Int;
+
+unify (extra (loop I S) (init N)) (extra (loop N N) (init N));

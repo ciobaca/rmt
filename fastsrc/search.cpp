@@ -1,6 +1,7 @@
 #include "search.h"
 #include "constrainedterm.h"
 #include "log.h"
+#include "abstract.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ vector<ConstrainedTerm> searchOneStep(const ConstrainedTerm &ct, const RewriteSy
 
     FastTerm absTerm;
     FastSubst absSubst;
-    //    abstractTerm(term, absTerm, absSubst);
+    abstractTerm(term, absTerm, absSubst);
 
     vector<FastSubst> unifiers = unify(absTerm, lhs);
   }

@@ -214,6 +214,14 @@ FastTerm parseTerm(string &s, int &pos)
       vector<FastTerm> arguments;
       for (uint32 i = 0; i < getArity(f); ++i) {
         FastTerm t = parseTerm(s, pos);
+	FastSort sorti = getSort(t);
+	if (!isSubSortTransitive(sorti, getArgSort(f, i))) {
+	  cerr << "Term " << toString(t) << " has sort " << getSortName(sorti) << endl;
+
+	  cerr << "Cannot use " << toString(t) << " as argument #" << (i + 1) << " of " << id << " (expecting term of sort " << getSortName(getArgSort(f, i)) << ")" << endl;
+	  
+	  parseError("incorrect subsorting", pos, s);
+	}
         skipWhiteSpace(s, pos);
         arguments.push_back(t);
       }

@@ -28,8 +28,7 @@ bool validFastFuncTerm(FastTerm term)
 
 bool validFastTerm(FastTerm term)
 {
-  assert(0 <= varCount && varCount < MAXVARS);
-  assert(0 <= termDataSize && termDataSize < MAXDATA);
+  assert(/* 0 <= termDataSize && */termDataSize < MAXDATA);
   return (validFastVar(term)) ||
     (MAXVARS <= term && term < MAXVARS + termDataSize);
 }
@@ -66,7 +65,7 @@ bool isFuncTerm(FastTerm term)
 size_t printTermRec(FastTerm term, char *buffer, size_t size)
 {
   if (isVariable(term)) {
-    assert(0 <= term && term < MAXVARS);
+    assert(/* 0 <= term && */term < MAXVARS);
     size_t len = strlen(getVarName(term));
     if (len <= size) {
       for (size_t i = 0; i < len; ++i) {
@@ -78,7 +77,7 @@ size_t printTermRec(FastTerm term, char *buffer, size_t size)
     assert(isFuncTerm(term));
     assert(term >= MAXVARS);
     size_t index = term - MAXVARS;
-    assert(0 <= index && index < termDataSize);
+    assert(/* 0 <= index && */ index < termDataSize);
 
     FastFunc func = termData[index];
     size_t len = strlen(getFuncName(func));
@@ -164,12 +163,10 @@ bool occurs(FastVar var, FastTerm term)
   }
   if (isFuncTerm(term)) {
     FastFunc func = getFunc(term);
-    FastTerm *arguments = args(term);
     for (uint i = 0; i < getArity(func); ++i) {
-      if (occurs(var, *arguments)) {
+      if (occurs(var, getArg(term, i))) {
         return true;
       }
-      arguments++;
     }
     return false;
   }

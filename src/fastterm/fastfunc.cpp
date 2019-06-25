@@ -41,7 +41,7 @@ bool isBuiltinFunc(FastFunc func)
 BuiltinFuncType getBuiltinFuncType(FastFunc func)
 {
   assert(validFastFunc(func));
-  assert(isBuiltinFuncType(func));
+  assert(isBuiltinFunc(func));
   return builtinFunc[func];
 }
 

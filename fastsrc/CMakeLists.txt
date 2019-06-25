@@ -145,8 +145,14 @@ add_test(TestFastParsingRewriteSystem1 "../fastrmt" -v 0 ../../tests/parsing/rew
 set_tests_properties (TestFastParsingRewriteSystem1 PROPERTIES PASS_REGULAR_EXPRESSION "Done.")
 
 add_test(TestFastBasicAbstract1 "../fastrmt" -v 0 ../../tests/basic/abstract1.rmt)
-set_tests_properties (TestFastBasicAbstract1 PROPERTIES PASS_REGULAR_EXPRESSION "|-> (mplus S I) }")
-set_tests_properties (TestFastBasicAbstract1 PROPERTIES PASS_REGULAR_EXPRESSION "\\(loop N _")
+set_tests_properties (TestFastBasicAbstract1 PROPERTIES PASS_REGULAR_EXPRESSION "\\(loop N _"
+		     			     		PASS_REGULAR_EXPRESSION "aa|-> \\(mplus S I\\) }")
+# TODO: check why these do not work as expected
+
+add_test(TestFastBasicAbstract2 "../fastrmt" -v 0 ../../tests/basic/abstract2.rmt)
+set_tests_properties (TestFastBasicAbstract2 PROPERTIES PASS_REGULAR_EXPRESSION "Abstract term     =  \\(extra \\(loop N N\\) \\(init N\\)\\)"
+                                                        PASS_REGULAR_EXPRESSION "Abstracting subst =  {  }")
+# TODO: check why these do not work as expected
  
 add_test(TestFastSearchExample1 "../fastrmt" -v 0 ../../tests/search/search1.rmt)
 set_tests_properties (TestFastSearchExample1 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")

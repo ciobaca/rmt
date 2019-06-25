@@ -1,5 +1,6 @@
 #include "fastterm.h"
 #include <cassert>
+#include <cstring>
 #include <string>
 
 uint32 varCount = 0;

@@ -1,6 +1,7 @@
 #include "fastterm.h"
 #include <cassert>
 #include <sstream>
+#include <cstring>
 
 bool funcIsBuiltin[MAXFUNCS];
 BuiltinFuncType builtinFunc[MAXFUNCS];

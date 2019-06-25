@@ -1,7 +1,9 @@
 #include <iostream>
 #include <vector>
+#include <chrono>
 #include <random>
 #include "fastterm.h"
+
 using namespace std;
 
 vector<int> vals;

@@ -1,6 +1,6 @@
 #include "fastterm.h"
 #include <stdio.h>
-#include <string.h>
+#include <cstring>
 #include <assert.h>
 #include <z3.h>
 #include <stdlib.h>

@@ -5,18 +5,18 @@
 #include <vector>
 #include <string>
 
-struct Solution
+struct SmtUnifySolution
 {
   FastSubst subst;
   FastTerm constraint;
 
-  Solution(FastSubst subst, FastTerm constraint) :
+  SmtUnifySolution(FastSubst subst, FastTerm constraint) :
     subst(subst), constraint(constraint)
   {
   }
 };
 
-std::vector<Solution> smtUnify(FastTerm t1, FastTerm t2);
-std::string toString(Solution solution);
+std::vector<SmtUnifySolution> smtUnify(FastTerm t1, FastTerm t2);
+std::string toString(SmtUnifySolution solution);
 
 #endif

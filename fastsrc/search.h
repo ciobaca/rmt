@@ -5,10 +5,33 @@
 #include "constrainedterm.h"
 #include "rewritesystem.h"
 #include "constrainedterm.h"
+#include <string>
 
-std::vector<ConstrainedTerm> search(const ConstrainedTerm &ct, const RewriteSystem &rs,
+struct SmtSearchSolution
+{
+  FastTerm iterm;
+  FastTerm rhs;
+  FastSubst subst;
+  FastTerm constraint;
+
+  SmtSearchSolution(FastTerm iterm,
+		 FastTerm rhs,
+		 FastSubst subst,
+		 FastTerm constraint) :
+    iterm(iterm),
+      rhs(rhs),
+      subst(subst),
+      constraint(constraint)
+  {
+  }
+};
+
+std::string toString(const SmtSearchSolution &solution);
+
+std::vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
+						      const RewriteSystem &rs,
 		       uint32 minDepth, uint32 maxDepth);
 
-std::vector<ConstrainedTerm> searchOneStep(const ConstrainedTerm &ct, const RewriteSystem &rs);
+std::vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct, const RewriteSystem &rs);
 
 #endif

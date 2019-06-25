@@ -7,7 +7,7 @@
 
 using namespace std;
 
-vector<Solution> smtUnify(FastTerm t1, FastTerm t2)
+vector<SmtUnifySolution> smtUnify(FastTerm t1, FastTerm t2)
 {
   FastTerm t1Abstract;
   FastSubst sigma1;
@@ -19,7 +19,7 @@ vector<Solution> smtUnify(FastTerm t1, FastTerm t2)
   abstractTerm(t2, t2Abstract, sigma2);
 
   vector<FastSubst> solutions = unify(t1Abstract, t2Abstract);
-  vector<Solution> result;
+  vector<SmtUnifySolution> result;
   for (uint i = 0; i < solutions.size(); ++i) {
     FastSubst sigma = solutions[i];
     FastSubst sigmaPrime;
@@ -48,12 +48,12 @@ vector<Solution> smtUnify(FastTerm t1, FastTerm t2)
 	sigmaPrime.addToSubst(var, term);
       }
     }
-    result.push_back(Solution(sigmaPrime, constraint));
+    result.push_back(SmtUnifySolution(sigmaPrime, constraint));
   }
   return result;
 }
 
-string toString(Solution solution)
+string toString(SmtUnifySolution solution)
 {
   ostringstream oss;
 

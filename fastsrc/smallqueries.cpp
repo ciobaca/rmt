@@ -74,7 +74,7 @@ void processSearch(string &s, int &w)
   RewriteSystem rs = rewriteSystems[rewriteSystemName];
 
   LOG(DEBUG3, cerr << "Narrowing search from " << toString(ct) << ".");
-  vector<ConstrainedTerm> solutions = search(ct, rs, minDepth, maxDepth);
+  vector<SmtSearchSolution> solutions = smtSearchRewriteSystem(ct, rs, minDepth, maxDepth);
   cout << "Success: " << solutions.size() << " solutions." << endl;
   for (int i = 0; i < (int)solutions.size(); ++i) {
     cout << "Solution #" << i + 1 << ":" << endl;
@@ -119,7 +119,7 @@ void processSmtUnify(string &s, int &w)
 
   cout << "Unifying " << toString(t1) << " and " << toString(t2) << endl;
 
-  vector<Solution> unifiers = smtUnify(t1, t2);
+  vector<SmtUnifySolution> unifiers = smtUnify(t1, t2);
   if (unifiers.size() == 0) {
     cout << "No solution." << endl;
   } else {

@@ -25,7 +25,7 @@ vector<FastSubst> match(FastTerm subject, FastTerm pattern, FastSubst &subst) {
       vars.push_back(t);
       return;
     }
-    for (int i = 0; i < getArity(getFunc(t)); ++i) {
+    for (uint32 i = 0; i < getArity(getFunc(t)); ++i) {
       getVars(getArg(t, i));
     }
   };

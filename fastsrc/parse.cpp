@@ -207,7 +207,7 @@ FastTerm parseTerm(string &s, int &pos)
     skipWhiteSpace(s, pos);
     id = getIdentifier(s, pos);
     if (!existsFunc(id.c_str())) {
-      parseError("unknown function symbol", pos, s);
+      parseError("unknown function symbol " + id, pos, s);
     }
     FastFunc f = getFuncByName(id.c_str());
     if (getArity(f) > 0) {
@@ -218,7 +218,12 @@ FastTerm parseTerm(string &s, int &pos)
         arguments.push_back(t);
       }
       match(s, pos, ')');
-      return newFuncTerm(f, &arguments[0]);
+      extern uint32 termDataSize;
+      FastTerm result = newFuncTerm(f, &arguments[0]);
+      return result;
+    } else {
+      assert(getArity(f) == 0);
+      return newFuncTerm(f, 0);
     }
   } else {
     id = getIdentifier(s, pos);
@@ -226,17 +231,18 @@ FastTerm parseTerm(string &s, int &pos)
     if (existsFunc(id.c_str())) {
       FastFunc f = getFuncByName(id.c_str());
       if (getArity(f) != 0) {
-	parseError("function should have arguments", pos, s);
+	parseError("function " + id + "should have arguments", pos, s);
       }
       return newFuncTerm(f, 0);
     } else {
       if (!existsVar(id.c_str())) {
-	parseError("unknown variable", pos, s);
+	parseError(("unknown identifier " + id).c_str(), pos, s);
       }
       FastVar v = getVarByName(id.c_str());
       return v;
     }
   }
+  LOG(DEBUG9, cerr << "impossible !!!");
   assert(0);
   return 0;
 }
@@ -255,20 +261,16 @@ FastTerm parseTerm(string &s, int &pos)
 
 ConstrainedTerm parseConstrainedTerm(string &s, int &w)
 {
-  LOG(DEBUG3, cerr << "Parsing constrained term");
   skipWhiteSpace(s, w);
   FastTerm term = parseTerm(s, w);
-  LOG(DEBUG3, cerr << "Parsed main term: " << toStringFT(term));
   FastTerm constraint;
   skipWhiteSpace(s, w);
   if (lookAhead(s, w, "/\\")) {
     matchString(s, w, "/\\");
     skipWhiteSpace(s, w);
     constraint = parseTerm(s, w);
-    LOG(DEBUG3, cerr << "Parsed constraint term: " << toStringFT(constraint));
   } else {
     constraint = fastTrue();
-    LOG(DEBUG3, cerr << "Implicit constraint: " << toStringFT(constraint));
   }
   return ConstrainedTerm(term, constraint);
 }

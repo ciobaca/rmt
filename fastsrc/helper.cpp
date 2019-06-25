@@ -1,9 +1,7 @@
 #include "helper.h"
 #include <algorithm>
 #include "fastterm.h"
-// #include "variable.h"
-// #include "substitution.h"
-// #include "factories.h"
+#include "log.h"
 #include <sstream>
 #include <iostream>
 #include <ctime>
@@ -16,9 +14,10 @@ void abortWithMessage(const std::string &error)
   exit(0);
 }
 
-extern uint32 *termData;
+extern uint32 termData[MAXDATA];
+extern uint32 termDataSize;
 
-std::string printToOss(FastTerm term, ostringstream &oss)
+void printToOss(FastTerm term, ostringstream &oss)
 {
   if (isVariable(term)) {
     assert(0 <= term && term < MAXVARS);
@@ -29,14 +28,14 @@ std::string printToOss(FastTerm term, ostringstream &oss)
     size_t index = term - MAXVARS;
     assert(0 <= index && index < termDataSize);
 
-    FastFunc func = termData[index];
-    oss << getFuncName(func);
+    FastFunc func = termData[index]; 
     if (getArity(func) > 0) {
       oss << "(";
     }
+    oss << getFuncName(func);
     for (uint i = 0; i < getArity(func); ++i) {
+      oss << " ";
       printToOss(termData[index + i + 1], oss);
-      oss << ",";
     }
     if (getArity(func) > 0) {
       oss << ")";

@@ -36,6 +36,8 @@ http://profs.info.uaic.ro/~stefan.ciobaca/
 
 using namespace std;
 
+map<string, RewriteSystem> rewriteSystems;
+
 // void outputRewriteSystem(RewriteSystem &rewriteSystem)
 // {
 //   for (int i = 0; i < len(rewriteSystem); ++i) {
@@ -502,11 +504,11 @@ void parseVariables(string &s, int &w)
     }
     FastSort sort = getSortByName(id.c_str());
     newVar(n.c_str(), sort);
+    //    LOG(DEBUG9, "newVar " << n << id);
     skipWhiteSpace(s, w);
     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
       expected("more variables", w, s);
     }
-    skipWhiteSpace(s, w);
     if (s[w] == ',') {
       match(s, w, ',');
       continue;
@@ -601,6 +603,7 @@ string parseRewriteSystem(string &s, int &w, RewriteSystem &rs)
   while (w < len(s)) {
     skipWhiteSpace(s, w);
     ConstrainedTerm t = parseConstrainedTerm(s, w);
+    //    LOG(DEBUG9, toStringCT(t));
     skipWhiteSpace(s, w);
     matchString(s, w, "=>");
     skipWhiteSpace(s, w);
@@ -686,27 +689,19 @@ int main(int argc, char **argv)
     } else if (lookAhead(s, w, "rewrite-system")) {
       RewriteSystem rs;
       string name = parseRewriteSystem(s, w, rs);
-      //      putConstrainedRewriteSystem(name, crewrite);
+      rewriteSystems[name] = rs;
       skipWhiteSpace(s, w);
     }
     // else if (lookAhead(s, w, "builtins")) parseBuiltins(s, w);
     // else if (lookAhead(s, w, "assert")) parseAsserts(s, w);
     // else if (lookAhead(s, w, "define")) parseDefinedFunctions(s, w);
-    // else if (lookAhead(s, w, "rewrite-system")) {
-    //   RewriteSystem rewrite;
-    //   string name = parseRewriteSystem(s, w, rewrite);
-    //   putRewriteSystem(name, rewrite);
-    //   skipWhiteSpace(s, w);
-    // }
-    // else if ((query = Query::lookAheadQuery(s, w))) {
-    //   query->parse(s, w);
-    //   skipWhiteSpace(s, w);
-    //   query->execute();
-    // }
-    // else if (lookAhead(s, w, "!EOF!")) {
-    //   break;
-    // }
-    else {
+    else if ((query = Query::lookAheadQuery(s, w))) {
+      query->parse(s, w);
+      skipWhiteSpace(s, w);
+      query->execute();
+    } else if (lookAhead(s, w, "!EOF!")) {
+      break;
+    } else {
       expected("valid command", w, s);
     }
   }

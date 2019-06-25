@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 99)
 
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 
-add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -DNDEBUG")
+add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic")
 
 # set (Gperftools_DIR "${CMAKE_CURRENT_LIST_DIR}")
 # find_package(Gperftools REQUIRED)
@@ -140,3 +140,6 @@ set_tests_properties (TestFastParsingVar2 PROPERTIES PASS_REGULAR_EXPRESSION "va
 
 add_test(TestFastParsingVar3 "../fastrmt" -v 0 ../../tests/parsing/var3.rmt)
 set_tests_properties (TestFastParsingVar3 PROPERTIES PASS_REGULAR_EXPRESSION "identifier already used")
+
+add_test(TestFastReachExample1 "../fastrmt" -v 0 ../../tests/reach/reach1.rmt)
+set_tests_properties (TestFastReachExample1 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")

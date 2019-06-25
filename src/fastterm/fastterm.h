@@ -24,7 +24,11 @@ enum BuiltinFuncType {
   bltnOr,
   bltnNot,
   bltnTrue,
-  bltnFalse
+  bltnFalse,
+  bltnNumeral,
+  bltnLE,
+  bltnPlus,
+  bltnMinus,
 };
 
 typedef unsigned int uint32;

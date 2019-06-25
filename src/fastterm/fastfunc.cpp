@@ -1,14 +1,20 @@
 #include "fastterm.h"
 #include <cassert>
+#include <sstream>
 
 bool funcIsBuiltin[MAXFUNCS];
 BuiltinFuncType builtinFunc[MAXFUNCS];
+int builtinFuncExtra[MAXFUNCS]; // if builtinFunc[i] == bltnNumeral, then
+                                // builtinFuncExtra[i] in { -256, ..., 256 } is the numeral
 
 FastFunc funcAnd;
 FastFunc funcOr;
 FastFunc funcNot;
 FastFunc funcTrue;
 FastFunc funcFalse;
+FastFunc funcLE;
+FastFunc funcPlus;
+FastFunc funcMinus;
 
 FastTerm termTrue;
 FastTerm termFalse;
@@ -43,7 +49,7 @@ void initFuncs()
   funcTrue = newConst("true", fastBoolSort());
   funcIsBuiltin[funcTrue] = true;
   builtinFunc[funcTrue] = bltnTrue;
-    
+
   funcFalse = newConst("false", fastBoolSort());
   funcIsBuiltin[funcFalse] = false;
   builtinFunc[funcFalse] = bltnFalse;
@@ -52,20 +58,44 @@ void initFuncs()
   args[0] = fastBoolSort();
   args[1] = fastBoolSort();
 
-  funcAnd = newFunc("and", fastBoolSort(), 2, args);
+  funcAnd = newFunc("band", fastBoolSort(), 2, args);
   funcIsBuiltin[funcAnd] = true;
   builtinFunc[funcAnd] = bltnAnd;
 
-  funcOr = newFunc("or", fastBoolSort(), 2, args);
+  funcOr = newFunc("bor", fastBoolSort(), 2, args);
   funcIsBuiltin[funcOr] = true;
   builtinFunc[funcOr] = bltnOr;
 
-  funcNot = newFunc("not", fastBoolSort(), 1, args);
+  funcNot = newFunc("bnot", fastBoolSort(), 1, args);
   funcIsBuiltin[funcNot] = true;
   builtinFunc[funcNot] = bltnNot;
 
   termTrue = newFuncTerm(funcTrue, args);
   termFalse = newFuncTerm(funcFalse, args);
+
+  for (int i = -256; i <= 256; ++i) {
+    std::ostringstream oss;
+    oss << i;
+    FastFunc funci = newConst(oss.str().c_str(), fastIntSort());
+    funcIsBuiltin[funci] = true;
+    builtinFunc[funci] = bltnNumeral;
+    builtinFuncExtra[funci] = i;
+  }
+
+  args[0] = fastIntSort();
+  args[1] = fastIntSort();
+
+  funcLE = newFunc("mle", fastBoolSort(), 2, args);
+  funcIsBuiltin[funcLE] = true;
+  builtinFunc[funcLE] = bltnLE;
+
+  funcPlus = newFunc("mplus", fastIntSort(), 2, args);
+  funcIsBuiltin[funcPlus] = true;
+  builtinFunc[funcPlus] = bltnPlus;
+
+  funcMinus = newFunc("mminus", fastIntSort(), 2, args);
+  funcIsBuiltin[funcMinus] = true;
+  builtinFunc[funcMinus] = bltnMinus;
 }
 
 FastTerm fastAnd(FastTerm t1, FastTerm t2)

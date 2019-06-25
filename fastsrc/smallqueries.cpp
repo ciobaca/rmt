@@ -22,5 +22,5 @@ void processAbstract(string &s, int &w)
   abstractTerm(term, resultTerm, resultSubst);
   cout << "Abstracting          " << toStringFT(term) << ":" << endl;
   cout << "Abstract term     =  " << toStringFT(resultTerm) << endl;
-  //  cout << "Abstracting subst =  " << toStringSubst(resultTerm) << endl;
+  cout << "Abstracting subst =  " << toStringSubst(resultSubst) << endl;
 }

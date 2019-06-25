@@ -144,5 +144,9 @@ set_tests_properties (TestFastParsingVar3 PROPERTIES PASS_REGULAR_EXPRESSION "id
 add_test(TestFastParsingRewriteSystem1 "../fastrmt" -v 0 ../../tests/parsing/rewritesystem1.rmt)
 set_tests_properties (TestFastParsingRewriteSystem1 PROPERTIES PASS_REGULAR_EXPRESSION "Done.")
 
+add_test(TestFastBasicAbstract1 "../fastrmt" -v 0 ../../tests/basic/abstract1.rmt)
+set_tests_properties (TestFastBasicAbstract1 PROPERTIES PASS_REGULAR_EXPRESSION "|-> (mplus S I) }")
+set_tests_properties (TestFastBasicAbstract1 PROPERTIES PASS_REGULAR_EXPRESSION "\\(loop N _")
+ 
 add_test(TestFastSearchExample1 "../fastrmt" -v 0 ../../tests/search/search1.rmt)
 set_tests_properties (TestFastSearchExample1 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")

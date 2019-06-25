@@ -50,6 +50,24 @@ std::string toStringFT(FastTerm term)
   return oss.str();
 }
 
+std::string toStringSubst(FastSubst subst)
+{
+  ostringstream oss;
+  oss << "{ ";
+  for (uint i = 0; i < subst.count; i += 2) {
+    if (i > 0) {
+      oss << ", ";
+    }
+    assert(validFastTerm(subst.data[i + 1]));
+    assert(isVariable(subst.data[i]));
+    printToOss(subst.data[i], oss);
+    oss << " |-> ";
+    assert(validFastTerm(subst.data[i + 1]));
+    printToOss(subst.data[i + 1], oss);
+  }
+  oss << " }";
+  return oss.str();
+}
 
 // map<Variable *, Variable *> createRenaming(vector<Variable *>v, string s)
 // {

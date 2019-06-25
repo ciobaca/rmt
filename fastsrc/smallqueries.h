@@ -4,5 +4,6 @@
 #include <string>
 
 void processAbstract(std::string &s, int &w);
+void processSearch(std::string &s, int &w);
 
 #endif

@@ -2,15 +2,17 @@
 #include "constrainedterm.h"
 #include "log.h"
 
-std::vector<ConstrainedTerm> search(const ConstrainedTerm &ct, const RewriteSystem &rs,
+using namespace std;
+
+vector<ConstrainedTerm> search(const ConstrainedTerm &ct, const RewriteSystem &rs,
 		       uint32 minDepth, uint32 maxDepth)
 {
-  LOG(ERROR, std::cerr << "search :: not yet implemented");
+  LOG(ERROR, cerr << "search :: not yet implemented");
   exit(-1);
   return { ConstrainedTerm(0, 0) };
 }
 
-std::vector<ConstrainedTerm> searchOneStep(const ConstrainedTerm &ct, const RewriteSystem &rs)
+vector<ConstrainedTerm> searchOneStep(const ConstrainedTerm &ct, const RewriteSystem &rs)
 {
   FastTerm term = ct.term;
   FastTerm phi = ct.constraint;
@@ -20,7 +22,11 @@ std::vector<ConstrainedTerm> searchOneStep(const ConstrainedTerm &ct, const Rewr
     FastTerm rhs = rs[i].second;
     FastTerm phiRule = rs[i].first.constraint;
 
-    
+    FastTerm absTerm;
+    FastSubst absSubst;
+    //    abstractTerm(term, absTerm, absSubst);
+
+    vector<FastSubst> unifiers = unify(absTerm, lhs);
   }
   return { ConstrainedTerm(0, 0) };
 }

@@ -15,7 +15,6 @@
 // #include "querycompute.h"
 // #include "queryrun.h"
 // #include "queryrundefined.h"
-#include "querysearch.h"
 // #include "querydefinedsearch.h"
 // #include "querydefinedrewrite.h"
 // #include "queryder.h"
@@ -74,10 +73,6 @@ Query *Query::lookAheadQuery(std::string &s, int &w)
 //   return new QueryCirc();
 // }
 
-Query *createQuerySearch()
-{
-  return new QuerySearch();
-}
 
 // Query *createQueryDefinedSearch()
 // {
@@ -198,7 +193,6 @@ std::map<std::string, QueryCreator> *registerQueries()
 {
   std::map<std::string, QueryCreator> *map;
   map = new std::map<std::string, QueryCreator>;
-  (*map)["search"] = createQuerySearch;
   // (*map)["definedsearch"] = createQueryDefinedSearch;
   // (*map)["definedrewrite"] = createQueryDefinedRewrite;
   // (*map)["der"] = createQueryDer;

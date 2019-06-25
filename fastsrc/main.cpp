@@ -659,6 +659,8 @@ int main(int argc, char **argv)
       skipWhiteSpace(s, w);
     } else if (lookAhead(s, w, "abstract")) {
       processAbstract(s, w);
+    } else if (lookAhead(s, w, "search")) {
+      processSearch(s, w);
     }
     // else if (lookAhead(s, w, "builtins")) parseBuiltins(s, w);
     // else if (lookAhead(s, w, "assert")) parseAsserts(s, w);

@@ -78,6 +78,8 @@ Z3_func_decl toZ3FuncDecl(Z3_context context, FastFunc func)
 
 std::map<std::pair<Z3_context, FastTerm>, Z3_ast> cacheTerm;
 
+extern int builtinFuncExtra[MAXFUNCS];
+
 Z3_ast toZ3Term(Z3_context context, FastTerm term)
 {
   //  char buffer[1024];
@@ -122,6 +124,31 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
 	case bltnFalse:
 	  assert(getArity(func) == 0);
 	  result = Z3_mk_false(context);
+	  break;
+	case bltnNumeral:
+	  assert(getArity(func) == 0);
+	  result = Z3_mk_numeral(context, std::to_string(builtinFuncExtra[func]).c_str(), toZ3Sort(context, fastIntSort()));
+	  break;
+	case bltnLE:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_le(context, args[0], args[1]);
+	  break;
+	case bltnPlus:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_add(context, 2, args);
+	  break;
+	case bltnTimes:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_mul(context, 2, args);
+	  break;
+	case bltnMinus:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_sub(context, 2, args);
+	  break;
+	case bltnEqInt:
+	case bltnEqBool:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_eq(context, args[0], args[1]);
 	  break;
 	default:
 	  assert(0);

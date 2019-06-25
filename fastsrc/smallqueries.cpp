@@ -6,10 +6,10 @@
 #include "log.h"
 #include "search.h"
 #include "smtunify.h"
+#include "rewritesystem.h"
 #include <iostream>
 #include <map>
 #include <vector>
-#include "rewritesystem.h"
 
 using namespace std;
 
@@ -128,5 +128,26 @@ void processSmtUnify(string &s, int &w)
       cout << "Solution #" << i + 1 << ": ";
       cout << toString(unifiers[i]) << endl;
     }
+  }
+}
+
+void processSatisfiability(string &s, int &w)
+{
+  matchString(s, w, "satisfiability");
+  skipWhiteSpace(s, w);
+  FastTerm constraint = parseTerm(s, w);
+  skipWhiteSpace(s, w);
+  matchString(s, w, ";");
+
+  Z3_context context = init_z3_context();
+  Z3_lbool result = z3_sat_check(context, constraint);
+  
+  if (result == Z3_L_TRUE) {
+    cout << "The constraint " << toString(constraint) << " is SAT." << endl;
+  } else if (result == Z3_L_FALSE) {
+    cout << "The constraint " << toString(constraint) << " is UNSAT." << endl;
+  } else {
+    assert(result == Z3_L_UNDEF);
+    cout << "Satisfiability check of constraint " << toString(constraint) << " is not conclusive." << endl;
   }
 }

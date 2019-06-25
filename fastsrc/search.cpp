@@ -78,3 +78,10 @@ vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
   }
   return result;
 }
+
+// vector<SmtSearchSolution> prune(Z3_context context, vector<SmtSearchSolution> sols)
+// {
+//   for (uint i = 0; i < sols.size(); ++i) {
+//     if (sols[i].constraint
+//   }
+// }

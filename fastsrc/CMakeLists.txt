@@ -184,6 +184,12 @@ set_tests_properties (TestFastBasicUnif8 PROPERTIES PASS_REGULAR_EXPRESSION "Sol
 add_test(TestFastBasicUnif9 "../fastrmt" -v 0 ../../tests/basic/unif9.rmt)
 set_tests_properties (TestFastBasicUnif9 PROPERTIES PASS_REGULAR_EXPRESSION "No solution.")
 
+add_test(TestFastSmt1 "../fastrmt" -v 0 ../../tests/smt/smt1.rmt)
+set_tests_properties (TestFastSmt1 PROPERTIES PASS_REGULAR_EXPRESSION "is SAT")
+
+add_test(TestFastSmt2 "../fastrmt" -v 0 ../../tests/smt/smt2.rmt)
+set_tests_properties (TestFastSmt2 PROPERTIES PASS_REGULAR_EXPRESSION "is UNSAT")
+
 add_test(TestFastBasicSmtUnif1 "../fastrmt" -v 0 ../../tests/basic/smtunif1.rmt)
 set_tests_properties (TestFastBasicSmtUnif1 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
 

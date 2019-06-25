@@ -670,6 +670,8 @@ int main(int argc, char **argv)
       processUnify(s, w);
     } else if (lookAhead(s, w, "smt-unify")) {
       processSmtUnify(s, w);
+    } else if (lookAhead(s, w, "satisfiability")) {
+      processSatisfiability(s, w);
     }
     // else if (lookAhead(s, w, "builtins")) parseBuiltins(s, w);
     // else if (lookAhead(s, w, "assert")) parseAsserts(s, w);

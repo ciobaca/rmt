@@ -74,7 +74,7 @@ void processSearch(string &s, int &w)
   RewriteSystem rs = rewriteSystems[rewriteSystemName];
 
   LOG(DEBUG3, cerr << "Narrowing search from " << toString(ct) << ".");
-  vector<SmtSearchSolution> solutions = smtSearchRewriteSystem(ct, rs, minDepth, maxDepth);
+  vector<SmtSearchSolution> solutions = prune(smtSearchRewriteSystem(ct, rs, minDepth, maxDepth));
   cout << "Success: " << solutions.size() << " solutions." << endl;
   for (int i = 0; i < (int)solutions.size(); ++i) {
     cout << "Solution #" << i + 1 << ":" << endl;

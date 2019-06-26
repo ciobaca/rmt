@@ -259,6 +259,13 @@ vector<FastSubst> FastQueryACUnify::solve() {
         ues.pop_back();
         continue;
       }
+      FastSort s1 = getSort(eq.t1);
+      FastSort s2 = getSort(eq.t2);
+      if (!isSubSortTransitive(s1, s2) &&
+	  !isSubSortTransitive(s2, s1)) {
+	toAdd = false;
+	break;
+      }
       if (isVariable(eq.t1)) {
         if (isFuncTerm(eq.t2) && occurs(eq.t1, eq.t2)) {
           FastFunc uElem = getUnityElement(getFunc(eq.t2));

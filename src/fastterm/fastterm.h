@@ -66,6 +66,7 @@ struct FastSubst {
   FastTerm image(FastVar var);
   FastTerm applySubst(FastTerm term);
   void composeWith(FastVar v, FastTerm t);
+  void applyInRange(FastVar v, FastTerm t);
 };
 
 FastSubst compose(FastSubst sigma1, FastSubst sigma2);
@@ -166,6 +167,12 @@ FastTerm fastOr(FastTerm, FastTerm);
 FastTerm fastNot(FastTerm);
 FastTerm fastTrue();
 FastTerm fastFalse();
+
+/*
+Simplification
+ */
+FastTerm simplifyFast(FastTerm);
+FastTerm simplify(FastTerm);
 
 /*
   Substitutions.

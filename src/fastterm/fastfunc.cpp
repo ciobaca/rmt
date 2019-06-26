@@ -135,6 +135,9 @@ FastTerm fastEq(FastTerm t1, FastTerm t2)
     std::cerr << "Internal error: tried to add equality between terms of sort that does not feature equality." << std::endl;
     exit(-1);
   }
+  if (eq_term(t1, t2)) {
+    return fastTrue();
+  }
   FastTerm args[4];
   args[0] = t1;
   args[1] = t2;
@@ -143,6 +146,9 @@ FastTerm fastEq(FastTerm t1, FastTerm t2)
 
 FastTerm fastEqInt(FastTerm t1, FastTerm t2)
 {
+  if (eq_term(t1, t2)) {
+    return fastTrue();
+  }
   FastTerm args[4];
   args[0] = t1;
   args[1] = t2;
@@ -151,6 +157,9 @@ FastTerm fastEqInt(FastTerm t1, FastTerm t2)
 
 FastTerm fastEqBool(FastTerm t1, FastTerm t2)
 {
+  if (eq_term(t1, t2)) {
+    return fastTrue();
+  }
   FastTerm args[4];
   args[0] = t1;
   args[1] = t2;

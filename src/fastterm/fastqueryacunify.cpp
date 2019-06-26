@@ -288,13 +288,23 @@ vector<FastSubst> FastQueryACUnify::solve() {
           toAdd = false;
           break;
         }
-        subst.composeWith(eq.t1, eq.t2);
-        ues.pop_back();
-        for (auto &it : ues) {
-          it.t1 = applyUnitySubst(it.t1, eq.t1, eq.t2);
-          it.t2 = applyUnitySubst(it.t2, eq.t1, eq.t2);
-        }
-        continue;
+	//	cerr << eq.t1 << " " << eq.t2 << endl;
+	if (isSubSortTransitive(getSort(eq.t2), getSort(eq.t1))) {
+	  // cerr << "sort of t1 " << getSortName(getSort(eq.t1)) << endl;
+	  // cerr << "sort of t2 " << getSortName(getSort(eq.t2)) << endl;
+	  // cerr << "subsort yes: " << eq.t1 << " " << eq.t2 << endl;
+	  subst.composeWith(eq.t1, eq.t2);
+	  ues.pop_back();
+	  for (auto &it : ues) {
+	    it.t1 = applyUnitySubst(it.t1, eq.t1, eq.t2);
+	    it.t2 = applyUnitySubst(it.t2, eq.t1, eq.t2);
+	  }
+	  continue;
+	} else {
+	  //	  cerr << "subsort no: " << eq.t1 << " " << eq.t2 << endl;
+	  toAdd = false;
+	  break;
+	}
       }
       if (isFuncTerm(eq.t1) && isFuncTerm(eq.t2)) {
         auto func1 = getFunc(eq.t1);

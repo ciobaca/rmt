@@ -45,7 +45,7 @@ vector<SmtUnifySolution> smtUnify(FastTerm t1, FastTerm t2)
 			      );
 	}
       } else {
-	sigmaPrime.addToSubst(var, term);
+	sigmaPrime.addToSubst(var, sigma2.applySubst(sigma1.applySubst(term)));
       }
     }
     result.push_back(SmtUnifySolution(sigmaPrime, constraint));

@@ -1,0 +1,32 @@
+sorts State;
+
+signature
+  init:Int->State, loop:Int Int->State, done:Int->State;
+
+variables B:Bool, S:Int, N:Int, I:Int;
+
+rewrite-system sum
+
+  (init N) => (loop 0 N),
+
+  (loop S N) /\ (mle 1 N) => (loop (mplus S N) (mminus N 1)),
+
+  (loop S N) /\ (bnot (mle 1 N)) => (done S);
+
+rewrite-system circularities
+  (init N) =>
+  (done (mdiv (mtimes N (mplus N 1)) 2)),
+
+  (loop S I) =>
+  (done (mplus S (mdiv (mtimes I (mplus I 1)) 2)));
+
+/*
+This time, the proof will not go through: the first circularity is
+still discharged by using the second circularity, but the second
+circularity cannot be used to prove itself. There is one remaining
+proof obligation that is output by RMT:
+
+Circularity #2 not proved. The following proof obligations failed:
+Remaining proof obligation #1 (reason: could not prove completeness): done(S) if (and (not (<= 1 I)) (not (=> (not (<= 1 I)) (= (+ S (div (* I (+ I 1)) 2)) S)))) => done((+ S (div (* I (+ I 1)) 2)))
+*/
+prove in sum : circularities;

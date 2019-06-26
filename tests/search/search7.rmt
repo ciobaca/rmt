@@ -1,0 +1,29 @@
+sorts State, Inner;
+
+signature
+  a1 : -> Inner,
+  a2 : -> Inner,
+  container : Inner Inner -> State;
+
+variables B:Bool, S:Int, N:Int, I:Int;
+
+rewrite-system sum
+
+  a1 => a2;
+
+
+rewrite-system circ
+  (container a1 a1) => (container a2 a2);
+
+/*
+Please go ahead and experiment with various parameters. Try the
+following queries:
+
+search [0,0] in sum : loop(S, N);
+search [0,3] in sum : loop(S, N);
+search [3,3] in sum : loop(S, N);
+*/
+search [1,1] in sum :
+  (container a1 a1);
+
+prove in sum : circ;

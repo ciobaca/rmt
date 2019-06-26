@@ -1,0 +1,11 @@
+sorts BoolP, State;
+
+subsort Bool < BoolP;
+
+signature
+	synEq : -> BoolP,
+	container : BoolP -> State;
+
+smt-unify
+	(container synEq)
+	(container true);

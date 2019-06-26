@@ -13,35 +13,31 @@ using namespace std;
 vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
     const RewriteSystem &rs, uint32 minDepth, uint32 maxDepth)
 {
-  // if (minDepth == 1 && maxDepth == 1) {
-  //   return smtSearchRewriteSystem(ct, rs);
-  // } else {
-    vector<SmtSearchSolution> result;
-    vector<SmtSearchSolution> current;
-    current.push_back(SmtSearchSolution(ct.term, ct.term, FastSubst(), ct.constraint));
-    for (uint32 level = 0; level <= maxDepth; ++level) {
-      LOG(DEBUG3, cerr << "Level " << level);
-      for (int i = 0; i < (int)current.size(); ++i) {
-	LOG(DEBUG3, cerr << "Level " << level);
-	LOG(DEBUG3, cerr << "    Solution #" << i + 1 << ":");
-	LOG(DEBUG3, cerr << "    " <<  toString(current[i]));
-      }
-
-      if (level >= minDepth) {
-	result.insert(result.end(), current.begin(), current.end());
-      }
-      vector<SmtSearchSolution> next;
-      for (uint32 i = 0; i < current.size(); ++i) {
-	SmtSearchSolution sol = current[i];
-	vector<SmtSearchSolution> succs = smtSearchRewriteSystem(sol.subst.applySubst(sol.rhs), sol.constraint, rs);
-	for (uint32 j = 0; j < succs.size(); ++j) {
-	  next.push_back(SmtSearchSolution(sol.iterm, succs[j].rhs, compose(sol.subst, succs[j].subst), succs[j].constraint));
-	}
-      }
-      current = next;
+  vector<SmtSearchSolution> result;
+  vector<SmtSearchSolution> current;
+  current.push_back(SmtSearchSolution(ct.term, ct.term, FastSubst(), ct.constraint));
+  for (uint32 level = 0; level <= maxDepth; ++level) {
+    LOG(DEBUG4, cerr << "Level " << level);
+    for (int i = 0; i < (int)current.size(); ++i) {
+      LOG(DEBUG4, cerr << "Level " << level);
+      LOG(DEBUG4, cerr << "    Solution #" << i + 1 << ":");
+      LOG(DEBUG4, cerr << "    " <<  toString(current[i]));
     }
-    return result;
-    //  }
+
+    if (level >= minDepth) {
+      result.insert(result.end(), current.begin(), current.end());
+    }
+    vector<SmtSearchSolution> next;
+    for (uint32 i = 0; i < current.size(); ++i) {
+      SmtSearchSolution sol = current[i];
+      vector<SmtSearchSolution> succs = smtSearchRewriteSystem(sol.subst.applySubst(sol.rhs), sol.constraint, rs);
+      for (uint32 j = 0; j < succs.size(); ++j) {
+	next.push_back(SmtSearchSolution(sol.iterm, succs[j].rhs, compose(sol.subst, succs[j].subst), succs[j].constraint));
+      }
+    }
+    current = next;
+  }
+  return result;
 }
 
 string toString(const SmtSearchSolution &solution)
@@ -63,17 +59,40 @@ void smtSearchRewriteRuleInternal(FastTerm cterm, FastTerm iterm, FastTerm icons
   } else {
     assert(isFuncTerm(cterm));
     FastFunc func = getFunc(cterm);
-    for (uint i = 0; i < getArity(func); ++i) {
-      FastTerm nt = getArg(cterm, i);
-      smtSearchRewriteRuleInternal(nt, iterm, iconstraint, lhs, rhs, constraint, solutions);
-    }
+    
     vector<SmtUnifySolution> topMostSols = smtUnify(cterm, lhs);
+    if (topMostSols.size() > 0) {
+      LOG(DEBUG5, cerr << "smtSearchRewriteRuleInternal " <<
+	  toString(cterm) << " " << toString(iterm) << " " << toString(iconstraint) << " w/ rule " <<
+	  toString(lhs) << " " << toString(rhs) << " if " << toString(constraint));
+      LOG(DEBUG5, cerr << "smtSearchRewriteRuleInternal has " << topMostSols.size() << " solutions:");
+    }
     for (uint i = 0; i < topMostSols.size(); ++i) {
       SmtUnifySolution sol = topMostSols[i];
-      solutions.push_back(SmtSearchSolution(iterm, rhs, sol.subst,
-					    fastAnd(fastAnd(
-							    sol.subst.applySubst(iconstraint),
-							    sol.subst.applySubst(constraint)), sol.constraint)));
+      LOG(DEBUG5, cerr << "Solution #" << (i + 1) << ": " << toString(sol));
+      SmtSearchSolution solSearch(iterm, rhs, sol.subst,
+				  fastAnd(fastAnd(
+						  sol.subst.applySubst(iconstraint),
+						  sol.subst.applySubst(constraint)), sol.constraint));
+      solutions.push_back(solSearch);
+      LOG(DEBUG5, cerr << "Push search solution #" << (i + 1) << ": " << toString(solSearch)); 
+    }
+
+    for (uint i = 0; i < getArity(func); ++i) {
+      FastTerm nt = getArg(cterm, i);
+      vector<SmtSearchSolution> innerSolutions;
+      smtSearchRewriteRuleInternal(nt, iterm, iconstraint, lhs, rhs, constraint, innerSolutions);
+
+      for (uint j = 0; j < innerSolutions.size(); ++j) {
+	SmtSearchSolution &sol = innerSolutions[j];
+	vector<FastTerm> newArguments;
+	for (uint k = 0; k < getArity(func); ++k) {
+	  newArguments.push_back(getArg(cterm, k));
+	}
+	newArguments[i] = sol.rhs;
+	sol.rhs = newFuncTerm(func, &newArguments[0]);
+      }
+      solutions.insert(solutions.end(), innerSolutions.begin(), innerSolutions.end());
     }
   }
 }
@@ -116,8 +135,11 @@ void extractEqualities(FastTerm constraint, vector<pair<FastVar, FastTerm>> &res
 
 void smtSearchRewriteRule(FastTerm cterm, FastTerm iterm, FastTerm iconstraint,
 	       FastTerm lhs, FastTerm rhs, FastTerm constraint,
-	       vector<SmtSearchSolution> &solutions)
+	       vector<SmtSearchSolution> &result)
 {
+  LOG(DEBUG4, cerr << "smtSearchRewriteRule " <<
+      toString(cterm) << " " << toString(iterm) << " " << toString(iconstraint) << " w/ rule " <<
+      toString(lhs) << " " << toString(rhs) << " if " << toString(constraint));
   /* STEP 1: create fresh instance of rewrite rule */
   vector<FastVar> varsRule;
   vector<FastVar> toRename;
@@ -146,11 +168,14 @@ void smtSearchRewriteRule(FastTerm cterm, FastTerm iterm, FastTerm iconstraint,
   constraint = subst.applySubst(constraint);
 
   /* STEP 2: perform narrowing */
+  vector<SmtSearchSolution> solutions;
   smtSearchRewriteRuleInternal(cterm, iterm, iconstraint, lhs, rhs, constraint, solutions);
 
   /* STEP 3: try to simplify constraint */
+  LOG(DEBUG4, cerr << "smtSearchRewriteRule has " << solutions.size() << " solutions.");
   for (uint i = 0; i < solutions.size(); ++i) {
     SmtSearchSolution sol = solutions[i];
+       LOG(DEBUG4, cerr << "Solution #" << (i + 1) << " (before): " << toString(sol));
     vector<pair<FastVar, FastTerm>> equalities;
     extractEqualities(sol.constraint, equalities, varsRule);
 
@@ -161,7 +186,10 @@ void smtSearchRewriteRule(FastTerm cterm, FastTerm iterm, FastTerm iconstraint,
       sol.constraint = simplify(applyUnitySubst(sol.constraint, equalities[j].first, equalities[j].second));
     }
     solutions[i] = sol;
+    LOG(DEBUG4, cerr << "Solution #" << (i + 1) << "  (after): " << toString(sol));
   }
+
+  result.insert(result.end(), solutions.begin(), solutions.end());
 }
 
 vector<SmtSearchSolution> smtSearchRewriteSystem(FastTerm iterm,

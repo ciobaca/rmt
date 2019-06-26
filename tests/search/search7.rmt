@@ -26,4 +26,4 @@ search [3,3] in sum : loop(S, N);
 search [1,1] in sum :
   (container a1 a1);
 
-prove in sum : circ;
+// prove in sum : circ;

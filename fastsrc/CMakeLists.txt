@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 99)
 
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 
-add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -fpermissive")
+add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -fpermissive -DNDEBUG")
 
 # set (Gperftools_DIR "${CMAKE_CURRENT_LIST_DIR}")
 # find_package(Gperftools REQUIRED)
@@ -208,6 +208,9 @@ set_tests_properties (TestFastBasicSmtUnif5 PROPERTIES PASS_REGULAR_EXPRESSION "
 add_test(TestFastBasicSmtUnif6 "../fastrmt" -v 0 ../../tests/basic/smtunif6.rmt)
 set_tests_properties (TestFastBasicSmtUnif6 PROPERTIES PASS_REGULAR_EXPRESSION "No solution")
 
+add_test(TestFastBasicSmtUnif7 "../fastrmt" -v 0 ../../tests/basic/smtunif7.rmt)
+set_tests_properties (TestFastBasicSmtUnif7 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
+
 add_test(TestFastSearchExample1 "../fastrmt" -v 0 ../../tests/search/search1.rmt)
 set_tests_properties (TestFastSearchExample1 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
 
@@ -225,3 +228,30 @@ set_tests_properties (TestFastSearchExample5 PROPERTIES PASS_REGULAR_EXPRESSION 
 
 add_test(TestFastSearchExample6 "../fastrmt" -v 0 ../../tests/search/search6.rmt)
 set_tests_properties (TestFastSearchExample6 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
+
+add_test(TestFastSearchExample7 "../fastrmt" -v 0 ../../tests/search/search7.rmt)
+set_tests_properties (TestFastSearchExample7 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
+
+add_test(TestFastReachExample1A "../fastrmt" -v 0 ../../tests/reach/reach1.rmt)
+set_tests_properties (TestFastReachExample1A PROPERTIES
+PASS_REGULAR_EXPRESSION "1 proved")
+
+add_test(TestFastReachExample1B "../fastrmt" -v 0 ../../tests/reach/reach1.rmt)
+set_tests_properties (TestFastReachExample1B PROPERTIES
+PASS_REGULAR_EXPRESSION "2 proved")
+
+add_test(TestFastReachExample2A "../fastrmt" -v 0 ../../tests/reach/reach2.rmt)
+set_tests_properties (TestFastReachExample2A PROPERTIES
+PASS_REGULAR_EXPRESSION "1 proved")
+
+add_test(TestFastReachExample2B "../fastrmt" -v 0 ../../tests/reach/reach2.rmt)
+set_tests_properties (TestFastReachExample2B PROPERTIES
+PASS_REGULAR_EXPRESSION "2 not proved")
+
+add_test(TestFastReachExample3ASlow "../fastrmt" -v 0 ../../tests/reach/reach3.rmt)
+set_tests_properties (TestFastReachExample3ASlow PROPERTIES
+PASS_REGULAR_EXPRESSION "1 proved")
+
+add_test(TestFastReachExample3BSlow "../fastrmt" -v 0 ../../tests/reach/reach3.rmt)
+set_tests_properties (TestFastReachExample3BSlow PROPERTIES
+PASS_REGULAR_EXPRESSION "2 proved")

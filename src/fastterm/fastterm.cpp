@@ -296,9 +296,19 @@ FastTerm simplifyFast(FastTerm term)
 	}
 	break;
       case bltnEqInt:
+	if (eq_term(t1, t2)) {
+	  return fastTrue();
+	}
+	break;
       case bltnEqBool:
 	if (eq_term(t1, t2)) {
 	  return fastTrue();
+	}
+	if (eq_term(t1, fastTrue())) {
+	  return t2;
+	}
+	if (eq_term(t2, fastTrue())) {
+	  return t1;
 	}
 	break;
       default:

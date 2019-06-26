@@ -6,7 +6,7 @@
 #include <vector>
 #include <z3.h>
 
-#define MAXVARS (1024 * 16)
+#define MAXVARS (1024 * 1024 * 16)
 #define MAXFUNCS 2048
 #define MAXDATA (1024 * 1024 * 32)
 #define MAXARITYDATA (1024 * 16)

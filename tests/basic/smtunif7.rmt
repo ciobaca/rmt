@@ -1,0 +1,154 @@
+/*
+
+This file contains the operational semantics of topmost IMP, a simple
+imperative language used to illustrate our approach to proving
+reachability properties.
+
+Run this example with
+
+./main -v 0 < example6.rmt
+
+The expected output is huge, but you should see
+
+[...]
+Circularity #1 proved.
+[...]
+Circularity #2 proved.
+
+The running time on my machine is around 30 seconds.
+*/
+// we need several sorts now
+sorts BoolP, // an additional BoolP sort that will contain booleans computed by
+             // function symbols that we define;
+	     // our function symbols cannot return Bool since Bool is built-in
+      Var, // a sort for program variable
+      AExp, // a sort for arithmetic expressions
+      BExp, // a sort of boolean program expressions
+      NonValAExp, // a sort for arithmetic expressions that are not values
+      NonValBExp, // a sort for boolean expressions that are not values
+      Stmt, // a sort for statements
+      Code, // a sort for "Code" (either statements or expressions)
+      CompStack, // a sort for a Stack of Code
+      Map, // maps that recall the environment (which variable has which value)
+      MapItem, // maps contain MapItem s
+      CfgI; // a sort holding the configuration of a program
+
+// after declaring all sorts,
+// we must declare all subsort relations
+subsort Int < AExp; // any integer is an arithmetic expression
+subsort Var < NonValAExp; // any variables is an arithmetic expression that is not a value
+subsort NonValAExp < AExp; // any arithmetic expression that is not a value is an a.e.
+subsort NonValBExp < BExp; // same for boolean expressions
+subsort Map AExp BExp Stmt < Code; // expressions and statements are code
+subsort Bool < BoolP; // BoolP contains the built-in sort Bool
+subsort BoolP < BExp; // BoolP can be part of boolean expressions
+
+signature
+	// some program variables
+	x : -> Var,
+	y : -> Var,
+	z : -> Var,
+
+	// helper functions
+	synEq : Var Var -> BoolP,
+    	update : Var Int Map -> Stmt,
+	updateh : MapItem -> Stmt,
+	lookup  : Var Map -> Stmt,
+    	lookuph : Var Int Map -> Stmt,
+
+	// arithmetic and boolean expressions
+	plus : AExp AExp -> NonValAExp,
+	plushl : AExp -> AExp,
+    	plushr : AExp -> AExp,
+
+	pred : AExp -> NonValAExp,
+	predh : -> AExp,
+
+	succ : AExp -> NonValAExp,
+	succh : -> AExp,
+
+	le   : AExp AExp -> NonValBExp,
+    	lehl : AExp -> BExp,
+    	lehr : AExp -> BExp,
+
+	// computation stack
+	done : -> CompStack,
+	push : Code CompStack -> CompStack,
+
+	// environment
+	mi : Var Int -> MapItem,
+	emp : -> Map,
+	cons : MapItem Map -> Map,
+
+	// configuration
+	I : CompStack Map -> CfgI,
+
+	// statements
+	assign : Var AExp -> Stmt,
+	updateEnv : -> Stmt,
+    	assignh : Var -> Stmt,
+
+	skip : -> Stmt,
+
+	seq : Stmt Stmt -> Stmt,
+
+	ite : BExp Stmt Stmt -> Stmt,
+	iteh : Stmt Stmt -> Stmt,
+
+	while : BExp Stmt -> Stmt;
+
+/* next we must declare all variables */
+variables
+	X : Var,
+	Y : Var,
+	Z : Var,
+	N : Int,
+	J : Int,
+	M : Int,
+	SUM : Int,
+	B : Bool,
+	BE : BExp,
+	BE1 : BExp,
+	BE2 : BExp,
+	AE : AExp,
+	AE1 : AExp,
+	AE2 : AExp,
+	NVAE : NonValAExp,
+	NVAE1 : NonValAExp,
+	NVAE2 : NonValAExp,
+	NVBE : NonValBExp,
+	NVBE1 : NonValBExp,
+	NVBE2 : NonValBExp,
+	S : Stmt,
+	S1 : Stmt,
+	S2 : Stmt,
+	REST : CompStack,
+	ENV : Map,
+	ENV1 : Map,
+	ENV2 : Map;
+
+// smt-unify y NVAE1;
+
+
+// smt-unify 1 AE2;
+// smt-unify AE2 1;
+
+// !EOF!
+
+smt-unify (plus y 1) (plus NVAE1 AE2);
+
+!EOF!
+
+smt-unify
+(push (plus y 1) (push (assignh y) (push (while (le y x) (seq (assign z (plus z y)) (assign y (plus y 1)))) done)))
+
+(push (plus NVAE1 AE2)        REST);
+
+!EOF!
+
+smt-unify
+(I (push (plus y 1) (push (assignh y) (push (while (le y x) (seq (assign z (plus z y)) (assign y (plus y 1)))) done))) (cons (mi x N) (cons (mi y J) (cons (mi z (mplus SUM J)) emp))))
+
+(I (push (plus NVAE1 AE2)        REST)  ENV);
+
+!EOF!

@@ -2,6 +2,7 @@
 #include <cassert>
 #include <map>
 #include <utility>
+#include <string>
 
 void fastterm_z3_error_handler(Z3_context context, Z3_error_code error)
 {

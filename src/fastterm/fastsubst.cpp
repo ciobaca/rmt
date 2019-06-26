@@ -64,12 +64,37 @@ FastTerm FastSubst::image(FastVar var)
   return 0;
 }
 
-void FastSubst::replaceConstWithVar(FastTerm c, FastVar v) {
+void FastSubst::replaceConstWithVar(FastTerm c, FastVar v)
+{
   for (uint i = 0; i < count; ++i) {
     if (data[i] == c) {
       data[i] = v;
     }
   }
+}
+
+FastSubst compose(FastSubst sigma1, FastSubst sigma2)
+{
+  // returns a substitution sigma s.t.
+  // sigma(x) == sigma2(sigma1(x)) forall x
+  FastSubst result;
+  for (uint32 i = 0; i < sigma1.count; i += 2) {
+    FastVar var = sigma1.data[i];
+    FastTerm term = sigma1.data[i + 1];
+    assert(sigma1.inDomain(var));
+    assert(sigma1.image(var) == term);
+    result.addToSubst(var, sigma2.applySubst(term));
+  }
+  for (uint32 i = 0; i < sigma2.count; i += 2) {
+    FastVar var = sigma2.data[i];
+    FastTerm term = sigma2.data[i + 1];
+    assert(sigma2.inDomain(var));
+    assert(sigma2.image(var) == term);
+    if (!sigma1.inDomain(var)) {
+      result.addToSubst(var, term);
+    }
+  }
+  return result;
 }
 
 FastTerm FastSubst::applySubst(FastTerm term)

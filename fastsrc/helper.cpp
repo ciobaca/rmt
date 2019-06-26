@@ -201,7 +201,7 @@ vector<FastVar> uniqueVars(FastTerm term)
 {
   vector<FastVar> result;
   varsOf(term, result);
-  std::sort(result.begin(), result.begin());
+  std::sort(result.begin(), result.end());
   auto it = std::unique(result.begin(), result.end());
   result.resize(std::distance(result.begin(), it));
   return result;

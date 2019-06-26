@@ -255,3 +255,39 @@ PASS_REGULAR_EXPRESSION "1 proved")
 add_test(TestFastReachExample3BSlow "../fastrmt" -v 0 ../../tests/reach/reach3.rmt)
 set_tests_properties (TestFastReachExample3BSlow PROPERTIES
 PASS_REGULAR_EXPRESSION "2 proved")
+
+add_test(TestFastReachExample4A "../fastrmt" -v 0 ../../tests/reach/reach4.rmt)
+set_tests_properties (TestFastReachExample4A PROPERTIES
+PASS_REGULAR_EXPRESSION "1 proved")
+
+add_test(TestFastReachExample4B "../fastrmt" -v 0 ../../tests/reach/reach4.rmt)
+set_tests_properties (TestFastReachExample4B PROPERTIES
+PASS_REGULAR_EXPRESSION "2 proved")
+
+add_test(TestFastReachExample5A "../fastrmt" -v 0 ../../tests/reach/reach5.rmt)
+set_tests_properties (TestFastReachExample5A PROPERTIES
+PASS_REGULAR_EXPRESSION "1 proved")
+
+add_test(TestFastReachExample5B "../fastrmt" -v 0 ../../tests/reach/reach5.rmt)
+set_tests_properties (TestFastReachExample5B PROPERTIES
+PASS_REGULAR_EXPRESSION "2 proved")
+
+add_test(TestFastReachExample6A "../fastrmt" -v 0 ../../tests/reach/reach6.rmt)
+set_tests_properties (TestFastReachExample6A PROPERTIES
+PASS_REGULAR_EXPRESSION "1 proved")
+
+add_test(TestFastReachExample6B "../fastrmt" -v 0 ../../tests/reach/reach6.rmt)
+set_tests_properties (TestFastReachExample6B PROPERTIES
+PASS_REGULAR_EXPRESSION "2 proved")
+
+add_test(TestFastReachExample7A "../fastrmt" -v 0 ../../tests/reach/reach7.rmt)
+set_tests_properties (TestFastReachExample7A PROPERTIES
+PASS_REGULAR_EXPRESSION "1 proved")
+
+add_test(TestFastReachExample7B "../fastrmt" -v 0 ../../tests/reach/reach7.rmt)
+set_tests_properties (TestFastReachExample7B PROPERTIES
+PASS_REGULAR_EXPRESSION "2 proved")
+
+add_test(TestFastReachExample7C "../fastrmt" -v 0 ../../tests/reach/reach7.rmt)
+set_tests_properties (TestFastReachExample7C PROPERTIES
+PASS_REGULAR_EXPRESSION "2 proved")

@@ -36,4 +36,8 @@ rewrite-system circ
   
   (done (mplus S (mdiv (mtimes Y (mtimes (mplus Y 1) (mplus (mtimes Y 2) 1))) 6)));
 
+// search in multbyadd : (loop2 S Y Y 0);// /\ (mle 1 Y);
+
+// !EOF!
+
 prove [5,2] in multbyadd : circ;

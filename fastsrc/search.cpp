@@ -103,6 +103,9 @@ extern FastFunc eqFunc[MAXSORTS];
 
 void extractEqualities(FastTerm constraint, vector<pair<FastVar, FastTerm>> &result, const vector<FastVar> &varsRule)
 {
+  for (uint i = 0; i < result.size(); ++i) {
+    constraint = applyUnitySubst(constraint, result[i].first, result[i].second);
+  }
   if (isVariable(constraint)) {
     return;
   }
@@ -121,7 +124,7 @@ void extractEqualities(FastTerm constraint, vector<pair<FastVar, FastTerm>> &res
       FastTerm t1 = getArg(constraint, 0);
       FastTerm t2 = getArg(constraint, 1);
       if (isVariable(t1) && getVarName(t1)[0] == '_') {
-	result.push_back(make_pair(t1, t2));
+    result.push_back(make_pair(t1, t2));
       } else if (isVariable(t2) && getVarName(t2)[0] == '_') {
 	result.push_back(make_pair(t2, t1));
       } else if (isVariable(t2) && contains(varsRule, t2)) {
@@ -149,9 +152,10 @@ void smtSearchRewriteRule(FastTerm cterm, FastTerm iterm, FastTerm iconstraint,
   varsOf(rhs, varsRule);
   varsOf(constraint, varsRule);
 
-  std::sort(varsRule.begin(), varsRule.begin());
+  std::sort(varsRule.begin(), varsRule.end());
   auto it = std::unique(varsRule.begin(), varsRule.end());
   varsRule.resize(std::distance(varsRule.begin(), it));
+
   for (uint i = 0; i < varsRule.size(); ++i) {
     if (occurs(varsRule[i], iterm) || occurs(varsRule[i], iconstraint)) {
       toRename.push_back(varsRule[i]);
@@ -179,8 +183,12 @@ void smtSearchRewriteRule(FastTerm cterm, FastTerm iterm, FastTerm iconstraint,
   LOG(DEBUG4, cerr << "smtSearchRewriteRule has " << solutions.size() << " solutions.");
   for (uint i = 0; i < solutions.size(); ++i) {
     SmtSearchSolution sol = solutions[i];
-       LOG(DEBUG4, cerr << "Solution #" << (i + 1) << " (before): " << toString(sol));
+    LOG(DEBUG4, cerr << "Solution #" << (i + 1) << " (before): " << toString(sol));
     vector<pair<FastVar, FastTerm>> equalities;
+    LOG(DEBUG5, cerr << "extractEquality ");
+    for (uint j = 0; j < newVarsRule.size(); ++j) {
+      LOG(DEBUG5, cerr << " extract var " << getVarName(newVarsRule[j]));
+    }
     extractEqualities(sol.constraint, equalities, newVarsRule);
 
     for (uint j = 0; j < equalities.size(); ++j) {

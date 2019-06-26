@@ -15,11 +15,19 @@ FastFunc funcOr;
 FastFunc funcNot;
 FastFunc funcTrue;
 FastFunc funcFalse;
+
+FastFunc funcForallInt;
+FastFunc funcExistsInt;
+
+FastFunc funcIteInt;
+
 FastFunc funcLE;
 FastFunc funcPlus;
 FastFunc funcTimes;
 FastFunc funcDiv;
+FastFunc funcMod;
 FastFunc funcMinus;
+
 FastFunc funcEqInt;
 FastFunc funcEqBool;
 
@@ -103,6 +111,25 @@ void initFuncs()
   }
 
   args[0] = fastIntSort();
+  args[1] = fastBoolSort();
+
+  funcForallInt = newFunc("forallInt", fastBoolSort(), 2, args);
+  funcIsBuiltin[funcForallInt] = true;
+  builtinFunc[funcForallInt] = bltnForall;
+
+  funcExistsInt = newFunc("existsInt", fastBoolSort(), 2, args);
+  funcIsBuiltin[funcExistsInt] = true;
+  builtinFunc[funcExistsInt] = bltnExists;
+
+  args[0] = fastBoolSort();
+  args[1] = fastIntSort();
+  args[2] = fastIntSort();
+
+  funcIteInt = newFunc("iteInt", fastIntSort(), 3, args);
+  funcIsBuiltin[funcIteInt] = true;
+  builtinFunc[funcIteInt] = bltnIte;
+
+  args[0] = fastIntSort();
   args[1] = fastIntSort();
 
   funcLE = newFunc("mle", fastBoolSort(), 2, args);
@@ -121,6 +148,10 @@ void initFuncs()
   funcIsBuiltin[funcDiv] = true;
   builtinFunc[funcDiv] = bltnDiv;
 
+  funcMod = newFunc("mmod", fastIntSort(), 2, args);
+  funcIsBuiltin[funcMod] = true;
+  builtinFunc[funcMod] = bltnMod;
+
   funcMinus = newFunc("mminus", fastIntSort(), 2, args);
   funcIsBuiltin[funcMinus] = true;
   builtinFunc[funcMinus] = bltnMinus;
@@ -132,6 +163,7 @@ void initFuncs()
   hasEqFunc[fastIntSort()] = true;
   eqFunc[fastIntSort()] = funcEqInt;
 }
+
 
 FastTerm fastEq(FastTerm t1, FastTerm t2)
 {
@@ -286,6 +318,15 @@ FastFunc newConst(const char *name, FastSort sort)
   isAC[funcCount] = false;
   FastFunc result = funcCount++;
   assert(validFastFunc(result));
+  return result;
+}
+
+FastFunc newInterpretedFunc(const char *name, FastSort resultSort, uint32 argCount, FastSort *args)
+{
+  FastFunc result = newFunc(name, resultSort, argCount, args);
+  funcIsBuiltin[result] = true;
+  builtinFunc[result] = bltnUD;
+  // TODO: treat interpretation
   return result;
 }
 

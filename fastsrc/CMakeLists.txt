@@ -6,7 +6,7 @@ set(CMAKE_C_STANDARD 99)
 
 SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS}")
 
-add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -fpermissive -DNDEBUG")
+add_definitions ("-O3 -Wall -Wextra -std=c++14 -fno-pic -fpermissive")
 
 # set (Gperftools_DIR "${CMAKE_CURRENT_LIST_DIR}")
 # find_package(Gperftools REQUIRED)

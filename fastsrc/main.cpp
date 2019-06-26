@@ -47,76 +47,76 @@ map<string, RewriteSystem> rewriteSystems;
 //   }
 // }
 
-// void parseBuiltins(string &s, int &w)
-// {
-//   skipWhiteSpace(s, w);
-//   if (!lookAhead(s, w, "builtins")) {
-//     return;
-//   }
-//   matchString(s, w, "builtins");
-//   while (w < len(s)) {
-//     skipWhiteSpace(s, w);
-//     string f = getIdentifier(s, w);
-//     skipWhiteSpace(s, w);
-//     match(s, w, ':');
-//     skipWhiteSpace(s, w);
-//     vector<Sort *> arguments;
-//     while (lookAheadIdentifier(s, w)) {
-//       string id = getIdentifier(s, w);
-//       if (!existsSort(id)) {
-//         parseError("(while parsing builtins) sort does not exist", w, s);
-//       }
-//       if (!isBuiltinSort(id)) {
-//         parseError("(while parsing builtins) sort is not builtin", w, s);
-//       }
-//       skipWhiteSpace(s, w);
-//       arguments.push_back(getSort(id));
-//     }
-//     matchString(s, w, "->");
-//     skipWhiteSpace(s, w);
-//     string id = getIdentifier(s, w);
-//     if (!existsSort(id)) {
-//       LOG(ERROR) << "SORT: " << id << endl;
-//       parseError("(while parsing builtins) sort does not exist", w, s);
-//     }
-//     if (!isBuiltinSort(id)) {
-//       parseError("(while parsing builtins) sort is not builtin", w, s);
-//     }
-//     Sort *result = getSort(id);
-//     string interpretation = f;
-//     skipWhiteSpace(s, w);
+void parseBuiltins(string &s, int &w)
+{
+  skipWhiteSpace(s, w);
+  if (!lookAhead(s, w, "builtins")) {
+    return;
+  }
+  matchString(s, w, "builtins");
+  while (w < len(s)) {
+    skipWhiteSpace(s, w);
+    string f = getIdentifier(s, w);
+    skipWhiteSpace(s, w);
+    match(s, w, ':');
+    skipWhiteSpace(s, w);
+    vector<FastSort> arguments;
+    while (lookAheadIdentifier(s, w)) {
+      string id = getIdentifier(s, w);
+      if (!existsSort(id.c_str())) {
+        parseError("(while parsing builtins) sort does not exist", w, s);
+      }
+      FastSort sort = getSortByName(id.c_str());
+      if (!isBuiltinSort(sort)) {
+        parseError("(while parsing builtins) sort is not builtin", w, s);
+      }
+      skipWhiteSpace(s, w);
+      arguments.push_back(sort);
+    }
+    matchString(s, w, "->");
+    skipWhiteSpace(s, w);
+    string id = getIdentifier(s, w);
+    if (!existsSort(id.c_str())) {
+      LOG(ERROR, cerr << "SORT: " << id << endl);
+      parseError("(while parsing builtins) sort does not exist", w, s);
+    }
+    FastSort result = getSortByName(id.c_str());
+    if (!isBuiltinSort(result)) {
+      parseError("(while parsing builtins) sort is not builtin", w, s);
+    }
+    skipWhiteSpace(s, w);
 
-//     createInterpretedFunction(f, arguments, result, createZ3FunctionSymbol(f, arguments, result));
-//     if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
-//       expected("more builtin function symbols", w, s);
-//     }
-//     if (s[w] == ',') {
-//       match(s, w, ',');
-//       continue;
-//     }
-//     else {
-//       match(s, w, ';');
-//       break;
-//     }
-//   }
-// }
+    newInterpretedFunc(f.c_str(), result, arguments.size(), &arguments[0]);
+    if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
+      expected("more builtin function symbols", w, s);
+    }
+    if (s[w] == ',') {
+      match(s, w, ',');
+      continue;
+    }
+    else {
+      match(s, w, ';');
+      break;
+    }
+  }
+}
 
-// void parseAsserts(string &s, int &w)
-// {
-//   skipWhiteSpace(s, w);
-//   while (lookAhead(s, w, "assert")) {
-//     matchString(s, w, "assert");
-//     skipWhiteSpace(s, w);
-//     Term *term = parseTerm(s, w);
-//     if (term->getSort() != getBoolSort()) {
-//       parseError("(while parsing asserts) asserts should be of sort Bool.", w, s);
-//     }
-//     addZ3Assert(term);
-//     skipWhiteSpace(s, w);
-//     matchString(s, w, ";");
-//     skipWhiteSpace(s, w);
-//   }
-// }
+void parseAsserts(string &s, int &w)
+{
+  skipWhiteSpace(s, w);
+  while (lookAhead(s, w, "assert")) {
+    matchString(s, w, "assert");
+    skipWhiteSpace(s, w);
+    FastTerm term = parseTerm(s, w);
+    if (getSort(term) != fastBoolSort()) {
+      parseError("(while parsing asserts) asserts should be of sort Bool.", w, s);
+    }
+    add_z3_assert(term);
+    skipWhiteSpace(s, w);
+    matchString(s, w, ";");
+    skipWhiteSpace(s, w);
+  }
+}
 
 // void parseDefinedFunctions(string &s, int &w)
 // {
@@ -404,7 +404,7 @@ void parseFunctions(string &s, int &w)
     bool isCommutative = false;
     bool isAssociative = false;
     bool hasUnity = false;
-    FastFunc unityElement;
+    FastFunc unityElement = MISSING_UELEM;
     if (lookAhead(s, w, "[")) {
       matchString(s, w, "[");
       skipWhiteSpace(s, w);
@@ -649,7 +649,7 @@ int main(int argc, char **argv)
 
   for (skipWhiteSpace(s, w); w < len(s); skipWhiteSpace(s, w)) {
     Query *query = NULL;
-    if (lookAhead(s, w, "sorts")) {
+    if (lookAhead(s, w, "sorts")) { /* declarations */
       parseSorts(s, w);
     } else if (lookAhead(s, w, "subsort")) {
       parseSubsorts(s, w);
@@ -662,7 +662,12 @@ int main(int argc, char **argv)
       string name = parseRewriteSystem(s, w, rs);
       rewriteSystems[name] = rs;
       skipWhiteSpace(s, w);
-    } else if (lookAhead(s, w, "abstract")) {
+    } else if (lookAhead(s, w, "builtins"))  {
+      parseBuiltins(s, w);
+    } else if (lookAhead(s, w, "assert")) {
+      parseAsserts(s, w);
+    // else if (lookAhead(s, w, "define")) parseDefinedFunctions(s, w);
+    } else if (lookAhead(s, w, "abstract")) { /* small queries */
       processAbstract(s, w);
     } else if (lookAhead(s, w, "search")) {
       processSearch(s, w);
@@ -672,15 +677,11 @@ int main(int argc, char **argv)
       processSmtUnify(s, w);
     } else if (lookAhead(s, w, "satisfiability")) {
       processSatisfiability(s, w);
-    }
-    // else if (lookAhead(s, w, "builtins")) parseBuiltins(s, w);
-    // else if (lookAhead(s, w, "assert")) parseAsserts(s, w);
-    // else if (lookAhead(s, w, "define")) parseDefinedFunctions(s, w);
-    else if ((query = Query::lookAheadQuery(s, w))) {
+    } else if ((query = Query::lookAheadQuery(s, w))) { /* queries */
       query->parse(s, w);
       skipWhiteSpace(s, w);
       query->execute();
-    } else if (lookAhead(s, w, "!EOF!")) {
+    } else if (lookAhead(s, w, "!EOF!")) { /* other */
       break;
     } else {
       expected("valid command", w, s);

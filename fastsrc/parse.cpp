@@ -226,7 +226,6 @@ FastTerm parseTerm(string &s, int &pos)
         arguments.push_back(t);
       }
       match(s, pos, ')');
-      extern uint32 termDataSize;
       FastTerm result = newFuncTerm(f, &arguments[0]);
       return result;
     } else {

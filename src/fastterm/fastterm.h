@@ -35,10 +35,18 @@ enum BuiltinFuncType {
   bltnPlus,
   bltnTimes,
   bltnDiv,
+  bltnMod,
   bltnMinus,
   
   bltnEqInt,
   bltnEqBool,
+
+  bltnForall,
+  bltnExists,
+
+  bltnIte,
+
+  bltnUD,
 };
 
 typedef unsigned int uint32;
@@ -121,6 +129,9 @@ FastVar getVarByName(const char *name);
 */
 FastFunc newConst(const char *name, FastSort sort);
 FastFunc newFunc(const char *name, FastSort resultSort, uint32 arity, FastSort *args);
+
+FastFunc newInterpretedFunc(const char *name, FastSort resultSort, uint32 arity, FastSort *args);
+
 FastFunc newACFunc(const char *name, FastSort sort);
 FastFunc newACUFunc(const char *name, FastFunc uElem);
 FastFunc getUnityElement(FastFunc func);
@@ -211,5 +222,6 @@ void done_z3_solver(Z3_context context, Z3_solver solver);
 void z3_assert(Z3_context context, Z3_solver solver, FastTerm term);
 void z3_push(Z3_context context, Z3_solver solver);
 void z3_pop(Z3_context context, Z3_solver solver);
+void add_z3_assert(FastTerm term);
 
 #endif

@@ -26,7 +26,7 @@ void printToOss(FastTerm term, ostringstream &oss)
     assert(isFuncTerm(term));
     assert(term >= MAXVARS);
     size_t index = term - MAXVARS;
-    assert(0 <= index && index < termDataSize);
+    assert(/* 0 <= index && */ index < termDataSize);
 
     FastFunc func = termData[index]; 
     if (getArity(func) > 0) {

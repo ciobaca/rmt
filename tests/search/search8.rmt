@@ -1,0 +1,32 @@
+/*
+This a regression test.
+
+Run this example with
+
+./rmt -v 0 search8.rmt
+
+The output should be:
+
+2 solutions.
+Solution #1:
+(loop (mplus S,N),(mminus N,1)) if (mle 1,N)
+Solution #2:
+(done S) if (bnot (mle 1,N))
+*/
+
+sorts State;
+
+signature
+  init : Int->State, loop : Int Int->State, done : Int->State;
+
+variables B : Bool, S : Int, N : Int, I : Int;
+
+rewrite-system sum
+
+  (init N) => (loop 0 N),
+
+  (loop (mplus (mminus S 1) 1) N) /\ (mle 1 N) => (loop (mplus S N) (mminus N 1)),
+
+  (loop S N) /\ (bnot (mle 1 N)) => (done S);
+
+search in sum : (loop S (mplus (mminus N 1) 1));

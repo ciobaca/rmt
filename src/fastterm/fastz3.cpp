@@ -3,6 +3,12 @@
 #include <map>
 #include <utility>
 #include <string>
+#include <vector>
+#include <iostream>
+
+using namespace std;
+
+std::vector<FastTerm> z3_asserts;
 
 void fastterm_z3_error_handler(Z3_context context, Z3_error_code error)
 {
@@ -10,6 +16,15 @@ void fastterm_z3_error_handler(Z3_context context, Z3_error_code error)
   printf("Error in calling Z3 API: %s\n", string_error);
   exit(0);
 }
+
+extern int builtinFuncExtra[MAXFUNCS];
+extern FastFunc funcFalse;
+extern uint32 funcCount;
+
+std::map<std::pair<Z3_context, FastFunc>, Z3_func_decl> z3func;
+std::map<std::pair<Z3_context, FastTerm>, Z3_ast> cacheTerm;
+std::map<std::pair<Z3_context, FastTerm>, Z3_func_decl> cacheFunc;
+std::map<std::pair<Z3_context, FastTerm>, Z3_sort> cacheSort;
 
 Z3_context init_z3_context()
 {
@@ -20,10 +35,28 @@ Z3_context init_z3_context()
   Z3_context z3context = Z3_mk_context(z3config);
   Z3_set_error_handler(z3context, fastterm_z3_error_handler);
 
+  for (uint32 func = 0; func < funcCount; ++func) {
+    if (isBuiltinFunc(func) && getBuiltinFuncType(func) == bltnUD) {
+      //      cerr << "Creating Z3 function symbol " << getFuncName(func) << endl;
+      assert(getArity(func) < 16);
+      Z3_sort domain[16];
+      uint size = getArity(func);
+      for (uint i = 0; i < size; ++i) {
+	//	cerr << "Argument #" << (i + 1) << ": " << getSortName(getArgSort(func, i)) << endl;
+	assert(isBuiltinSort(getArgSort(func, i)));
+	domain[i] = toZ3Sort(z3context, getArgSort(func, i));
+      }
+      assert(isBuiltinSort(getFuncSort(func)));
+      Z3_sort range = toZ3Sort(z3context, getFuncSort(func));
+      //      cerr << "Result sort: " << getSortName(getFuncSort(func)) << endl;
+      Z3_symbol symbol = Z3_mk_string_symbol(z3context, getFuncName(func));
+      Z3_func_decl result = Z3_mk_func_decl(z3context, symbol, size, domain, range);
+      z3func[make_pair(z3context, func)] = result;
+    }
+  }
+
   return z3context;
 }
-
-std::map<std::pair<Z3_context, FastTerm>, Z3_sort> cacheSort;
 
 Z3_sort toZ3Sort(Z3_context context, FastSort sort)
 {
@@ -53,10 +86,9 @@ Z3_sort toZ3Sort(Z3_context context, FastSort sort)
   }
 }
 
-std::map<std::pair<Z3_context, FastTerm>, Z3_func_decl> cacheFunc;
-
 Z3_func_decl toZ3FuncDecl(Z3_context context, FastFunc func)
 {
+  exit(-1);
   if (cacheFunc.find(std::make_pair(context, func)) != cacheFunc.end()) {
     return cacheFunc[std::make_pair(context, func)];
   } else {
@@ -77,18 +109,15 @@ Z3_func_decl toZ3FuncDecl(Z3_context context, FastFunc func)
   }
 }
 
-std::map<std::pair<Z3_context, FastTerm>, Z3_ast> cacheTerm;
-
-extern int builtinFuncExtra[MAXFUNCS];
-extern FastFunc funcFalse;
-
 Z3_ast toZ3Term(Z3_context context, FastTerm term)
 {
   // char buffer[1024];
   // printTerm(term, buffer, 1024);
   // printf("toZ3Term %s\n", buffer);
   if (cacheTerm.find(std::make_pair(context, term)) != cacheTerm.end()) {
-    return cacheTerm[std::make_pair(context, term)];
+    Z3_ast result = cacheTerm[std::make_pair(context, term)];
+    //    printf("toZ3Term returned %s (cached)\n", Z3_ast_to_string(context, result));
+    return result;
   } else {
     Z3_ast result;
     if (isVariable(term)) {
@@ -151,6 +180,10 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
 	  assert(getArity(func) == 2);
 	  result = Z3_mk_div(context, args[0], args[1]);
 	  break;
+	case bltnMod:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_mod(context, args[0], args[1]);
+	  break;
 	case bltnMinus:
 	  assert(getArity(func) == 2);
 	  result = Z3_mk_sub(context, 2, args);
@@ -159,6 +192,33 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
 	case bltnEqBool:
 	  assert(getArity(func) == 2);
 	  result = Z3_mk_eq(context, args[0], args[1]);
+	  break;
+	case bltnUD:
+	  //	  cerr << "making bltnUD app" << endl;
+	  assert(z3func.find(std::make_pair(context, func)) != z3func.end());
+	  result = Z3_mk_app(context, z3func[make_pair(context, func)], getArity(func), args);
+	  //	  cerr << "done making bltnUD app" << endl;
+	  break;
+	case bltnIte:
+	  result = Z3_mk_ite(context, args[0], args[1], args[2]);
+	  break;
+	case bltnForall:
+	  {
+	    Z3_app bound[4];
+	    assert(Z3_get_ast_kind(context, args[0]) == Z3_APP_AST);
+	    Z3_pattern patterns[4];
+	    bound[0] = (Z3_app)args[0];
+	    result = Z3_mk_forall_const(context, 0, 1, bound, 0, patterns, args[1]);
+	  }
+	  break;
+	case bltnExists:
+	  {
+	    Z3_app bound[4];
+	    Z3_pattern patterns[4];
+	    assert(Z3_get_ast_kind(context, args[0]) == Z3_APP_AST);
+	    bound[0] = (Z3_app)args[0];
+	    result = Z3_mk_exists_const(context, 0, 1, bound, 0, patterns, args[1]);
+	  }
 	  break;
 	default:
 	  assert(0);
@@ -179,8 +239,13 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
 Z3_lbool z3_sat_check(Z3_context context, FastTerm term)
 {
   Z3_solver solver = init_z3_solver(context);
+  for (uint i = 0; i < z3_asserts.size(); ++i) {
+    z3_assert(context, solver, z3_asserts[i]);
+  }
   z3_assert(context, solver, term);
+  //  cerr << "Starting Z3 query" << endl;
   Z3_lbool result = z3_check(context, solver);
+  //  cerr << "Done Z3 query" << endl;
   done_z3_solver(context, solver);
   return result;
 }
@@ -200,7 +265,9 @@ void done_z3_solver(Z3_context context, Z3_solver solver)
 void z3_assert(Z3_context context, Z3_solver solver, FastTerm term)
 {
   assert(getSort(term) == fastBoolSort());
-  Z3_solver_assert(context, solver, toZ3Term(context, term));
+  Z3_ast z3_term = toZ3Term(context, term);
+  Z3_solver_assert(context, solver, z3_term);
+  //  printf("asserting %s\n", Z3_ast_to_string(context, z3_term));
 }
 
 Z3_lbool z3_check(Z3_context context, Z3_solver solver)
@@ -231,3 +298,8 @@ Z3_ast z3_simplify(FastTerm term, Z3_context z3context)
 
 }
 */
+
+void add_z3_assert(FastTerm term)
+{
+  z3_asserts.push_back(term);
+}

@@ -397,7 +397,7 @@ void start_z3_api()
 
   tacticParams = Z3_mk_params(z3context);
   Z3_params_inc_ref(z3context, tacticParams);
-  Z3_params_set_uint(z3context, tacticParams, Z3_mk_string_symbol(z3context, "timeout"), 2000);
+  // Z3_params_set_uint(z3context, tacticParams, Z3_mk_string_symbol(z3context, "timeout"), 2000);
 
   simplifyTactic = Z3_mk_tactic(z3context, "ctx-solver-simplify");
   Z3_tactic_inc_ref(z3context, simplifyTactic);

@@ -68,6 +68,8 @@ struct FastSubst {
   void composeWith(FastVar v, FastTerm t);
 };
 
+FastSubst compose(FastSubst sigma1, FastSubst sigma2);
+
 /*
   Initialization.
  */

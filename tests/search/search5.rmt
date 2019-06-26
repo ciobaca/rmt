@@ -1,0 +1,25 @@
+sorts State;
+
+signature
+  init:Int->State, loop:Int Int->State, done:Int->State;
+
+variables B:Bool, S:Int, N:Int, I:Int;
+
+rewrite-system sum
+
+  (init N) => (loop 0 N),
+
+  (loop S N) /\ (mle 1 N) => (loop (mplus S N) (mminus N 1)),
+
+  (loop S N) /\ (bnot (mle 1 N)) => (done S);
+
+/*
+Please go ahead and experiment with various parameters. Try the
+following queries:
+
+search [0,0] in sum : loop(S, N);
+search [0,3] in sum : loop(S, N);
+search [3,3] in sum : loop(S, N);
+*/
+search [1,2] in sum :
+  (loop S N);

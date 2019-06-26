@@ -107,6 +107,7 @@ FastTerm FastSubst::applySubst(FastTerm term)
   } else {
     assert(isFuncTerm(term));
     FastFunc func = getFunc(term);
+    //    if (getArity(func) != 0) {
     FastTerm result = newFuncTerm(func, args(term));
     FastTerm *arguments = args(result);
     for (uint i = 0; i < getArity(func); ++i) {
@@ -114,6 +115,9 @@ FastTerm FastSubst::applySubst(FastTerm term)
       arguments++;
     }
     return result;
+    // } else {
+    //   return term;
+    // }
   }
 }
 
@@ -130,6 +134,13 @@ void FastSubst::composeWith(FastVar v, FastTerm t)
   }
   if (!found) {
     addToSubst(v, t);
+  }
+}
+
+void FastSubst::applyInRange(FastVar v, FastTerm t)
+{
+  for (uint i = 0; i < count; i += 2) {
+    data[i + 1] = applyUnitySubst(data[i + 1], v, t);
   }
 }
 

@@ -219,3 +219,73 @@ bool eq_term(FastTerm t1, FastTerm t2)
     return false;
   }
 }
+
+FastTerm simplifyFast(FastTerm term)
+{
+  if (isVariable(term)) {
+    return term;
+  } else {
+    assert(isFuncTerm(term));
+    FastFunc func = getFunc(term);
+    FastTerm result = newFuncTerm(func, args(term));
+    FastTerm *arguments = args(result);
+    for (uint i = 0; i < getArity(func); ++i) {
+      arguments[i] = simplify(arguments[i]);
+    }
+    if (isBuiltinFunc(func)) {
+      FastTerm t1 = arguments[0];
+      FastTerm t2 = arguments[1];
+      switch (getBuiltinFuncType(func)) {
+      case bltnAnd:
+	if (eq_term(t1, fastFalse())) {
+	  return fastFalse();
+	}
+	if (eq_term(t2, fastFalse())) {
+	  return fastFalse();
+	}
+	if (eq_term(t1, fastTrue())) {
+	  return t2;
+	}
+	if (eq_term(t2, fastTrue())) {
+	  return t1;
+	}
+	if (eq_term(t1, t2)) {
+	  return t1;
+	}
+	break;
+      case bltnOr:
+	if (eq_term(t1, fastTrue())) {
+	  return fastTrue();
+	}
+	if (eq_term(t2, fastTrue())) {
+	  return fastTrue();
+	}
+	if (eq_term(t1, fastFalse())) {
+	  return t2;
+	}
+	if (eq_term(t2, fastFalse())) {
+	  return t1;
+	}
+	if (eq_term(t1, t2)) {
+	  return t1;
+	}
+	break;
+      case bltnEqInt:
+      case bltnEqBool:
+	if (eq_term(t1, t2)) {
+	  return fastTrue();
+	}
+	break;
+      default:
+	break;
+      }
+    }
+    return result;
+  }
+}
+
+FastTerm simplify(FastTerm term)
+{
+  // TODO: also call Z3
+  return simplifyFast(term);
+}

@@ -213,3 +213,9 @@ set_tests_properties (TestFastSearchExample3 PROPERTIES PASS_REGULAR_EXPRESSION 
 
 add_test(TestFastSearchExample4 "../fastrmt" -v 0 ../../tests/search/search4.rmt)
 set_tests_properties (TestFastSearchExample4 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 0 solutions.")
+
+add_test(TestFastSearchExample5 "../fastrmt" -v 0 ../../tests/search/search5.rmt)
+set_tests_properties (TestFastSearchExample5 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 4 solutions.")
+
+add_test(TestFastSearchExample6 "../fastrmt" -v 0 ../../tests/search/search6.rmt)
+set_tests_properties (TestFastSearchExample6 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")

@@ -80,12 +80,13 @@ Z3_func_decl toZ3FuncDecl(Z3_context context, FastFunc func)
 std::map<std::pair<Z3_context, FastTerm>, Z3_ast> cacheTerm;
 
 extern int builtinFuncExtra[MAXFUNCS];
+extern FastFunc funcFalse;
 
 Z3_ast toZ3Term(Z3_context context, FastTerm term)
 {
-  //  char buffer[1024];
-  //  printTerm(term, buffer, 1024);
-  //  printf("toZ3Term %s\n", buffer);
+  // char buffer[1024];
+  // printTerm(term, buffer, 1024);
+  // printf("toZ3Term %s\n", buffer);
   if (cacheTerm.find(std::make_pair(context, term)) != cacheTerm.end()) {
     return cacheTerm[std::make_pair(context, term)];
   } else {
@@ -109,6 +110,10 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
 	case bltnAnd:
 	  assert(getArity(func) == 2);
 	  result = Z3_mk_and(context, 2, args);
+	  break;
+	case bltnImplies:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_implies(context, args[0], args[1]);
 	  break;
 	case bltnOr:
 	  assert(getArity(func) == 2);
@@ -142,6 +147,10 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
 	  assert(getArity(func) == 2);
 	  result = Z3_mk_mul(context, 2, args);
 	  break;
+	case bltnDiv:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_div(context, args[0], args[1]);
+	  break;
 	case bltnMinus:
 	  assert(getArity(func) == 2);
 	  result = Z3_mk_sub(context, 2, args);
@@ -157,6 +166,7 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
 	  break;
 	}
       } else {
+	//	printf("5 toZ3Term %d\n", term);
 	result = Z3_mk_app(context, toZ3FuncDecl(context, func), getArity(func), args);
       }
     }

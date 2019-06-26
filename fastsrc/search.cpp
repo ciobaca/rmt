@@ -78,25 +78,11 @@ void smtSearchRewriteRuleInternal(FastTerm cterm, FastTerm iterm, FastTerm icons
   }
 }
 
-void varsOf(FastTerm term, vector<FastVar> &vars)
-{
-  if (isVariable(term)) {
-    vars.push_back(term);
-  } else {
-    assert(isFuncTerm(term));
-    FastFunc func = getFunc(term);
-    for (uint i = 0; i < getArity(func); ++i) {
-      FastTerm nt = getArg(term, i);
-      varsOf(nt, vars);
-    }
-  }
-}
-
 extern FastFunc funcAnd;
 extern bool hasEqFunc[MAXSORTS];
 extern FastFunc eqFunc[MAXSORTS];
 
-void extractFreshEqualities(FastTerm constraint, vector<pair<FastVar, FastTerm>> &result)
+void extractEqualities(FastTerm constraint, vector<pair<FastVar, FastTerm>> &result, const vector<FastVar> &varsRule)
 {
   if (isVariable(constraint)) {
     return;
@@ -106,7 +92,7 @@ void extractFreshEqualities(FastTerm constraint, vector<pair<FastVar, FastTerm>>
   if (eq_func(func, funcAnd)) {
     assert(getArity(func) == 2);
     for (uint i = 0; i < getArity(func); ++i) {
-      extractFreshEqualities(getArg(constraint, i), result);
+      extractEqualities(getArg(constraint, i), result, varsRule);
     }
   } else if (getArity(func) == 2) {
     FastSort sort1 = getSort(getArg(constraint, 0));
@@ -119,6 +105,10 @@ void extractFreshEqualities(FastTerm constraint, vector<pair<FastVar, FastTerm>>
 	result.push_back(make_pair(t1, t2));
       } else if (isVariable(t2) && getVarName(t2)[0] == '_') {
 	result.push_back(make_pair(t2, t1));
+      } else if (isVariable(t2) && contains(varsRule, t2)) {
+	result.push_back(make_pair(t2, t1));
+      } else if (isVariable(t1) && contains(varsRule, t1)) {
+	result.push_back(make_pair(t1, t2));
       }
     }
   }
@@ -147,7 +137,9 @@ void smtSearchRewriteRule(FastTerm cterm, FastTerm iterm, FastTerm iconstraint,
 
   FastSubst subst;
   for (uint i = 0; i < toRename.size(); ++i) {
-    subst.addToSubst(toRename[i], createFreshVariable(getVarSort(toRename[i])));
+    FastVar var = createFreshVariable(getVarSort(toRename[i]));
+    //    freshVars.push_back(var);
+    subst.addToSubst(toRename[i], var);
   }
   lhs = subst.applySubst(lhs);
   rhs = subst.applySubst(rhs);
@@ -160,7 +152,7 @@ void smtSearchRewriteRule(FastTerm cterm, FastTerm iterm, FastTerm iconstraint,
   for (uint i = 0; i < solutions.size(); ++i) {
     SmtSearchSolution sol = solutions[i];
     vector<pair<FastVar, FastTerm>> equalities;
-    extractFreshEqualities(sol.constraint, equalities);
+    extractEqualities(sol.constraint, equalities, varsRule);
 
     for (uint j = 0; j < equalities.size(); ++j) {
       sol.iterm = applyUnitySubst(sol.iterm, equalities[j].first, equalities[j].second);

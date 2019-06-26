@@ -10,6 +10,7 @@ int builtinFuncExtra[MAXFUNCS]; // if builtinFunc[i] == bltnNumeral, then
                                 // builtinFuncExtra[i] in { -256, ..., 256 } is the numeral
 
 FastFunc funcAnd;
+FastFunc funcImplies;
 FastFunc funcOr;
 FastFunc funcNot;
 FastFunc funcTrue;
@@ -17,6 +18,7 @@ FastFunc funcFalse;
 FastFunc funcLE;
 FastFunc funcPlus;
 FastFunc funcTimes;
+FastFunc funcDiv;
 FastFunc funcMinus;
 FastFunc funcEqInt;
 FastFunc funcEqBool;
@@ -59,7 +61,7 @@ void initFuncs()
   builtinFunc[funcTrue] = bltnTrue;
 
   funcFalse = newConst("false", fastBoolSort());
-  funcIsBuiltin[funcFalse] = false;
+  funcIsBuiltin[funcFalse] = true;
   builtinFunc[funcFalse] = bltnFalse;
 
   FastSort args[16];
@@ -69,6 +71,10 @@ void initFuncs()
   funcAnd = newFunc("band", fastBoolSort(), 2, args);
   funcIsBuiltin[funcAnd] = true;
   builtinFunc[funcAnd] = bltnAnd;
+
+  funcImplies = newFunc("bimplies", fastBoolSort(), 2, args);
+  funcIsBuiltin[funcImplies] = true;
+  builtinFunc[funcImplies] = bltnImplies;
 
   funcOr = newFunc("bor", fastBoolSort(), 2, args);
   funcIsBuiltin[funcOr] = true;
@@ -110,6 +116,10 @@ void initFuncs()
   funcTimes = newFunc("mtimes", fastIntSort(), 2, args);
   funcIsBuiltin[funcTimes] = true;
   builtinFunc[funcTimes] = bltnTimes;
+
+  funcDiv = newFunc("mdiv", fastIntSort(), 2, args);
+  funcIsBuiltin[funcDiv] = true;
+  builtinFunc[funcDiv] = bltnDiv;
 
   funcMinus = newFunc("mminus", fastIntSort(), 2, args);
   funcIsBuiltin[funcMinus] = true;
@@ -187,6 +197,29 @@ FastTerm fastAnd(FastTerm t1, FastTerm t2)
   args[0] = t1;
   args[1] = t2;
   return newFuncTerm(funcAnd, args);
+}
+
+FastTerm fastImplies(FastTerm t1, FastTerm t2)
+{
+  if (t1 == fastFalse()) {
+    return fastTrue();
+  }
+  if (t2 == fastFalse()) {
+    return t1;
+  }
+  if (t1 == fastTrue()) {
+    return t2;
+  }
+  if (t2 == fastTrue()) {
+    return fastTrue();
+  }
+  if (eq_term(t1, t2)) {
+    return fastTrue();
+  }
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcImplies, args);
 }
 
 FastTerm fastOr(FastTerm t1, FastTerm t2)

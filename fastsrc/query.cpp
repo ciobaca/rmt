@@ -21,7 +21,7 @@
 // #include "querysubs.h"
 // #include "queryaxiom.h"
 // #include "querycirc.h"
-// #include "queryprovereachability.h"
+#include "queryprovereachability.h"
 // #include "queryproveequivalence.h"
 // #include "querysatisfiability.h"
 // #include "querysimplification.h"
@@ -149,10 +149,10 @@ Query *Query::lookAheadQuery(std::string &s, int &w)
 //   return new QueryInstrument_C();
 // }
 
-// Query *createQueryProveReachability()
-// {
-//   return new QueryProveReachability();
-// }
+Query *createQueryProveReachability()
+{
+  return new QueryProveReachability();
+}
 
 // Query *createQueryProveEquivalence()
 // {
@@ -211,7 +211,7 @@ std::map<std::string, QueryCreator> *registerQueries()
   // (*map)["implies"] = createQueryImplies;
   // (*map)["instrument"] = createQueryInstrument;
   // (*map)["cinstrument"] = createQueryInstrument_C;
-  // (*map)["prove"] = createQueryProveReachability;
+  (*map)["prove"] = createQueryProveReachability;
   // (*map)["show-equivalent"] = createQueryProveEquivalence;
   // (*map)["show-simulation"] = createQueryProveSim;
   // (*map)["show-simulation2"] = createQueryProveSim2;

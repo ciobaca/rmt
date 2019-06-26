@@ -45,6 +45,9 @@ struct ConstrainedTerm
 };
 
 std::string toString(const ConstrainedTerm &ct);
+
+ConstrainedTerm simplify(const ConstrainedTerm &ct);
+
 //std::string toPrettyString(const ConstrainedTerm &ct);
 
 /* vector<ConstrainedTerm> solutionsToSuccessors(vector<ConstrainedSolution> &solutions); */

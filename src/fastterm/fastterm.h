@@ -21,6 +21,7 @@ enum BuiltinSortType {
 
 enum BuiltinFuncType {
   bltnAnd,
+  bltnImplies,
   bltnOr,
   bltnNot,
   
@@ -33,6 +34,7 @@ enum BuiltinFuncType {
   
   bltnPlus,
   bltnTimes,
+  bltnDiv,
   bltnMinus,
   
   bltnEqInt,
@@ -163,6 +165,7 @@ FastTerm fastEq(FastTerm t1, FastTerm t2);
 FastTerm fastEqInt(FastTerm t1, FastTerm t2);
 FastTerm fastEqBool(FastTerm t1, FastTerm t2);
 FastTerm fastAnd(FastTerm, FastTerm);
+FastTerm fastImplies(FastTerm, FastTerm);
 FastTerm fastOr(FastTerm, FastTerm);
 FastTerm fastNot(FastTerm);
 FastTerm fastTrue();

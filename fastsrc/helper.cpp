@@ -182,3 +182,27 @@ string string_from_int(int number)
 //     cout << it.first << "s took on average " << secs / it.second.second << " seconds " << endl;
 //   }
 // }
+
+void varsOf(FastTerm term, vector<FastVar> &vars)
+{
+  if (isVariable(term)) {
+    vars.push_back(term);
+  } else {
+    assert(isFuncTerm(term));
+    FastFunc func = getFunc(term);
+    for (uint i = 0; i < getArity(func); ++i) {
+      FastTerm nt = getArg(term, i);
+      varsOf(nt, vars);
+    }
+  }
+}
+
+vector<FastVar> uniqueVars(FastTerm term)
+{
+  vector<FastVar> result;
+  varsOf(term, result);
+  std::sort(result.begin(), result.begin());
+  auto it = std::unique(result.begin(), result.end());
+  result.resize(std::distance(result.begin(), it));
+  return result;
+}

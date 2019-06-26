@@ -19,6 +19,11 @@ string toString(const ConstrainedTerm &ct)
   return oss.str();
 }
 
+ConstrainedTerm simplify(const ConstrainedTerm &ct)
+{
+  return ConstrainedTerm(simplify(ct.term), simplify(ct.constraint));
+}
+
 // string toPrettyString(const ConstrainedTerm &ct)
 // {
 //   ostringstream oss;

@@ -36,12 +36,12 @@
 
 /* using namespace std; */
 
-template<typename A, typename B> bool contains(std::map<A, B> &container, A elem)
+template<typename A, typename B> bool contains(const std::map<A, B> &container, const A &elem)
 {
   return container.find(elem) != container.end();
 }
 
-template<typename A, typename B> bool contains(std::unordered_map<A, B> &container, A elem)
+template<typename A, typename B> bool contains(const std::unordered_map<A, B> &container, const A &elem)
 {
   return container.count(elem);
 }
@@ -50,10 +50,10 @@ template<typename A, typename B> bool contains(std::unordered_map<A, B> &contain
 /*   return find_if(container.begin(), container.end(), [&](const pair<A, B> &it) { return it.first == elem; }) != container.end(); */
 /* } */
 
-/* template<typename T> bool contains(vector<T> &container, T &elem) */
-/* { */
-/*   return find(container.begin(), container.end(), elem) != container.end(); */
-/* } */
+template<typename T> bool contains(const std::vector<T> &container, const T &elem)
+{
+  return find(container.begin(), container.end(), elem) != container.end();
+}
 
 /* template<typename T> bool subseteq(vector<T> a, vector<T> b) */
 /* { */
@@ -90,6 +90,8 @@ std::string string_from_int(int);
 
 extern int VERBOSITY;
 
+void varsOf(FastTerm term, std::vector<FastVar> &vars);
+std::vector<FastVar> uniqueVars(FastTerm term);
 void abortWithMessage(const std::string &error);
 std::string toString(FastTerm term);
 std::string toString(FastSubst subst);

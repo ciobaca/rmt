@@ -1,0 +1,29 @@
+sorts State;
+
+signature
+  init:Int->State, loop:Int Int->State, done:Int->State;
+
+variables B:Bool, S:Int, N:Int, I:Int;
+
+rewrite-system sum
+
+  (init N) => (loop 0 N),
+
+  (loop S N) /\ (mle 1 N) => (loop (mplus S N) (mminus N 1)),
+
+  (loop S N) /\ (bnot (mle 1 N)) => (done S);
+
+rewrite-system circularities
+  (init N) /\ (mle 0 N) =>
+  (done (mdiv (mtimes N (mplus N 1)) 2)),
+
+  (loop S I) /\ (mle 0 I) =>
+  (done (mplus S (mdiv (mtimes I (mplus I 1)) 2)));
+
+// smt-unify (loop 0 N) (loop S I);
+
+// search in sum : (loop 0 N) /\ (mle 0 N);
+
+// !EOF!
+
+prove in sum : circularities;

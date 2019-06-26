@@ -270,6 +270,31 @@ FastTerm simplifyFast(FastTerm term)
 	  return t1;
 	}
 	break;
+      case bltnNot:
+	if (eq_term(t1, fastFalse())) {
+	  return fastTrue();
+	}
+	if (eq_term(t1, fastTrue())) {
+	  return fastFalse();
+	}
+	break;
+      case bltnImplies:
+	if (eq_term(t1, fastFalse())) {
+	  return fastTrue();
+	}
+	if (eq_term(t2, fastFalse())) {
+	  return t1;
+	}
+	if (eq_term(t1, fastTrue())) {
+	  return t2;
+	}
+	if (eq_term(t2, fastTrue())) {
+	  return fastTrue();
+	}
+	if (eq_term(t1, t2)) {
+	  return fastTrue();
+	}
+	break;
       case bltnEqInt:
       case bltnEqBool:
 	if (eq_term(t1, t2)) {

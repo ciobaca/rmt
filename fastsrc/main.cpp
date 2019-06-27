@@ -26,26 +26,11 @@ http://profs.info.uaic.ro/~stefan.ciobaca/
 #include "defined.h"
 #include "rewritesystem.h"
 #include "smallqueries.h"
-
-// #include "term.h"
-// #include "factories.h"
-// #include "sort.h"
-// #include "z3driver.h"
-// #include "search.h"
-// #include "constrainedterm.h"
- #include "query.h"
+#include "query.h"
 
 using namespace std;
 
 map<string, RewriteSystem> rewriteSystems;
-
-// void outputRewriteSystem(RewriteSystem &rewriteSystem)
-// {
-//   for (int i = 0; i < len(rewriteSystem); ++i) {
-//     pair<Term *, Term *> rewriteRule = rewriteSystem[i];
-//     cout << rewriteRule.first->toString() << " " << rewriteRule.second->toString() << endl;
-//   }
-// }
 
 void parseBuiltins(string &s, int &w)
 {
@@ -286,67 +271,6 @@ void parseSubsorts(string &s, int &w)
     skipWhiteSpace(s, w);
   }
 }
-
-// void addPredefinedFunctions()
-// {
-//   Sort *intSort = getSort("Int");
-//   Sort *boolSort = getSort("Bool");
-//   assert(intSort);
-//   assert(boolSort);
-
-//   {
-//     vector<Sort *> arguments;
-//     createInterpretedFunction("0", arguments, intSort, "0");
-//     createInterpretedFunction("1", arguments, intSort, "1");
-//     createInterpretedFunction("2", arguments, intSort, "2");
-//     createInterpretedFunction("3", arguments, intSort, "3");
-//     createInterpretedFunction("4", arguments, intSort, "4");
-//     createInterpretedFunction("5", arguments, intSort, "5");
-//     createInterpretedFunction("6", arguments, intSort, "6");
-//     createInterpretedFunction("7", arguments, intSort, "7");
-//     createInterpretedFunction("8", arguments, intSort, "8");
-//     createInterpretedFunction("9", arguments, intSort, "9");
-//     createInterpretedFunction("10", arguments, intSort, "10");
-//     createInterpretedFunction("11", arguments, intSort, "11");
-//     createInterpretedFunction("12", arguments, intSort, "12");
-//     createInterpretedFunction("13", arguments, intSort, "13");
-//     createInterpretedFunction("14", arguments, intSort, "14");
-//     createInterpretedFunction("15", arguments, intSort, "15");
-
-//     arguments.push_back(intSort);
-//     arguments.push_back(intSort);
-//     createInterpretedFunction("mplus", arguments, intSort, "+");
-//     createInterpretedFunction("mminus", arguments, intSort, "-");
-//     createInterpretedFunction("mtimes", arguments, intSort, "*");
-//     createInterpretedFunction("mdiv", arguments, intSort, "div");
-//     createInterpretedFunction("mmod", arguments, intSort, "mod");
-//     createInterpretedFunction("mle", arguments, boolSort, "<=");
-//     createInterpretedFunction("mge", arguments, boolSort, ">=");
-//     createInterpretedFunction("mless", arguments, boolSort, "<");
-//     createInterpretedFunction("mgt", arguments, boolSort, ">");
-//     createInterpretedFunction("mequals", arguments, boolSort, "=");
-
-//     arguments.push_back(boolSort);
-//     std::reverse(arguments.begin(), arguments.end());
-//     createInterpretedFunction("iteInt", arguments, boolSort, "ite");
-//   }
-
-//   {
-//     vector<Sort *> arguments;
-//     createInterpretedFunction("true", arguments, boolSort, "true");
-//     createInterpretedFunction("false", arguments, boolSort, "false");
-
-//     arguments.push_back(boolSort);
-//     createInterpretedFunction("bnot", arguments, boolSort, "not");
-
-//     arguments.push_back(boolSort);
-//     createInterpretedFunction("band", arguments, boolSort, "and");
-//     createInterpretedFunction("biff", arguments, boolSort, "iff");
-//     createInterpretedFunction("bor", arguments, boolSort, "or");
-//     createInterpretedFunction("bimplies", arguments, boolSort, "=>");
-//     createInterpretedFunction("bequals", arguments, boolSort, "=");
-//   }
-// }
 
 void parseFunctions(string &s, int &w)
 {
@@ -634,13 +558,6 @@ int main(int argc, char **argv)
     inputf.close();
   }
 
-  // start_z3_api();
-
-  // addPredefinedSorts();
-  // addPredefinedFunctions();
-  // createBuiltIns();
-  // addPredefinedRewriteSystems();
-
   for (skipWhiteSpace(s, w); w < len(s); skipWhiteSpace(s, w)) {
     Query *query = NULL;
     if (lookAhead(s, w, "sorts")) { /* declarations */
@@ -672,6 +589,8 @@ int main(int argc, char **argv)
       processSmtUnify(s, w);
     } else if (lookAhead(s, w, "defined-search")) {
       processDefinedSearch(s, w);
+    } else if (lookAhead(s, w, "defined-simplify")) {
+      processDefinedSimplify(s, w);
     } else if (lookAhead(s, w, "satisfiability")) {
       processSatisfiability(s, w);
     } else if (lookAhead(s, w, "compute")) {

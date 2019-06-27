@@ -234,3 +234,119 @@ vector<SmtSearchSolution> prune(const vector<SmtSearchSolution> &sols)
   }
   return result;
 }
+
+FastTerm smtDefinedSimplifyTopMost(FastTerm cterm, FastTerm iconstraint,
+			       const RewriteSystem &rs, Z3_context context)
+{
+  LOG(DEBUG5, cerr << "smtDefinedSimplifyTopMost " << toString(cterm) << " " << toString(iconstraint));
+  FastTerm result = cterm;
+  uint count = 0;
+  
+  for (uint ri = 0; ri < rs.size(); ++ri) {
+    FastTerm lhs = rs[ri].first.term;
+    FastTerm rhs = rs[ri].second;
+    FastTerm constraint = rs[ri].first.constraint;
+
+    vector<SmtUnifySolution> topMostSols = smtUnify(cterm, lhs);
+    LOG(DEBUG6, cerr << "Rule " << toString(lhs) << " => " << toString(rhs) << " if " << toString(constraint));
+    LOG(DEBUG6, cerr << "has " << topMostSols.size() << " potential narrows.");
+    for (uint i = 0; i < topMostSols.size(); ++i) {
+      SmtUnifySolution sol = topMostSols[i];
+
+      LOG(DEBUG6, cerr << "potential solution = " << toString(sol));
+      //      simplifySmtUnifySolution(sol);
+      //      LOG(DEBUG6, cerr << "potential solution (after simplify) = " << toString(sol));
+      
+      FastTerm phi = fastNot(fastImplies(iconstraint, sol.subst.applySubst(fastAnd(sol.constraint, constraint))));
+      LOG(DEBUG6, cerr << "Checking whether " << toString(phi) << " is satisfiable.");
+      if (z3_sat_check(context, phi) == Z3_L_FALSE) {
+	LOG(DEBUG6, cerr << "Unsatisfiable, so do simplify.");
+	result = sol.subst.applySubst(rhs);
+	count++;
+      } else {
+	LOG(DEBUG6, cerr << "Satisfiable or unknown, so do not simplify.");
+      }
+    }
+  }
+  LOG(DEBUG5, cerr << "has " << count << " narrows.");
+  if (count == 1) {
+    // exactly one rule fires
+    return result;
+  } else {
+    // either several rules or none apply, therefore no simplification
+    return cterm;
+  }
+}
+
+FastTerm smtDefinedSimplifyInternal(FastTerm cterm, FastTerm iconstraint,
+				const RewriteSystem &rs, Z3_context context)
+{
+  LOG(DEBUG5, cerr << "smtDefinedSimplifyInternal " << toString(cterm) << " " << toString(iconstraint));
+  if (isVariable(cterm)) {
+    // nothing to simplify here
+    return cterm;
+  } else {
+    assert(isFuncTerm(cterm));
+    FastFunc func = getFunc(cterm);
+    vector<FastTerm> newArgs;
+    bool changed = false;
+    for (uint i = 0; i < getArity(func); ++i) {
+      FastTerm nt = getArg(cterm, i);
+      FastTerm ntsimpl = smtDefinedSimplifyTopMost(nt, iconstraint, rs, context);
+      newArgs.push_back(ntsimpl);
+      if (!eq_term(ntsimpl, nt)) {
+	changed = true;
+      }
+    }
+    FastTerm result = cterm;
+    if (changed) {
+      result = newFuncTerm(func, &newArgs[0]);
+    }
+    
+    result = smtDefinedSimplifyTopMost(result, iconstraint, rs, context);
+    LOG(DEBUG5, cerr << "result is " << toString(result));
+    return result;
+    // TODO: if not optimally reducing, recheck subterms
+  }
+}
+
+FastTerm smtDefinedSimplify(FastTerm iterm, FastTerm iconstraint, const RewriteSystem &rsprime)
+{
+  LOG(DEBUG5, cerr << "smtDefinedSimplify " << toString(iterm) << " " << toString(iconstraint));
+  /* create fresh version of rewrite system */
+  vector<FastVar> vars;
+  varsOf(iterm, vars);
+  varsOf(iconstraint, vars);
+  std::sort(vars.begin(), vars.end());
+  auto it = std::unique(vars.begin(), vars.end());
+  vars.resize(std::distance(vars.begin(), it));
+  
+  RewriteSystem rs = renameAway(rsprime, vars);
+
+  /* replace variables by constants */
+  vector<FastTerm> cts;
+  FastSubst subst;
+  for (uint i = 0; i < vars.size(); ++i) {
+    cts.push_back(newFuncTerm(newConst((string(getVarName(vars[i])) + "C").c_str(), getVarSort(vars[i])), nullptr));
+    subst.addToSubst(vars[i], cts[i]);
+    LOG(DEBUG5, cerr << "rename " << toString(vars[i]) << " to " << toString(cts[i]));
+  }
+  iterm = subst.applySubst(iterm);
+  iconstraint = subst.applySubst(iconstraint);
+  LOG(DEBUG5, cerr << "smtDefinedSimplify for " << toString(iterm) << " /\\ " << toString(iconstraint));
+
+  /* perform simplification */
+  Z3_context context = init_z3_context();
+  FastTerm result = smtDefinedSimplifyInternal(iterm, iconstraint, rsprime, context);
+
+  /* replace constants by variables */
+  for (int i = 0; i < (int)cts.size(); ++i) {
+    result = replaceConstWithVar(result, cts[i], vars[i]);
+  }
+  return result;
+}
+
+FastTerm smtDefinedSimplify(const ConstrainedTerm &ct, const RewriteSystem &rs)
+{
+  return smtDefinedSimplify(ct.term, ct.constraint, rs);
+}

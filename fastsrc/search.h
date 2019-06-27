@@ -44,4 +44,6 @@ std::vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
 
 std::vector<SmtSearchSolution> prune(const std::vector<SmtSearchSolution> &sols);
 
+FastTerm smtDefinedSimplify(const ConstrainedTerm &ct, const RewriteSystem &rs);
+
 #endif

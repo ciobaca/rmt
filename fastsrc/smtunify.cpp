@@ -2,10 +2,61 @@
 #include "helper.h"
 #include "abstract.h"
 #include "log.h"
+#include "fastterm.h"
 #include <sstream>
 #include <iostream>
 
 using namespace std;
+
+extern FastFunc funcAnd;
+extern bool hasEqFunc[MAXSORTS];
+extern FastFunc eqFunc[MAXSORTS];
+
+void extractConjunction(FastTerm constraint, vector<FastTerm> &result)
+{
+  if (isVariable(constraint)) {
+    result.push_back(constraint);
+  }
+  assert(isFuncTerm(constraint));
+  FastFunc func = getFunc(constraint);
+  if (eq_func(func, funcAnd)) {
+    assert(getArity(func) == 2);
+    for (uint i = 0; i < getArity(func); ++i) {
+      extractConjunction(getArg(constraint, i), result);
+    }
+  } else {
+    result.push_back(constraint);
+  }
+}
+
+void simplifySmtUnifySolution(SmtUnifySolution &solution)
+{
+  vector<FastTerm> constraints;
+  extractConjunction(solution.constraint, constraints);
+
+  FastSubst subst;
+  for (uint i = 0; i < constraints.size(); ++i) {
+    FastTerm constraint = constraints[i];
+    FastFunc func = getFunc(constraint);
+    if (getArity(func) == 2) {
+      FastSort sort1 = getSort(getArg(constraint, 0));
+      FastSort sort2 = getSort(getArg(constraint, 1));
+      if (sort1 == sort2 && hasEqFunc[sort1] && eq_func(eqFunc[sort1], func)) {
+	assert(getArity(func) == 2);
+	FastTerm t1 = getArg(constraint, 0);
+	FastTerm t2 = getArg(constraint, 1);
+	if (isVariable(t2) && !subst.inDomain(t2)) {
+	  subst.addToSubst(t2, t1);
+	  solution.subst.addToSubst(t2, t1);
+	} else if (isVariable(t1) && !subst.inDomain(t1)) {
+	  subst.addToSubst(t1, t2);
+	  solution.subst.addToSubst(t1, t2);
+	}
+      }
+    }
+  }
+  solution.constraint = subst.applySubst(solution.constraint);
+}
 
 vector<SmtUnifySolution> smtUnify(FastTerm t1, FastTerm t2)
 {
@@ -48,7 +99,9 @@ vector<SmtUnifySolution> smtUnify(FastTerm t1, FastTerm t2)
 	sigmaPrime.addToSubst(var, sigma2.applySubst(sigma1.applySubst(term)));
       }
     }
-    result.push_back(SmtUnifySolution(sigmaPrime, constraint));
+    SmtUnifySolution solution(sigmaPrime, constraint);
+    simplifySmtUnifySolution(solution);
+    result.push_back(solution);
   }
   return result;
 }

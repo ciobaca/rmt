@@ -203,3 +203,18 @@ void processDefinedSearch(string &s, int &w)
   }
 }
 
+void processDefinedSimplify(string &s, int &w)
+{
+  matchString(s, w, "defined-simplify");
+  skipWhiteSpace(s, w);
+  ConstrainedTerm ct = parseConstrainedTerm(s, w);
+  skipWhiteSpace(s, w);
+  matchString(s, w, ";");
+
+  extern RewriteSystem rsDefinedCombined;
+
+  LOG(DEBUG3, cerr << "Defined simplifying from " << toString(ct) << ".");
+  FastTerm solution = smtDefinedSimplify(ct, rsDefinedCombined);
+
+  cout << "Simplified term: " << toString(solution) << endl;
+}

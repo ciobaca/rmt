@@ -15,5 +15,6 @@ struct RewriteSystem : public std::vector<std::pair<ConstrainedTerm, FastTerm> >
 
 FastTerm rewriteTopMost(FastTerm term, const RewriteSystem &rs, FastSubst &how, Z3_context context);
 FastTerm rewriteTopMost(FastTerm term, const ConstrainedTerm &lhs, const FastTerm &rhs, FastSubst &how, Z3_context context);
+RewriteSystem renameAway(const RewriteSystem &rs, std::vector<FastVar> vars);
 
 #endif

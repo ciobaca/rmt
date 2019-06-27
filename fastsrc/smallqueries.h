@@ -10,5 +10,6 @@ void processSmtUnify(std::string &s, int &w);
 void processSatisfiability(std::string &s, int &w);
 void processCompute(std::string &s, int &w);
 void processDefinedSearch(std::string &s, int &w);
+void processDefinedSimplify(std::string &s, int &w);
 
 #endif

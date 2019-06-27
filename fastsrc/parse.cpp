@@ -20,8 +20,8 @@ void computeErrorLocation(ErrorLocation &errorLocation, int &where, string text)
   errorLocation.line = 1;
   errorLocation.column = 0;
   errorLocation.lineStart = -1;
-  assert(where < len(text));
-  for (int i = 0; i < where; ++i) {
+  assert(where - 1 < len(text));
+  for (int i = 0; i < where - 1; ++i) {
     if (text[i] == '\n') {
       errorLocation.line++;
       errorLocation.lineStart = i + 1;

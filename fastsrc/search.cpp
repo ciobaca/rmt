@@ -70,7 +70,9 @@ void smtSearchRewriteRuleInternal(FastTerm cterm, FastTerm iterm, FastTerm icons
     for (uint i = 0; i < topMostSols.size(); ++i) {
       SmtUnifySolution sol = topMostSols[i];
       LOG(DEBUG5, cerr << "Solution #" << (i + 1) << ": " << toString(sol));
-      SmtSearchSolution solSearch(iterm, lhs, constraint, rhs, sol.subst,
+      LOG(DEBUG5, cerr << "Rule is " << toString(lhs) << " => " << toString(rhs) << " if " << toString(constraint));
+      LOG(DEBUG5, cerr << "Cterm is " << toString(cterm) << " if " << toString(iconstraint) << "(part of " << toString(iterm) << ")");
+      SmtSearchSolution solSearch(iterm, lhs, constraint, sol.subst.applySubst(rhs), sol.subst,
 				  fastAnd(fastAnd(
 						  sol.subst.applySubst(iconstraint),
 						  sol.subst.applySubst(constraint)), sol.constraint));

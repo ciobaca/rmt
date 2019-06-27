@@ -147,20 +147,13 @@ FastTerm QueryProveReachability::proveByImplication(ConstrainedTerm lhs, FastTer
 
 FastTerm introduceExists(FastTerm constraint, vector<FastVar> vars)
 {
-  LOG(INFO, cerr << "Skipping insertion of existentials.");
-  return constraint;
   for (uint i = 0; i < vars.size(); ++i) {
     if (occurs(vars[i], constraint)) {
-      LOG(ERROR, cerr << "Introducing exists in constraint " << toString(constraint));
-      LOG(ERROR, cerr << "Quantifying variables: ");
       for (uint j = 0; j < vars.size(); ++j) {
-	LOG(ERROR, cerr << "- variable " << toString(vars[j]));
       }
-      assert(0);
-      exit(-1);
+      constraint = fastExists(vars[i], constraint);
     }
   }
-  // TODO actually quantify the variables
   return constraint;
 }
 
@@ -186,7 +179,8 @@ FastTerm QueryProveReachability::proveByCircularities(ConstrainedTerm lhs, FastT
     for (uint i = 0; i < solutions.size(); ++i) {
       SmtSearchSolution sol = solutions[i];
 
-      circularityConstraint = simplify(fastOr(introduceExists(sol.constraint, uniqueVars(sol.iterm)), circularityConstraint));
+      FastTerm newTerm = introduceExists(sol.constraint, uniqueVars(sol.lhs));
+      circularityConstraint = simplify(fastOr(newTerm, circularityConstraint));
 
       prove(ConstrainedTerm(sol.subst.applySubst(sol.rhs),
 			    sol.subst.applySubst(sol.constraint)),
@@ -219,7 +213,7 @@ FastTerm QueryProveReachability::proveByRewrite(ConstrainedTerm lhs, FastTerm rh
     SmtSearchSolution sol = solutions[i];
  
    rewriteConstraint = simplify(fastOr(introduceExists(sol.constraint,
-							uniqueVars(sol.iterm)),
+							uniqueVars(sol.lhs)),
 					       rewriteConstraint));
     prove(ConstrainedTerm(sol.subst.applySubst(sol.rhs),
 			  sol.subst.applySubst(sol.constraint)),

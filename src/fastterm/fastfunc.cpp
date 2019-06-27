@@ -208,6 +208,26 @@ FastTerm fastEqBool(FastTerm t1, FastTerm t2)
   return newFuncTerm(funcEqBool, args);
 }
 
+FastTerm fastExists(FastVar x, FastTerm constraint)
+{
+  FastSort sort = getVarSort(x);
+  assert(sort == fastIntSort());
+  FastTerm args[4];
+  args[0] = x;
+  args[1] = constraint;
+  return newFuncTerm(funcExistsInt, args);
+}
+
+FastTerm fastForall(FastVar x, FastTerm constraint)
+{
+  FastSort sort = getVarSort(x);
+  assert(sort == fastIntSort());
+  FastTerm args[4];
+  args[0] = x;
+  args[1] = constraint;
+  return newFuncTerm(funcForallInt, args);
+}
+
 FastTerm fastAnd(FastTerm t1, FastTerm t2)
 {
   if (t1 == fastFalse()) {

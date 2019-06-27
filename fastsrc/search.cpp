@@ -15,7 +15,7 @@ vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
 {
   vector<SmtSearchSolution> result;
   vector<SmtSearchSolution> current;
-  current.push_back(SmtSearchSolution(ct.term, ct.term, FastSubst(), ct.constraint));
+  current.push_back(SmtSearchSolution(ct.term, fastFalse(), fastTrue(), ct.term, FastSubst(), ct.constraint));
   for (uint32 level = 0; level <= maxDepth; ++level) {
     LOG(DEBUG4, cerr << "Level " << level);
     for (int i = 0; i < (int)current.size(); ++i) {
@@ -32,7 +32,7 @@ vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
       SmtSearchSolution sol = current[i];
       vector<SmtSearchSolution> succs = smtSearchRewriteSystem(sol.subst.applySubst(sol.rhs), sol.constraint, rs);
       for (uint32 j = 0; j < succs.size(); ++j) {
-	next.push_back(SmtSearchSolution(sol.iterm, succs[j].rhs, compose(sol.subst, succs[j].subst), succs[j].constraint));
+	next.push_back(SmtSearchSolution(sol.iterm, succs[j].lhs, succs[j].ruleConstraint, succs[j].rhs, compose(sol.subst, succs[j].subst), succs[j].constraint));
       }
     }
     current = next;
@@ -45,7 +45,7 @@ string toString(const SmtSearchSolution &solution)
   ostringstream oss;
 
   oss << "(" << toString(solution.iterm) << " => " << toString(solution.rhs) << ")";
-  oss << toString(solution.subst) << " if " << toString(solution.constraint);
+  oss << toString(solution.subst) << " if " << toString(solution.constraint) << "(used rule " << toString(solution.lhs) << " /\\ " << toString(solution.ruleConstraint) << ").";
 
   return oss.str();
 }
@@ -70,7 +70,7 @@ void smtSearchRewriteRuleInternal(FastTerm cterm, FastTerm iterm, FastTerm icons
     for (uint i = 0; i < topMostSols.size(); ++i) {
       SmtUnifySolution sol = topMostSols[i];
       LOG(DEBUG5, cerr << "Solution #" << (i + 1) << ": " << toString(sol));
-      SmtSearchSolution solSearch(iterm, rhs, sol.subst,
+      SmtSearchSolution solSearch(iterm, lhs, constraint, rhs, sol.subst,
 				  fastAnd(fastAnd(
 						  sol.subst.applySubst(iconstraint),
 						  sol.subst.applySubst(constraint)), sol.constraint));

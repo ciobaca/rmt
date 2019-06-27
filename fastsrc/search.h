@@ -10,15 +10,21 @@
 struct SmtSearchSolution
 {
   FastTerm iterm;
+  FastTerm lhs;
+  FastTerm ruleConstraint;
   FastTerm rhs;
   FastSubst subst;
   FastTerm constraint;
 
   SmtSearchSolution(FastTerm iterm,
+		    FastTerm lhs,
+		    FastTerm ruleConstraint,
 		    FastTerm rhs,
 		    FastSubst subst,
 		    FastTerm constraint) :
   iterm(iterm),
+    lhs(lhs),
+    ruleConstraint(ruleConstraint),
     rhs(rhs),
     subst(subst),
     constraint(constraint)

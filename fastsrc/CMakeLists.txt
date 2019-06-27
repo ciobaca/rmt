@@ -232,6 +232,9 @@ set_tests_properties (TestFastSearchExample6 PROPERTIES PASS_REGULAR_EXPRESSION 
 add_test(TestFastSearchExample7 "../fastrmt" -v 0 ../../tests/search/search7.rmt)
 set_tests_properties (TestFastSearchExample7 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
 
+add_test(TestFastSearchExample8 "../fastrmt" -v 0 ../../tests/search/search8.rmt)
+set_tests_properties (TestFastSearchExample8 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
+
 add_test(TestFastReachExample1A "../fastrmt" -v 0 ../../tests/reach/reach1.rmt)
 set_tests_properties (TestFastReachExample1A PROPERTIES
 PASS_REGULAR_EXPRESSION "1 proved")
@@ -290,4 +293,16 @@ PASS_REGULAR_EXPRESSION "2 proved")
 
 add_test(TestFastReachExample7C "../fastrmt" -v 0 ../../tests/reach/reach7.rmt)
 set_tests_properties (TestFastReachExample7C PROPERTIES
+PASS_REGULAR_EXPRESSION "3 proved")
+
+add_test(TestFastReachExample8A "../fastrmt" -v 0 ../../tests/reach/reach8.rmt)
+set_tests_properties (TestFastReachExample8A PROPERTIES
+PASS_REGULAR_EXPRESSION "1 proved")
+
+add_test(TestFastReachExample8B "../fastrmt" -v 0 ../../tests/reach/reach8.rmt)
+set_tests_properties (TestFastReachExample8B PROPERTIES
 PASS_REGULAR_EXPRESSION "2 proved")
+
+add_test(TestFastReachExample8C "../fastrmt" -v 0 ../../tests/reach/reach8.rmt)
+set_tests_properties (TestFastReachExample8C PROPERTIES
+PASS_REGULAR_EXPRESSION "3 proved")

@@ -194,7 +194,7 @@ constrained-rewrite-system fun1
 ;
 
 
-show-simulation [150, total] in fun1 and fun1 :
+show-simulation [150, partial] in fun1 and fun1 :
 
 (pair
 

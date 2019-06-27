@@ -156,9 +156,8 @@ bool QueryProveSim::possibleCircularity(ConstrainedTerm ct) {
 
 bool QueryProveSim::canApplyCircularities(bool progressLeft, bool progressRight) {
   if (isBounded) return false;
-  bool condition = progressLeft;
-  if (!proveTotal) condition = condition || progressRight;
-  return condition;
+  if (proveTotal) return progressLeft && progressRight;
+  else return progressLeft || progressRight;
 }
 
 void QueryProveSim::decomposeConstrainedTermEq(ConstrainedTerm ct, Term *&lhs, Term *&rhs) {

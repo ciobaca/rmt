@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <z3.h>
 #include <stdlib.h>
+#include <vector>
 
 void initFastTerm()
 {
@@ -323,4 +324,30 @@ FastTerm simplify(FastTerm term)
 {
   // TODO: also call Z3
   return simplifyFast(term);
+}
+
+FastTerm replaceConstWithVar(FastTerm term, FastTerm c, FastVar v)
+{
+  if (isVariable(term)) {
+    return term;
+  } else if (eq_term(term, c)) {
+    return v;
+  } else {
+    bool changed = false;
+    FastFunc func = getFunc(term);
+    uint32 count = getArity(func);
+    std::vector<FastTerm> newargs;
+    for (uint i = 0; i < count; ++i) {
+      FastTerm result = replaceConstWithVar(getArg(term, i), c, v);
+      if (result != getArg(term, i)) {
+	changed = true;
+      }
+      newargs.push_back(result);
+    }
+    if (changed) {
+      return newFuncTerm(func, &newargs[0]);
+    } else {
+      return term;
+    }
+  }
 }

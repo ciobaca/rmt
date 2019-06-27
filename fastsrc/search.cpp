@@ -45,7 +45,7 @@ string toString(const SmtSearchSolution &solution)
   ostringstream oss;
 
   oss << "(" << toString(solution.iterm) << " => " << toString(solution.rhs) << ")";
-  oss << toString(solution.subst) << " if " << toString(solution.constraint) << "(used rule " << toString(solution.lhs) << " /\\ " << toString(solution.ruleConstraint) << ").";
+  oss << toString(solution.subst) << " if " << toString(solution.constraint) << " (used rule " << toString(solution.lhs) << " /\\ " << toString(solution.ruleConstraint) << " => ...).";
 
   return oss.str();
 }

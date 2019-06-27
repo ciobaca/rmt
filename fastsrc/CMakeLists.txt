@@ -306,3 +306,13 @@ PASS_REGULAR_EXPRESSION "2 proved")
 add_test(TestFastReachExample8C "../fastrmt" -v 0 ../../tests/reach/reach8.rmt)
 set_tests_properties (TestFastReachExample8C PROPERTIES
 PASS_REGULAR_EXPRESSION "3 proved")
+
+add_test(TestFastDefined1 "../fastrmt" -v 0 ../../tests/defined/defined1.rmt)
+set_tests_properties (TestFastDefined1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
+
+add_test(TestFastDefined2 "../fastrmt" -v 0 ../../tests/defined/defined2.rmt)
+set_tests_properties (TestFastDefined2 PROPERTIES PASS_REGULAR_EXPRESSION "Result is")
+
+add_test(TestFastDefined3 "../fastrmt" -v 0 ../../tests/defined/defined3.rmt)
+set_tests_properties (TestFastDefined3 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
+

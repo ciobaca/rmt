@@ -169,6 +169,8 @@ FastSort getSort(FastTerm term);
 
 bool eq_term(FastTerm term1, FastTerm term2);
 
+FastTerm replaceConstWithVar(FastTerm term, FastTerm c, FastVar v);
+
 /*
   Builtins.
  */
@@ -209,7 +211,7 @@ bool identifierTaken(const char *name);
  */
 std::vector<FastSubst> unify(FastTerm t1, FastTerm t2);
 
-std::vector<FastSubst> match(FastTerm subject, FastTerm pattern, FastSubst &result);
+std::vector<FastSubst> match(FastTerm subject, FastTerm pattern);
 
 /*
   Z3 interface.

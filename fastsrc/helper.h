@@ -46,9 +46,9 @@ template<typename A, typename B> bool contains(const std::unordered_map<A, B> &c
   return container.count(elem);
 }
 
-/* template<typename A, typename B> bool contains(vector<pair<A, B>> &container, A elem) { */
-/*   return find_if(container.begin(), container.end(), [&](const pair<A, B> &it) { return it.first == elem; }) != container.end(); */
-/* } */
+template<typename A, typename B> bool contains(const std::vector<std::pair<A, B>> &container, const A &elem) {
+  return find_if(container.begin(), container.end(), [&](const std::pair<A, B> &it) { return it.first == elem; }) != container.end();
+}
 
 template<typename T> bool contains(const std::vector<T> &container, const T &elem)
 {
@@ -65,12 +65,12 @@ template<typename T> bool contains(const std::vector<T> &container, const T &ele
 /*   return true; */
 /* } */
 
-/* template<typename T> void append(vector<T> &a, vector<T> b) */
-/* { */
-/*   for (int i = 0; i < len(b); ++i) { */
-/*     a.push_back(b[i]); */
-/*   } */
-/* } */
+template<typename T> void append(std::vector<T> &a, const std::vector<T> &b)
+{
+  for (int i = 0; i < len(b); ++i) {
+    a.push_back(b[i]);
+  }
+}
 
 /* template<typename T> vector<T> unique(vector<T> a) */
 /* { */

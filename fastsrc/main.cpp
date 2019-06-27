@@ -23,6 +23,8 @@ http://profs.info.uaic.ro/~stefan.ciobaca/
 #include "helper.h"
 #include "parse.h"
 #include "fastterm.h"
+#include "defined.h"
+#include "rewritesystem.h"
 #include "smallqueries.h"
 
 // #include "term.h"
@@ -32,8 +34,6 @@ http://profs.info.uaic.ro/~stefan.ciobaca/
 // #include "search.h"
 // #include "constrainedterm.h"
  #include "query.h"
-// #include "funterm.h"
- #include "rewritesystem.h"
 
 using namespace std;
 
@@ -118,74 +118,68 @@ void parseAsserts(string &s, int &w)
   }
 }
 
-// void parseDefinedFunctions(string &s, int &w)
-// {
-//   skipWhiteSpace(s, w);
-//   while (lookAhead(s, w, "define")) {
-//     matchString(s, w, "define");
-//     skipWhiteSpace(s, w);
+void parseDefinedFunctions(string &s, int &w)
+{
+  skipWhiteSpace(s, w);
+  while (lookAhead(s, w, "define")) {
+    matchString(s, w, "define");
+    skipWhiteSpace(s, w);
 
-//     string f = getIdentifier(s, w);
-//     skipWhiteSpace(s, w);
-//     match(s, w, ':');
-//     skipWhiteSpace(s, w);
-//     vector<Sort *> arguments;
-//     while (lookAheadIdentifier(s, w)) {
-//       string id = getIdentifier(s, w);
-//       if (!existsSort(id)) {
-//         parseError("(while parsing defined function) sort does not exist", w, s);
-//       }
-//       skipWhiteSpace(s, w);
-//       arguments.push_back(getSort(id));
-//     }
-//     matchString(s, w, "->");
-//     skipWhiteSpace(s, w);
-//     string id = getIdentifier(s, w);
-//     if (!existsSort(id)) {
-//       LOG(ERROR) << "SORT: " << id << endl;
-//       parseError("(while parsing defined function) sort does not exist", w, s);
-//     }
-//     Sort *result = getSort(id);
+    string f = getIdentifier(s, w);
+    skipWhiteSpace(s, w);
+    match(s, w, ':');
+    skipWhiteSpace(s, w);
+    vector<FastSort> arguments;
+    while (lookAheadIdentifier(s, w)) {
+      string id = getIdentifier(s, w);
+      if (!existsSort(id.c_str())) {
+        parseError("(while parsing defined function) sort does not exist", w, s);
+      }
+      skipWhiteSpace(s, w);
+      arguments.push_back(getSortByName(id.c_str()));
+    }
+    matchString(s, w, "->");
+    skipWhiteSpace(s, w);
+    string id = getIdentifier(s, w);
+    if (!existsSort(id.c_str())) {
+      LOG(ERROR, cerr << "SORT: " << id << endl);
+      parseError("(while parsing defined function) sort does not exist", w, s);
+    }
+    FastSort result = getSortByName(id.c_str());
 
-//     createUninterpretedFunction(f, arguments, result);
+    FastFunc func = newFunc(f.c_str(), result, arguments.size(), &arguments[0]);
 
-//     ConstrainedRewriteSystem crewrite;
-//     skipWhiteSpace(s, w);
-//     matchString(s, w, "by");
-//     skipWhiteSpace(s, w);
-//     while (w < len(s)) {
-//       skipWhiteSpace(s, w);
-//       ConstrainedTerm t = parseConstrainedTerm(s, w);
-//       skipWhiteSpace(s, w);
-//       matchString(s, w, "=>");
-//       skipWhiteSpace(s, w);
-//       Term *tp = parseTerm(s, w);
-//       LOG(INFO) << "Parsed rewrite rule for func def: " << t.toString() << " => " << tp->toString() << endl;
-//       crewrite.addRule(t, tp);
-//       skipWhiteSpace(s, w);
-//       if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
-//         expected("more constrained rewrite rules", w, s);
-//       }
-//       if (s[w] == ',') {
-//         match(s, w, ',');
-//         continue;
-//       }
-//       else {
-//         match(s, w, ';');
-//         break;
-//       }
-//     }
-//     updateDefinedFunction(f, crewrite);
+    RewriteSystem rs;
+    skipWhiteSpace(s, w);
+    matchString(s, w, "by");
+    skipWhiteSpace(s, w);
+    while (w < len(s)) {
+      skipWhiteSpace(s, w);
+      ConstrainedTerm t = parseConstrainedTerm(s, w);
+      skipWhiteSpace(s, w);
+      matchString(s, w, "=>");
+      skipWhiteSpace(s, w);
+      FastTerm tp = parseTerm(s, w);
+      LOG(INFO, cerr << "Parsed rewrite rule for func def: " << toString(t) << " => " << toString(tp) << endl);
+      rs.addRule(t, tp);
+      skipWhiteSpace(s, w);
+      if (w >= len(s) || (s[w] != ',' && s[w] != ';')) {
+        expected("more constrained rewrite rules", w, s);
+      }
+      if (s[w] == ',') {
+        match(s, w, ',');
+        continue;
+      }
+      else {
+        match(s, w, ';');
+        break;
+      }
+    }
+    makeFunctionDefined(func, rs);
 
-//     skipWhiteSpace(s, w);
-//   }
-// }
-
-// void addPredefinedSorts()
-// {
-//   createInterpretedSort("Bool", "Bool");
-//   createInterpretedSort("Int", "Int");
-// }
+    skipWhiteSpace(s, w);
+  }
+}
 
 void parseSorts(string &s, int &w)
 {
@@ -666,7 +660,8 @@ int main(int argc, char **argv)
       parseBuiltins(s, w);
     } else if (lookAhead(s, w, "assert")) {
       parseAsserts(s, w);
-    // else if (lookAhead(s, w, "define")) parseDefinedFunctions(s, w);
+    } else if (lookAhead(s, w, "define")) {
+      parseDefinedFunctions(s, w);
     } else if (lookAhead(s, w, "abstract")) { /* small queries */
       processAbstract(s, w);
     } else if (lookAhead(s, w, "search")) {
@@ -675,8 +670,12 @@ int main(int argc, char **argv)
       processUnify(s, w);
     } else if (lookAhead(s, w, "smt-unify")) {
       processSmtUnify(s, w);
+    } else if (lookAhead(s, w, "defined-search")) {
+      processDefinedSearch(s, w);
     } else if (lookAhead(s, w, "satisfiability")) {
       processSatisfiability(s, w);
+    } else if (lookAhead(s, w, "compute")) {
+      processCompute(s, w);
     } else if ((query = Query::lookAheadQuery(s, w))) { /* queries */
       query->parse(s, w);
       skipWhiteSpace(s, w);

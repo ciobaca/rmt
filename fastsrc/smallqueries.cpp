@@ -7,6 +7,7 @@
 #include "search.h"
 #include "smtunify.h"
 #include "rewritesystem.h"
+#include "defined.h"
 #include <iostream>
 #include <map>
 #include <vector>
@@ -151,3 +152,54 @@ void processSatisfiability(string &s, int &w)
     cout << "Satisfiability check of constraint " << toString(constraint) << " is not conclusive." << endl;
   }
 }
+
+void processCompute(string &s, int &w)
+{
+  matchString(s, w, "compute");
+  skipWhiteSpace(s, w);
+  FastTerm term = parseTerm(s, w);
+  skipWhiteSpace(s, w);
+  matchString(s, w, ";");
+  cout << "Computing " << toString(term) << endl;
+  Z3_context context = init_z3_context();
+  FastTerm result = compute(term, context);
+  cout << "Result is " << toString(result) << endl;
+}
+
+void processDefinedSearch(string &s, int &w)
+{
+  int minDepth = 1;
+  int maxDepth = 1;
+  matchString(s, w, "defined-search");
+  skipWhiteSpace(s, w);
+  if (lookAhead(s, w, "[")) {
+    matchString(s, w, "[");
+    skipWhiteSpace(s, w);
+    minDepth = getNumber(s, w);
+    skipWhiteSpace(s, w);
+    matchString(s, w, ",");
+    skipWhiteSpace(s, w);
+    maxDepth = getNumber(s, w);
+    skipWhiteSpace(s, w);
+    matchString(s, w, "]");
+    skipWhiteSpace(s, w);
+  } else {
+    minDepth = maxDepth = 1;
+  }
+  skipWhiteSpace(s, w);
+  ConstrainedTerm ct = parseConstrainedTerm(s, w);
+  skipWhiteSpace(s, w);
+  matchString(s, w, ";");
+
+  extern RewriteSystem rsDefinedCombined;
+
+  LOG(DEBUG3, cerr << "Defined searching from " << toString(ct) << ".");
+  vector<SmtSearchSolution> solutions = prune(smtSearchRewriteSystem(ct, rsDefinedCombined, minDepth, maxDepth));
+
+  cout << "Success: " << solutions.size() << " solutions." << endl;
+  for (int i = 0; i < (int)solutions.size(); ++i) {
+    cout << "Solution #" << i + 1 << ":" << endl;
+    cout << toString(solutions[i]) << endl;
+  }
+}
+

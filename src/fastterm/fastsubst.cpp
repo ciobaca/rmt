@@ -66,10 +66,8 @@ FastTerm FastSubst::image(FastVar var)
 
 void FastSubst::replaceConstWithVar(FastTerm c, FastVar v)
 {
-  for (uint i = 0; i < count; ++i) {
-    if (data[i] == c) {
-      data[i] = v;
-    }
+  for (uint i = 1; i < count; i += 2) {
+    data[i] = ::replaceConstWithVar(data[i], c, v);
   }
 }
 

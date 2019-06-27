@@ -6,19 +6,20 @@
 #include <functional>
 #include <string>
 #include <string.h>
+
 using namespace std;
 
-bool matchList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst &subst)
-{
-  for (uint i = 0; i < count; ++i) {
-    if (!match(tl1[i], tl2[i], subst).size()) {
-      return false;
-    }
-  }
-  return true;
-}
+// bool matchList(FastTerm *tl1, FastTerm *tl2, uint32 count, FastSubst &subst)
+// {
+//   for (uint i = 0; i < count; ++i) {
+//     if (!match(tl1[i], tl2[i], subst).size()) {
+//       return false;
+//     }
+//   }
+//   return true;
+// }
 
-vector<FastSubst> match(FastTerm subject, FastTerm pattern, FastSubst &subst) {
+vector<FastSubst> match(FastTerm subject, FastTerm pattern) {
   vector<FastVar> vars;
   function<void(FastTerm)> getVars = [&](FastTerm t) {
     if (isVariable(t)) {
@@ -36,18 +37,23 @@ vector<FastSubst> match(FastTerm subject, FastTerm pattern, FastSubst &subst) {
   for (uint i = 0; i < vars.size(); ++i) {
     char constName[20];
     strcpy(constName, ("_c" + to_string(i)).c_str());
-    consts[i] = newFuncTerm(newConst(constName, fastStateSort()), nullptr);
+    consts[i] = newFuncTerm(newConst(constName, getVarSort(vars[i])), nullptr);
     subject = applyUnitySubst(subject, vars[i], consts[i]);
-    pattern = applyUnitySubst(pattern, vars[i], consts[i]);
   }
+  // char buffer1[1024];
+  // printTerm(subject, buffer1, 1024);
+  // printf("match %s\n", buffer1);
+  // char buffer2[1024];
+  // printTerm(pattern, buffer2, 1024);
+  //  printf("     against %s\n", buffer2);
   auto minSubstSet = FastQueryACUnify(subject, pattern).solve();
   for (auto &s : minSubstSet) {
+    //    printf("    One solution.\n");
     for (uint i = 0; i < vars.size(); ++i) {
+      //      printf("    Replace %d with %d\n", consts[i], vars[i]);
       s.replaceConstWithVar(consts[i], vars[i]);
     }
   }
-  if (minSubstSet.size()) {
-    subst = minSubstSet[0];
-  }
+  //  printf("    done match\n");
   return minSubstSet;
 }

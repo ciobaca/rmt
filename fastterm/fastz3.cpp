@@ -73,6 +73,14 @@ Z3_sort toZ3Sort(Z3_context context, FastSort sort)
       case bltnInt:
 	result = Z3_mk_int_sort(context);
 	break;
+      case bltnArray:
+	{
+	  extern FastSort sortArguments[MAXSORTS][4]; // currently arguments for array
+	  Z3_sort domainSort = toZ3Sort(context, sortArguments[sort][0]);
+	  Z3_sort rangeSort = toZ3Sort(context, sortArguments[sort][1]);
+	  result = Z3_mk_array_sort(context, domainSort, rangeSort);
+	}
+	break;
       default:
 	assert(0);
 	result = Z3_mk_bool_sort(context);
@@ -110,6 +118,11 @@ Z3_func_decl toZ3FuncDecl(Z3_context context, FastFunc func)
   }
 }
 
+map<pair<Z3_context, Z3_symbol>, FastVar> z3_const_to_var;
+map<pair<Z3_context, Z3_symbol>, FastTerm> z3_const_to_const;
+map<pair<Z3_context, Z3_symbol>, Z3_func_decl> symbol_to_func_decl;
+map<pair<Z3_context, Z3_func_decl>, FastFunc> func_decl_to_function;
+
 Z3_ast toZ3Term(Z3_context context, FastTerm term)
 {
   // char buffer[1024];
@@ -123,6 +136,7 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
     Z3_ast result;
     if (isVariable(term)) {
       Z3_symbol symbol = Z3_mk_string_symbol(context, getVarName(term));
+      z3_const_to_var[make_pair(context, symbol)] = term;
       result = Z3_mk_const(context, symbol, toZ3Sort(context, getVarSort(term)));
     } else {
       assert(isFuncTerm(term));
@@ -336,9 +350,11 @@ void add_z3_assert(FastTerm term)
 
 FastTerm simplify(FastTerm term)
 {
+  return simplifyFast(term);
+  
   //  printf("simplify %d\n", count++);
-  term = simplifyFast(term);
-  return term;
+  //  term = simplifyFast(term);
+  //  return term;
   
   Z3_context z3context = init_z3_context();
 
@@ -388,11 +404,6 @@ FastTerm simplify(FastTerm term)
 
 using namespace std;
 
-map<pair<Z3_context, Z3_symbol>, FastVar> z3_const_to_var;
-map<pair<Z3_context, Z3_symbol>, FastTerm> z3_const_to_const;
-map<pair<Z3_context, Z3_symbol>, Z3_func_decl> symbol_to_func_decl;
-map<pair<Z3_context, Z3_func_decl>, FastFunc> func_decl_to_function;
-
 FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z3context)
 {
   LOG(DEBUG8, cerr << "UnZ3-ing " << Z3_ast_to_string(z3context, ast) << ".");
@@ -415,8 +426,7 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	    FastTerm resultUnZ3 = z3_const_to_const[make_pair(z3context, symbol)];
 	    LOG(DEBUG8, cerr << "Result of unZ3 = " << toString(resultUnZ3) << ".");
 	    return resultUnZ3;
-	  }
-	  else {
+	  } else {
 	    assert(symbol_to_func_decl.find(make_pair(z3context, symbol)) != symbol_to_func_decl.end());
 	    Z3_func_decl func = symbol_to_func_decl[make_pair(z3context, symbol)];
 	    assert(func_decl_to_function.find(make_pair(z3context, func)) != func_decl_to_function.end());
@@ -644,6 +654,7 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	break;
       case Z3_OP_STORE:
 	{
+	  LOG(DEBUG8, cerr << "UnZ3: entering Z3_OP_STORE.");
 	  extern map<pair<FastSort, pair<FastSort, FastSort>>, FastFunc> storeFunc;
 	  Z3_app app = Z3_to_app(z3context, ast);
 	  if (Z3_get_app_num_args(z3context, app) != 3) {

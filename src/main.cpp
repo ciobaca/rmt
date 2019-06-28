@@ -213,6 +213,7 @@ void parseSorts(string &s, int &w)
       if (!isBuiltinSort(rangeSort)) {
 	parseError("Error: range sort for array must be a builtin", w, s);
       }
+      LOG(DEBUG9, cerr << "Creating sort for array.");
       newArraySort(sortName.c_str(), domainSort, rangeSort);
     } else {
       newSort(sortName.c_str());
@@ -370,26 +371,32 @@ void parseFunctions(string &s, int &w)
       matchString(s, w, "]");
     }
     if (hasInterpretation) {
+      LOG(DEBUG3, cerr << "Adding interpreted function " << f);
       FastFunc func = newFunc(f.c_str(), result, arguments.size(), &arguments[0]);
       extern bool funcIsBuiltin[MAXFUNCS];
       extern BuiltinFuncType builtinFunc[MAXFUNCS];
       funcIsBuiltin[func] = true;
       if (interpretation == "select") {
+	LOG(DEBUG3, cerr << "Interpreted as select");
 	builtinFunc[func] = bltnSelect;
 	extern std::map<std::pair<FastSort, std::pair<FastSort, FastSort>>, FastFunc> selectFunc;
-	pair<FastSort, pair<FastSort, FastSort>> key = make_pair(getSort(func), make_pair(getArgSort(func, 0), getArgSort(func, 1)));
+	pair<FastSort, pair<FastSort, FastSort>> key = make_pair(getFuncSort(func), make_pair(getArgSort(func, 0), getArgSort(func, 1)));
 	selectFunc[key] = func;
       } else if (interpretation == string("store")) {
+	LOG(DEBUG3, cerr << "Interpreted as store");
 	builtinFunc[func] = bltnStore;
 	pair<FastSort, pair<FastSort, FastSort>> key = make_pair(getArgSort(func, 0), make_pair(getArgSort(func, 1), getArgSort(func, 2)));
 	extern std::map<std::pair<FastSort, std::pair<FastSort, FastSort>>, FastFunc> storeFunc;
 	storeFunc[key] = func;
       } else if (interpretation == "constarray") {
+	LOG(DEBUG3, cerr << "Interpreted as constant array");
 	builtinFunc[func] = bltnConstArray;
       } else {
 	parseError(("Unknown builtin function " + interpretation).c_str(), w, s);
       }
+      LOG(DEBUG3, cerr << "Done adding interpreted function.");
     } else {
+      LOG(DEBUG3, cerr << "Adding uninterpreted function " << f);
       if ((isCommutative || isAssociative) && arguments.size() != 2) {
         parseError("Associative or commutative functions must have exactly two arguments", w, s);
       }

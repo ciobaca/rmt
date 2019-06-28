@@ -1,7 +1,10 @@
 #include "fastterm.h"
+#include "log.h"
 #include <cassert>
 #include <cstring>
 #include <iostream>
+
+using namespace std;
 
 uint32 sortCount = 0;
 const char *sortNames[MAXSORTS];
@@ -141,6 +144,7 @@ bool existsSort(const char *name)
 
 FastSort getSortByName(const char *name)
 {
+  LOG(DEBUG9, cerr << "getSortByName " << name);
   assert(existsSort(name));
   for (uint32 i = 0; i < sortCount; ++i) {
     if (strcmp(sortNames[i], name) == 0) {

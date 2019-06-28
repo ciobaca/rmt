@@ -3,13 +3,10 @@
 
 #include "query.h"
 #include "constrainedterm.h"
-#include "constrainedrewritesystem.h"
+#include "rewritesystem.h"
 #include <string>
 #include <map>
 #include <vector>
-
-struct RewriteSystem;
-struct Term;
 
 enum Reason
 {
@@ -23,10 +20,10 @@ std::string stringFromReason(Reason);
 struct ProofObligation
 {
   ConstrainedTerm lhs;
-  Term *rhs;
+  FastTerm rhs;
   Reason reason;
 
-  ProofObligation(ConstrainedTerm lhs, Term *rhs, Reason reason) :
+  ProofObligation(ConstrainedTerm lhs, FastTerm rhs, Reason reason) :
     lhs(lhs), rhs(rhs), reason(reason)
   {
   }
@@ -37,6 +34,8 @@ struct QueryProveReachability : public Query
   std::string rewriteSystemName;
   std::string circularitiesRewriteSystemName;
 
+  Z3_context context;
+  
   int maxDepth;
   int maxBranchingDepth;
 
@@ -50,10 +49,10 @@ struct QueryProveReachability : public Query
   
   virtual void execute();
 
-  Term *proveByImplicationCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int);
-  Term *proveByCircularitiesCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);
-  Term *proveByRewriteCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int, bool, int);
-  void proveCRS(ConstrainedTerm, Term *, ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, bool, int = 0, int = 0);
+  FastTerm proveByImplication(ConstrainedTerm, FastTerm, RewriteSystem &, RewriteSystem &, int);
+  FastTerm proveByCircularities(ConstrainedTerm, FastTerm, RewriteSystem &, RewriteSystem &, int, bool, int);
+  FastTerm proveByRewrite(ConstrainedTerm, FastTerm, RewriteSystem &, RewriteSystem &, int, bool, int);
+  void prove(ConstrainedTerm, FastTerm, RewriteSystem &, RewriteSystem &, bool, int = 0, int = 0);
 };
 
 #endif

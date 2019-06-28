@@ -14,7 +14,8 @@ private:
   static std::map<std::string, QueryCreator> *commands;
 
 public:
-  static void registerQueryCreator(std::string command, QueryCreator constructor);
+  static void registerQueryCreator(std::string command,
+				   QueryCreator constructor);
  
   static Query *lookAheadQuery(std::string &s, int &w);
   

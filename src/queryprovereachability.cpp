@@ -1,12 +1,11 @@
 #include "queryprovereachability.h"
 #include "constrainedterm.h"
 #include "parse.h"
-#include "factories.h"
-#include "funterm.h"
-#include "z3driver.h"
+#include "fastterm.h"
 #include "log.h"
-#include "sort.h"
 #include "helper.h"
+#include "smtunify.h"
+#include "search.h"
 #include <string>
 #include <sstream>
 #include <map>
@@ -15,7 +14,7 @@
 
 using namespace std;
 
-std::string stringFromReason(Reason reason)
+string stringFromReason(Reason reason)
 {
   switch (reason) {
   case DepthLimit:
@@ -25,14 +24,15 @@ std::string stringFromReason(Reason reason)
   case Completeness:
     return "could not prove completeness";
   }
-  Log(WARNING) << "Unknown reason" << endl;
+  LOG(WARNING, cerr << "Unknown reason");
   return "unknown reason";
 }
 
 QueryProveReachability::QueryProveReachability()
 {
+  context = init_z3_context();
 }
-  
+
 Query *QueryProveReachability::create()
 {
   return new QueryProveReachability();
@@ -47,7 +47,7 @@ void QueryProveReachability::parse(std::string &s, int &w)
     skipWhiteSpace(s, w);
     maxDepth = getNumber(s, w);
     if (maxDepth < 0 || maxDepth > 99999) {
-      Log(ERROR) << "Maximum depth (" << maxDepth << ") must be between 0 and 99999" << endl;
+      LOG(ERROR, cerr << "Maximum depth (" << maxDepth << ") must be between 0 and 99999");
       expected("Legal maximum depth", w, s);
     }
     skipWhiteSpace(s, w);
@@ -55,7 +55,7 @@ void QueryProveReachability::parse(std::string &s, int &w)
     skipWhiteSpace(s, w);
     maxBranchingDepth = getNumber(s, w);
     if (maxBranchingDepth < 0 || maxBranchingDepth > 99999) {
-      Log(ERROR) << "Maximum branching depth (" << maxBranchingDepth << ") must be between 0 and 99999" << endl;
+      LOG(ERROR, cerr << "Maximum branching depth (" << maxBranchingDepth << ") must be between 0 and 99999");
       expected("Legal maximum branching depth", w, s);
     }
     skipWhiteSpace(s, w);
@@ -75,219 +75,210 @@ void QueryProveReachability::parse(std::string &s, int &w)
   skipWhiteSpace(s, w);
   matchString(s, w, ";");
 }
-  
+
+extern map<string, RewriteSystem> rewriteSystems;
+
 void QueryProveReachability::execute()
 {
-  ConstrainedRewriteSystem crs;
-  if (existsRewriteSystem(rewriteSystemName)) {
-    crs = ConstrainedRewriteSystem(getRewriteSystem(rewriteSystemName));
-  }
-  else if (existsConstrainedRewriteSystem(rewriteSystemName)) {
-    crs = getConstrainedRewriteSystem(rewriteSystemName);
-  } else {
-    Log(ERROR) << "Cannot find (constrained) rewrite system " << rewriteSystemName << endl;
+  if (!contains(rewriteSystems, rewriteSystemName)) {
+    cout << "Cannot find rewrite system " << rewriteSystemName << endl;
     return;
   }
-  ConstrainedRewriteSystem &circ = getConstrainedRewriteSystem(circularitiesRewriteSystemName);
+  RewriteSystem rs = rewriteSystems[rewriteSystemName];
+
+  if (!contains(rewriteSystems, circularitiesRewriteSystemName)) {
+    cout << "Cannot find rewrite system " << circularitiesRewriteSystemName << endl;
+    return;
+  }
+  RewriteSystem circ = rewriteSystems[circularitiesRewriteSystemName];
 
   for (int i = 0; i < (int)circ.size(); ++i) {
     ConstrainedTerm lhs = circ[i].first;
-    Term *rhs = circ[i].second;
+    FastTerm rhs = circ[i].second;
     cout << endl;
     cout << "Proving circularity #" << i + 1 << ":" << endl;
     cout << "--------" << endl;
-    proveCRS(lhs, rhs, crs, circ, false);
+    prove(lhs, rhs, rs, circ, false);
     cout << "--------" << endl;
     cout << "Circularity #" << i + 1 << (unproven.size() ? " not proved. The following proof obligations failed:" : " proved.") << endl;
+    
     for (int i = 0; i < (int)unproven.size(); ++i) {
-      cout << "Remaining proof obligation #" << i + 1 << " (reason: " << stringFromReason(unproven[i].reason) << "): " <<
-	      unproven[i].lhs.toPrettyString() << " => " << unproven[i].rhs->toPrettyString() << endl;
+      cout << "Remaining proof obligation #" << i + 1 << " (reason: " << stringFromReason(unproven[i].reason) << "): " << toString(unproven[i].lhs) << " => " << toString(unproven[i].rhs) << endl;
     }
   }
 }
 
 // returns a constraint that describes when
 // lhs implies rhs
-Term *QueryProveReachability::proveByImplicationCRS(ConstrainedTerm lhs, Term *rhs,
-			 ConstrainedRewriteSystem &, ConstrainedRewriteSystem &, int depth)
+FastTerm QueryProveReachability::proveByImplication(ConstrainedTerm lhs, FastTerm rhs,
+			 RewriteSystem &, RewriteSystem &, int depth)
 {
-  lhs.term = lhs.term;
-  lhs.constraint = lhs.constraint;
-  rhs = rhs;
-  
-  Term *unificationConstraint;
-  Substitution subst;
+  //  FastTerm unificationConstraint;
+  FastSubst subst;
 
-  Log(DEBUG) << spaces(depth + 1) << "STEP 1. Does lhs imply rhs?" << endl;
-  if (lhs.term->unifyModuloTheories(rhs, subst, unificationConstraint)) {
-    Log(DEBUG4) << spaces(depth + 1) << "lhs unifies with rhs" << endl;
-    Log(DEBUG4) << spaces(depth + 1) << "Unification constraint: " << unificationConstraint->toString() << endl;
-    Term *constraint = bImplies(lhs.constraint, unificationConstraint);
-    constraint = simplifyConstraint(constraint);
-    constraint = constraint;
-    if (isSatisfiable(bNot(constraint)) == unsat) {
+  LOG(DEBUG3, cerr << spaces(depth + 1) << "STEP 1. Does lhs imply rhs?");
+  vector<SmtUnifySolution> unifiers = smtUnify(lhs.term, rhs);
+  FastTerm result = fastFalse();
+  for (uint i = 0; i < unifiers.size(); ++i) {
+    FastSubst subst = unifiers[i].subst;
+    FastTerm unificationConstraint = unifiers[i].constraint;
+    // LOG(DEBUG3, cerr << spaces(depth + 1) << "lhs unifies with rhs (unifier " << (i + 1) << "\/" << unifiers.size() << ")");
+    LOG(DEBUG3, cerr << spaces(depth + 1) << "Unification constraint: " << toString(unificationConstraint));
+    FastTerm constraint = fastImplies(lhs.constraint, unificationConstraint);
+    constraint = simplify(constraint);
+    if (z3_sat_check(context, fastNot(constraint)) == Z3_L_FALSE) {
       // the negation of the implication is unsatisfiable,
       // meaning that the implication is valid
-      Log(INFO) << spaces(depth + 1) << "RHS is an instance of LHS, this branch is done." << endl;
-      return bTrue();
+      LOG(INFO, cerr << spaces(depth + 1) << "RHS is an instance of LHS, this branch is done." << endl);
+      return fastTrue();
     } else {
-      Log(DEBUG2) << spaces(depth + 1) << "Constraint " << constraint->toString() << " is not valid." << endl;
-      if (isSatisfiable(constraint) == sat) {
-	      Log(INFO) << spaces(depth + 1) << "RHS is an instance of LHS in case " <<
-	        constraint->toString() << endl;
-	      return constraint;
+      LOG(DEBUG3, cerr << spaces(depth + 1) << "Constraint " << toString(constraint) << " is not valid.");
+      if (z3_sat_check(context, constraint) != Z3_L_FALSE) { // sat or unknown
+	LOG(INFO, cerr << spaces(depth + 1) << "RHS is an instance of LHS in case " <<
+	    toString(constraint));
+	result = fastOr(result, constraint);
       } else {
-	      Log(INFO) << spaces(depth + 1) << "RHS is not an instance of LHS in any case (constraint not satisfiable) " <<
-	        constraint->toString() << endl;
-	      return bFalse();
+	LOG(INFO, cerr << spaces(depth + 1) << "RHS is not an instance of LHS in any case (constraint not satisfiable) " << toString(constraint));
       }
     }
-  } else {
-    Log(INFO) << spaces(depth + 1) << "RHS is not an instance of LHS in any case (no mgu)." << endl;
-    return bFalse();
   }
+  return result;
+}
+
+FastTerm introduceExists(FastTerm constraint, vector<FastVar> vars)
+{
+  for (uint i = 0; i < vars.size(); ++i) {
+    if (occurs(vars[i], constraint)) {
+      for (uint j = 0; j < vars.size(); ++j) {
+      }
+      constraint = fastExists(vars[i], constraint);
+    }
+  }
+  return constraint;
 }
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *QueryProveReachability::proveByCircularitiesCRS(ConstrainedTerm lhs, Term *rhs,
-			   ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth, bool hadProgress,
+FastTerm QueryProveReachability::proveByCircularities(ConstrainedTerm lhs, FastTerm rhs,
+			   RewriteSystem &rs, RewriteSystem &circ, int depth, bool hadProgress,
 			   int branchingDepth)
 {
-  lhs.term = lhs.term;
-  lhs.constraint = lhs.constraint;
-  rhs = rhs;
-  
-  Log(DEBUG) << spaces(depth + 1) << "STEP 2. Does lhs rewrite using circularities?" << endl;
-  Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
+  //  cout << spaces(depth) << "PROVE CIRC START" << endl;
+  LOG(DEBUG3, cerr << spaces(depth + 1) << "STEP 2. Does lhs rewrite using circularities?");
+  LOG(DEBUG3, cerr << spaces(depth + 1) << "LHS = " << toString(lhs));
 
-  Term *circularityConstraint = bFalse();
+  FastTerm circularityConstraint = fastFalse();
   if (hadProgress) {
-    vector<ConstrainedSolution> solutions;
+    vector<SmtSearchSolution> solutions;
+    
+    solutions = prune(smtSearchRewriteSystem(lhs, circ));
 
-    solutions = lhs.smtNarrowSearch(circ);
-
-    Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
-
+    LOG(DEBUG3, cerr << spaces(depth + 1) << "Search resulted in " << solutions.size() << " solutions.");
+    
     int newBranchDepth = solutions.size() > 1 ? branchingDepth + 1 : branchingDepth;
-    for (int i = 0; i < (int)solutions.size(); ++i) {
-      ConstrainedSolution sol = solutions[i];
+    for (uint i = 0; i < solutions.size(); ++i) {
+      SmtSearchSolution sol = solutions[i];
 
-      circularityConstraint = simplifyConstraint(bOr(
-						     introduceExists(sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst),
-								     sol.lhsTerm->uniqueVars()),
-						     circularityConstraint));
+      FastTerm newTerm = introduceExists(sol.constraint, uniqueVars(sol.lhs));
+      circularityConstraint = simplify(fastOr(newTerm, circularityConstraint));
 
-      proveCRS(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
-			       sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst)),
-	       rhs->substitute(sol.subst)->substitute(sol.simplifyingSubst), crs, circ, true, depth + 1, newBranchDepth);
+      prove(ConstrainedTerm(sol.subst.applySubst(sol.rhs),
+			    sol.subst.applySubst(sol.constraint)),
+	    sol.subst.applySubst(rhs), rs, circ, true, depth + 1, newBranchDepth);
     }
   }
-  Log(INFO) << spaces(depth + 1) << "Circularities apply in case: " << circularityConstraint->toString() << endl;
+  LOG(INFO, cerr << spaces(depth + 1) << "Circularities apply in case: " << toString(circularityConstraint));
+  //  cout << spaces(depth) << "PROVE CIRC END" << endl;
   return circularityConstraint;
 }
 
 // returns a constraint that describes when
 // rhs can be reached from lhs by applying circularities
-Term *QueryProveReachability::proveByRewriteCRS(ConstrainedTerm lhs, Term *rhs,
-		     ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, int depth, bool, int branchingDepth)
+FastTerm QueryProveReachability::proveByRewrite(ConstrainedTerm lhs, FastTerm rhs,
+		     RewriteSystem &rs, RewriteSystem &circ, int depth, bool, int branchingDepth)
 {
-  lhs.term = lhs.term;
-  lhs.constraint = lhs.constraint;
-  rhs = rhs;
-
-  Log(DEBUG) << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?" << endl;
-  Log(DEBUG) << spaces(depth + 1) << "LHS = " << lhs.toString() << endl;
+  //  cout << spaces(depth) << "PROVE REWRITE START" << endl;
+  LOG(DEBUG3, cerr << spaces(depth + 1) << "STEP 3. Does lhs rewrite using trusted rewrite rules?");
+  LOG(DEBUG3, cerr << spaces(depth + 1) << "LHS = " << toString(lhs));
 
   // search for all successors in trusted rewrite system
-  Term *rewriteConstraint = bFalse();
+  FastTerm rewriteConstraint = fastFalse();
 
-  vector<ConstrainedSolution> solutions = lhs.smtNarrowSearch(crs);
+  vector<SmtSearchSolution> solutions = prune(smtSearchRewriteSystem(lhs, rs));
 
-  Log(DEBUG) << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions." << endl;
+  LOG(DEBUG3, cerr << spaces(depth + 1) << "Narrowing results in " << solutions.size() << " solutions.");
 
   int newBranchDepth = (solutions.size() > 1) ? (branchingDepth + 1) : branchingDepth;
-  for (int i = 0; i < (int)solutions.size(); ++i) {
-    ConstrainedSolution sol = solutions[i];
-
-    rewriteConstraint = simplifyConstraint(bOr(
-					       introduceExists(sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst),
-							       sol.lhsTerm->uniqueVars()),
+  for (uint i = 0; i < solutions.size(); ++i) {
+    SmtSearchSolution sol = solutions[i];
+ 
+   rewriteConstraint = simplify(fastOr(introduceExists(sol.constraint,
+							uniqueVars(sol.lhs)),
 					       rewriteConstraint));
-    proveCRS(ConstrainedTerm(sol.term->substitute(sol.subst)->substitute(sol.simplifyingSubst),
-			     sol.constraint->substitute(sol.subst)->substitute(sol.simplifyingSubst)),
-	     rhs->substitute(sol.subst)->substitute(sol.simplifyingSubst), crs, circ, true, depth + 1, newBranchDepth);
+    prove(ConstrainedTerm(sol.subst.applySubst(sol.rhs),
+			  sol.subst.applySubst(sol.constraint)),
+	  sol.subst.applySubst(rhs), rs, circ, true, depth + 1, newBranchDepth);
   }
 
-  Log(INFO) << spaces(depth + 1) << "Rewrite rules apply in case: " << rewriteConstraint->toString() << endl;
+  LOG(INFO, cerr << spaces(depth + 1) << "Rewrite rules apply in case: " << toString(rewriteConstraint));
 
+  //  cout << spaces(depth) << "PROVE REWRITE END" << endl;
   return rewriteConstraint;
 }
 
-void QueryProveReachability::proveCRS(ConstrainedTerm lhs, Term *rhs,
-			  ConstrainedRewriteSystem &crs, ConstrainedRewriteSystem &circ, bool hadProgress, int depth, int branchingDepth
-			  )
+void QueryProveReachability::prove(ConstrainedTerm lhs, FastTerm rhs,
+				   RewriteSystem &rs, RewriteSystem &circ, bool hadProgress,
+				   int depth, int branchingDepth)
 {
+  //  cout << spaces(depth) << "PROVE START" << endl;
   if (depth > maxDepth) {
-    unproven.push_back(ProofObligation(simplifyConstrainedTerm(lhs), rhs, DepthLimit));
-    Log(WARNING) << spaces(depth) << "(*****) Reached depth" << maxDepth << ", stopping search." << endl;
+     unproven.push_back(ProofObligation(simplify(lhs), rhs, DepthLimit));
+    LOG(WARNING, cerr << spaces(depth) << "(*****) Reached depth" << maxDepth << ", stopping search.");
     return;
   }
   if (branchingDepth > maxBranchingDepth) {
-    unproven.push_back(ProofObligation(simplifyConstrainedTerm(lhs), rhs, BranchingLimit));
-    Log(WARNING) << spaces(depth) << "(*****) Reached branch depth " << maxBranchingDepth << ", stopping search." << endl;
+    unproven.push_back(ProofObligation(simplify(lhs), rhs, BranchingLimit));
+    LOG(WARNING, cerr << spaces(depth) << "(*****) Reached branch depth " << maxBranchingDepth << ", stopping search.");
     return;
   }
 
   if (lhs.constraint == 0) {
-    lhs.constraint = bTrue();
+    lhs.constraint = fastTrue();
   }
-  lhs.term = lhs.term;
-  lhs.constraint = lhs.constraint;
-  rhs = rhs;
-
-  lhs = simplifyConstrainedTerm(lhs);
+  lhs = simplify(lhs);
   ConstrainedTerm initialLhs = lhs;
 
-  Log(INFO) << spaces(depth) << "Trying to prove " << lhs.toString() << " => " << rhs->toString() << endl;
+  LOG(INFO, cerr << spaces(depth) << "Trying to prove " << toString(lhs) << " => " << toString(rhs));
 
-  cout << spaces(depth) << "PROVING " << lhs.toString()  << " => " << rhs->toString() << endl;
-  Term *implicationConstraint = proveByImplicationCRS(lhs, rhs, crs, circ, depth);
+  cout << spaces(depth) << "PROVING " << toString(lhs)  << " => " << toString(rhs) << endl;
+  FastTerm implicationConstraint = proveByImplication(lhs, rhs, rs, circ, depth);
   ConstrainedTerm implLhs = lhs;
-  implLhs.constraint = simplifyConstraint(bAnd(implLhs.constraint, implicationConstraint));
-  cout << spaces(depth) << "  IMPL if " << implicationConstraint->toPrettyString() << endl;
-  lhs.constraint = bAnd(lhs.constraint, bNot(implicationConstraint));
-  lhs = simplifyConstrainedTerm(lhs);
-  lhs.term = lhs.term;
-  lhs.constraint = lhs.constraint;
-  rhs = rhs;
+  implLhs.constraint = simplify(fastAnd(implLhs.constraint, implicationConstraint));
+  cout << spaces(depth) << "  IMPL if " << toString(implicationConstraint) << endl;
+  lhs.constraint = fastAnd(lhs.constraint, fastNot(implicationConstraint));
+  lhs = simplify(lhs);
 
-  Term *circularityConstraint = proveByCircularitiesCRS(lhs, rhs, crs, circ, depth, hadProgress, branchingDepth);
+  FastTerm circularityConstraint = proveByCircularities(lhs, rhs, rs, circ, depth, hadProgress, branchingDepth);
   ConstrainedTerm circLhs = lhs;
-  circLhs.constraint = simplifyConstraint(bAnd(circLhs.constraint, circularityConstraint));
-  cout << spaces(depth) << "  CIRC if " << circularityConstraint->toPrettyString() << endl;
-  lhs.constraint = bAnd(lhs.constraint, bNot(circularityConstraint));
-  lhs = simplifyConstrainedTerm(lhs);
-  lhs.term = lhs.term;
-  lhs.constraint = lhs.constraint;
-  rhs = rhs;
+  circLhs.constraint = simplify(fastAnd(circLhs.constraint, circularityConstraint));
+  cout << spaces(depth) << "  CIRC if " << toString(circularityConstraint) << endl;
+  lhs.constraint = fastAnd(lhs.constraint, fastNot(circularityConstraint));
+  lhs = simplify(lhs);
 
-  Term *rewriteConstraint = proveByRewriteCRS(lhs, rhs, crs, circ, depth, hadProgress, branchingDepth);
+  FastTerm rewriteConstraint = proveByRewrite(lhs, rhs, rs, circ, depth, hadProgress, branchingDepth);
   ConstrainedTerm rewrLhs = lhs;
-  rewrLhs.constraint = simplifyConstraint(bAnd(rewrLhs.constraint, circularityConstraint));
-  cout << spaces(depth) << "  REWR if " << rewriteConstraint->toPrettyString() << endl;
-  lhs.constraint = bAnd(lhs.constraint, bNot(rewriteConstraint));
-  lhs = simplifyConstrainedTerm(lhs);
-  lhs.term = lhs.term;
-  lhs.constraint = lhs.constraint;
-  rhs = rhs;
+  rewrLhs.constraint = simplify(fastAnd(rewrLhs.constraint, circularityConstraint));
+  cout << spaces(depth) << "  REWR if " << toString(rewriteConstraint) << endl;
+  lhs.constraint = fastAnd(lhs.constraint, fastNot(rewriteConstraint));
+  lhs = simplify(lhs);
 
-  if (isSatisfiable(lhs.constraint) != unsat) {
-    cout << spaces(depth) << "! Remaining proof obligation:" << lhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;
+  if (z3_sat_check(context, lhs.constraint) != Z3_L_FALSE) {
+    cout << spaces(depth) << "! Remaining proof obligation:" << toString(lhs) << " => " << toString(rhs) << endl;
     unproven.push_back(ProofObligation(lhs, rhs, Completeness));
 
-    cout << spaces(depth) << "* Assuming that " << initialLhs.toPrettyString() << " => " << rhs->toPrettyString() << endl;
+    cout << spaces(depth) << "* Assuming that " << toString(initialLhs) << " => " << toString(rhs) << endl;
   } else {
     cout << spaces(depth) << "OKAY" << endl;
   }
+  //  cout << spaces(depth) << "PROVE END" << endl;
 }

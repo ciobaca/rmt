@@ -3,18 +3,18 @@
 
 #include <vector>
 #include <string>
+#include "constrainedterm.h"
 
-struct Term;
-struct Variable;
-
-using namespace std;
-
-struct RewriteSystem : public vector<pair<Term *, Term *> >
+struct RewriteSystem : public std::vector<std::pair<ConstrainedTerm, FastTerm> >
 {
-  void addRule(Term *l, Term *r);
-  RewriteSystem rename(string);
+  RewriteSystem() {}
+  void addRule(ConstrainedTerm l, FastTerm r);
+  RewriteSystem rename(std::string);
   RewriteSystem fresh();
-  string toString();
 };
+
+FastTerm rewriteTopMost(FastTerm term, const RewriteSystem &rs, FastSubst &how, Z3_context context);
+FastTerm rewriteTopMost(FastTerm term, const ConstrainedTerm &lhs, const FastTerm &rhs, FastSubst &how, Z3_context context);
+RewriteSystem renameAway(const RewriteSystem &rs, std::vector<FastVar> vars);
 
 #endif

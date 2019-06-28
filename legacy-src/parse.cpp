@@ -1,7 +1,6 @@
 #include "parse.h"
-#include "constrainedterm.h"
+#include "factories.h"
 #include "log.h"
-#include "helper.h"
 #include <iostream>
 #include <sstream>
 #include <cassert>
@@ -20,8 +19,8 @@ void computeErrorLocation(ErrorLocation &errorLocation, int &where, string text)
   errorLocation.line = 1;
   errorLocation.column = 0;
   errorLocation.lineStart = -1;
-  assert(where - 1 < len(text));
-  for (int i = 0; i < where - 1; ++i) {
+  assert(where < len(text));
+  for (int i = 0; i < where; ++i) {
     if (text[i] == '\n') {
       errorLocation.line++;
       errorLocation.lineStart = i + 1;
@@ -198,7 +197,7 @@ void match(string &s, int &pos, char c)
   }
 }
 
-FastTerm parseTerm(string &s, int &pos)
+Term *parseTerm(string &s, int &pos)
 {
   skipWhiteSpace(s, pos);
   string id;
@@ -206,112 +205,101 @@ FastTerm parseTerm(string &s, int &pos)
     match(s, pos, '(');
     skipWhiteSpace(s, pos);
     id = getIdentifier(s, pos);
-    if (!existsFunc(id.c_str())) {
-      parseError("unknown function symbol " + id, pos, s);
-    }
-    FastFunc f = getFuncByName(id.c_str());
-    if (getArity(f) > 0) {
-      vector<FastTerm> arguments;
-      for (uint32 i = 0; i < getArity(f); ++i) {
-        FastTerm t = parseTerm(s, pos);
-	FastSort sorti = getSort(t);
-	if (!isSubSortTransitive(sorti, getArgSort(f, i))) {
-	  cerr << "Term " << toString(t) << " has sort " << getSortName(sorti) << endl;
+    Function *f = getFunction(id);
 
-	  cerr << "Cannot use " << toString(t) << " as argument #" << (i + 1) << " of " << id << " (expecting term of sort " << getSortName(getArgSort(f, i)) << ")" << endl;
-	  
-	  parseError("incorrect subsorting", pos, s);
-	}
+    if (f && len(f->arguments)) {
+      vector<Term *> arguments;
+      for (int i = 0; i < len(f->arguments); ++i) {
+        Term *t = parseTerm(s, pos);
         skipWhiteSpace(s, pos);
         arguments.push_back(t);
       }
       match(s, pos, ')');
-      FastTerm result = newFuncTerm(f, &arguments[0]);
-      return result;
-    } else {
-      assert(getArity(f) == 0);
-      return newFuncTerm(f, 0);
+      return getFunTerm(f, arguments);
     }
   } else {
     id = getIdentifier(s, pos);
+    Function *f = getFunction(id);
+    Variable *v = getVariable(id);
     skipWhiteSpace(s, pos);
-    if (existsFunc(id.c_str())) {
-      FastFunc f = getFuncByName(id.c_str());
-      if (getArity(f) != 0) {
-	parseError("function " + id + "should have arguments", pos, s);
+
+    if (f) {
+      vector<Term *> arguments;
+      if (len(f->arguments) == 0) {
+        return getFunTerm(f, arguments);
       }
-      return newFuncTerm(f, 0);
-    } else {
-      if (!existsVar(id.c_str())) {
-	parseError(("unknown identifier " + id).c_str(), pos, s);
-      }
-      FastVar v = getVarByName(id.c_str());
-      return v;
+    } else if (v) {
+      return getVarTerm(v);
     }
   }
-  LOG(DEBUG9, cerr << "impossible !!!");
+  cout << "Identifier " << id << " is neither a function nor a variable." << endl;
   assert(0);
   return 0;
 }
 
-// Term *parseTerm(string &s)
-// {
-//   int position = 0;
-//   return parseTerm(s, position);
-// }
+Term *parseTerm(string &s)
+{
+  int position = 0;
+  return parseTerm(s, position);
+}
 
-// Term *parseTerm(const char *s)
-// {
-//   string str(s);
-//   return parseTerm(str);
-// }
+Term *parseTerm(const char *s)
+{
+  string str(s);
+  return parseTerm(str);
+}
 
 ConstrainedTerm parseConstrainedTerm(string &s, int &w)
 {
+  Log(DEBUG) << "Parsing constrained term" << endl;
   skipWhiteSpace(s, w);
-  FastTerm term = parseTerm(s, w);
-  FastTerm constraint;
+  Term *term = parseTerm(s, w);
+  Log(DEBUG) << "Parsed main term: " << term->toString() << endl;
+  Term *constraint;
   skipWhiteSpace(s, w);
   if (lookAhead(s, w, "/\\")) {
     matchString(s, w, "/\\");
     skipWhiteSpace(s, w);
     constraint = parseTerm(s, w);
+    Log(DEBUG) << "Parsed constraint term: " << constraint->toString() << endl;
   } else {
-    constraint = fastTrue();
+    constraint = bTrue();
+    assert(constraint);
+    Log(DEBUG) << "Implicit constraint: " << constraint->toString() << endl;
   }
   return ConstrainedTerm(term, constraint);
 }
 
-// ConstrainedPair parseConstrainedPair(string &s, int &w) {
-//   LOG(DEBUG) << "Parsing constrained term pair" << endl;
-//   skipWhiteSpace(s, w);
-//   Term *lhs = parseTerm(s, w);
-//   LOG(DEBUG) << "Parsed lhs term: " << lhs->toString() << endl;
-//   Term *rhs = parseTerm(s, w);
-//   LOG(DEBUG) << "Parsed rhs term: " << rhs->toString() << endl;
-//   Term *constraint;
-//   skipWhiteSpace(s, w);
-//   if (lookAhead(s, w, "/\\")) {
-//     matchString(s, w, "/\\");
-//     skipWhiteSpace(s, w);
-//     constraint = parseTerm(s, w);
-//     LOG(DEBUG) << "Parsed constraint term: " << constraint->toString() << endl;
-//   }
-//   else {
-//     constraint = bTrue();
-//     assert(constraint);
-//     LOG(DEBUG) << "Implicit constraint: " << constraint->toString() << endl;
-//   }
-//   return ConstrainedPair(lhs, rhs, constraint);
-// }
+ConstrainedPair parseConstrainedPair(string &s, int &w) {
+  Log(DEBUG) << "Parsing constrained term pair" << endl;
+  skipWhiteSpace(s, w);
+  Term *lhs = parseTerm(s, w);
+  Log(DEBUG) << "Parsed lhs term: " << lhs->toString() << endl;
+  Term *rhs = parseTerm(s, w);
+  Log(DEBUG) << "Parsed rhs term: " << rhs->toString() << endl;
+  Term *constraint;
+  skipWhiteSpace(s, w);
+  if (lookAhead(s, w, "/\\")) {
+    matchString(s, w, "/\\");
+    skipWhiteSpace(s, w);
+    constraint = parseTerm(s, w);
+    Log(DEBUG) << "Parsed constraint term: " << constraint->toString() << endl;
+  }
+  else {
+    constraint = bTrue();
+    assert(constraint);
+    Log(DEBUG) << "Implicit constraint: " << constraint->toString() << endl;
+  }
+  return ConstrainedPair(lhs, rhs, constraint);
+}
 
-// ConstrainedRewriteSystem parseCRSfromName(string &s, int &w) {
-//   skipWhiteSpace(s, w);
-//   string crsName = getIdentifier(s, w);
-//   skipWhiteSpace(s, w);
-//   if (!existsConstrainedRewriteSystem(crsName)) {
-//     LOG(ERROR) << "No CRS exists with name " << crsName << endl;
-//     expected("Existing CRS", w, s);
-//   }
-//   return getConstrainedRewriteSystem(crsName);
-// }
+ConstrainedRewriteSystem parseCRSfromName(string &s, int &w) {
+  skipWhiteSpace(s, w);
+  string crsName = getIdentifier(s, w);
+  skipWhiteSpace(s, w);
+  if (!existsConstrainedRewriteSystem(crsName)) {
+    Log(ERROR) << "No CRS exists with name " << crsName << endl;
+    expected("Existing CRS", w, s);
+  }
+  return getConstrainedRewriteSystem(crsName);
+}

@@ -54,6 +54,7 @@ FastSort fastIntSort()
 #include <map>
 
 std::map<std::pair<FastSort, std::pair<FastSort, FastSort>>, FastFunc> selectFunc;
+std::map<std::pair<FastSort, FastSort>, FastFunc> constArrayFunc;
 std::map<std::pair<FastSort, std::pair<FastSort, FastSort>>, FastFunc> storeFunc;
 
 FastSort newArraySort(const char *name, FastSort domainSort, FastSort rangeSort)

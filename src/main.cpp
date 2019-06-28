@@ -390,7 +390,14 @@ void parseFunctions(string &s, int &w)
 	storeFunc[key] = func;
       } else if (interpretation == "constarray") {
 	LOG(DEBUG3, cerr << "Interpreted as constant array");
+
+	pair<FastSort, FastSort> key = make_pair(getFuncSort(func), getArgSort(func, 0));
+	
+	extern std::map<std::pair<FastSort, FastSort>, FastFunc> constArrayFunc;
+	
 	builtinFunc[func] = bltnConstArray;
+	constArrayFunc[key] = func;
+	LOG(DEBUG8, cerr << "CONST ARRAY FUNC " << getFuncName(func));
       } else {
 	parseError(("Unknown builtin function " + interpretation).c_str(), w, s);
       }

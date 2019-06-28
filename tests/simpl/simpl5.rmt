@@ -19,5 +19,7 @@ rewrite-system sum
   	     	       (store (store MAP 1 (mminus N 1)) 2 (mplus (select MAP 2) (select MAP 1)))),
 
   (loop MAP) /\ (bnot (mle 1 (select MAP 1))) => (done (select MAP 2));
+  
+simplify (store (store (store E 2 20) 1 10) 2 30);
 
-simplify (store (store (constarray 10) 2 20) 1 10);
+simplify (store (store E 2 20) 1 10);

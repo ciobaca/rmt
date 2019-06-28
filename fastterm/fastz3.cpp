@@ -94,6 +94,7 @@ Z3_sort toZ3Sort(Z3_context context, FastSort sort)
     }
     cacheSort[std::make_pair(context, sort)] = result;
     sort_from_z3sort[make_pair(context, result)] = sort;
+    LOG(DEBUG9, cerr << "map z3 sort " << Z3_ast_to_string(context, Z3_sort_to_ast(context, result)) << " to "<< getSortName(sort));
     return result;
   }
 }
@@ -128,6 +129,7 @@ map<pair<Z3_context, Z3_func_decl>, FastFunc> func_decl_to_function;
 
 Z3_ast toZ3Term(Z3_context context, FastTerm term)
 {
+  toZ3Sort(context, getSort(term));
   // char buffer[1024];
   // printTerm(term, buffer, 1024);
   // printf("toZ3Term %s\n", buffer);
@@ -353,6 +355,8 @@ void add_z3_assert(FastTerm term)
 
 FastTerm simplify(FastTerm term)
 {
+  LOG(DEBUG9, cerr << "Simplifying " << toString(term));
+  LOG(DEBUG9, cerr << "of sort " << getSortName(getSort(term)));
   //  return simplifyFast(term);
 
   //  printf("simplify %d\n", count++);
@@ -410,6 +414,7 @@ using namespace std;
 FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z3context)
 {
   LOG(DEBUG8, cerr << "UnZ3-ing " << Z3_ast_to_string(z3context, ast) << ".");
+  LOG(DEBUG8, cerr << "of sort " << getSortName(sort) << ".");
   switch (Z3_get_ast_kind(z3context, ast)) {
   case Z3_APP_AST:
     {
@@ -482,6 +487,8 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	  }
 	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
 	  Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	  assert(sort_from_z3sort.find(make_pair(z3context, Z3_get_sort(z3context, arg1))) != sort_from_z3sort.end());
+	  assert(sort_from_z3sort.find(make_pair(z3context, Z3_get_sort(z3context, arg2))) != sort_from_z3sort.end());
 	  FastSort sa1 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg1))];
 	  FastSort sa2 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg2))];
 	  //	  FastSort sa1 = getSortByName(Z3_sort_to_string(z3context, ));
@@ -668,9 +675,15 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
 	  Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
 	  Z3_ast arg3 = Z3_get_app_arg(z3context, app, 2);
+	  assert(sort_from_z3sort.find(make_pair(z3context, Z3_get_sort(z3context, arg1))) != sort_from_z3sort.end());
+	  assert(sort_from_z3sort.find(make_pair(z3context, Z3_get_sort(z3context, arg2))) != sort_from_z3sort.end());
+	  assert(sort_from_z3sort.find(make_pair(z3context, Z3_get_sort(z3context, arg3))) != sort_from_z3sort.end());
 	  FastSort sa1 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg1))];
 	  FastSort sa2 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg2))];
 	  FastSort sa3 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg3))];
+	  LOG(DEBUG9, cerr << "store sort 1 = " << getSortName(sa1));
+	  LOG(DEBUG9, cerr << "store sort 2 = " << getSortName(sa2));
+	  LOG(DEBUG9, cerr << "store sort 3 = " << getSortName(sa3));
 
 	  //	  FastSort sa1 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg1)));
 	  //	  FastSort sa2 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg2)));
@@ -695,6 +708,8 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	  }
 	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
 	  Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	  assert(sort_from_z3sort.find(make_pair(z3context, Z3_get_sort(z3context, arg1))) != sort_from_z3sort.end());
+	  assert(sort_from_z3sort.find(make_pair(z3context, Z3_get_sort(z3context, arg2))) != sort_from_z3sort.end());
 	  FastSort sa1 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg1))];
 	  FastSort sa2 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg2))];
 	  // FastSort sa1 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg1)));
@@ -710,7 +725,25 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	}
 	break;
       case Z3_OP_CONST_ARRAY:
-	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_CONST_ARRAY .");
+	{
+	extern std::map<std::pair<FastSort, FastSort>, FastFunc> constArrayFunc;
+	  Z3_app app = Z3_to_app(z3context, ast);
+	  if (Z3_get_app_num_args(z3context, app) != 1) {
+	    abortWithMessage("Expected 1 arguments in Z3_OP_CONST_ARRAY application.");
+	  }
+	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	  FastSort sa1 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg1))];
+	  LOG(DEBUG8, cerr << "CONSTARRAY argument = " << getSortName(sa1) << ".");
+	  LOG(DEBUG8, cerr << "CONSTARRAY result = " << getSortName(sort) << ".");
+	  pair<FastSort, FastSort> key = make_pair(sort, sa1);
+	  FastFunc fun = constArrayFunc[key];
+	  FastTerm newargs[3];
+	  newargs[0] = unZ3(arg1, sa1, boundVars, z3context);
+	  FastTerm resultUnZ3 = newFuncTerm(fun, newargs);
+	  LOG(DEBUG8, cerr << "Using func = " << getFuncName(fun));
+	  LOG(DEBUG8, cerr << "CONSTARRAY Result of unZ3 = " << toString(resultUnZ3) << ".");
+	  return resultUnZ3;
+	}
 	break;
       case Z3_OP_ARRAY_MAP:
 	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_ARRAY_MAP   .");

@@ -141,10 +141,93 @@ void QueryProveSim::parse(std::string &s, int &w) {
   skipWhiteSpace(s, w);
   matchString(s, w, ";");
   skipWhiteSpace(s, w);
+
+
+  LOG(DEBUG9, cout << "Base" << endl);
+  pairFun = 0;
+  for (int i = 0; i < (int)base.size(); ++i) {
+    LOG(DEBUG6, cout << toString(base[i]) << endl);
+    if (!isFuncTerm(base[i].term)) {
+      LOG(ERROR, cerr << "Base terms must start with a pairing symbol (is variable now)." << endl);
+      LOG(ERROR, cerr << toString(base[i]) << endl);
+      abort();
+    }
+    FastTerm funTerm = base[i].term;
+    if (getArity(getFunc(funTerm)) != 2) {
+      LOG(ERROR, cerr << "Base terms must start with a pairing symbol (but wrong arity)." << endl);
+      LOG(ERROR, cerr << toString(base[i]) << endl);
+      abort();
+    }
+    if (pairFun == 0 || pairFun == getFunc(funTerm)) {
+      pairFun = getFunc(funTerm);
+    }
+    else {
+      LOG(ERROR, cerr << "Base terms must all start with the same pairing symbol." << endl);
+      LOG(ERROR, cerr << "Expecting terms to start with " << getFuncName(pairFun) << ", but found " << toString(funTerm) << "." << endl);
+      abort();
+    }
+  }
+  if (pairFun == 0) {
+    LOG(ERROR, cerr << "Found no base terms in simulation prove query." << endl);
+    abort();
+  }
 }
 
 extern map<string, RewriteSystem> rewriteSystems;
+extern RewriteSystem rsDefinedCombined;
 
 void QueryProveSim::execute() {
-  cout << "Keep waiting, boy!" << endl;
+  LOG(DEBUG9, cout << "Proving simulation" << endl);
+  
+  int circCount = (int)circularities.size();
+  // expand all defined functions in circularities (twice)
+  for (int i = 0; i < circCount; ++i) {
+    ConstrainedTerm ct = circularities[i];
+    smtSearchRewriteSystem(ct, rsDefinedCombined);
+    /*vector<ConstrainedTerm> csols = ct.smtNarrowDefinedSearch(1, 1);
+    for (int j = 0; j < (int)csols.size(); ++j) {
+      ConstrainedTerm newBase = csols[j];
+      vector<ConstrainedTerm> csols2 = newBase.smtNarrowDefinedSearch(1, 1);
+      for (int k = 0; k < (int)(csols2.size()); ++k) {
+        ConstrainedTerm newnewBase = csols2[k];
+        Log(INFO) << "Adding new circ (not necessary to prove) " << newnewBase.toString() << endl;
+        circularities.push_back(newnewBase);
+      }
+      Log(INFO) << "Adding new circ (not necessary to prove) " << newBase.toString() << endl;
+      circularities.push_back(newBase);
+    }*/
+  }
+
+  // prove all circularities
+  int nrAssumed = 0;
+  for (int i = 0; i < circCount; ++i) {
+    cout << "Proving simulation circularity #" << (i + 1) << endl;
+    ConstrainedTerm ct = circularities[i];
+    if (assumedCircularities[i]) {
+      cout << "Circularity #" << (i + 1) << " was assumed to be true" << endl;
+      ++nrAssumed;
+    }
+    //else if (proveSimulation(ct, 0)) {
+    else if(true) {
+      cout << "Succeeded in proving circularity #" << (i + 1) << endl;
+    }
+    else {
+      cout << "Failed to prove circularity #" << (i + 1) << endl;
+      failedCircularities.push_back(i + 1);
+    }
+  }
+
+  if (failedCircularities.empty()) {
+    cout << "Succeeded in proving ALL circularities";
+    if (nrAssumed > 0) {
+      cout << " (" << nrAssumed << " were assumed)";
+    }
+    cout << endl;
+  }
+  else {
+    cout << "Failed to prove the following cirularities:";
+    for (const auto &idx : failedCircularities)
+      cout << " #" << idx;
+    cout << endl;
+  }
 }

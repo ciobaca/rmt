@@ -73,7 +73,7 @@ add_test(TestFastParsingSort4 "../fastrmt" -v 0 ../../tests/parsing/dupsort4.rmt
 set_tests_properties (TestFastParsingSort4 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
 
 add_test(TestFastParsingSort5 "../fastrmt" -v 0 ../../tests/parsing/interpretedsort1.rmt)
-set_tests_properties (TestFastParsingSort5 PROPERTIES PASS_REGULAR_EXPRESSION "todo: cannot handle interpreted sorts yet")
+set_tests_properties (TestFastParsingSort5 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
 
 add_test(TestFastParsingSubSort1 "../fastrmt" -v 0 ../../tests/parsing/subsort1.rmt)
 set_tests_properties (TestFastParsingSubSort1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
@@ -133,7 +133,7 @@ add_test(TestFastParsingSignature12 "../fastrmt" -v 0 ../../tests/parsing/signat
 set_tests_properties (TestFastParsingSignature12 PROPERTIES PASS_REGULAR_EXPRESSION "Associative or commutative functions must have exactly two arguments")
 
 add_test(TestFastParsingSignature13 "../fastrmt" -v 0 ../../tests/parsing/signature13.rmt)
-set_tests_properties (TestFastParsingSignature13 PROPERTIES PASS_REGULAR_EXPRESSION "todo: cannot handle interpreted functions yet")
+set_tests_properties (TestFastParsingSignature13 PROPERTIES PASS_REGULAR_EXPRESSION "Unknown builtin function asdf")
 
 add_test(TestFastParsingVar1 "../fastrmt" -v 0 ../../tests/parsing/var1.rmt)
 set_tests_properties (TestFastParsingVar1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")

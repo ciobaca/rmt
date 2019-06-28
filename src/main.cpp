@@ -1,5 +1,4 @@
 /*
-
 Entry point of the RMT tool.
 
 (C) 2016 - 2019 Stefan Ciobaca
@@ -182,8 +181,8 @@ void parseSorts(string &s, int &w)
     string sortInterpretation;
     bool hasInterpretation = false;
     skipWhiteSpace(s, w);
-    if (w < len(s) && s[w] == '=') {
-      match(s, w, '=');
+    if (w < len(s) && s[w] == '/') {
+      match(s, w, '/');
       skipWhiteSpace(s, w);
       sortInterpretation = getQuotedString(s, w);
       hasInterpretation = true;
@@ -197,8 +196,8 @@ void parseSorts(string &s, int &w)
       int pos = 0;
       string id1 = getIdentifier(sortInterpretation, pos);
       skipWhiteSpace(sortInterpretation, pos);
-      if (id1 != "array") {
-	parseError("Error: currently only arrays are supported as sort interpretations", w, s);
+      if (id1 != "Array") {
+	parseError("Error: currently only \"Array\"s are supported as sort interpretations", w, s);
       }
       string id2 = getIdentifier(sortInterpretation, pos);
       skipWhiteSpace(sortInterpretation, pos);
@@ -214,7 +213,7 @@ void parseSorts(string &s, int &w)
       if (!isBuiltinSort(rangeSort)) {
 	parseError("Error: range sort for array must be a builtin", w, s);
       }
-      newArraySort(id1.c_str(), domainSort, rangeSort);
+      newArraySort(sortName.c_str(), domainSort, rangeSort);
     } else {
       newSort(sortName.c_str());
     }
@@ -371,8 +370,25 @@ void parseFunctions(string &s, int &w)
       matchString(s, w, "]");
     }
     if (hasInterpretation) {
-      parseError("todo: cannot handle interpreted functions yet", w, s);
-      //      createInterpretedFunction(f, arguments, result, interpretation);
+      FastFunc func = newFunc(f.c_str(), result, arguments.size(), &arguments[0]);
+      extern bool funcIsBuiltin[MAXFUNCS];
+      extern BuiltinFuncType builtinFunc[MAXFUNCS];
+      funcIsBuiltin[func] = true;
+      if (interpretation == "select") {
+	builtinFunc[func] = bltnSelect;
+	extern std::map<std::pair<FastSort, std::pair<FastSort, FastSort>>, FastFunc> selectFunc;
+	pair<FastSort, pair<FastSort, FastSort>> key = make_pair(getSort(func), make_pair(getArgSort(func, 0), getArgSort(func, 1)));
+	selectFunc[key] = func;
+      } else if (interpretation == string("store")) {
+	builtinFunc[func] = bltnStore;
+	pair<FastSort, pair<FastSort, FastSort>> key = make_pair(getArgSort(func, 0), make_pair(getArgSort(func, 1), getArgSort(func, 2)));
+	extern std::map<std::pair<FastSort, std::pair<FastSort, FastSort>>, FastFunc> storeFunc;
+	storeFunc[key] = func;
+      } else if (interpretation == "constarray") {
+	builtinFunc[func] = bltnConstArray;
+      } else {
+	parseError(("Unknown builtin function " + interpretation).c_str(), w, s);
+      }
     } else {
       if ((isCommutative || isAssociative) && arguments.size() != 2) {
         parseError("Associative or commutative functions must have exactly two arguments", w, s);
@@ -611,6 +627,8 @@ int main(int argc, char **argv)
       processSatisfiability(s, w);
     } else if (lookAhead(s, w, "compute")) {
       processCompute(s, w);
+    } else if (lookAhead(s, w, "simplify")) {
+      processSimplify(s, w);
     } else if ((query = Query::lookAheadQuery(s, w))) { /* queries */
       query->parse(s, w);
       skipWhiteSpace(s, w);

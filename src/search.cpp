@@ -32,7 +32,7 @@ vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
       SmtSearchSolution sol = current[i];
       vector<SmtSearchSolution> succs = smtSearchRewriteSystem(sol.subst.applySubst(sol.rhs), sol.constraint, rs);
       for (uint32 j = 0; j < succs.size(); ++j) {
-	next.push_back(SmtSearchSolution(sol.iterm, succs[j].lhs, succs[j].ruleConstraint, succs[j].rhs, compose(sol.subst, succs[j].subst), succs[j].constraint));
+	next.push_back(SmtSearchSolution(simplify(sol.iterm), simplify(succs[j].lhs), simplify(succs[j].ruleConstraint), simplify(succs[j].rhs), compose(sol.subst, succs[j].subst), simplify(succs[j].constraint)));
       }
     }
     current = next;
@@ -194,8 +194,8 @@ void smtSearchRewriteRule(FastTerm cterm, FastTerm iterm, FastTerm iconstraint,
     extractEqualities(sol.constraint, equalities, newVarsRule);
 
     for (uint j = 0; j < equalities.size(); ++j) {
-      sol.iterm = applyUnitySubst(sol.iterm, equalities[j].first, equalities[j].second);
-      sol.rhs = applyUnitySubst(sol.rhs, equalities[j].first, equalities[j].second);
+      sol.iterm = simplify(applyUnitySubst(sol.iterm, equalities[j].first, equalities[j].second));
+      sol.rhs = simplify(applyUnitySubst(sol.rhs, equalities[j].first, equalities[j].second));
       sol.subst.applyInRange(equalities[j].first, equalities[j].second);
       sol.constraint = simplify(applyUnitySubst(sol.constraint, equalities[j].first, equalities[j].second));
     }
@@ -243,7 +243,7 @@ FastTerm smtDefinedSimplifyTopMost(FastTerm cterm, FastTerm iconstraint,
   LOG(DEBUG5, cerr << "smtDefinedSimplifyTopMost " << toString(cterm) << " " << toString(iconstraint));
   FastTerm result = cterm;
   uint count = 0;
-  
+
   for (uint ri = 0; ri < rs.size(); ++ri) {
     FastTerm lhs = rs[ri].first.term;
     FastTerm rhs = rs[ri].second;

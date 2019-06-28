@@ -41,11 +41,16 @@ enum BuiltinFuncType {
   
   bltnEqInt,
   bltnEqBool,
+  bltnEqArray,
 
   bltnForall,
   bltnExists,
 
   bltnIte,
+
+  bltnSelect,
+  bltnStore,
+  bltnConstArray,
 
   bltnUD,
 
@@ -182,14 +187,27 @@ FastTerm fastEq(FastTerm t1, FastTerm t2);
 FastTerm fastEqInt(FastTerm t1, FastTerm t2);
 FastTerm fastEqBool(FastTerm t1, FastTerm t2);
 FastTerm fastAnd(FastTerm, FastTerm);
+FastTerm fastAndVector(std::vector<FastTerm>);
+FastTerm fastOrVector(std::vector<FastTerm>);
 FastTerm fastImplies(FastTerm, FastTerm);
 FastTerm fastExists(FastVar, FastTerm);
 FastTerm fastForall(FastVar, FastTerm);
 FastTerm fastImplies(FastTerm, FastTerm);
 FastTerm fastOr(FastTerm, FastTerm);
 FastTerm fastNot(FastTerm);
+FastTerm fastLE(FastTerm t1, FastTerm t2);
 FastTerm fastTrue();
 FastTerm fastFalse();
+FastTerm fastZero();
+FastTerm fastOne();
+FastTerm fastPlusVector(FastTerm, FastTerm);
+FastTerm fastTimesVector(FastTerm, FastTerm);
+FastTerm fastPlus(FastTerm, FastTerm);
+FastTerm fastTimes(FastTerm, FastTerm);
+FastTerm fastDiv(FastTerm, FastTerm);
+FastTerm fastMod(FastTerm, FastTerm);
+FastTerm fastPlusVector(std::vector<FastTerm> vt);
+FastTerm fastTimesVector(std::vector<FastTerm> vt);
 
 /*
 Simplification
@@ -232,5 +250,19 @@ void z3_assert(Z3_context context, Z3_solver solver, FastTerm term);
 void z3_push(Z3_context context, Z3_solver solver);
 void z3_pop(Z3_context context, Z3_solver solver);
 void add_z3_assert(FastTerm term);
+FastTerm unZ3(Z3_ast ast, FastSort sort, std::vector<FastVar> boundVars, Z3_context z3context);
+
+/*
+C++ wrappers.
+ */
+std::string toString(FastTerm term);
+std::string toString(FastSubst subst);
+
+#include <sstream>
+
+void printToOss(FastTerm term, std::ostringstream &oss);
+void varsOf(FastTerm term, std::vector<FastVar> &vars);
+std::vector<FastVar> uniqueVars(FastTerm term);
+void abortWithMessage(const std::string &error);
 
 #endif

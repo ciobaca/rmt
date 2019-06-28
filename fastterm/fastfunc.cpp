@@ -228,6 +228,36 @@ FastTerm fastForall(FastVar x, FastTerm constraint)
   return newFuncTerm(funcForallInt, args);
 }
 
+FastTerm fastAndVector(std::vector<FastTerm> vt)
+{
+  if (vt.size() == 0) {
+    return fastFalse();
+  } else if (vt.size() == 1) {
+    return vt[0];
+  } else {
+    FastTerm result = fastAnd(vt[0], vt[1]);
+    for (uint i = 2; i < vt.size(); ++i) {
+      result = fastAnd(result, vt[i]);
+    }
+    return result;
+  }
+}
+
+FastTerm fastOrVector(std::vector<FastTerm> vt)
+{
+  if (vt.size() == 0) {
+    return fastFalse();
+  } else if (vt.size() == 1) {
+    return vt[0];
+  } else {
+    FastTerm result = fastOr(vt[0], vt[1]);
+    for (uint i = 2; i < vt.size(); ++i) {
+      result = fastOr(result, vt[i]);
+    }
+    return result;
+  }
+}
+
 FastTerm fastAnd(FastTerm t1, FastTerm t2)
 {
   if (t1 == fastFalse()) {
@@ -249,6 +279,82 @@ FastTerm fastAnd(FastTerm t1, FastTerm t2)
   args[0] = t1;
   args[1] = t2;
   return newFuncTerm(funcAnd, args);
+}
+
+FastTerm fastPlus(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcPlus, args);
+}
+
+FastTerm fastZero()
+{
+  assert(0);
+  exit(-1);
+  return 0;
+}
+
+FastTerm fastOne()
+{
+  assert(0);
+  exit(-1);
+  return 0;
+}
+
+FastTerm fastPlusVector(std::vector<FastTerm> vt)
+{
+  if (vt.size() == 0) {
+    return fastZero();
+  } else if (vt.size() == 1) {
+    return vt[0];
+  } else {
+    FastTerm result = fastPlus(vt[0], vt[1]);
+    for (uint i = 2; i < vt.size(); ++i) {
+      result = fastPlus(result, vt[i]);
+    }
+    return result;
+  }
+}
+
+FastTerm fastTimesVector(std::vector<FastTerm> vt)
+{
+  if (vt.size() == 0) {
+    return fastOne();
+  } else if (vt.size() == 1) {
+    return vt[0];
+  } else {
+    FastTerm result = fastTimes(vt[0], vt[1]);
+    for (uint i = 2; i < vt.size(); ++i) {
+      result = fastTimes(result, vt[i]);
+    }
+    return result;
+  }
+}
+
+FastTerm fastTimes(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcTimes, args);
+}
+
+FastTerm fastDiv(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcDiv, args);
+}
+
+FastTerm fastMod(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcMod, args);
 }
 
 FastTerm fastImplies(FastTerm t1, FastTerm t2)
@@ -295,6 +401,14 @@ FastTerm fastOr(FastTerm t1, FastTerm t2)
   args[0] = t1;
   args[1] = t2;
   return newFuncTerm(funcOr, args);
+}
+
+FastTerm fastLE(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcLE, args);
 }
 
 FastTerm fastNot(FastTerm t1)

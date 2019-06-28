@@ -8,66 +8,8 @@
 
 using namespace std;
 
-void abortWithMessage(const std::string &error)
-{
-  cout << "Error: " << error << endl;
-  exit(0);
-}
-
 extern uint32 termData[MAXDATA];
 extern uint32 termDataSize;
-
-void printToOss(FastTerm term, ostringstream &oss)
-{
-  if (isVariable(term)) {
-    assert(/* 0 <= term && */term < MAXVARS);
-    oss << getVarName(term);
-  } else {
-    assert(isFuncTerm(term));
-    assert(term >= MAXVARS);
-    size_t index = term - MAXVARS;
-    assert(/* 0 <= index && */ index < termDataSize);
-
-    FastFunc func = termData[index]; 
-    if (getArity(func) > 0) {
-      oss << "(";
-    }
-    oss << getFuncName(func);
-    for (uint i = 0; i < getArity(func); ++i) {
-      oss << " ";
-      printToOss(termData[index + i + 1], oss);
-    }
-    if (getArity(func) > 0) {
-      oss << ")";
-    }
-  }
-}
-
-std::string toString(FastTerm term)
-{
-  ostringstream oss;
-  printToOss(term, oss);
-  return oss.str();
-}
-
-std::string toString(FastSubst subst)
-{
-  ostringstream oss;
-  oss << "{ ";
-  for (uint i = 0; i < subst.count; i += 2) {
-    if (i > 0) {
-      oss << ", ";
-    }
-    assert(validFastTerm(subst.data[i + 1]));
-    assert(isVariable(subst.data[i]));
-    printToOss(subst.data[i], oss);
-    oss << " |-> ";
-    assert(validFastTerm(subst.data[i + 1]));
-    printToOss(subst.data[i + 1], oss);
-  }
-  oss << " }";
-  return oss.str();
-}
 
 // map<Variable *, Variable *> createRenaming(vector<Variable *>v, string s)
 // {
@@ -183,26 +125,3 @@ string string_from_int(int number)
 //   }
 // }
 
-void varsOf(FastTerm term, vector<FastVar> &vars)
-{
-  if (isVariable(term)) {
-    vars.push_back(term);
-  } else {
-    assert(isFuncTerm(term));
-    FastFunc func = getFunc(term);
-    for (uint i = 0; i < getArity(func); ++i) {
-      FastTerm nt = getArg(term, i);
-      varsOf(nt, vars);
-    }
-  }
-}
-
-vector<FastVar> uniqueVars(FastTerm term)
-{
-  vector<FastVar> result;
-  varsOf(term, result);
-  std::sort(result.begin(), result.end());
-  auto it = std::unique(result.begin(), result.end());
-  result.resize(std::distance(result.begin(), it));
-  return result;
-}

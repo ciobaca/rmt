@@ -218,3 +218,17 @@ void processDefinedSimplify(string &s, int &w)
 
   cout << "Simplified term: " << toString(solution) << endl;
 }
+
+void processSimplify(string &s, int &w)
+{
+  matchString(s, w, "simplify");
+  skipWhiteSpace(s, w);
+  FastTerm term = parseTerm(s, w);
+  skipWhiteSpace(s, w);
+  matchString(s, w, ";");
+
+  cout << "Simplifying term " << toString(term) << "." << endl;
+  FastTerm result = simplify(term);
+
+  cout << "Simplified term: " << toString(result) << "." << endl;
+}

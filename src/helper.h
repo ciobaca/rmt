@@ -90,12 +90,6 @@ std::string string_from_int(int);
 
 extern int VERBOSITY;
 
-void varsOf(FastTerm term, std::vector<FastVar> &vars);
-std::vector<FastVar> uniqueVars(FastTerm term);
-void abortWithMessage(const std::string &error);
-std::string toString(FastTerm term);
-std::string toString(FastSubst subst);
-
 /* void addDefinedSuccessors(std::vector< std::pair<ConstrainedSolution, bool> > &successors, */
 /*   Term *term, Term *constraint, bool progress, int depth); */
 

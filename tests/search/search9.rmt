@@ -1,0 +1,41 @@
+sorts State, Map / "Array Int Int";
+
+signature
+  init : Int -> State,
+  loop : Map -> State,
+  done : Int -> State,
+  select : Map Int -> Int / "select",
+  store : Map Int Int -> Map / "store",
+  constarray : Int -> Map / "constarray"
+  ;
+
+variables B : Bool, S : Int, N : Int, I : Int, MAP : Map;
+
+rewrite-system sum
+
+  (init N) => (loop (store (constarray 0) 1 N)),
+
+  (loop MAP) /\ (mle 1 (select MAP 1)) => (loop
+  	     	       (store (store MAP 1 (mminus N 1)) 2 (mplus (select MAP 2) (select MAP 1)))),
+
+  (loop MAP) /\ (bnot (mle 1 (select MAP 1))) => (done (select MAP 2));
+
+// satisfiability (band (band (band (band (mle 1 2) (mle 1 (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1))) (mle 1 (select (store (store (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1 (mminus 2 1)) 2 (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1))) 1))) (mle 1 (select (store (store (store (store (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1 (mminus 2 1)) 2 (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1))) 1 (mminus 2 1)) 2 (mplus (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1)) (select (store (store (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1 (mminus 2 1)) 2 (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1))) 1))) 1))) (mle 1 (select (store (store (store (store (store (store (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1 (mminus 2 1)) 2 (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1))) 1 (mminus 2 1)) 2 (mplus (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1)) (select (store (store (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1 (mminus 2 1)) 2 (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1))) 1))) 1 (mminus 2 1)) 2 (mplus (mplus (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1)) (select (store (store (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1 (mminus 2 1)) 2 (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1))) 1)) (select (store (store (store (store (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1 (mminus 2 1)) 2 (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1))) 1 (mminus 2 1)) 2 (mplus (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1)) (select (store (store (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1 (mminus 2 1)) 2 (mplus (mplus (select (store (constarray 0) 1 2) 2) 2) (select (store (store (constarray 0) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)) 1))) 1))) 1))) 1)));
+
+// !EOF!
+
+// simplify (loop (store (store (constarray 0) (mminus N 1) (store (store (store (constarray 0) 1 2) 1 (mminus N 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) (select (store (constarray 0) 1 2) 1)))) 2 (mplus (select (store (constarray 0) 1 2) 2) 2)));
+
+// simplify (loop (store (store (constarray 0) (mminus N 1) (store (store (store (constarray 0) 1 2) 1 (mminus N 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) (select (store (constarray 0) 1 2) 1)))) 2 (mplus (constarray 0) 2)));
+// !EOF!
+// simplify (select (store (constarray 0) 1 2) 1);
+
+// !EOF!
+
+// simplify (loop (store (store (store (store (store (constarray 0) 1 2) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) (select (store (constarray 0) 1 2) 1))) 1 (mminus N 1)) 2 (mplus (select (store (store (store (constarray 0) 1 2) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) (select (store (constarray 0) 1 2) 1))) 2) (select (store (store (store (constarray 0) 1 2) 1 (mminus 2 1)) 2 (mplus (select (store (constarray 0) 1 2) 2) (select (store (constarray 0) 1 2) 1))) 1))));
+// !EOF!
+
+search [6,6] in sum : (init 2);
+
+!EOF!
+search [2,2] in sum : (init 2);

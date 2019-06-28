@@ -48,8 +48,15 @@ FastSort fastIntSort()
   return sortInt;
 }
 
+#include <map>
+
+std::map<std::pair<FastSort, std::pair<FastSort, FastSort>>, FastFunc> selectFunc;
+std::map<std::pair<FastSort, std::pair<FastSort, FastSort>>, FastFunc> storeFunc;
+
 FastSort newArraySort(const char *name, FastSort domainSort, FastSort rangeSort)
 {
+  extern bool hasEqFunc[MAXSORTS];
+  extern FastFunc eqFunc[MAXSORTS];
   assert(isBuiltinSort(domainSort));
   assert(isBuiltinSort(rangeSort));
   FastSort result = newSort(name);
@@ -57,6 +64,19 @@ FastSort newArraySort(const char *name, FastSort domainSort, FastSort rangeSort)
   builtinSortType[result] = bltnArray;
   sortArguments[result][0] = domainSort;
   sortArguments[result][1] = rangeSort;
+
+  FastSort args[16];
+  args[0] = result;
+  args[1] = result;
+  FastFunc eqf = newFunc((std::string("equals") + name).c_str(), fastBoolSort(), 2, args);
+  extern bool funcIsBuiltin[MAXFUNCS];
+  extern BuiltinFuncType builtinFunc[MAXFUNCS];
+  funcIsBuiltin[eqf] = true;
+  builtinFunc[eqf] = bltnEqArray;
+
+  hasEqFunc[result] = true;
+  eqFunc[result] = eqf;
+
   return result;
 }
 

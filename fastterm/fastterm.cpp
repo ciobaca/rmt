@@ -5,6 +5,9 @@
 #include <z3.h>
 #include <stdlib.h>
 #include <vector>
+#include <sstream>
+
+using namespace std;
 
 void initFastTerm()
 {
@@ -200,8 +203,14 @@ bool eq_term_list(FastTerm *tl1, FastTerm *tl2, uint count)
   return true;
 }
 
+char buffer[1024];
+
 bool eq_term(FastTerm t1, FastTerm t2)
 {
+  // printTerm(t1, buffer, 1024);
+  // printf("eq1 %s (%d)\n", buffer, t1);
+  // printTerm(t1, buffer, 1024);
+  // printf("eq2 %s (%d)\n", buffer, t2);
   assert(validFastTerm(t1));
   assert(validFastTerm(t2));
   if (isFuncTerm(t1) && isFuncTerm(t2)) {
@@ -223,19 +232,31 @@ bool eq_term(FastTerm t1, FastTerm t2)
 
 FastTerm simplifyFast(FastTerm term)
 {
+  // printTerm(term, buffer, 1024);
+  // printf("simplifyFast %s (%d)\n", buffer, term);
   if (isVariable(term)) {
     return term;
   } else {
     assert(isFuncTerm(term));
     FastFunc func = getFunc(term);
-    FastTerm result = newFuncTerm(func, args(term));
-    FastTerm *arguments = args(result);
+    std::vector<FastTerm> arguments;
     for (uint i = 0; i < getArity(func); ++i) {
-      arguments[i] = simplify(arguments[i]);
+      arguments.push_back(simplifyFast(getArg(term, i)));
+      // printTerm(getArg(term, i), buffer, 1024);
+      // printf("1. inner simplifyFast %s (%d)\n", buffer, getArg(term, i));
+      // printTerm(arguments[i], buffer, 1024);
+      // printf("2. inner simplifyFast %s (%d)\n", buffer, arguments[i]);
     }
+    FastTerm result = newFuncTerm(func, &arguments[0]);
+    FastTerm t1, t2;
     if (isBuiltinFunc(func)) {
-      FastTerm t1 = arguments[0];
-      FastTerm t2 = arguments[1];
+      //      printf("is builtin\n");
+      if (getArity(func) >= 1) {
+	t1 = arguments[0];
+      }
+      if (getArity(func) >= 2) {
+       t2 = arguments[1];
+      }
       switch (getBuiltinFuncType(func)) {
       case bltnAnd:
 	if (eq_term(t1, fastFalse())) {
@@ -301,6 +322,41 @@ FastTerm simplifyFast(FastTerm term)
 	  return fastTrue();
 	}
 	break;
+      case bltnEqArray:
+	if (eq_term(t1, t2)) {
+	  return fastTrue();
+	}
+	break;
+      case bltnSelect:
+	if (isFuncTerm(arguments[0]) &&
+	    isBuiltinFunc(getFunc(arguments[0])) &&
+	    getBuiltinFuncType(getFunc(arguments[0])) == bltnStore) {
+	  FastTerm *argsstore = args(arguments[0]);
+	  assert(getArity(getFunc(arguments[0])) == 3);
+	  if (eq_term(arguments[1], argsstore[1])) {
+	    return argsstore[2];
+	  }
+	}
+	return result;
+	break;
+      case bltnStore:
+	if (isFuncTerm(arguments[0]) &&
+	    isBuiltinFunc(getFunc(arguments[0])) &&
+	    getBuiltinFuncType(getFunc(arguments[0])) == bltnStore) {
+	  FastTerm *argsstore = args(arguments[0]);
+	  assert(getArity(getFunc(arguments[0])) == 3);
+	  assert(validFastTerm(arguments[1]));
+	  assert(validFastTerm(argsstore[1]));
+	  if (eq_term(arguments[1], argsstore[1])) {
+	    FastTerm newargs[4];
+	    newargs[0] = argsstore[0];
+	    newargs[1] = argsstore[1];
+	    newargs[2] = arguments[2];
+	    return newFuncTerm(func, newargs);
+	  }
+	}
+	return result;
+	break;
       case bltnEqBool:
 	if (eq_term(t1, t2)) {
 	  return fastTrue();
@@ -318,12 +374,6 @@ FastTerm simplifyFast(FastTerm term)
     }
     return result;
   }
-}
-
-FastTerm simplify(FastTerm term)
-{
-  // TODO: also call Z3
-  return simplifyFast(term);
 }
 
 FastTerm replaceConstWithVar(FastTerm term, FastTerm c, FastVar v)
@@ -350,4 +400,88 @@ FastTerm replaceConstWithVar(FastTerm term, FastTerm c, FastVar v)
       return term;
     }
   }
+}
+
+std::string toString(FastTerm term)
+{
+  ostringstream oss;
+  printToOss(term, oss);
+  return oss.str();
+}
+
+std::string toString(FastSubst subst)
+{
+  ostringstream oss;
+  oss << "{ ";
+  for (uint i = 0; i < subst.count; i += 2) {
+    if (i > 0) {
+      oss << ", ";
+    }
+    assert(validFastTerm(subst.data[i + 1]));
+    assert(isVariable(subst.data[i]));
+    printToOss(subst.data[i], oss);
+    oss << " |-> ";
+    assert(validFastTerm(subst.data[i + 1]));
+    printToOss(subst.data[i + 1], oss);
+  }
+  oss << " }";
+  return oss.str();
+}
+
+void printToOss(FastTerm term, ostringstream &oss)
+{
+  if (isVariable(term)) {
+    assert(/* 0 <= term && */term < MAXVARS);
+    oss << getVarName(term);
+  } else {
+    assert(isFuncTerm(term));
+    assert(term >= MAXVARS);
+    size_t index = term - MAXVARS;
+    assert(/* 0 <= index && */ index < termDataSize);
+
+    FastFunc func = termData[index]; 
+    if (getArity(func) > 0) {
+      oss << "(";
+    }
+    oss << getFuncName(func);
+    for (uint i = 0; i < getArity(func); ++i) {
+      oss << " ";
+      printToOss(termData[index + i + 1], oss);
+    }
+    if (getArity(func) > 0) {
+      oss << ")";
+    }
+  }
+}
+
+#include <iostream>
+
+void abortWithMessage(const std::string &error)
+{
+  std::cout << "Error: " << error << endl;
+  exit(0);
+}
+
+void varsOf(FastTerm term, vector<FastVar> &vars)
+{
+  if (isVariable(term)) {
+    vars.push_back(term);
+  } else {
+    assert(isFuncTerm(term));
+    FastFunc func = getFunc(term);
+    for (uint i = 0; i < getArity(func); ++i) {
+      FastTerm nt = getArg(term, i);
+      varsOf(nt, vars);
+    }
+  }
+}
+
+vector<FastVar> uniqueVars(FastTerm term)
+{
+  vector<FastVar> result;
+  varsOf(term, result);
+  std::sort(result.begin(), result.end());
+  auto it = std::unique(result.begin(), result.end());
+  result.resize(std::distance(result.begin(), it));
+  return result;
 }

@@ -214,6 +214,7 @@ Simplification
  */
 FastTerm simplifyFast(FastTerm);
 FastTerm simplify(FastTerm);
+FastTerm simplifyBuiltin(FastTerm term);
 
 /*
   Substitutions.

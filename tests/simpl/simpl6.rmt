@@ -20,8 +20,4 @@ rewrite-system sum
 
   (loop MAP) /\ (bnot (mle 1 (select MAP 1))) => (done (select MAP 2));
 
-search [2,2] in sum : (init 1);
-
-!EOF!
-
-search [2,2] in sum : (init 2);
+simplify (init 0);

@@ -355,6 +355,34 @@ void add_z3_assert(FastTerm term)
 
 FastTerm simplify(FastTerm term)
 {
+  if (isVariable(term)) {
+    return term;
+  } else {
+    FastSort sort = getSort(term);
+    if (isBuiltinSort(sort)) {
+      return simplifyBuiltin(term);
+    } else {
+      FastFunc func = getFunc(term);
+      vector<FastTerm> newargs;
+      bool changed = false;
+      for (uint i = 0; i < getArity(func); ++i) {
+	newargs.push_back(simplify(getArg(term, i)));
+	if (!eq_term(newargs[i], getArg(term, i))) {
+	  changed = true;
+	}
+      }
+      if (changed) {
+	return newFuncTerm(func, &newargs[0]);
+      } else {
+	return term;
+      }
+    }
+  }
+}
+
+FastTerm simplifyBuiltin(FastTerm term)
+{
+  assert(isBuiltinSort(getSort(term)));
   LOG(DEBUG9, cerr << "Simplifying " << toString(term));
   LOG(DEBUG9, cerr << "of sort " << getSortName(getSort(term)));
   //  return simplifyFast(term);

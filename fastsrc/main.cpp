@@ -182,8 +182,8 @@ void parseSorts(string &s, int &w)
     string sortInterpretation;
     bool hasInterpretation = false;
     skipWhiteSpace(s, w);
-    if (w < len(s) && s[w] == '/') {
-      match(s, w, '/');
+    if (w < len(s) && s[w] == '=') {
+      match(s, w, '=');
       skipWhiteSpace(s, w);
       sortInterpretation = getQuotedString(s, w);
       hasInterpretation = true;
@@ -194,11 +194,27 @@ void parseSorts(string &s, int &w)
     }
     LOG(DEBUG9, cerr << "Parsed sort " << sortName);
     if (hasInterpretation) {
-      parseError("todo: cannot handle interpreted sorts yet", w, s);
-      // this is a builtin sort!! .. will be refactored later (TODO)
-      // createInterpretedSort(sortName, sortInterpretation);
-      // createBuiltinExistsFunction(getSort(sortName));
-      // createBuiltinForallFunction(getSort(sortName));
+      int pos = 0;
+      string id1 = getIdentifier(sortInterpretation, pos);
+      skipWhiteSpace(sortInterpretation, pos);
+      if (id1 != "array") {
+	parseError("Error: currently only arrays are supported as sort interpretations", w, s);
+      }
+      string id2 = getIdentifier(sortInterpretation, pos);
+      skipWhiteSpace(sortInterpretation, pos);
+      if (!existsSort(id2.c_str())) {
+	parseError("Error: domain sort for array is unknown", w, s);
+      }
+      FastSort domainSort = getSortByName(id2.c_str());
+      if (!isBuiltinSort(domainSort)) {
+	parseError("Error: domain sort for array must be a builtin", w, s);
+      }
+      string id3 = getIdentifier(sortInterpretation, pos);
+      FastSort rangeSort = getSortByName(id3.c_str());
+      if (!isBuiltinSort(rangeSort)) {
+	parseError("Error: range sort for array must be a builtin", w, s);
+      }
+      newArraySort(id1.c_str(), domainSort, rangeSort);
     } else {
       newSort(sortName.c_str());
     }

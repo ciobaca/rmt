@@ -8,6 +8,7 @@ const char *sortNames[MAXSORTS];
 
 bool sortIsBuiltin[MAXSORTS];
 BuiltinSortType builtinSortType[MAXSORTS];
+FastSort sortArguments[MAXSORTS][4]; // currently arguments for array
 
 FastSort sortBool;
 FastSort sortInt;
@@ -45,6 +46,18 @@ FastSort fastBoolSort()
 FastSort fastIntSort()
 {
   return sortInt;
+}
+
+FastSort newArraySort(const char *name, FastSort domainSort, FastSort rangeSort)
+{
+  assert(isBuiltinSort(domainSort));
+  assert(isBuiltinSort(rangeSort));
+  FastSort result = newSort(name);
+  sortIsBuiltin[result] = true;
+  builtinSortType[result] = bltnArray;
+  sortArguments[result][0] = domainSort;
+  sortArguments[result][1] = rangeSort;
+  return result;
 }
 
 FastSort fastStateSort() {

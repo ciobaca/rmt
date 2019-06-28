@@ -17,6 +17,7 @@
 enum BuiltinSortType {
   bltnBool,
   bltnInt,
+  bltnArray,
 };
 
 enum BuiltinFuncType {
@@ -93,6 +94,7 @@ void initFuncs();
 /*
   Sorts.
  */
+FastSort newArraySort(const char *name, FastSort domainSort, FastSort rangeSort);
 FastSort newSort(const char *name);
 bool existsSort(const char *name);
 FastSort getSortByName(const char *name);

@@ -1,0 +1,25 @@
+sorts State, Map / "Array Int Int";
+
+signature
+  init : Int -> State,
+  loop : Map -> State,
+  done : Int -> State,
+  select : Map Int -> Int / "select",
+  store : Map Int Int -> Map / "store",
+  constarray : Int -> Map / "constarray"
+  ;
+
+variables B : Bool, S : Int, N : Int, I : Int, MAP : Map, E : Map;
+
+rewrite-system sum
+
+  (init N) => (loop (store (constarray 0) 1 N)),
+
+  (loop MAP) /\ (mle 1 (select MAP 1)) => (loop
+  	     	       (store (store MAP 1 (mminus N 1)) 2 (mplus (select MAP 2) (select MAP 1)))),
+
+  (loop MAP) /\ (bnot (mle 1 (select MAP 1))) => (done (select MAP 2));
+  
+simplify (store (store (store E 2 20) 1 10) 2 30);
+
+simplify (store (store E 2 20) 1 10);

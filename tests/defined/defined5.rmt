@@ -15,7 +15,7 @@ define reduce : Int Int ExpF -> ExpF by
   (reduce N I E) /\ (mle N I) => E,
   (reduce N I E) /\ (bnot (mle N I)) => (reduce N (mplus I 1) (fplus I E));
 
-constrained-rewrite-system flanguage
+rewrite-system flanguage
   (f N) /\ (mle N 0) => 0,
   (f N) /\ (bnot (mle N 0)) => (fplus N (f (mminus N 1))),
   (fa A I N) /\ (bnot (mle I N)) => A,
@@ -36,7 +36,7 @@ constrained-rewrite-system flanguage
 
 // run in flanguage : (fa 0 2 (mminus 4 1));
 
-//definedsearch (reduce (mplus N 1) (mplus I 1) (f I)) /\ (band (mle I N) (mle 0 I)) for reduce;
+defined-search (reduce (mplus N 1) (mplus I 1) (f I)) /\ (band (mle I N) (mle 0 I));
 
 //definedsearch (reduce (mplus 1 N) (mplus 2 I) (fplus (mplus I 1) (f I))) /\ (band (mle I (mplus N 1)) (bnot (mle N I))) for reduce;
 
@@ -44,44 +44,46 @@ constrained-rewrite-system flanguage
 //     (reduce (mplus N 1) (mplus I 1) (f I))
 //     (fa 0 0 N)) /\ (band (mle I N) (mle 0 I));
 
-show-simulation [ 20 ] in flanguage and flanguage :
-   (pair
-    (f N)
-    (fa 0 0 N)) /\ (mle 0 N)
-,
-   (pair
-    (reduce (mplus N 1) (mplus I 1) (f I))
-    (fa 0 0 N)) /\ (band (mle I N) (mle 0 I))
-,
-    (pair
-     (reduce (mplus N 1) I X)
-     (fa X I N))
-// // expanded from circularity #3
+// !EOF!
+
+// show-simulation [ 20 ] in flanguage and flanguage :
+//    (pair
+//     (f N)
+//     (fa 0 0 N)) /\ (mle 0 N)
 // ,
 //    (pair
-//      (reduce (mplus N 1) (mplus I 1) (fplus I X))
+//     (reduce (mplus N 1) (mplus I 1) (f I))
+//     (fa 0 0 N)) /\ (band (mle I N) (mle 0 I))
+// ,
+//     (pair
+//      (reduce (mplus N 1) I X)
 //      (fa X I N))
-// ,
-//    (pair
-//      X
-//      (fa X I N)) /\ (bnot (mle I N))
-// // expanded from circularity #2 (one of resulting cases)
-// ,
-//    (pair
-//      (reduce (mplus 1 N) (mplus 2 I) (fplus (mplus I 1) (f I)))
-//      (fa 0 0 N)) /\ (band (mle I (mplus N 1)) (bnot (mle N I)))
-// ,
-// // expanded from case above (2 levels down from circuliarty #2)
-//    (pair
-//      (fplus (mplus 1 I) (f I))
-//      (fa 0 0 N))
-//      /\ (band (mle I (mplus 1 N)) (band (bnot (mle N I)) (mle N (mplus 1 I))))
-// ,
-//    (pair
-//      (reduce (mplus 1 N) (mplus 3 I) (fplus (mplus 2 I) (fplus (mplus 1 I) (f I))))
-//      (fa 0 0 N)) /\ (band (mle I (mplus 1 N)) (band (bnot (mle N I)) (bnot (mle N (mplus 1 I)))))
-with-base
-     (pair S S);
+// // // expanded from circularity #3
+// // ,
+// //    (pair
+// //      (reduce (mplus N 1) (mplus I 1) (fplus I X))
+// //      (fa X I N))
+// // ,
+// //    (pair
+// //      X
+// //      (fa X I N)) /\ (bnot (mle I N))
+// // // expanded from circularity #2 (one of resulting cases)
+// // ,
+// //    (pair
+// //      (reduce (mplus 1 N) (mplus 2 I) (fplus (mplus I 1) (f I)))
+// //      (fa 0 0 N)) /\ (band (mle I (mplus N 1)) (bnot (mle N I)))
+// // ,
+// // // expanded from case above (2 levels down from circuliarty #2)
+// //    (pair
+// //      (fplus (mplus 1 I) (f I))
+// //      (fa 0 0 N))
+// //      /\ (band (mle I (mplus 1 N)) (band (bnot (mle N I)) (mle N (mplus 1 I))))
+// // ,
+// //    (pair
+// //      (reduce (mplus 1 N) (mplus 3 I) (fplus (mplus 2 I) (fplus (mplus 1 I) (f I))))
+// //      (fa 0 0 N)) /\ (band (mle I (mplus 1 N)) (band (bnot (mle N I)) (bnot (mle N (mplus 1 I)))))
+// with-base
+//      (pair S S);
 
 //definedsearch (reduce N I (f (mminus I 1))) for reduce;
 

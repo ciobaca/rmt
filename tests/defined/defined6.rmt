@@ -15,19 +15,19 @@ define reduce : Int Int ExpF -> ExpF by
   (reduce N I E) /\ (mle N I) => E,
   (reduce N I E) /\ (bnot (mle N I)) => (reduce N (mplus I 1) (fplus I E));
 
-constrained-rewrite-system flanguage
+rewrite-system flanguage
   (f N) /\ (mle N 0) => 0,
   (f N) /\ (bnot (mle N 0)) => (fplus N (f (mminus N 1))),
   (fa A I N) /\ (bnot (mle I N)) => A,
   (fa A I N) /\ (mle I N) => (fa (mplus A I) (mplus I 1) N),
   (fplus N I) => (mplus N I);
 
-// definedrewrite (reduce 10 0 E);
+defined-simplify (reduce 10 0 E);
 // definedrewrite (reduce 10 1 (fplus 0 E));
 // definedrewrite (reduce 10 2 (fplus 1 (fplus 0 E)));
 // definedrewrite (reduce I N E);
 
-definedrewrite (reduce I (mplus 1 N) (fplus N E));
+//defined-simplify (reduce I (mplus 1 N) (fplus N E));
 
 !EOF!
 

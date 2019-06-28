@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
+#include <algorithm>
 
 using namespace std;
 
@@ -26,6 +27,8 @@ std::map<std::pair<Z3_context, FastFunc>, Z3_func_decl> z3func;
 std::map<std::pair<Z3_context, FastTerm>, Z3_ast> cacheTerm;
 std::map<std::pair<Z3_context, FastTerm>, Z3_func_decl> cacheFunc;
 std::map<std::pair<Z3_context, FastTerm>, Z3_sort> cacheSort;
+map<pair<Z3_context, Z3_symbol>, Z3_func_decl> symbol_to_func_decl;
+map<pair<Z3_context, Z3_func_decl>, FastFunc> func_decl_to_function;
 
 Z3_context init_z3_context()
 {
@@ -52,6 +55,8 @@ Z3_context init_z3_context()
       //      cerr << "Result sort: " << getSortName(getFuncSort(func)) << endl;
       Z3_symbol symbol = Z3_mk_string_symbol(z3context, getFuncName(func));
       Z3_func_decl result = Z3_mk_func_decl(z3context, symbol, size, domain, range);
+      symbol_to_func_decl[make_pair(z3context, symbol)] = result;
+      func_decl_to_function[make_pair(z3context, result)] = func;
       z3func[make_pair(z3context, func)] = result;
     }
   }
@@ -124,8 +129,6 @@ Z3_func_decl toZ3FuncDecl(Z3_context context, FastFunc func)
 
 map<pair<Z3_context, Z3_symbol>, FastVar> z3_const_to_var;
 map<pair<Z3_context, Z3_symbol>, FastTerm> z3_const_to_const;
-map<pair<Z3_context, Z3_symbol>, Z3_func_decl> symbol_to_func_decl;
-map<pair<Z3_context, Z3_func_decl>, FastFunc> func_decl_to_function;
 
 Z3_ast toZ3Term(Z3_context context, FastTerm term)
 {
@@ -1388,9 +1391,45 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
       case Z3_OP_INTERNAL:
 	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
 	break;
+      case Z3_OP_PR_ASSUMPTION_ADD:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_PR_LEMMA_ADD:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_PR_REDUNDANT_DEL:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_PR_CLAUSE_TRAIL:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_SEQ_NTH:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_SEQ_LAST_INDEX:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_SPECIAL_RELATION_LO:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_SPECIAL_RELATION_PO:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_SPECIAL_RELATION_PLO:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_SPECIAL_RELATION_TO:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_SPECIAL_RELATION_TC:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
+      case Z3_OP_SPECIAL_RELATION_TRC:
+	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
+	break;
       }
+      break;
     }
-    break;
   case Z3_NUMERAL_AST:
     {
       int result;

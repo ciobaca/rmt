@@ -249,7 +249,7 @@ FastTerm simplifyFast(FastTerm term)
       // printf("2. inner simplifyFast %s (%d)\n", buffer, arguments[i]);
     }
     FastTerm result = newFuncTerm(func, &arguments[0]);
-    FastTerm t1, t2;
+    FastTerm t1 = fastTrue(), t2 = fastTrue();
     if (isBuiltinFunc(func)) {
       //      printf("is builtin\n");
       if (getArity(func) >= 1) {

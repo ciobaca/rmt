@@ -5,6 +5,7 @@
 #include <cassert>
 #include <vector>
 #include <z3.h>
+#include <string>
 
 #define MAXVARS (1024 * 1024 * 16)
 #define MAXFUNCS 2048

@@ -220,6 +220,12 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
 	    result = Z3_mk_exists_const(context, 0, 1, bound, 0, patterns, args[1]);
 	  }
 	  break;
+	case bltnFreshConstant:
+	  {
+	    Z3_symbol symbol = Z3_mk_string_symbol(context, getFuncName(func));
+	    result = Z3_mk_const(context, symbol, toZ3Sort(context, getSort(term)));
+	  }
+	  break;
 	default:
 	  assert(0);
 	  result = Z3_mk_false(context);

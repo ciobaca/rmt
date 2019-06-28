@@ -27,6 +27,10 @@ rewrite-system flanguage
 
 // !EOF!
 
+defined-simplify (reduce N I S) /\ (mle N I);
+
+!EOF!
+
 defined-simplify (reduce 8 5 S);
 defined-simplify (reduce 8 (mplus 5 1) (fplus 5 S));
 defined-simplify (reduce 8 (mplus (mplus 5 1) 1) (fplus (mplus 5 1) (fplus 5 S)));

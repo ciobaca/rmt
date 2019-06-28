@@ -60,6 +60,7 @@ void simplifySmtUnifySolution(SmtUnifySolution &solution)
 
 vector<SmtUnifySolution> smtUnify(FastTerm t1, FastTerm t2)
 {
+  LOG(DEBUG6, cerr << "smtUnify " << toString(t1) << " " << toString(t2));
   FastTerm t1Abstract;
   FastSubst sigma1;
 
@@ -69,9 +70,13 @@ vector<SmtUnifySolution> smtUnify(FastTerm t1, FastTerm t2)
   abstractTerm(t1, t1Abstract, sigma1);
   abstractTerm(t2, t2Abstract, sigma2);
 
+  LOG(DEBUG6, cerr << "abstraction of " << toString(t1) << " = " << toString(t1Abstract) << "{" << toString(sigma1) << "}");
+  LOG(DEBUG6, cerr << "abstraction of " << toString(t2) << " = " << toString(t2Abstract) << "{" << toString(sigma2) << "}");
   vector<FastSubst> solutions = unify(t1Abstract, t2Abstract);
   vector<SmtUnifySolution> result;
+  LOG(DEBUG6, cerr << "unification produces " << solutions.size() << " solutions.");
   for (uint i = 0; i < solutions.size(); ++i) {
+    LOG(DEBUG6, cerr << "solution " << (i + 1) << ":" << toString(solutions[i]));
     FastSubst sigma = solutions[i];
     FastSubst sigmaPrime;
     FastTerm constraint = fastTrue();

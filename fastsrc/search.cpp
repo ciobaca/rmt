@@ -329,7 +329,14 @@ FastTerm smtDefinedSimplify(FastTerm iterm, FastTerm iconstraint, const RewriteS
   vector<FastTerm> cts;
   FastSubst subst;
   for (uint i = 0; i < vars.size(); ++i) {
-    cts.push_back(newFuncTerm(newConst((string(getVarName(vars[i])) + "C").c_str(), getVarSort(vars[i])), nullptr));
+    FastFunc funcFresh = newConst((string(getVarName(vars[i])) + "C").c_str(), getVarSort(vars[i]));
+
+    extern bool funcIsBuiltin[MAXFUNCS];
+    extern BuiltinFuncType builtinFunc[MAXFUNCS];
+    funcIsBuiltin[funcFresh] = true;
+    builtinFunc[funcFresh] = bltnFreshConstant;
+    
+    cts.push_back(newFuncTerm(funcFresh, nullptr));
     subst.addToSubst(vars[i], cts[i]);
     LOG(DEBUG5, cerr << "rename " << toString(vars[i]) << " to " << toString(cts[i]));
   }

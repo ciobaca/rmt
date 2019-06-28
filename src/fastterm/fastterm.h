@@ -47,6 +47,8 @@ enum BuiltinFuncType {
   bltnIte,
 
   bltnUD,
+
+  bltnFreshConstant,
 };
 
 typedef unsigned int uint32;

@@ -59,6 +59,8 @@ Z3_context init_z3_context()
   return z3context;
 }
 
+map<pair<Z3_context, Z3_sort>, FastSort> sort_from_z3sort;
+
 Z3_sort toZ3Sort(Z3_context context, FastSort sort)
 {
   if (cacheSort.find(std::make_pair(context, sort)) != cacheSort.end()) {
@@ -91,6 +93,7 @@ Z3_sort toZ3Sort(Z3_context context, FastSort sort)
       result = Z3_mk_uninterpreted_sort(context, symbol);
     }
     cacheSort[std::make_pair(context, sort)] = result;
+    sort_from_z3sort[make_pair(context, result)] = sort;
     return result;
   }
 }
@@ -350,12 +353,12 @@ void add_z3_assert(FastTerm term)
 
 FastTerm simplify(FastTerm term)
 {
-  return simplifyFast(term);
-  
+  //  return simplifyFast(term);
+
   //  printf("simplify %d\n", count++);
   //  term = simplifyFast(term);
   //  return term;
-  
+
   Z3_context z3context = init_z3_context();
 
   Z3_params simplifyParams = Z3_mk_params(z3context);
@@ -479,8 +482,10 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	  }
 	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
 	  Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
-	  FastSort sa1 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg1)));
-	  FastSort sa2 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg2)));
+	  FastSort sa1 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg1))];
+	  FastSort sa2 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg2))];
+	  //	  FastSort sa1 = getSortByName(Z3_sort_to_string(z3context, ));
+	  //	  FastSort sa2 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg2)));
 	  if (sa1 != sa2) {
 	    abortWithMessage("Equality for different sorts in Z3_OP_EQ application.");
 	  }
@@ -663,9 +668,13 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
 	  Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
 	  Z3_ast arg3 = Z3_get_app_arg(z3context, app, 2);
-	  FastSort sa1 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg1)));
-	  FastSort sa2 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg2)));
-	  FastSort sa3 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg3)));
+	  FastSort sa1 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg1))];
+	  FastSort sa2 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg2))];
+	  FastSort sa3 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg3))];
+
+	  //	  FastSort sa1 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg1)));
+	  //	  FastSort sa2 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg2)));
+	  //	  FastSort sa3 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg3)));
 	  pair<FastSort, pair<FastSort, FastSort>> key = make_pair(sa1, make_pair(sa2, sa3));
 	  FastFunc fun = storeFunc[key];
 	  FastTerm newargs[3];
@@ -686,8 +695,10 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	  }
 	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
 	  Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
-	  FastSort sa1 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg1)));
-	  FastSort sa2 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg2)));
+	  FastSort sa1 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg1))];
+	  FastSort sa2 = sort_from_z3sort[make_pair(z3context, Z3_get_sort(z3context, arg2))];
+	  // FastSort sa1 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg1)));
+	  // FastSort sa2 = getSortByName(Z3_sort_to_string(z3context, Z3_get_sort(z3context, arg2)));
 	  pair<FastSort, pair<FastSort, FastSort>> key = make_pair(sort, make_pair(sa1, sa2));
 	  FastFunc fun = selectFunc[key];
 	  FastTerm newargs[3];

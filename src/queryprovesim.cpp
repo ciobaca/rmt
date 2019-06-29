@@ -199,6 +199,32 @@ ConstrainedTerm QueryProveSim::pairC(FastTerm left, FastTerm right, FastTerm con
   return simplify(ConstrainedTerm(newFuncTerm(pairFun, args), constraint));
 }
 
+bool QueryProveSim::possibleLhsBase(FastTerm lhs) {
+  for (int i = 0; i < (int)base.size(); ++i) {
+    FastTerm lhsBase, rhsBase;
+    QueryProveSim::decomposeConstrainedTermEq(base[i], lhsBase, rhsBase);
+    LOG(INFO, cout << "possibleLhsBase? Checking whether " << toString(lhs) << " unifies with " << toString(lhsBase) << endl);
+    if (ConstrainedTerm(lhs, fastTrue()).whenImplies(ConstrainedTerm(lhsBase, fastTrue())) != fastFalse()) {
+      LOG(INFO, cout << "possibleLhsBase?     Is true that " << toString(lhs) << " unifies with " << toString(lhsBase) << endl);
+      return true;
+    }
+    LOG(INFO, cout << "possibleLhsBase?    Not true that " << toString(lhs) << " unifies with " << toString(lhsBase) << endl);
+  }
+  return false;
+}
+
+bool QueryProveSim::possibleRhsBase(FastTerm rhs) {
+  for (int i = 0; i < (int)base.size(); ++i) {
+    FastTerm lhsBase, rhsBase;
+    QueryProveSim::decomposeConstrainedTermEq(base[i], lhsBase, rhsBase);
+    if (ConstrainedTerm(rhs, fastTrue()).whenImplies(ConstrainedTerm(rhsBase, fastTrue())) != fastFalse()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
 bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, int depth) {
   if (depth > maxDepth) {
     cout << spaces(depth) << "! proof failed (exceeded maximum depth) forall left " << toString(ct) << endl;

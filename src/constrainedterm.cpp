@@ -159,18 +159,25 @@ ConstrainedTerm simplify(const ConstrainedTerm &ct)
 //   return ct;
 // }
 
-// ConstrainedTerm ConstrainedTerm::fresh()
-// {
-//   vector<Variable *> myvars;
-//   append(myvars, term->vars());
-//   append(myvars, constraint->vars());
+ConstrainedTerm ConstrainedTerm::fresh() {
+  vector<FastVar> myvars;
+  vector<FastVar> tmp;
+  varsOf(term, tmp);
+  myvars.insert(myvars.end(), tmp.begin(), tmp.end());
+  tmp.clear();
+  varsOf(constraint, tmp);
+  myvars.insert(myvars.end(), tmp.begin(), tmp.end());
 
-//   map<Variable *, Variable *> renaming = freshRenaming(myvars);
+  //TODO
+  /*
+  map<FastVar, FastVar> renaming = freshRenaming(myvars);
 
-//   Substitution subst = createSubstitution(renaming);
+  Substitution subst = createSubstitution(renaming);
 
-//   return this->substitute(subst);
-// }
+  return this->substitute(subst);
+  */
+  return *this;
+}
 
 
 // // assume *this = <t1 if c1>
@@ -181,28 +188,34 @@ ConstrainedTerm simplify(const ConstrainedTerm &ct)
 // // 
 // // X are all variables in <t1 if c1>
 // // Y are all variables in <t2 if c2>
-// Term *ConstrainedTerm::whenImplies(ConstrainedTerm goal)
-// {
-//   ConstrainedTerm freshGoal = goal.fresh();
-//   vector<Variable *> vars = freshGoal.vars();
-//   Substitution subst;
-//   Term *constraint;
-//   Log(DEBUG) << "whenImplies " << this->toString() << " " << goal.toString() << endl; 
-//   if (this->term->unifyModuloTheories(freshGoal.term, subst, constraint)) {
-//     Log(DEBUG) << "whenImplies unification " << endl;
-//     Term *lhsConstraint = this->constraint->substitute(subst);
-//     Term *rhsConstraint = freshGoal.constraint->substitute(subst);
-//     Term *resultingConstraint = bImplies(lhsConstraint, introduceExists(bAnd(constraint, rhsConstraint), vars));
-//     if (isSatisfiable(bNot(resultingConstraint)) == unsat) {
-//       return bTrue();
-//     }
-//     if (isSatisfiable(resultingConstraint) != unsat) {
-//       return resultingConstraint;
-//     }
-//   }
-//   Log(DEBUG) << "whenImplies no unification" << endl;
-//   return bFalse();
-// }
+FastTerm ConstrainedTerm::whenImplies(ConstrainedTerm goal) {
+  ConstrainedTerm freshGoal = goal.fresh();
+  vector<FastVar> vars;
+  vector<FastVar> tmp;
+  varsOf(freshGoal.term, vars);
+  varsOf(freshGoal.constraint, tmp);
+  vars.insert(vars.end(), tmp.begin(), tmp.end());
+  FastSubst subst;
+  FastSubst constraint;
+  LOG(DEBUG3, cout << "whenImplies " << toString(*this) << " " << toString(goal) << endl);
+  //TODO
+  /*
+  if (this->term->unifyModuloTheories(freshGoal.term, subst, constraint)) {
+    Log(DEBUG) << "whenImplies unification " << endl;
+    Term *lhsConstraint = this->constraint->substitute(subst);
+    Term *rhsConstraint = freshGoal.constraint->substitute(subst);
+    Term *resultingConstraint = bImplies(lhsConstraint, introduceExists(bAnd(constraint, rhsConstraint), vars));
+    if (isSatisfiable(bNot(resultingConstraint)) == unsat) {
+      return bTrue();
+    }
+    if (isSatisfiable(resultingConstraint) != unsat) {
+      return resultingConstraint;
+    }
+  }
+  Log(DEBUG) << "whenImplies no unification" << endl;
+  */
+  return fastFalse();
+}
 
 // // ConstrainedTerm ConstrainedTerm::normalizeFunctions()
 // // {

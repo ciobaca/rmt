@@ -39,9 +39,9 @@ struct ConstrainedTerm
 
   /* //  ConstrainedTerm normalizeFunctions(); */
 
-  /* Term *whenImplies(ConstrainedTerm goal); */
+  FastTerm whenImplies(ConstrainedTerm goal);
 
-  /* ConstrainedTerm fresh(); */
+  ConstrainedTerm fresh();
 };
 
 std::string toString(const ConstrainedTerm &ct);

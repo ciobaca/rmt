@@ -24,7 +24,15 @@ const int DEBUG9 = 9;
 
 std::string levelToString(const int);
 
+#ifndef NDEBUG
+
 #define LOG(level, params) do { if (level <= debug_level) { std::cerr << levelToString(level); params; std::cerr << std::endl; } } while (0)
+
+#else
+
+#define LOG(level, params)
+
+#endif
 
 #define LOGSAT(params) do { if (debug_sat) { std::cerr << "SAT "; params; std::cerr << std::endl; } } while (0)
 

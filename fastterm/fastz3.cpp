@@ -384,8 +384,12 @@ FastTerm simplify(FastTerm term)
   }
 }
 
+std::clock_t startSimplifyBuiltin;
+std::clock_t timeSimplifyBuiltin;
+
 FastTerm simplifyBuiltin(FastTerm term)
 {
+  startSimplifyBuiltin = clock();
   assert(isBuiltinSort(getSort(term)));
   LOG(DEBUG9, cerr << "Simplifying " << toString(term));
   LOG(DEBUG9, cerr << "of sort " << getSortName(getSort(term)));
@@ -436,7 +440,10 @@ FastTerm simplifyBuiltin(FastTerm term)
   }
   Z3_ast z3result = Z3_simplify_ex(z3context, toSimplify, simplifyParams);
   std::vector<FastVar> boundVars;
-  return unZ3(z3result, getSort(term), boundVars, z3context);
+  FastTerm result = unZ3(z3result, getSort(term), boundVars, z3context);
+  
+  timeSimplifyBuiltin += clock() - startSimplifyBuiltin;
+  return result;
 }
 
 #include <map>

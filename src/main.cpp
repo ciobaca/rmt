@@ -556,6 +556,13 @@ string parseRewriteSystem(string &s, int &w, RewriteSystem &rs)
   return name;
 }
 
+extern std::clock_t timeSimplifyBuiltin;
+
+void printPerformanceInformation()
+{
+  cout << "Builtin simplification time: " << ((double)timeSimplifyBuiltin / CLOCKS_PER_SEC);
+}
+
 /*
   Entry point to the RMT tool.
 */
@@ -654,6 +661,6 @@ int main(int argc, char **argv)
     }
   }
   cout << "Done" << endl;
-  // printDebugInformation();
+  printPerformanceInformation();
   return 0;
 }

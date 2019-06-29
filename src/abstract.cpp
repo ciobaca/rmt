@@ -20,7 +20,7 @@ void abstractTerm(FastTerm term, FastTerm &resultTerm, FastSubst &abstractingSub
       for (uint i = 0; i < getArity(func); ++i) {
 	abstractTerm(getArg(term, i), terms[i], abstractingSubst);
       }
-      resultTerm = newFuncTerm(func, &terms[0]);
+      resultTerm = newFuncTerm(func, terms.data());
     }
   }
 }

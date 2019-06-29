@@ -183,19 +183,20 @@ void QueryProveSim::execute() {
   // expand all defined functions in circularities (twice)
   for (int i = 0; i < circCount; ++i) {
     ConstrainedTerm ct = circularities[i];
-    smtSearchRewriteSystem(ct, rsDefinedCombined);
-    /*vector<ConstrainedTerm> csols = ct.smtNarrowDefinedSearch(1, 1);
+    vector<SmtSearchSolution> solutions = prune(smtSearchRewriteSystem(ct, rsDefinedCombined), context);
+    vector<ConstrainedTerm> csols = solutionsToTerms(solutions);
     for (int j = 0; j < (int)csols.size(); ++j) {
       ConstrainedTerm newBase = csols[j];
-      vector<ConstrainedTerm> csols2 = newBase.smtNarrowDefinedSearch(1, 1);
+      solutions = prune(smtSearchRewriteSystem(newBase, rsDefinedCombined), context);
+      vector<ConstrainedTerm> csols2 = solutionsToTerms(solutions);
       for (int k = 0; k < (int)(csols2.size()); ++k) {
         ConstrainedTerm newnewBase = csols2[k];
-        Log(INFO) << "Adding new circ (not necessary to prove) " << newnewBase.toString() << endl;
+        LOG(INFO, cout << "Adding new circ (not necessary to prove) " << toString(newnewBase) << endl);
         circularities.push_back(newnewBase);
       }
-      Log(INFO) << "Adding new circ (not necessary to prove) " << newBase.toString() << endl;
+      LOG(INFO, cout << "Adding new circ (not necessary to prove) " << toString(newBase) << endl);
       circularities.push_back(newBase);
-    }*/
+    }
   }
 
   // prove all circularities

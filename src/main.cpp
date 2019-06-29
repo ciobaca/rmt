@@ -408,7 +408,7 @@ void parseFunctions(string &s, int &w)
         parseError("Associative or commutative functions must have exactly two arguments", w, s);
       }
       if (!isCommutative && !isAssociative && !hasUnity) {
-	newFunc(f.c_str(), result, arguments.size(), &arguments[0]);
+	newFunc(f.c_str(), result, arguments.size(), arguments.data());
       } else if (isCommutative && isAssociative && !hasUnity) {
 	for (uint32 i = 0; i < arguments.size(); ++i) {
 	  if (arguments[i] != result) {

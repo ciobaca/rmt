@@ -225,16 +225,20 @@ vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
   return smtSearchRewriteSystem(ct.term, ct.constraint, rs);
 }
 
-vector<SmtSearchSolution> prune(const vector<SmtSearchSolution> &sols)
-{
+vector<SmtSearchSolution> prune(const vector<SmtSearchSolution> &sols, Z3_context context) {
   vector<SmtSearchSolution> result;
-  Z3_context context = init_z3_context();
   for (uint i = 0; i < sols.size(); ++i) {
     if (z3_sat_check(context, sols[i].constraint) != Z3_L_FALSE) {
       result.push_back(sols[i]);
     }
   }
   return result;
+}
+
+//Buru note: this one inits context evey time.. intended?
+vector<SmtSearchSolution> prune(const vector<SmtSearchSolution> &sols)
+{
+  return prune(sols, init_z3_context());
 }
 
 FastTerm smtDefinedSimplifyTopMost(FastTerm cterm, FastTerm iconstraint,
@@ -358,4 +362,12 @@ FastTerm smtDefinedSimplify(FastTerm iterm, FastTerm iconstraint, const RewriteS
 FastTerm smtDefinedSimplify(const ConstrainedTerm &ct, const RewriteSystem &rs)
 {
   return smtDefinedSimplify(ct.term, ct.constraint, rs);
+}
+
+vector<ConstrainedTerm> solutionsToTerms(vector<SmtSearchSolution> &sols) {
+  vector<ConstrainedTerm> res;
+  for (auto &it : sols)
+    res.push_back(ConstrainedTerm(it.subst.applySubst(it.rhs),
+      it.subst.applySubst(it.constraint)));
+  return res;
 }

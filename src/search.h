@@ -33,7 +33,8 @@ struct SmtSearchSolution
 };
 
 std::string toString(const SmtSearchSolution &solution);
-
+std::vector<SmtSearchSolution> prune(const std::vector<SmtSearchSolution> &sols,
+  Z3_context context);
 std::vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
 						      const RewriteSystem &rs,
 						      uint32 minDepth, uint32 maxDepth);
@@ -45,5 +46,7 @@ std::vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
 std::vector<SmtSearchSolution> prune(const std::vector<SmtSearchSolution> &sols);
 
 FastTerm smtDefinedSimplify(const ConstrainedTerm &ct, const RewriteSystem &rs);
+
+std::vector<ConstrainedTerm> solutionsToTerms(std::vector<SmtSearchSolution> &sols);
 
 #endif

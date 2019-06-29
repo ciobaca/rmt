@@ -1391,6 +1391,7 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
       case Z3_OP_INTERNAL:
 	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
 	break;
+  /*
       case Z3_OP_PR_ASSUMPTION_ADD:
 	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
 	break;
@@ -1427,6 +1428,10 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
       case Z3_OP_SPECIAL_RELATION_TRC:
 	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_INTERNAL    .");
 	break;
+  */
+      default:
+        LOG(DEBUG8, cerr << "unZ3: undefined case.");
+  break;
       }
       break;
     }

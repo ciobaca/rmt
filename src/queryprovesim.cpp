@@ -176,14 +176,36 @@ void QueryProveSim::parse(std::string &s, int &w) {
 extern map<string, RewriteSystem> rewriteSystems;
 extern RewriteSystem rsDefinedCombined;
 
+void QueryProveSim::decomposeConstrainedTermEq(ConstrainedTerm ct, FastTerm &lhs, FastTerm &rhs) {
+  if (!isFuncTerm(ct.term)) {
+    LOG(ERROR, cerr << "Expected a pair as top-most function symbol (found variable instead)." << endl);
+    LOG(ERROR, cerr << toString(ct) << endl);
+    abort();
+  }
+  FastTerm term = ct.term;
+  FastFunc funct = getFunc(term);
+  if (getArity(funct) != 2) {
+    LOG(ERROR, cerr << "Expecting a pair as top-most function symbol in base equivalence (found function symbol of wrong arity instead)." << endl);
+    LOG(ERROR, cerr << toString(term) << endl);
+    abort();
+  }
+  lhs = getArg(term, 0);
+  rhs = getArg(term, 1);
+}
+
+ConstrainedTerm QueryProveSim::pairC(FastTerm left, FastTerm right, FastTerm constraint) {
+  FastTerm args[2];
+  args[0] = left, args[1] = right;
+  return simplify(ConstrainedTerm(newFuncTerm(pairFun, args), constraint));
+}
+
 bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, int depth) {
   if (depth > maxDepth) {
     cout << spaces(depth) << "! proof failed (exceeded maximum depth) forall left " << toString(ct) << endl;
     return false;
   }
   FastTerm lhs = 0, rhs = 0;
-  //TODO
-  //QueryProveSim::decomposeConstrainedTermEq(ct, lhs, rhs);
+  QueryProveSim::decomposeConstrainedTermEq(ct, lhs, rhs);
 
   cout << spaces(depth) << "+ prove forall left " << toString(ct) << endl;
   //TODO
@@ -211,12 +233,11 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
   vector<SmtSearchSolution> solutions = prune(smtSearchRewriteSystem(ct, crsRight));
   vector<ConstrainedTerm> lhsSuccs = solutionsToTerms(solutions);
   for (int i = 0; i < (int)lhsSuccs.size(); ++i) {
-    //TODO
-    //ConstrainedTerm afterStep = pairC(lhsSuccs[i].term, rhs, fastAnd(ct.constraint, lhsSuccs[i].constraint));
-    //if (!proveSimulationForallLeft(afterStep, true, depth + 1)) {
-    //  cout << spaces(depth) << "! proof failed (" << i << "th successor) forall left " << toString(ct) << endl;
-    //  return false;
-    //}
+    ConstrainedTerm afterStep = pairC(lhsSuccs[i].term, rhs, fastAnd(ct.constraint, lhsSuccs[i].constraint));
+    if (!proveSimulationForallLeft(afterStep, true, depth + 1)) {
+      cout << spaces(depth) << "! proof failed (" << i << "th successor) forall left " << toString(ct) << endl;
+      return false;
+    }
   }
   if (lhsSuccs.size() > 0) {
     cout << spaces(depth) << "- proof succeeded forall left " << toString(ct) << endl;

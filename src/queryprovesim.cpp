@@ -176,6 +176,72 @@ void QueryProveSim::parse(std::string &s, int &w) {
 extern map<string, RewriteSystem> rewriteSystems;
 extern RewriteSystem rsDefinedCombined;
 
+bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, int depth) {
+  if (depth > maxDepth) {
+    cout << spaces(depth) << "! proof failed (exceeded maximum depth) forall left " << toString(ct) << endl;
+    return false;
+  }
+  FastTerm lhs = 0, rhs = 0;
+  //TODO
+  //QueryProveSim::decomposeConstrainedTermEq(ct, lhs, rhs);
+
+  cout << spaces(depth) << "+ prove forall left " << toString(ct) << endl;
+  //TODO
+  //LOG(DEBUG5, cout << spaces(depth) << "possible lhs base " << possibleLhsBase(lhs) << endl);
+  //LOG(DEBUG5, cout << spaces(depth) << "progressLeft " << progressLeft << "; possibleLhsCircularity " << possibleLhsCircularity(lhs) << endl);
+  FastTerm unsolvedConstraint = fastTrue();
+  if (//possibleLhsBase(lhs) ||
+    //TODO
+    //(canApplyCircularities(progressLeft, true /*I COULD have progress right*/) && possibleLhsCircularity(lhs))
+    true
+    ) {
+    LOG(DEBUG5, cout << spaces(depth) << "possible lhs base or circularity" << endl);
+    //TODO
+    //unsolvedConstraint = proveSimulationExistsRight(proveSimulationExistsRight_arguments(ct, false, depth + 1), progressLeft);
+    if (unsolvedConstraint == NULL) {
+      cout << spaces(depth) << "- proof succeeded forall left " << toString(ct) << endl;
+      return true;
+    }
+    LOG(DEBUG5, cout << spaces(depth) << "continuing forall left for case " << toString(unsolvedConstraint) << endl);
+  }
+
+  ct = ConstrainedTerm(ct.term, simplify(fastAnd(ct.constraint, unsolvedConstraint)));
+
+  smtDefinedSimplify(ConstrainedTerm(lhs, ct.constraint), crsLeft);
+  vector<SmtSearchSolution> solutions = prune(smtSearchRewriteSystem(ct, crsRight));
+  vector<ConstrainedTerm> lhsSuccs = solutionsToTerms(solutions);
+  for (int i = 0; i < (int)lhsSuccs.size(); ++i) {
+    //TODO
+    //ConstrainedTerm afterStep = pairC(lhsSuccs[i].term, rhs, fastAnd(ct.constraint, lhsSuccs[i].constraint));
+    //if (!proveSimulationForallLeft(afterStep, true, depth + 1)) {
+    //  cout << spaces(depth) << "! proof failed (" << i << "th successor) forall left " << toString(ct) << endl;
+    //  return false;
+    //}
+  }
+  if (lhsSuccs.size() > 0) {
+    cout << spaces(depth) << "- proof succeeded forall left " << toString(ct) << endl;
+    return true;
+  }
+  else {
+    cout << spaces(depth) << "- proof failed forall left (no successors) " << toString(ct) << endl;
+    return false;
+  }
+}
+
+
+bool QueryProveSim::proveSimulation(ConstrainedTerm ct, int depth) {
+  ct = ct;
+  cout << spaces(depth) << "Proving simulation circularity " << toString(ct) << endl;
+  bool result = proveSimulationForallLeft(ct, false, depth + 1); //needProgressRight = true;
+  if (result) {
+    cout << spaces(depth) << "Proof succeeded." << endl;
+  }
+  else {
+    cout << spaces(depth) << "Proof failed." << endl;
+  }
+  return result;
+}
+
 void QueryProveSim::execute() {
   LOG(DEBUG9, cout << "Proving simulation" << endl);
   
@@ -183,15 +249,15 @@ void QueryProveSim::execute() {
   // expand all defined functions in circularities (twice)
   for (int i = 0; i < circCount; ++i) {
     ConstrainedTerm ct = circularities[i];
-    vector<SmtSearchSolution> solutions = prune(smtSearchRewriteSystem(ct, rsDefinedCombined), context);
+    vector<SmtSearchSolution> solutions = prune(smtSearchRewriteSystem(ct, rsDefinedCombined));
     vector<ConstrainedTerm> csols = solutionsToTerms(solutions);
     for (int j = 0; j < (int)csols.size(); ++j) {
       ConstrainedTerm newBase = csols[j];
-      solutions = prune(smtSearchRewriteSystem(newBase, rsDefinedCombined), context);
+      solutions = prune(smtSearchRewriteSystem(newBase, rsDefinedCombined));
       vector<ConstrainedTerm> csols2 = solutionsToTerms(solutions);
       for (int k = 0; k < (int)(csols2.size()); ++k) {
         ConstrainedTerm newnewBase = csols2[k];
-        LOG(INFO, cout << "Adding new circ (not necessary to prove) " << toString(newnewBase) << endl);
+        cout << "Adding new circ (not necessary to prove) " << toString(newnewBase) << endl;
         circularities.push_back(newnewBase);
       }
       LOG(INFO, cout << "Adding new circ (not necessary to prove) " << toString(newBase) << endl);
@@ -208,8 +274,8 @@ void QueryProveSim::execute() {
       cout << "Circularity #" << (i + 1) << " was assumed to be true" << endl;
       ++nrAssumed;
     }
-    //else if (proveSimulation(ct, 0)) {
-    else if(true) {
+    else if (proveSimulation(ct, 0)) {
+    //else if(true) {
       cout << "Succeeded in proving circularity #" << (i + 1) << endl;
     }
     else {

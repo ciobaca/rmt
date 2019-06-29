@@ -40,8 +40,8 @@ vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
 	  FastVar var = solp.subst.data[i];
 	  FastTerm res = solp.subst.data[i + 1];
 	  if (!occurs(var, solp.iterm)) {
-	    solp.rhs = applyUnitySubst(solp.rhs, var, res);
-	    solp.constraint = applyUnitySubst(solp.constraint, var, res);
+	    solp.rhs = simplify(applyUnitySubst(solp.rhs, var, res));
+	    solp.constraint = simplify(applyUnitySubst(solp.constraint, var, res));
 	  } else {
 	    newsubst.addToSubst(var, res);
 	  }

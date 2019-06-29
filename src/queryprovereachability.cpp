@@ -182,8 +182,8 @@ FastTerm QueryProveReachability::proveByCircularities(ConstrainedTerm lhs, FastT
       FastTerm newTerm = introduceExists(sol.constraint, uniqueVars(sol.lhs));
       circularityConstraint = simplify(fastOr(newTerm, circularityConstraint));
 
-      prove(ConstrainedTerm(sol.subst.applySubst(sol.rhs),
-			    sol.subst.applySubst(sol.constraint)),
+      prove(ConstrainedTerm(simplify(sol.subst.applySubst(sol.rhs)),
+			    simplify(sol.subst.applySubst(sol.constraint))),
 	    sol.subst.applySubst(rhs), rs, circ, true, depth + 1, newBranchDepth);
     }
   }
@@ -211,12 +211,12 @@ FastTerm QueryProveReachability::proveByRewrite(ConstrainedTerm lhs, FastTerm rh
   int newBranchDepth = (solutions.size() > 1) ? (branchingDepth + 1) : branchingDepth;
   for (uint i = 0; i < solutions.size(); ++i) {
     SmtSearchSolution sol = solutions[i];
- 
-   rewriteConstraint = simplify(fastOr(introduceExists(sol.constraint,
+    
+    rewriteConstraint = simplify(fastOr(introduceExists(sol.constraint,
 							uniqueVars(sol.lhs)),
-					       rewriteConstraint));
-    prove(ConstrainedTerm(sol.subst.applySubst(sol.rhs),
-			  sol.subst.applySubst(sol.constraint)),
+					rewriteConstraint));
+    prove(ConstrainedTerm(simplify(sol.subst.applySubst(sol.rhs)),
+			  simplify(sol.subst.applySubst(sol.constraint))),
 	  sol.subst.applySubst(rhs), rs, circ, true, depth + 1, newBranchDepth);
   }
 
@@ -250,6 +250,8 @@ void QueryProveReachability::prove(ConstrainedTerm lhs, FastTerm rhs,
 
   LOG(INFO, cerr << spaces(depth) << "Trying to prove " << toString(lhs) << " => " << toString(rhs));
 
+  lhs = simplify(lhs);
+  rhs = simplify(rhs);
   cout << spaces(depth) << "PROVING " << toString(lhs)  << " => " << toString(rhs) << endl;
   FastTerm implicationConstraint = proveByImplication(lhs, rhs, rs, circ, depth);
   ConstrainedTerm implLhs = lhs;

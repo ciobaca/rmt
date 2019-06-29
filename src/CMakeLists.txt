@@ -235,6 +235,10 @@ set_tests_properties (TestFastSearchExample7 PROPERTIES PASS_REGULAR_EXPRESSION 
 add_test(TestFastSearchExample8 "../fastrmt" -v 0 ../../tests/search/search8.rmt)
 set_tests_properties (TestFastSearchExample8 PROPERTIES PASS_REGULAR_EXPRESSION "Success: 2 solutions.")
 
+add_test(TestFastSearchExample9 "../fastrmt" -v 0 ../../tests/search/search9.rmt)
+set_tests_properties (TestFastSearchExample9 PROPERTIES
+PASS_REGULAR_EXPRESSION "done 10")
+
 add_test(TestFastReachExample1A "../fastrmt" -v 0 ../../tests/reach/reach1.rmt)
 set_tests_properties (TestFastReachExample1A PROPERTIES
 PASS_REGULAR_EXPRESSION "1 proved")

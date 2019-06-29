@@ -32,7 +32,22 @@ vector<SmtSearchSolution> smtSearchRewriteSystem(const ConstrainedTerm &ct,
       SmtSearchSolution sol = current[i];
       vector<SmtSearchSolution> succs = smtSearchRewriteSystem(sol.subst.applySubst(sol.rhs), sol.constraint, rs);
       for (uint32 j = 0; j < succs.size(); ++j) {
-	next.push_back(SmtSearchSolution(simplify(sol.iterm), simplify(succs[j].lhs), simplify(succs[j].ruleConstraint), simplify(succs[j].rhs), compose(sol.subst, succs[j].subst), simplify(succs[j].constraint)));
+	SmtSearchSolution solp(simplify(sol.iterm), simplify(succs[j].lhs),
+			       simplify(succs[j].ruleConstraint), simplify(succs[j].rhs),
+			       compose(sol.subst, succs[j].subst), simplify(succs[j].constraint));
+	FastSubst newsubst;
+	for (uint i = 0; i < solp.subst.count; i += 2) {
+	  FastVar var = solp.subst.data[i];
+	  FastTerm res = solp.subst.data[i + 1];
+	  if (!occurs(var, solp.iterm)) {
+	    solp.rhs = applyUnitySubst(solp.rhs, var, res);
+	    solp.constraint = applyUnitySubst(solp.constraint, var, res);
+	  } else {
+	    newsubst.addToSubst(var, res);
+	  }
+	}
+	solp.subst = newsubst;
+	next.push_back(solp);
       }
     }
     current = next;

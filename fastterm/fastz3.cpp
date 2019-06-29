@@ -358,6 +358,7 @@ void add_z3_assert(FastTerm term)
 
 FastTerm simplify(FastTerm term)
 {
+  //  term = simplifyFast(term);
   if (isVariable(term)) {
     return term;
   } else {

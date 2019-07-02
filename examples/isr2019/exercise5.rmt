@@ -1,0 +1,49 @@
+/*
+
+Exercise 5.
+
+Additional reachability proofs.
+
+*/
+sorts State;
+
+signature 
+  init : Int -> State, loop : Int Int -> State, done : Int -> State;
+
+variables S : Int, N : Int, I : Int, J : Int, X : Int, Y : Int, Z : Int, A : Int, B : Int,
+ C : Int, D : Int, BB : Bool;
+
+/* Question 1 */
+// The following system computes 1^2 + 2^2 + ... + X^2
+rewrite-system example1
+  (init X) => (loop 0 X),
+
+  (loop S Y) /\ (bnot (mle 1 Y)) => (done S),
+
+  (loop S Y) /\ (mle 1 Y) =>
+  (loop (mplus S (mtimes Y Y)) (mminus Y 1));
+
+// Find a helper circularity to prove that:
+// (init Y) /\ (mle 0 Y) => (done (mdiv (mtimes Y (mtimes  (mplus Y 1) (mplus (mtimes Y 2) 1))) 6)),
+
+/* Question 2 */
+// A LCTRS to compute 1^2 + 2^2 + ... + X^2, but squaring is done by repeated additions.
+rewrite-system example2
+  (init X) => (loop 0 X),
+
+  (loop S Y) /\ (bnot (mle 1 Y)) => (done S),
+
+  (loop S Y) /\ (mle 1 Y) =>
+  (loop2 S Y Y 0),
+
+// loop2 simulates Y * Y by repeated additions
+  (loop2 S Y X T) /\ (mle 1 X) => (loop2 S Y (mminus X 1) (mplus T Y)),
+
+  (loop2 S Y X T) /\ (bnot (mle 1 X)) => (loop (mplus S T) (mminus Y 1));
+
+// Prove that
+// (init Y) /\ (mle 0 Y) => (done (mdiv (mtimes Y (mtimes (mplus Y 1) (mplus (mtimes Y 2) 1))) 6)),
+// Hint: you will need to helper circularities.
+
+/* Question 3 */
+// Make up an interesting computation using a LCTRS and try to prove it.

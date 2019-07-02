@@ -106,7 +106,7 @@ vector<SmtUnifySolution> smtUnify(FastTerm t1, FastTerm t2)
     }
     SmtUnifySolution solution(sigmaPrime, constraint);
     LOG(DEBUG6, cerr << "smt-unify solution before simplification: " << toString(solution));
-    simplifySmtUnifySolution(solution);
+    //    simplifySmtUnifySolution(solution);
     LOG(DEBUG6, cerr << "smt-unify solution after  simplification: " << toString(solution));
     result.push_back(solution);
   }

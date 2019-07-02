@@ -1,0 +1,119 @@
+/*
+
+Exercise 2 (reachability proofs)
+
+This RMT file formalizes the running example of the lecture.
+
+*/
+sorts Cfg; // define the Cfg sort
+           // Bool and Int are predefined, no need to declare them here
+
+builtins
+  sum : Int Int -> Int;
+
+
+signature
+  init : Int -> Cfg,        // define the three symbols
+  work : Int Int -> Cfg,
+  done : Int -> Cfg;
+
+variables
+  B : Bool, S : Int, N : Int, I : Int; // declare some variables of appropriate sorts
+
+rewrite-system sum         // define a LCTRS called "sum"
+
+  (init N) => (work 0 N),  // note that this rule is a bit different, since
+                           // it does not constrain N to be nonnegative
+
+  // we write lhs /\ phi => rhs
+  // for the lctrr "lhs -> rhs if phi"
+  (work S N) /\ (mle 1 N) => (work (mplus S N) (mminus N 1)),
+     // mle is the builtin "<=" (math-less-or-equal), w/ signature mle : Int Int -> Bool 
+     // mplus : Int Int -> Int is builtin integer addition
+     // other builtin symbols: mtimes, mdiv, mmod, etc.
+
+  (work S N) /\ (bnot (mle 1 N)) => (done S);
+     // bnot is the logical negation builtin
+
+// reachability formulae are in theory of the form <lhs | phil> => <rhs | phi2>
+
+// intuitive meaning: any instance of lhs s.t. phi1 holds reaches,
+// along all terminating paths, an instance of rhs s.t. phi2 holds.
+
+// rmt can prove only formulae of the form <lhs|phi1>=><rhs|true>.
+// we call the formulae to be proven "circularities"
+
+// // we set up a rewrite system with our circularities
+// rewrite-system circularities
+//   (init N) =>                            // this is what we are trying to prove
+//   (done (mdiv (mtimes N (mplus N 1)) 2)),
+
+//   (work S I) /\ (mle 0 I) =>                          // this is a helper "circularity"
+//   (done (mplus S (mdiv (mtimes I (mplus I 1)) 2)));   
+
+// // this query tries to prove all circularities
+// prove in sum : circularities;
+
+/*
+Question 1.
+
+Try to see what happens when trying to prove (init N) | true => (done
+1+...+N) | true (without the constraint on N).
+
+*/
+
+/*
+Question 2.
+
+Prove the correctness of the "sumprime" system, designed in Exercise
+1, Question 4.
+
+You might run into a long running time for Z3; in this case you might
+want to redesign your circularities (they might be false, or not -- we
+don't know). In particular, take care of the constraint in the helper
+circularity.
+
+*/
+
+/*
+
+Question 3.
+
+The semantics of reachability is only for terminating paths.
+
+In non-terminating paths, you can prove anything. Try it out.
+
+*/
+// rewrite-system sumdoubleprime
+//   (init N) => (workp N 1 0),
+//   (workp N I S) => (workp N I S);
+
+// rewrite-system circularitiesdoubleprime
+//   (init N) =>                            
+//   (done 42),
+
+//   (workp N I S) =>             
+//   (done 42);
+
+// prove in sumdoubleprime : circularitiesdoubleprime;
+
+/*
+
+Question 4.
+
+Change the "sum" rewrite system so that the stopping condition for
+work is (mequals 0 N) instead of (mle 1 N). If (bnot (mequals 0 N)),
+the computation should continue.
+
+In particular this will make one infinite run
+(init -1) -> (work 0 -1) -> (work -1 -2) -> (work _ -3) -> ...
+The runs with nonnegative N are still finite.
+
+Prove that the usual circularities hold.
+
+Check that you cannot prove (init N) => (done 42).
+
+Check that you can still prove (init N) /\ (bnot (mle 0 N)) => (done
+42) -- you will need a helper circularity.
+
+*/

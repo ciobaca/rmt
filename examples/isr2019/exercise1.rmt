@@ -1,0 +1,121 @@
+/*
+
+Exercise 1 (unification modulo builtins, narrowing w/ builtins)
+
+This RMT file formalizes the running example of the lecture.
+
+*/
+sorts Cfg; // define the Cfg sort
+           // Bool and Int are predefined, no need to declare them here
+
+signature
+  init : Int -> Cfg,        // define the three symbols
+  work : Int Int -> Cfg,
+  done : Int -> Cfg;
+
+variables
+  B : Bool, S : Int, N : Int, I : Int; // declare some variables of appropriate sorts
+
+rewrite-system sum         // define a LCTRS called "sum"
+
+  (init N) => (work 0 N),  // note that this rule is a bit different, since
+                           // it does not constrain N to be nonnegative
+
+  // we write lhs /\ phi => rhs
+  // for the lctrr "lhs -> rhs if phi"
+  (work S N) /\ (mle 1 N) => (work (mplus S N) (mminus N 1)),
+     // mle is the builtin "<=" (math-less-or-equal), w/ signature mle : Int Int -> Bool 
+     // mplus : Int Int -> Int is builtin integer addition
+     // other builtin symbols: mtimes, mdiv, mmod, etc.
+
+  (work S N) /\ (bnot (mle 1 N)) => (done S);
+     // bnot is the logical negation builtin
+
+/*
+The "smt-unify" query can be used for unification modulo builtins.
+*/
+// smt-unify (work 0 N) (work S I);
+
+//----- UNIFICATION
+/*
+Question 1.
+Run the following queries (uncomment them one-by-one). Try to predict what RMT outputs.
+*/
+
+// smt-unify (init N) (work S I);
+
+// smt-unify (work (mplus N N) S) (work (mplus (mplus I 1) I) S);
+
+// smt-unify (work (mplus N N) S) (work (mtimes N 2) S);
+
+// smt-unify (your own examples) (go here)
+
+//----- ABSTRACTION
+/*
+The "abstract" query can be used to computing abstractions.
+*/
+
+// abstract (work (mplus N N) S);
+
+/*
+Question 2.
+Compute the abstractions of a few terms, see what you get.
+*/
+
+// abstract (work (mplus N N) S);
+
+// abstract (work (mtimes N 2) S);
+
+// abstract (init S);
+
+//----- NARROWING
+/*
+
+A query like "search in sum : term /\ constraint" performs narrowing in the presence of builtins.
+
+The constraint is optional (if missing, it is assumed to be true).
+
+*/
+
+/*
+Question 3.
+Try the following commands
+*/
+// search in sum : (init N);
+
+// search in sum : (work 0 N);
+
+// search in sum : (work 0 N) /\ (bnot (mle 0 N));
+
+// search in sum : (done 0);
+
+// search in sum : (done 0);
+
+// search [2,2] in sum : (init N) /\ (mle 1 N);
+
+// search [1,2] in sum : (init N) /\ (mle 1 N);
+
+// What does "search [n, m] in _ : _" do ?
+
+// search [1,4] in sum : (init N);
+// search [1,1] in sum : (init 3);
+// search [2,2] in sum : (init 3);
+// search [3,3] in sum : (init 3);
+// search [4,4] in sum : (init 3);
+// search [5,5] in sum : (init 3);
+// search [6,6] in sum : (init 4);
+
+/*
+Question 4.
+
+Create a LCTRS "sumprime" to compute 1 + ... + n, but count up to N
+instead of from N to 0.
+
+Use a three-place "workprime" symbol s.t. workprime(N, I, S) increases
+I with each step until reaching N, holding the current sum in S. Don't
+forge to declare workprime above.
+
+Make sure you call your new system something other than "sum". Test it
+with a couple of search queries.
+
+*/

@@ -311,6 +311,10 @@ add_test(TestFastReachExample8C "../fastrmt" -v 0 ../../tests/reach/reach8.rmt)
 set_tests_properties (TestFastReachExample8C PROPERTIES
 PASS_REGULAR_EXPRESSION "3 proved")
 
+add_test(TestFastReachExample9 "../fastrmt" -v 0 ../../tests/reach/reach9.rmt)
+set_tests_properties (TestFastReachExample9 PROPERTIES
+PASS_REGULAR_EXPRESSION "1 not proved")
+
 add_test(TestFastDefined1 "../fastrmt" -v 0 ../../tests/defined/defined1.rmt)
 set_tests_properties (TestFastDefined1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
 

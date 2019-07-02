@@ -1,0 +1,67 @@
+/*
+SMT Arrays.
+*/
+
+sorts State,
+      Map / "Array Int Int"; // define sort "Map" interpreted as an SMT array from ints to ints
+
+signature
+  init : Int -> State,
+  work : Map -> State, // work now uses a map
+  done : Int -> State,
+  select : Map Int -> Int / "select",    // the usual functions for SMT arrays
+  store : Map Int Int -> Map / "store",  // 
+  constarray : Int -> Map / "constarray" // 
+  ;
+
+variables B : Bool, S : Int, N : Int, I : Int, MAP : Map;
+
+rewrite-system sum
+
+  (init N) => (work (store (constarray 0) 1 N)),
+
+  (work MAP) /\ (mle 1 (select MAP 1)) => (work
+  	     	       (store (store MAP 1 (mminus (select MAP 1) 1)) 2 (mplus (select MAP 2) (select MAP 1)))),
+
+  (work MAP) /\ (bnot (mle 1 (select MAP 1))) => (done (select MAP 2));
+
+/*
+
+Question 1.
+
+Try the following simple queries.
+
+*/
+// search [6,6] in sum : (init 4);
+// search [7,7] in sum : (init 5);
+
+/*
+
+Question 2.
+
+Adapt the circularities in the previous example to prove this system
+also computed 1 + ... + N.
+
+*/
+
+/*
+
+Question 3.
+
+Adapt the forward approach (with (workprime N I S)) to arrays and
+prove it is correct.
+
+*/
+
+/*
+
+Question 4.
+
+
+Create a LCTRS that computes (1+...+N)-N-(N-1)-...1 and prove that it
+computes 0.
+
+Hint: you will need (at least) two helper circularities (three
+circularities alltogether).
+
+*/

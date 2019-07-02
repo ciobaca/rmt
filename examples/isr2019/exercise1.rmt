@@ -46,7 +46,7 @@ Run the following queries (uncomment them one-by-one). Try to predict what RMT o
 
 // smt-unify (work (mplus N N) S) (work (mplus (mplus I 1) I) S);
 
-// smt-unify (work (mplus N N) S) (work (mtimes N 2) S);
+smt-unify (work (mplus N N) S) (work (mtimes N 2) S);
 
 // smt-unify (your own examples) (go here)
 

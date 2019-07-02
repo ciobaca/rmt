@@ -201,7 +201,8 @@ add_test(TestFastBasicSmtUnif2 "../fastrmt" -v 0 ../../tests/basic/smtunif2.rmt)
 set_tests_properties (TestFastBasicSmtUnif2 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
 
 add_test(TestFastBasicSmtUnif3 "../fastrmt" -v 0 ../../tests/basic/smtunif3.rmt)
-set_tests_properties (TestFastBasicSmtUnif3 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")
+set_tests_properties (TestFastBasicSmtUnif3 PROPERTIES
+PASS_REGULAR_EXPRESSION "No solution")
 
 add_test(TestFastBasicSmtUnif4 "../fastrmt" -v 0 ../../tests/basic/smtunif4.rmt)
 set_tests_properties (TestFastBasicSmtUnif4 PROPERTIES PASS_REGULAR_EXPRESSION "Solution count: 1")

@@ -135,6 +135,10 @@ set_tests_properties (TestFastParsingSignature12 PROPERTIES PASS_REGULAR_EXPRESS
 add_test(TestFastParsingSignature13 "../fastrmt" -v 0 ../../tests/parsing/signature13.rmt)
 set_tests_properties (TestFastParsingSignature13 PROPERTIES PASS_REGULAR_EXPRESSION "Unknown builtin function asdf")
 
+add_test(TestFastParsingBuiltins1 "../fastrmt" -v 0 ../../tests/parsing/builtins1.rmt)
+set_tests_properties (TestFastParsingBuiltins1 PROPERTIES
+PASS_REGULAR_EXPRESSION "2 solutions")
+
 add_test(TestFastParsingVar1 "../fastrmt" -v 0 ../../tests/parsing/var1.rmt)
 set_tests_properties (TestFastParsingVar1 PROPERTIES PASS_REGULAR_EXPRESSION "Done")
 

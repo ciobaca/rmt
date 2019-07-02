@@ -1,0 +1,21 @@
+sorts State;
+
+signature
+  cons : Int -> State
+  ;
+
+variables N : Int;
+
+rewrite-system test1
+  (cons N) /\ (mle 0 N) => (cons 1)
+  ,
+  (cons N) /\ (mgt 0 N) => (cons 2)
+  ,
+  (cons N) /\ (mlt 0 N) => (cons 3)
+  ,
+  (cons N) /\ (mge 0 N) => (cons 4)
+;
+
+search in test1 : (cons 0);
+search in test1 : (cons (mminus 0 1));
+search in test1 : (cons 1);

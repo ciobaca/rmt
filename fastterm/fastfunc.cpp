@@ -147,7 +147,7 @@ void initFuncs()
   funcIsBuiltin[funcGE] = true;
   builtinFunc[funcGE] = bltnGE;
 
-  funcGt = newFunc("mge", fastBoolSort(), 2, args);
+  funcGt = newFunc("mgt", fastBoolSort(), 2, args);
   funcIsBuiltin[funcGt] = true;
   builtinFunc[funcGt] = bltnGt;
 

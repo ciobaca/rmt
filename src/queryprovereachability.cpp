@@ -93,6 +93,7 @@ void QueryProveReachability::execute()
   RewriteSystem circ = rewriteSystems[circularitiesRewriteSystemName];
 
   for (int i = 0; i < (int)circ.size(); ++i) {
+    unproven.clear();
     ConstrainedTerm lhs = circ[i].first;
     FastTerm rhs = circ[i].second;
     cout << endl;

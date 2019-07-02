@@ -192,6 +192,18 @@ Z3_ast toZ3Term(Z3_context context, FastTerm term)
 	  assert(getArity(func) == 2);
 	  result = Z3_mk_le(context, args[0], args[1]);
 	  break;
+	case bltnGE:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_ge(context, args[0], args[1]);
+	  break;
+	case bltnLt:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_lt(context, args[0], args[1]);
+	  break;
+	case bltnGt:
+	  assert(getArity(func) == 2);
+	  result = Z3_mk_gt(context, args[0], args[1]);
+	  break;
 	case bltnPlus:
 	  assert(getArity(func) == 2);
 	  result = Z3_mk_add(context, 2, args);
@@ -518,6 +530,48 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	  return resultUnZ3;
 	}
 	break;
+      case Z3_OP_GE:
+	{
+	  assert(sort == fastBoolSort());
+	  Z3_app app = Z3_to_app(z3context, ast);
+	  if (Z3_get_app_num_args(z3context, app) != 2) {
+	    abortWithMessage("Expected 2 arguments in Z3_OP_GE application.");
+	  }
+	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	  Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	  FastTerm resultUnZ3 = fastGE(unZ3(arg1, fastIntSort(), boundVars, z3context), unZ3(arg2, fastIntSort(), boundVars, z3context));
+	  LOG(DEBUG8, cerr << "Result of unZ3 = " << toString(resultUnZ3) << ".");
+	  return resultUnZ3;
+	}
+	break;
+      case Z3_OP_GT:
+	{
+	  assert(sort == fastBoolSort());
+	  Z3_app app = Z3_to_app(z3context, ast);
+	  if (Z3_get_app_num_args(z3context, app) != 2) {
+	    abortWithMessage("Expected 2 arguments in Z3_OP_GT application.");
+	  }
+	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	  Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	  FastTerm resultUnZ3 = fastGt(unZ3(arg1, fastIntSort(), boundVars, z3context), unZ3(arg2, fastIntSort(), boundVars, z3context));
+	  LOG(DEBUG8, cerr << "Result of unZ3 = " << toString(resultUnZ3) << ".");
+	  return resultUnZ3;
+	}
+	break;
+      case Z3_OP_LT:
+	{
+	  assert(sort == fastBoolSort());
+	  Z3_app app = Z3_to_app(z3context, ast);
+	  if (Z3_get_app_num_args(z3context, app) != 2) {
+	    abortWithMessage("Expected 2 arguments in Z3_OP_LT application.");
+	  }
+	  Z3_ast arg1 = Z3_get_app_arg(z3context, app, 0);
+	  Z3_ast arg2 = Z3_get_app_arg(z3context, app, 1);
+	  FastTerm resultUnZ3 = fastLt(unZ3(arg1, fastIntSort(), boundVars, z3context), unZ3(arg2, fastIntSort(), boundVars, z3context));
+	  LOG(DEBUG8, cerr << "Result of unZ3 = " << toString(resultUnZ3) << ".");
+	  return resultUnZ3;
+	}
+	break;
       case Z3_OP_EQ:
 	{
 	  assert(sort == fastBoolSort());
@@ -610,15 +664,6 @@ FastTerm unZ3(Z3_ast ast, FastSort sort, vector<FastVar> boundVars, Z3_context z
 	break;
       case Z3_OP_AGNUM:
 	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_AGNUM.");
-	break;
-      case Z3_OP_GE:
-	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_GE  .");
-	break;
-      case Z3_OP_LT:
-	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_LT  .");
-	break;
-      case Z3_OP_GT:
-	abortWithMessage("In unZ3, cannot handle decl kind Z3_OP_GT  .");
 	break;
       case Z3_OP_ADD:
 	{

@@ -225,7 +225,7 @@ bool QueryProveSim::possibleRhsBase(FastTerm rhs) {
 }
 
 
-bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressLeft, int depth) {
+bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool, int depth) {
   if (depth > maxDepth) {
     cout << spaces(depth) << "! proof failed (exceeded maximum depth) forall left " << toString(ct) << endl;
     return false;
@@ -246,7 +246,7 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
     LOG(DEBUG5, cout << spaces(depth) << "possible lhs base or circularity" << endl);
     //TODO
     //unsolvedConstraint = proveSimulationExistsRight(proveSimulationExistsRight_arguments(ct, false, depth + 1), progressLeft);
-    if (unsolvedConstraint == NULL) {
+    if (unsolvedConstraint == 0) { // TODO: this does not work anymore
       cout << spaces(depth) << "- proof succeeded forall left " << toString(ct) << endl;
       return true;
     }
@@ -277,7 +277,6 @@ bool QueryProveSim::proveSimulationForallLeft(ConstrainedTerm ct, bool progressL
 
 
 bool QueryProveSim::proveSimulation(ConstrainedTerm ct, int depth) {
-  ct = ct;
   cout << spaces(depth) << "Proving simulation circularity " << toString(ct) << endl;
   bool result = proveSimulationForallLeft(ct, false, depth + 1); //needProgressRight = true;
   if (result) {

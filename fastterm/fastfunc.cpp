@@ -22,6 +22,9 @@ FastFunc funcExistsInt;
 FastFunc funcIteInt;
 
 FastFunc funcLE;
+FastFunc funcGE;
+FastFunc funcLt;
+FastFunc funcGt;
 FastFunc funcPlus;
 FastFunc funcTimes;
 FastFunc funcDiv;
@@ -135,6 +138,18 @@ void initFuncs()
   funcLE = newFunc("mle", fastBoolSort(), 2, args);
   funcIsBuiltin[funcLE] = true;
   builtinFunc[funcLE] = bltnLE;
+
+  funcLt = newFunc("mlt", fastBoolSort(), 2, args);
+  funcIsBuiltin[funcLt] = true;
+  builtinFunc[funcLt] = bltnLt;
+
+  funcGE = newFunc("mge", fastBoolSort(), 2, args);
+  funcIsBuiltin[funcGE] = true;
+  builtinFunc[funcGE] = bltnGE;
+
+  funcGt = newFunc("mge", fastBoolSort(), 2, args);
+  funcIsBuiltin[funcGt] = true;
+  builtinFunc[funcGt] = bltnGt;
 
   funcPlus = newFunc("mplus", fastIntSort(), 2, args);
   funcIsBuiltin[funcPlus] = true;
@@ -403,12 +418,36 @@ FastTerm fastOr(FastTerm t1, FastTerm t2)
   return newFuncTerm(funcOr, args);
 }
 
+FastTerm fastLt(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcLt, args);
+}
+
+FastTerm fastGt(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcGt, args);
+}
+
 FastTerm fastLE(FastTerm t1, FastTerm t2)
 {
   FastTerm args[4];
   args[0] = t1;
   args[1] = t2;
   return newFuncTerm(funcLE, args);
+}
+
+FastTerm fastGE(FastTerm t1, FastTerm t2)
+{
+  FastTerm args[4];
+  args[0] = t1;
+  args[1] = t2;
+  return newFuncTerm(funcGE, args);
 }
 
 FastTerm fastNot(FastTerm t1)

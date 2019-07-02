@@ -121,6 +121,14 @@ void processSmtUnify(string &s, int &w)
   cout << "Unifying " << toString(t1) << " and " << toString(t2) << endl;
 
   vector<SmtUnifySolution> unifiers = smtUnify(t1, t2);
+  // Z3_context context = init_z3_context();
+  // vector<SmtSearchSolution> unifiers;
+  // for (uint i = 0; i < unifiers1.size(); ++i) {
+  //   if (z3_sat_check(context, unifiers1[i].constraint) != Z3_L_FALSE) {
+  //     unifiers.push_back(unifiers[i]);
+  //   }
+  // }
+  
   if (unifiers.size() == 0) {
     cout << "No solution." << endl;
   } else {

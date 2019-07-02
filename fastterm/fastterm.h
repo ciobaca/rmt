@@ -33,6 +33,9 @@ enum BuiltinFuncType {
   bltnNumeral,
   
   bltnLE,
+  bltnGE,
+  bltnGt,
+  bltnLt,
   
   bltnPlus,
   bltnTimes,
@@ -197,6 +200,9 @@ FastTerm fastImplies(FastTerm, FastTerm);
 FastTerm fastOr(FastTerm, FastTerm);
 FastTerm fastNot(FastTerm);
 FastTerm fastLE(FastTerm t1, FastTerm t2);
+FastTerm fastGE(FastTerm t1, FastTerm t2);
+FastTerm fastLt(FastTerm t1, FastTerm t2);
+FastTerm fastGt(FastTerm t1, FastTerm t2);
 FastTerm fastTrue();
 FastTerm fastFalse();
 FastTerm fastZero();
